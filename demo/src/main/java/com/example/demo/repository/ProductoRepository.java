@@ -1,6 +1,6 @@
 package com.example.demo.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
 import com.example.demo.Model.Producto;
@@ -8,13 +8,13 @@ import com.example.demo.Model.Producto;
 import java.util.List;
 
 @Repository
-public interface ProductoRepository extends JpaRepository<Producto, Integer> {
+public interface ProductoRepository extends MongoRepository<Producto, String> {
 
     // Buscar productos por categoría
-    List<Producto> findByCategoriaIdCategoria(int idCategoria);
+    List<Producto> findByCategoriaId(String categoriaId);
 
-    // Buscar productos por usuario
-    List<Producto> findByUsuarioId(int userId);
+    // Buscar productos por vendedor
+    List<Producto> findByVendedorId(String vendedorId);
 
     // Buscar productos por nombre (búsqueda parcial)
     List<Producto> findByNombreContainingIgnoreCase(String nombre);
@@ -23,16 +23,24 @@ public interface ProductoRepository extends JpaRepository<Producto, Integer> {
     List<Producto> findByStockGreaterThan(int stock);
 
     // Buscar productos por rango de precio
-    List<Producto> findByPrecioBetween(Float precioMin, Float precioMax);
+    List<Producto> findByPrecioBetween(Double precioMin, Double precioMax);
 
-    // Búsqueda avanzada por nombre o descripción
-    List<Producto> findByNombreContainingIgnoreCaseOrDescripcionContainingIgnoreCase(String nombre, String descripcion);
+    // Búsqueda por nombre o descripción
+    List<Producto> findByNombreContainingIgnoreCaseOrDescripcionContainingIgnoreCase(
+            String nombre, String descripcion);
 
-    // Buscar productos ordenados por precio
+    // Buscar productos ordenados por precio ascendente
     List<Producto> findAllByOrderByPrecioAsc();
 
+    // Buscar productos ordenados por precio descendente
     List<Producto> findAllByOrderByPrecioDesc();
 
-    // Buscar productos ordenados por fecha (más recientes primero)
-    List<Producto> findAllByOrderByIdDesc();
+    // Buscar solo productos disponibles
+    List<Producto> findByDisponibleTrue();
+
+    // Buscar productos disponibles por categoría
+    List<Producto> findByCategoriaIdAndDisponibleTrue(String categoriaId);
+
+    // Buscar productos disponibles de un vendedor
+    List<Producto> findByVendedorIdAndDisponibleTrue(String vendedorId);
 }

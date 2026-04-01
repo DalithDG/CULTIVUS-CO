@@ -1,40 +1,38 @@
 package com.example.demo.repository;
 
 import com.example.demo.Model.Resena;
-import com.example.demo.Model.Producto;
-import com.example.demo.Model.Pedido;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface ResenaRepository extends JpaRepository<Resena, Integer> {
+public interface ResenaRepository extends MongoRepository<Resena, String> {
 
     // Buscar reseñas por producto
-    List<Resena> findByProducto(Producto producto);
-
-    // Buscar reseñas por producto ID
-    List<Resena> findByProductoId(int productoId);
+    List<Resena> findByProductoId(String productoId);
 
     // Buscar reseñas por pedido
-    List<Resena> findByPedido(Pedido pedido);
+    List<Resena> findByPedidoId(String pedidoId);
+
+    // Buscar reseñas por usuario
+    List<Resena> findByUsuarioId(String usuarioId);
 
     // Buscar reseña específica por pedido y producto
-    Optional<Resena> findByPedidoAndProducto(Pedido pedido, Producto producto);
+    Optional<Resena> findByPedidoIdAndProductoId(String pedidoId, String productoId);
 
     // Verificar si existe reseña para un pedido y producto
-    boolean existsByPedidoAndProducto(Pedido pedido, Producto producto);
+    boolean existsByPedidoIdAndProductoId(String pedidoId, String productoId);
 
     // Calcular promedio de calificaciones por producto
-    @Query("SELECT AVG(CAST(r.calificacion AS double)) FROM Resena r WHERE r.producto.id = :productoId")
-    Double calcularPromedioCalificacion(int productoId);
+    @Query("{ 'producto_id': ?0 }")
+    List<Resena> findAllByProductoIdParaPromedio(String productoId);
 
     // Contar reseñas por producto
-    long countByProductoId(int productoId);
+    long countByProductoId(String productoId);
 
-    // Obtener últimas reseñas (ordenadas por fecha)
+    // Obtener últimas reseñas ordenadas por fecha
     List<Resena> findTop10ByOrderByFechaDesc();
 }

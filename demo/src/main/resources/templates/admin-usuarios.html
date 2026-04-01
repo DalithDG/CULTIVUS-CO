@@ -33,20 +33,24 @@
                     <td th:text="${usuario.id}"></td>
                     <td th:text="${usuario.nombre}"></td>
                     <td th:text="${usuario.email}"></td>
-                    <td th:text="${usuario.rol != null ? usuario.rol.nombre : 'Sin rol'}"></td>
+                    <!-- ✅ Antes: usuario.rol.nombre -->
+                    <td th:text="${usuario.rol != null ? usuario.rol : 'Sin rol'}"></td>
                     <td>
-                        <form th:action="@{/admin/usuarios/{id}/cambiar-rol(id=${usuario.id})}" method="post"
-                            style="display:inline;">
+                        <form th:action="@{/admin/usuarios/{id}/cambiar-rol(id=${usuario.id})}"
+                            method="post" style="display:inline;">
                             <select name="nuevoRol" required>
                                 <option value="">Cambiar rol...</option>
-                                <option th:each="rol : ${roles}" th:value="${rol.nombre}" th:text="${rol.nombre}">
+                                <!-- ✅ Antes: rol.nombre en value y text -->
+                                <option th:each="rol : ${roles}"
+                                    th:value="${rol}"
+                                    th:text="${rol}">
                                 </option>
                             </select>
                             <button type="submit" class="btn btn-sm btn-primary">Cambiar</button>
                         </form>
 
-                        <form th:action="@{/admin/usuarios/{id}/eliminar(id=${usuario.id})}" method="post"
-                            style="display:inline;">
+                        <form th:action="@{/admin/usuarios/{id}/eliminar(id=${usuario.id})}"
+                            method="post" style="display:inline;">
                             <button type="submit" class="btn btn-sm btn-danger"
                                 onclick="return confirm('¿Estás seguro?')">
                                 <i class="fa-solid fa-trash"></i> Eliminar

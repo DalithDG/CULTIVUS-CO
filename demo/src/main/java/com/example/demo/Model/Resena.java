@@ -1,81 +1,80 @@
 package com.example.demo.Model;
 
-import java.time.LocalDate;
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
-@Entity
-@Table(name = "Reseña")
+import java.time.LocalDate;
+
+@Document(collection = "resenas")
 public class Resena {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_reseña")
-    private int idResena;
+    private String id;
 
-    @ManyToOne
-    @JoinColumn(name = "id_pedidos", nullable = false)
-    private Pedido pedido;
+    @Field("producto_id")
+    private String productoId;
 
-    @ManyToOne
-    @JoinColumn(name = "id_productos", nullable = false)
-    private Producto producto;
+    @Field("usuario_id")
+    private String usuarioId;
 
-    @ManyToOne
-    @JoinColumn(name = "id_usuario", nullable = false)
-    private Usuario usuario;
+    @Field("pedido_id")
+    private String pedidoId;
 
-    @Column(name = "Calificacion", nullable = false)
-    private int calificacion;
+    @Field("calificacion")
+    private int calificacion; // 1 a 5
 
-    @Column(name = "Comentario", length = 500)
+    @Field("comentario")
     private String comentario;
 
-    @Column(name = "Fecha", nullable = false)
+    @Field("fecha")
     private LocalDate fecha;
 
+    // Constructores
     public Resena() {
     }
 
-    public Resena(Pedido pedido, Producto producto, Usuario usuario, int calificacion, String comentario,
-            LocalDate fecha) {
-        this.pedido = pedido;
-        this.producto = producto;
-        this.usuario = usuario;
+    public Resena(String productoId, String usuarioId, String pedidoId,
+                  int calificacion, String comentario, LocalDate fecha) {
+        this.productoId = productoId;
+        this.usuarioId = usuarioId;
+        this.pedidoId = pedidoId;
         this.calificacion = calificacion;
         this.comentario = comentario;
         this.fecha = fecha;
     }
 
-    public int getIdResena() {
-        return idResena;
+    // Getters y Setters
+    public String getId() {
+        return id;
     }
 
-    public void setIdResena(int idResena) {
-        this.idResena = idResena;
+    public void setId(String id) {
+        this.id = id;
     }
 
-    public Pedido getPedido() {
-        return pedido;
+    public String getProductoId() {
+        return productoId;
     }
 
-    public void setPedido(Pedido pedido) {
-        this.pedido = pedido;
+    public void setProductoId(String productoId) {
+        this.productoId = productoId;
     }
 
-    public Producto getProducto() {
-        return producto;
+    public String getUsuarioId() {
+        return usuarioId;
     }
 
-    public void setProducto(Producto producto) {
-        this.producto = producto;
+    public void setUsuarioId(String usuarioId) {
+        this.usuarioId = usuarioId;
     }
 
-    public Usuario getUsuario() {
-        return usuario;
+    public String getPedidoId() {
+        return pedidoId;
     }
 
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
+    public void setPedidoId(String pedidoId) {
+        this.pedidoId = pedidoId;
     }
 
     public int getCalificacion() {

@@ -3,17 +3,20 @@
     <!-- Si el usuario está logueado, mostrar header según su rol -->
     <div th:if="${session.usuarioLogueado != null}">
         <!-- Header para Admin -->
-        <div th:if="${session.usuarioLogueado.rol != null and session.usuarioLogueado.rol.nombre == 'ADMIN'}">
+        <!-- ✅ Antes: session.usuarioLogueado.rol.nombre == 'ADMIN' -->
+        <div th:if="${session.usuarioLogueado.rol != null and session.usuarioLogueado.rol == 'ADMIN'}">
             <div th:replace="fragments/header-admin :: siteHeader"></div>
         </div>
 
         <!-- Header para Vendedor -->
-        <div th:if="${session.usuarioLogueado.rol != null and session.usuarioLogueado.rol.nombre == 'VENDEDOR'}">
+        <!-- ✅ Antes: session.usuarioLogueado.rol.nombre == 'VENDEDOR' -->
+        <div th:if="${session.usuarioLogueado.rol != null and session.usuarioLogueado.rol == 'VENDEDOR'}">
             <div th:replace="fragments/header-vendedor :: siteHeader"></div>
         </div>
 
         <!-- Header para Comprador -->
-        <div th:if="${session.usuarioLogueado.rol != null and session.usuarioLogueado.rol.nombre == 'COMPRADOR'}">
+        <!-- ✅ Antes: session.usuarioLogueado.rol.nombre == 'COMPRADOR' -->
+        <div th:if="${session.usuarioLogueado.rol != null and session.usuarioLogueado.rol == 'COMPRADOR'}">
             <div th:replace="fragments/header-comprador :: siteHeader"></div>
         </div>
     </div>

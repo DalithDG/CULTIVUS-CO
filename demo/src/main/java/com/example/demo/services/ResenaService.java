@@ -1,7 +1,8 @@
 package com.example.demo.services;
 
-import com.example.demo.Model.*;
-import com.example.demo.repository.*;
+import com.example.demo.Model.Resena;
+import com.example.demo.repository.PedidoRepository;
+import com.example.demo.repository.ResenaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,20 +19,24 @@ public class ResenaService {
     @Autowired
     private PedidoRepository pedidoRepository;
 
-    @Autowired
-    private DetallePedidoRepository detallePedidoRepository;
-
     // Crear una nueva reseña
-    public Resena crearResena(Pedido pedido, Producto producto, Usuario usuario, int calificacion, String comentario) {
+    public Resena crearResena(String pedidoId, String productoId, String usuarioId,
+                               int calificacion, String comentario) {
+
+        // Validar calificación entre 1 y 5
+        if (calificacion < 1 || calificacion > 5) {
+            throw new IllegalArgumentException("La calificación debe estar entre 1 y 5");
+        }
+
         // Verificar que no exista ya una reseña para este pedido y producto
-        if (resenaRepository.existsByPedidoAndProducto(pedido, producto)) {
+        if (resenaRepository.existsByPedidoIdAndProductoId(pedidoId, productoId)) {
             throw new IllegalStateException("Ya existe una reseña para este producto en este pedido");
         }
 
         Resena resena = new Resena();
-        resena.setPedido(pedido);
-        resena.setProducto(producto);
-        resena.setUsuario(usuario);
+        resena.setPedidoId(pedidoId);
+        resena.setProductoId(productoId);
+        resena.setUsuarioId(usuarioId);
         resena.setCalificacion(calificacion);
         resena.setComentario(comentario);
         resena.setFecha(LocalDate.now());
@@ -40,45 +45,53 @@ public class ResenaService {
     }
 
     // Obtener reseñas por producto
-    public List<Resena> obtenerResenasPorProducto(int productoId) {
+    public List<Resena> obtenerResenasPorProducto(String productoId) {
         return resenaRepository.findByProductoId(productoId);
     }
 
-    // Obtener reseñas por producto (objeto)
-    public List<Resena> obtenerResenasPorProducto(Producto producto) {
-        return resenaRepository.findByProducto(producto);
+    // Obtener reseñas por pedido
+    public List<Resena> obtenerResenasPorPedido(String pedidoId) {
+        return resenaRepository.findByPedidoId(pedidoId);
     }
 
-    // Calcular promedio de calificaciones
-    public double calcularPromedioCalificacion(int productoId) {
-        Double promedio = resenaRepository.calcularPromedioCalificacion(productoId);
-        return promedio != null ? promedio : 0.0;
+    // Obtener reseñas por usuario
+    public List<Resena> obtenerResenasPorUsuario(String usuarioId) {
+        return resenaRepository.findByUsuarioId(usuarioId);
+    }
+
+    // Calcular promedio de calificaciones de un producto
+    public double calcularPromedioCalificacion(String productoId) {
+        List<Resena> resenas = resenaRepository.findByProductoId(productoId);
+        return resenas.stream()
+                .mapToInt(Resena::getCalificacion)
+                .average()
+                .orElse(0.0);
     }
 
     // Contar reseñas de un producto
-    public long contarResenas(int productoId) {
+    public long contarResenas(String productoId) {
         return resenaRepository.countByProductoId(productoId);
     }
 
-    // Verificar si un usuario puede reseñar un producto
-    public boolean puedeResenar(Usuario usuario, Producto producto) {
-        // Buscar pedidos del usuario que contengan el producto
-        List<Pedido> pedidos = pedidoRepository.findByCliente(usuario);
+    // Verificar si un usuario puede reseñar un producto en un pedido
+    public boolean puedeResenar(String usuarioId, String productoId, String pedidoId) {
+        // Verificar que el pedido pertenece al usuario
+        return pedidoRepository.findById(pedidoId)
+                .map(pedido -> {
+                    // Verificar que el pedido sea del usuario
+                    boolean esDueno = usuarioId.equals(pedido.getComprador().getId());
 
-        for (Pedido pedido : pedidos) {
-            // Verificar si el pedido contiene el producto
-            boolean contieneProducto = detallePedidoRepository.existsByPedidoAndProducto(pedido, producto);
+                    // Verificar que el pedido contiene el producto
+                    boolean contieneProducto = pedido.getItems().stream()
+                            .anyMatch(item -> productoId.equals(item.getProductoId()));
 
-            if (contieneProducto) {
-                // Verificar si ya reseñó este producto en este pedido
-                boolean yaReseno = resenaRepository.existsByPedidoAndProducto(pedido, producto);
-                if (!yaReseno) {
-                    return true;
-                }
-            }
-        }
+                    // Verificar que no haya reseñado ya
+                    boolean yaReseno = resenaRepository
+                            .existsByPedidoIdAndProductoId(pedidoId, productoId);
 
-        return false;
+                    return esDueno && contieneProducto && !yaReseno;
+                })
+                .orElse(false);
     }
 
     // Obtener últimas reseñas
@@ -87,12 +100,12 @@ public class ResenaService {
     }
 
     // Eliminar reseña (solo el autor puede eliminarla)
-    public void eliminarResena(int idResena, Usuario usuario) {
-        Resena resena = resenaRepository.findById(idResena)
+    public void eliminarResena(String resenaId, String usuarioId) {
+        Resena resena = resenaRepository.findById(resenaId)
                 .orElseThrow(() -> new IllegalStateException("Reseña no encontrada"));
 
-        // Verificar que el usuario sea el autor de la reseña
-        if (resena.getUsuario().getId() != usuario.getId()) {
+        // Verificar que el usuario sea el autor
+        if (!resena.getUsuarioId().equals(usuarioId)) {
             throw new IllegalStateException("No tienes permiso para eliminar esta reseña");
         }
 
@@ -100,7 +113,7 @@ public class ResenaService {
     }
 
     // Obtener reseña por ID
-    public Optional<Resena> obtenerResenaPorId(int resenaId) {
+    public Optional<Resena> obtenerResenaPorId(String resenaId) {
         return resenaRepository.findById(resenaId);
     }
 }

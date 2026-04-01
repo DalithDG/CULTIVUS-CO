@@ -1,17 +1,16 @@
 package com.example.demo.Controller;
 
-import com.example.demo.Model.Usuario;
-import com.example.demo.Model.Producto;
 import com.example.demo.Model.Pedido;
-import com.example.demo.services.ResenaService;
-import com.example.demo.repository.ProductoRepository;
+import com.example.demo.Model.Usuario;
 import com.example.demo.repository.PedidoRepository;
+import com.example.demo.repository.ProductoRepository;
+import com.example.demo.services.ResenaService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import jakarta.servlet.http.HttpSession;
 import java.util.List;
 
 @Controller
@@ -27,60 +26,74 @@ public class ResenaController {
     @Autowired
     private PedidoRepository pedidoRepository;
 
+    /**
+     * Crear una reseña
+     */
     @PostMapping("/{id}/resena")
-    public String crearResena(@PathVariable int id,
+    public String crearResena(@PathVariable String id,
             @RequestParam("calificacion") int calificacion,
             @RequestParam(value = "comentario", required = false) String comentario,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
-        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
 
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
         if (usuario == null) {
-            redirectAttributes.addFlashAttribute("error", "Debe iniciar sesión para dejar una reseña");
+            redirectAttributes.addFlashAttribute("error",
+                    "Debe iniciar sesión para dejar una reseña");
             return "redirect:/usuario/login";
         }
 
         try {
-            Producto producto = productoRepository.findById(id)
+            // Validar que el producto existe
+            productoRepository.findById(id)
                     .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado"));
 
-            // Verificar que el usuario puede reseñar este producto
-            if (!resenaService.puedeResenar(usuario, producto)) {
+            // Validar calificación
+            if (calificacion < 1 || calificacion > 5) {
+                redirectAttributes.addFlashAttribute("error",
+                        "La calificación debe estar entre 1 y 5 estrellas");
+                return "redirect:/producto/" + id;
+            }
+
+            // Buscar el pedido del usuario que contiene este producto
+            List<Pedido> pedidos = pedidoRepository.findByCompradorId(usuario.getId());
+
+            String pedidoIdValido = null;
+            for (Pedido pedido : pedidos) {
+                // Verificar si el pedido contiene el producto
+                boolean contieneProducto = pedido.getItems().stream()
+                        .anyMatch(item -> item.getProductoId().equals(id));
+
+                if (contieneProducto &&
+                        !resenaService.obtenerResenaPorId(pedido.getId()).isPresent()) {
+                    pedidoIdValido = pedido.getId();
+                    break;
+                }
+            }
+
+            if (pedidoIdValido == null) {
                 redirectAttributes.addFlashAttribute("error",
                         "No puedes reseñar este producto. Debes haberlo comprado primero.");
                 return "redirect:/producto/" + id;
             }
 
-            // Validar calificación
-            if (calificacion < 1 || calificacion > 5) {
-                redirectAttributes.addFlashAttribute("error", "La calificación debe estar entre 1 y 5 estrellas");
-                return "redirect:/producto/" + id;
-            }
-
-            // Buscar el pedido del usuario que contiene este producto
-            List<Pedido> pedidos = pedidoRepository.findByCliente(usuario);
-            Pedido pedidoConProducto = null;
-
-            for (Pedido pedido : pedidos) {
-                // Aquí deberías verificar si el pedido contiene el producto
-                // Por simplicidad, tomamos el primer pedido
-                pedidoConProducto = pedido;
-                break;
-            }
-
-            if (pedidoConProducto == null) {
-                redirectAttributes.addFlashAttribute("error", "No se encontró un pedido válido para este producto");
+            // Verificar que puede reseñar
+            if (!resenaService.puedeResenar(usuario.getId(), id, pedidoIdValido)) {
+                redirectAttributes.addFlashAttribute("error",
+                        "Ya has reseñado este producto en este pedido.");
                 return "redirect:/producto/" + id;
             }
 
             // Crear la reseña
-            resenaService.crearResena(pedidoConProducto, producto, usuario, calificacion, comentario);
+            resenaService.crearResena(pedidoIdValido, id, usuario.getId(),
+                    calificacion, comentario);
             redirectAttributes.addFlashAttribute("mensaje", "¡Gracias por tu reseña!");
 
         } catch (IllegalStateException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error al crear la reseña: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error",
+                    "Error al crear la reseña: " + e.getMessage());
         }
 
         return "redirect:/producto/" + id;
@@ -90,44 +103,43 @@ public class ResenaController {
      * Eliminar una reseña
      */
     @PostMapping("/resena/{idResena}/eliminar")
-    public String eliminarResena(@PathVariable int idResena,
+    public String eliminarResena(@PathVariable String idResena,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
-        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
 
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
         if (usuario == null) {
             redirectAttributes.addFlashAttribute("error", "Debe iniciar sesión");
             return "redirect:/usuario/login";
         }
 
-        int productoId = 0;
+        String productoId = null;
         try {
-            // IMPORTANTE: Obtener el producto ID ANTES de eliminar la reseña
+            // Obtener el productoId ANTES de eliminar
             var resenaOpt = resenaService.obtenerResenaPorId(idResena);
             if (resenaOpt.isEmpty()) {
                 redirectAttributes.addFlashAttribute("error", "Reseña no encontrada");
-                return "redirect:/productos";
+                return "redirect:/";
             }
 
-            productoId = resenaOpt.get().getProducto().getId();
+            productoId = resenaOpt.get().getProductoId();
 
-            // Ahora sí eliminar la reseña
-            resenaService.eliminarResena(idResena, usuario);
+            resenaService.eliminarResena(idResena, usuario.getId());
             redirectAttributes.addFlashAttribute("mensaje", "Reseña eliminada exitosamente");
 
             return "redirect:/producto/" + productoId;
+
         } catch (IllegalStateException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
-            if (productoId > 0) {
-                return "redirect:/producto/" + productoId;
-            }
-            return "redirect:/productos";
+            return productoId != null
+                    ? "redirect:/producto/" + productoId
+                    : "redirect:/";
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error al eliminar la reseña: " + e.getMessage());
-            if (productoId > 0) {
-                return "redirect:/producto/" + productoId;
-            }
-            return "redirect:/productos";
+            redirectAttributes.addFlashAttribute("error",
+                    "Error al eliminar la reseña: " + e.getMessage());
+            return productoId != null
+                    ? "redirect:/producto/" + productoId
+                    : "redirect:/";
         }
     }
 }

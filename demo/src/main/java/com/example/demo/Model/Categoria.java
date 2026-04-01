@@ -1,41 +1,37 @@
 package com.example.demo.Model;
 
-import java.util.List;
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
-@Entity
-@Table(name = "Categoria")
+@Document(collection = "categorias")
 public class Categoria {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "idCategoria")
-    private int idCategoria;
+    private String id;
 
-    @Column(name = "Nombre", length = 25, nullable = false)
+    @Field("nombre")
     private String nombre;
 
-    @Column(name = "descripcion", length = 35)
+    @Field("descripcion")
     private String descripcion;
 
-    @OneToMany(mappedBy = "categoria", cascade = CascadeType.ALL)
-    private List<Producto> productos;
-
+    // Constructores
     public Categoria() {
     }
 
-    public Categoria(int idCategoria, String nombre, String descripcion) {
-        this.idCategoria = idCategoria;
+    public Categoria(String nombre, String descripcion) {
         this.nombre = nombre;
         this.descripcion = descripcion;
     }
 
-    public int getIdCategoria() {
-        return idCategoria;
+    // Getters y Setters
+    public String getId() {
+        return id;
     }
 
-    public void setIdCategoria(int idCategoria) {
-        this.idCategoria = idCategoria;
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getNombre() {
@@ -52,13 +48,5 @@ public class Categoria {
 
     public void setDescripcion(String descripcion) {
         this.descripcion = descripcion;
-    }
-
-    public List<Producto> getProductos() {
-        return productos;
-    }
-
-    public void setProductos(List<Producto> productos) {
-        this.productos = productos;
     }
 }

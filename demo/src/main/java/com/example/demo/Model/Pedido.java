@@ -1,107 +1,113 @@
 package com.example.demo.Model;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
-import jakarta.persistence.*;
+import com.example.demo.Model.embebidos.DatosComprador;
+import com.example.demo.Model.embebidos.DatosPago;
+import com.example.demo.Model.embebidos.DireccionPedido;
+import com.example.demo.Model.embebidos.ProductoPedido;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
-@Entity
-@Table(name = "Pedido")
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+@Document(collection = "pedidos")
 public class Pedido {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_pedidos")
-    private int idPedido;
+    private String id;
 
-    @ManyToOne
-    @JoinColumn(name = "id_user", nullable = false)
-    private Usuario cliente;
+    // PENDIENTE, CONFIRMADO, ENVIADO, ENTREGADO, CANCELADO
+    @Field("estado")
+    private String estado = "PENDIENTE";
 
-    @Column(name = "fecha_pedido", nullable = false)
+    @Field("fecha_pedido")
     private LocalDateTime fechaPedido;
 
-    @Column(name = "estado", length = 15)
-    private String estado;
+    @Field("total")
+    private Double total;
 
-    @Column(name = "total")
-    private float total;
+    @Field("created_at")
+    private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<DetallePedido> detalles;
+    @Field("updated_at")
+    private LocalDateTime updatedAt;
 
-    @OneToOne(mappedBy = "pedido", cascade = CascadeType.ALL)
-    private Pago pago;
+    // Comprador embebido — snapshot del usuario al momento del pedido
+    @Field("comprador")
+    private DatosComprador comprador;
 
+    // Dirección de entrega — snapshot al momento del pedido (corrige ERR-03)
+    @Field("direccion_entrega")
+    private DireccionPedido direccionEntrega;
+
+    // Items embebidos — snapshots históricos de precio y nombre
+    @Field("items")
+    private List<ProductoPedido> items = new ArrayList<>();
+
+    // Pago embebido — corrige ERR-02 (ya no es 1:1 con UNIQUE)
+    @Field("pago")
+    private DatosPago pago;
+
+    // Constructores
     public Pedido() {
+        this.fechaPedido = LocalDateTime.now();
+        this.createdAt = LocalDateTime.now();
+        this.estado = "PENDIENTE";
+        this.items = new ArrayList<>();
     }
 
-    public Pedido(int idPedido, Usuario cliente, LocalDateTime fechaPedido, String estado) {
-        this.idPedido = idPedido;
-        this.cliente = cliente;
-        this.fechaPedido = fechaPedido;
-        this.estado = estado;
-    }
-
-    public int getIdPedido() {
-        return idPedido;
-    }
-
-    public void setIdPedido(int idPedido) {
-        this.idPedido = idPedido;
-    }
-
-    public Usuario getCliente() {
-        return cliente;
-    }
-
-    public void setCliente(Usuario cliente) {
-        this.cliente = cliente;
-    }
-
-    public LocalDateTime getFechaPedido() {
-        return fechaPedido;
-    }
-
-    public void setFechaPedido(LocalDateTime fechaPedido) {
-        this.fechaPedido = fechaPedido;
-    }
-
-    // Método auxiliar para compatibilidad con LocalDate (usado en algunos
-    // controladores)
-    public void setFecha(LocalDate fecha) {
-        this.fechaPedido = fecha.atStartOfDay();
-    }
-
-    public List<DetallePedido> getDetalles() {
-        return detalles;
-    }
-
-    public void setDetalles(List<DetallePedido> detalles) {
-        this.detalles = detalles;
-    }
-
-    public Pago getPago() {
-        return pago;
-    }
-
-    public void setPago(Pago pago) {
+    public Pedido(DatosComprador comprador, DireccionPedido direccionEntrega,
+                  List<ProductoPedido> items, DatosPago pago) {
+        this.comprador = comprador;
+        this.direccionEntrega = direccionEntrega;
+        this.items = items;
         this.pago = pago;
+        this.estado = "PENDIENTE";
+        this.fechaPedido = LocalDateTime.now();
+        this.createdAt = LocalDateTime.now();
+        this.total = calcularTotal();
     }
 
-    public String getEstado() {
-        return estado;
+    // Método auxiliar para calcular el total
+    public Double calcularTotal() {
+        return items.stream()
+                .mapToDouble(ProductoPedido::getSubtotal)
+                .sum();
     }
 
-    public void setEstado(String estado) {
-        this.estado = estado;
+    // Getters y Setters
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+
+    public String getEstado() { return estado; }
+    public void setEstado(String estado) { this.estado = estado; }
+
+    public LocalDateTime getFechaPedido() { return fechaPedido; }
+    public void setFechaPedido(LocalDateTime fechaPedido) { this.fechaPedido = fechaPedido; }
+
+    public Double getTotal() { return total; }
+    public void setTotal(Double total) { this.total = total; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public DatosComprador getComprador() { return comprador; }
+    public void setComprador(DatosComprador comprador) { this.comprador = comprador; }
+
+    public DireccionPedido getDireccionEntrega() { return direccionEntrega; }
+    public void setDireccionEntrega(DireccionPedido direccionEntrega) { this.direccionEntrega = direccionEntrega; }
+
+    public List<ProductoPedido> getItems() { return items; }
+    public void setItems(List<ProductoPedido> items) {
+        this.items = items;
+        this.total = calcularTotal();
     }
 
-    public float getTotal() {
-        return total;
-    }
-
-    public void setTotal(float total) {
-        this.total = total;
-    }
+    public DatosPago getPago() { return pago; }
+    public void setPago(DatosPago pago) { this.pago = pago; }
 }

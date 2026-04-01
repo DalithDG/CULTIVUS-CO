@@ -17,22 +17,29 @@ public class BusquedaService {
     // Buscar productos por query (nombre o descripción)
     public List<Producto> buscarProductos(String query) {
         if (query == null || query.trim().isEmpty()) {
-            return productoRepository.findAll();
+            return productoRepository.findByDisponibleTrue();
         }
 
         String queryLimpio = query.trim();
-        return productoRepository.findByNombreContainingIgnoreCaseOrDescripcionContainingIgnoreCase(
-                queryLimpio, queryLimpio);
+        return productoRepository
+                .findByNombreContainingIgnoreCaseOrDescripcionContainingIgnoreCase(
+                        queryLimpio, queryLimpio)
+                .stream()
+                .filter(Producto::isDisponible)
+                .collect(Collectors.toList());
     }
 
     // Buscar productos por categoría
-    public List<Producto> buscarPorCategoria(int categoriaId) {
-        return productoRepository.findByCategoriaIdCategoria(categoriaId);
+    public List<Producto> buscarPorCategoria(String categoriaId) {
+        return productoRepository.findByCategoriaIdAndDisponibleTrue(categoriaId);
     }
 
     // Buscar productos por rango de precio
-    public List<Producto> buscarPorRangoPrecio(Float precioMin, Float precioMax) {
-        return productoRepository.findByPrecioBetween(precioMin, precioMax);
+    public List<Producto> buscarPorRangoPrecio(Double precioMin, Double precioMax) {
+        return productoRepository.findByPrecioBetween(precioMin, precioMax)
+                .stream()
+                .filter(Producto::isDisponible)
+                .collect(Collectors.toList());
     }
 
     // Buscar productos con stock disponible
@@ -50,19 +57,16 @@ public class BusquedaService {
         return productoRepository.findAllByOrderByPrecioDesc();
     }
 
-    // Obtener productos más recientes
-    public List<Producto> obtenerMasRecientes() {
-        return productoRepository.findAllByOrderByIdDesc();
-    }
-
     // Búsqueda avanzada con filtros
-    public List<Producto> busquedaAvanzada(String query, Integer categoriaId, Float precioMin, Float precioMax) {
+    public List<Producto> busquedaAvanzada(String query, String categoriaId,
+                                            Double precioMin, Double precioMax) {
         List<Producto> resultados = buscarProductos(query);
 
         // Filtrar por categoría si se especifica
-        if (categoriaId != null && categoriaId > 0) {
+        if (categoriaId != null && !categoriaId.isEmpty()) {
             resultados = resultados.stream()
-                    .filter(p -> p.getCategoria() != null && p.getCategoria().getIdCategoria() == categoriaId)
+                    .filter(p -> p.getCategoria() != null &&
+                            categoriaId.equals(p.getCategoria().getId()))
                     .collect(Collectors.toList());
         }
 

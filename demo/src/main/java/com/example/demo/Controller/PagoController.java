@@ -1,7 +1,17 @@
 package com.example.demo.Controller;
 
-import com.example.demo.Model.*;
-import com.example.demo.repository.*;
+import com.example.demo.Model.Carrito;
+import com.example.demo.Model.Pedido;
+import com.example.demo.Model.Producto;
+import com.example.demo.Model.Usuario;
+import com.example.demo.Model.embebidos.DatosComprador;
+import com.example.demo.Model.embebidos.DatosPago;
+import com.example.demo.Model.embebidos.DireccionPedido;
+import com.example.demo.Model.embebidos.ProductoCarrito;
+import com.example.demo.Model.embebidos.ProductoPedido;
+import com.example.demo.repository.CarritoRepository;
+import com.example.demo.repository.PedidoRepository;
+import com.example.demo.repository.ProductoRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -9,10 +19,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
 @Controller
 @RequestMapping("/pago")
@@ -22,16 +30,7 @@ public class PagoController {
     private CarritoRepository carritoRepository;
 
     @Autowired
-    private DetalleCarritoRepository detalleCarritoRepository;
-
-    @Autowired
     private PedidoRepository pedidoRepository;
-
-    @Autowired
-    private DetallePedidoRepository detallePedidoRepository;
-
-    @Autowired
-    private PagoRepository pagoRepository;
 
     @Autowired
     private ProductoRepository productoRepository;
@@ -40,44 +39,36 @@ public class PagoController {
      * Muestra el formulario de pago
      */
     @GetMapping
-    public String mostrarPago(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
-        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+    public String mostrarPago(HttpSession session, Model model,
+            RedirectAttributes redirectAttributes) {
 
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
         if (usuario == null) {
-            redirectAttributes.addFlashAttribute("error", "Debe iniciar sesión para realizar el pago");
+            redirectAttributes.addFlashAttribute("error",
+                    "Debe iniciar sesión para realizar el pago");
             return "redirect:/usuario/login";
         }
 
         // Obtener carrito del usuario
-        Optional<Carrito> carritoOpt = carritoRepository.findByClienteId(usuario.getId());
-        if (carritoOpt.isEmpty()) {
-            redirectAttributes.addFlashAttribute("error", "Su carrito está vacío");
-            return "redirect:/carrito";
-        }
-        Carrito carrito = carritoOpt.orElseThrow();
+        Carrito carrito = carritoRepository.findByUsuarioId(usuario.getId())
+                .orElse(null);
 
-        List<DetalleCarrito> detalles = detalleCarritoRepository.findByCarritoId(carrito.getIdCarrito());
-
-        if (detalles.isEmpty()) {
+        if (carrito == null || carrito.getItems().isEmpty()) {
             redirectAttributes.addFlashAttribute("error", "Su carrito está vacío");
             return "redirect:/carrito";
         }
 
-        // Calcular total
-        double total = detalles.stream()
-                .mapToDouble(d -> d.getPrecioTotal())
-                .sum();
+        // Validar total mínimo
+        if (carrito.getTotalEstimado() < 200000) {
+            redirectAttributes.addFlashAttribute("error",
+                    "El total debe ser mayor a $200.000");
+            return "redirect:/carrito";
+        }
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("carrito", carrito);
-        model.addAttribute("detalles", detalles);
-        model.addAttribute("total", total);
-
-        // si total es < 200.000, no se puede pagar
-        if (total < 200000) {
-            redirectAttributes.addFlashAttribute("error", "El total debe ser mayor a 200.000");
-            return "redirect:/carrito";
-        }
+        model.addAttribute("detalles", carrito.getItems());
+        model.addAttribute("total", carrito.getTotalEstimado());
 
         return "pago";
     }
@@ -86,86 +77,112 @@ public class PagoController {
      * Procesa el pago y crea el pedido
      */
     @PostMapping("/procesar")
-    public String procesarPago(@RequestParam("metodoPago") String metodoPago,
+    public String procesarPago(
+            // ✅ required = false para capturar cuando no se selecciona nada
+            @RequestParam(value = "metodoPago", required = false) String metodoPago,
             @RequestParam(value = "direccionEnvio", required = false) String direccionEnvio,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
         try {
             Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
-
             if (usuario == null) {
-                redirectAttributes.addFlashAttribute("error", "Debe iniciar sesión para realizar el pago");
+                redirectAttributes.addFlashAttribute("error",
+                        "Debe iniciar sesión para realizar el pago");
                 return "redirect:/usuario/login";
             }
 
+            // ✅ Validar que se seleccionó un método de pago
+            if (metodoPago == null || metodoPago.trim().isEmpty()) {
+                redirectAttributes.addFlashAttribute("error",
+                        "Debe seleccionar un método de pago");
+                return "redirect:/pago";
+            }
+
+            // ✅ Validar que el método sea uno de los permitidos
+            List<String> metodosValidos = List.of(
+                    "TARJETA_CREDITO", "TARJETA_DEBITO", "TRANSFERENCIA", "EFECTIVO");
+            if (!metodosValidos.contains(metodoPago)) {
+                redirectAttributes.addFlashAttribute("error",
+                        "Método de pago no válido");
+                return "redirect:/pago";
+            }
+
             // Obtener carrito
-            Carrito carrito = carritoRepository.findByClienteId(usuario.getId())
+            Carrito carrito = carritoRepository.findByUsuarioId(usuario.getId())
                     .orElseThrow(() -> new IllegalArgumentException("Carrito no encontrado"));
 
-            List<DetalleCarrito> detallesCarrito = detalleCarritoRepository.findByCarrito(carrito);
-
-            if (detallesCarrito.isEmpty()) {
+            if (carrito.getItems().isEmpty()) {
                 redirectAttributes.addFlashAttribute("error", "Su carrito está vacío");
                 return "redirect:/carrito";
             }
 
-            // Verificar stock antes de crear el pedido
-            for (DetalleCarrito detalle : detallesCarrito) {
-                Producto producto = detalle.getProducto();
-                if (producto.getStock() < detalle.getCantidad()) {
+            // Verificar stock de todos los productos antes de procesar
+            for (ProductoCarrito item : carrito.getItems()) {
+                Producto producto = productoRepository.findById(item.getProductoId())
+                        .orElseThrow(() -> new IllegalArgumentException(
+                                "Producto no encontrado: " + item.getNombre()));
+                if (producto.getStock() < item.getCantidad()) {
                     redirectAttributes.addFlashAttribute("error",
-                            "El producto " + producto.getNombre() + " no tiene suficiente stock");
+                            "El producto " + item.getNombre() + " no tiene suficiente stock");
                     return "redirect:/carrito";
                 }
             }
 
-            // Calcular total
-            double total = detallesCarrito.stream()
-                    .mapToDouble(d -> d.getPrecioTotal())
-                    .sum();
-
-            // Crear pedido
-            Pedido pedido = new Pedido();
-            pedido.setCliente(usuario);
-            pedido.setFechaPedido(LocalDateTime.now());
-            pedido.setEstado("PENDIENTE");
-            pedido.setTotal((float) total);
-            pedido = pedidoRepository.save(pedido);
-
-            // Crear detalles del pedido y actualizar stock
-            for (DetalleCarrito detalleCarrito : detallesCarrito) {
-                DetallePedido detallePedido = new DetallePedido();
-                detallePedido.setPedido(pedido);
-                detallePedido.setProducto(detalleCarrito.getProducto());
-                detallePedido.setCantidad(detalleCarrito.getCantidad());
-                detallePedido.setPrecioUnitario(detalleCarrito.getPrecioUnitario());
-                detallePedidoRepository.save(detallePedido);
-
-                // Actualizar stock
-                Producto producto = detalleCarrito.getProducto();
-                producto.setStock(producto.getStock() - detalleCarrito.getCantidad());
-                productoRepository.save(producto);
+            // Construir items del pedido como snapshots históricos
+            List<ProductoPedido> itemsPedido = new ArrayList<>();
+            for (ProductoCarrito item : carrito.getItems()) {
+                ProductoPedido itemPedido = new ProductoPedido(
+                        item.getProductoId(),
+                        item.getNombre(),
+                        item.getImagenUrl(),
+                        item.getPrecioUnitario(),
+                        item.getCantidad()
+                );
+                itemsPedido.add(itemPedido);
             }
 
-            // Crear pago
-            Pago pago = new Pago();
-            pago.setPedido(pedido);
-            pago.setMonto((float) total);
-            pago.setFechaPago(LocalDateTime.now());
-            pago.setMetodoPago(metodoPago);
-            pagoRepository.save(pago);
+            // Construir comprador embebido
+            DatosComprador comprador = new DatosComprador(
+                    usuario.getId(),
+                    usuario.getNombre()
+            );
 
-            // Limpiar carrito
-            Objects.requireNonNull(carrito, "El carrito no puede ser nulo al limpiar datos");
-            detalleCarritoRepository.deleteByCarrito(carrito);
+            // Construir dirección de entrega embebida
+            DireccionPedido direccionEntrega = new DireccionPedido(
+                    direccionEnvio != null ? direccionEnvio : "",
+                    usuario.getUbicacion() != null ? usuario.getUbicacion().getCiudad() : "",
+                    usuario.getUbicacion() != null ? usuario.getUbicacion().getDepartamento() : ""
+            );
+
+            // Construir pago embebido
+            DatosPago datosPago = new DatosPago(metodoPago, carrito.getTotalEstimado());
+
+            // Crear pedido con todo embebido
+            Pedido pedido = new Pedido(comprador, direccionEntrega, itemsPedido, datosPago);
+            pedido = pedidoRepository.save(pedido);
+
+            // Actualizar stock de cada producto
+            for (ProductoCarrito item : carrito.getItems()) {
+                productoRepository.findById(item.getProductoId()).ifPresent(producto -> {
+                    producto.setStock(producto.getStock() - item.getCantidad());
+                    // Marcar como no disponible si se agotó el stock
+                    if (producto.getStock() == 0) {
+                        producto.setDisponible(false);
+                    }
+                    productoRepository.save(producto);
+                });
+            }
+
+            // Limpiar carrito después del pago
             carritoRepository.delete(carrito);
 
             redirectAttributes.addFlashAttribute("mensaje",
-                    "¡Pago procesado exitosamente! Pedido #" + pedido.getIdPedido());
-            return "redirect:/pago/confirmacion/" + pedido.getIdPedido();
+                    "¡Pago procesado exitosamente! Pedido #" + pedido.getId());
+            return "redirect:/pago/confirmacion/" + pedido.getId();
 
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error al procesar el pago: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error",
+                    "Error al procesar el pago: " + e.getMessage());
             return "redirect:/pago";
         }
     }
@@ -174,12 +191,11 @@ public class PagoController {
      * Muestra la confirmación del pago
      */
     @GetMapping("/confirmacion/{pedidoId}")
-    public String mostrarConfirmacion(@PathVariable int pedidoId,
-            HttpSession session,
-            Model model,
+    public String mostrarConfirmacion(@PathVariable String pedidoId,
+            HttpSession session, Model model,
             RedirectAttributes redirectAttributes) {
-        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
 
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
         if (usuario == null) {
             return "redirect:/usuario/login";
         }
@@ -188,18 +204,16 @@ public class PagoController {
                 .orElseThrow(() -> new IllegalArgumentException("Pedido no encontrado"));
 
         // Verificar que el pedido pertenece al usuario
-        if (pedido.getCliente().getId() != usuario.getId()) {
-            redirectAttributes.addFlashAttribute("error", "No tiene permiso para ver este pedido");
+        if (!pedido.getComprador().getId().equals(usuario.getId())) {
+            redirectAttributes.addFlashAttribute("error",
+                    "No tiene permiso para ver este pedido");
             return "redirect:/";
         }
 
-        List<DetallePedido> detalles = detallePedidoRepository.findByPedidoIdPedido(pedidoId);
-        Optional<Pago> pagoOpt = pagoRepository.findByPedido(pedido);
-
         model.addAttribute("usuario", usuario);
         model.addAttribute("pedido", pedido);
-        model.addAttribute("detalles", detalles);
-        model.addAttribute("pago", pagoOpt.orElse(null));
+        model.addAttribute("detalles", pedido.getItems());
+        model.addAttribute("pago", pedido.getPago());
 
         return "confirmacion-pago";
     }

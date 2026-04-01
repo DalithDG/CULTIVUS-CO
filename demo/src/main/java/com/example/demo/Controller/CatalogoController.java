@@ -15,9 +15,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
-/**
- * Controlador para las rutas públicas de productos (catálogo)
- */
 @Controller
 public class CatalogoController {
 
@@ -29,14 +26,13 @@ public class CatalogoController {
 
     /**
      * Muestra todos los productos disponibles (página pública)
-     * Ruta: /category
      */
     @GetMapping("/category")
     public String listarProductos(Model model, HttpSession session) {
-        // Obtener todos los productos
-        List<Producto> productos = productoRepository.findAll();
 
-        // Obtener usuario si está logueado (opcional)
+        // Solo mostrar productos disponibles
+        List<Producto> productos = productoRepository.findByDisponibleTrue();
+
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
 
         model.addAttribute("productos", productos);
@@ -47,28 +43,21 @@ public class CatalogoController {
 
     /**
      * Muestra el detalle de un producto específico (página pública)
-     * Ruta: /producto/{id}
      */
     @GetMapping("/producto/{id}")
-    public String verDetalleProducto(@PathVariable int id,
+    public String verDetalleProducto(@PathVariable String id,
             Model model,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
         try {
-            // Buscar el producto por ID
             Producto producto = productoRepository.findById(id)
                     .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado"));
 
-            // Obtener usuario si está logueado (opcional)
             Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
 
             // Obtener reseñas del producto
             List<Resena> resenas = resenaService.obtenerResenasPorProducto(id);
-
-            // Calcular promedio de calificación
             double promedioCalificacion = resenaService.calcularPromedioCalificacion(id);
-
-            // Contar reseñas
             long totalResenas = resenaService.contarResenas(id);
 
             model.addAttribute("producto", producto);
@@ -84,5 +73,4 @@ public class CatalogoController {
             return "redirect:/category";
         }
     }
-
 }

@@ -165,32 +165,41 @@
             <div class="pedido-info">
                 <div class="info-row">
                     <span class="info-label">Número de Pedido:</span>
-                    <span class="info-value" style="font-weight: bold; color: #27ae60;" th:text="'#' + ${pedido.idPedido}">#0000</span>
+                    <!-- ✅ Antes: pedido.idPedido -->
+                    <span class="info-value" style="font-weight: bold; color: #27ae60;"
+                        th:text="'#' + ${pedido.id}">#0000</span>
                 </div>
                 <div class="info-row">
                     <span class="info-label">Fecha:</span>
-                    <span class="info-value" th:text="${#temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm')}"></span>
+                    <span class="info-value"
+                        th:text="${#temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm')}"></span>
                 </div>
                 <div class="info-row">
                     <span class="info-label">Estado:</span>
                     <span class="info-value" th:text="${pedido.estado}"></span>
                 </div>
+                <!-- ✅ Antes: pago era objeto separado, ahora está embebido en pedido -->
                 <div th:if="${pago != null}" class="info-row">
                     <span class="info-label">Método de Pago:</span>
-                    <span class="info-value" th:text="${pago.metodoPago}"></span>
+                    <!-- ✅ Antes: pago.metodoPago -->
+                    <span class="info-value" th:text="${pago.metodo}"></span>
                 </div>
 
                 <div class="productos-list">
                     <div style="font-weight: 600; margin-bottom: 15px; color: #333;">Productos:</div>
                     <div th:each="detalle : ${detalles}" class="producto-item">
-                        <img th:src="${detalle.producto.imagenUrl}" 
-                             th:alt="${detalle.producto.nombre}"
+                        <!-- ✅ Antes: detalle.producto.imagenUrl -->
+                        <img th:src="${detalle.imagenSnapshot}"
+                             th:alt="${detalle.nombreSnapshot}"
                              onerror="this.src='/images/placeholder.jpg'">
                         <div class="producto-item-info">
-                            <div class="producto-item-nombre" th:text="${detalle.producto.nombre}"></div>
+                            <!-- ✅ Antes: detalle.producto.nombre -->
+                            <div class="producto-item-nombre"
+                                th:text="${detalle.nombreSnapshot}"></div>
                             <div class="producto-item-details">
-                                Cantidad: <span th:text="${detalle.cantidad}">1</span> | 
-                                Precio: $<span th:text="${#numbers.formatDecimal(detalle.precioUnitario, 0, 'COMMA', 0, 'POINT')}">0</span>
+                                Cantidad: <span th:text="${detalle.cantidad}">1</span> |
+                                Precio: $<span th:text="${#numbers.formatDecimal(
+                                    detalle.precioUnitario, 0, 'COMMA', 0, 'POINT')}">0</span>
                             </div>
                         </div>
                     </div>
@@ -198,7 +207,8 @@
 
                 <div class="total-section">
                     <span>Total Pagado:</span>
-                    <span>$<span th:text="${#numbers.formatDecimal(pago != null ? pago.monto : 0, 0, 'COMMA', 0, 'POINT')}">0</span></span>
+                    <span>$<span th:text="${#numbers.formatDecimal(
+                        pago != null ? pago.monto : 0, 0, 'COMMA', 0, 'POINT')}">0</span></span>
                 </div>
             </div>
 

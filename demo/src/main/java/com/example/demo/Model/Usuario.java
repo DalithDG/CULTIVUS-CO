@@ -1,161 +1,88 @@
 package com.example.demo.Model;
 
-import java.util.List;
+import com.example.demo.Model.embebidos.PerfilAdmin;
+import com.example.demo.Model.embebidos.PerfilVendedor;
+import com.example.demo.Model.embebidos.UbicacionUsuario;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
+import org.springframework.data.mongodb.core.index.Indexed;
 
-import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "usuarios")
+@Document(collection = "usuarios")
 public class Usuario {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_usuario")
-    private int id;
+    private String id;
 
-    @Column(length = 50, nullable = false)
+    @Field("nombre")
     private String nombre;
 
-    @Column(length = 100, nullable = false, unique = true)
+    @Indexed(unique = true)
+    @Field("email")
     private String email;
 
-    @Column(length = 100, nullable = false)
+    @Field("contrasena")
     private String contrasena;
 
-    @ManyToOne
-    @JoinColumn(name = "id_ciudad")
-    private Ciudad ciudad;
+    // "ADMIN", "COMPRADOR", "VENDEDOR"
+    @Field("rol")
+    private String rol;
 
-    @ManyToOne
-    @JoinColumn(name = "id_departamento")
-    private Departamento departamento;
+    @Field("created_at")
+    private LocalDateTime createdAt;
 
-    // PERFIL VENDEDOR (solo si lo activa)
-    @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL)
+    // Ubicación embebida — reemplaza Ciudad y Departamento
+    @Field("ubicacion")
+    private UbicacionUsuario ubicacion;
+
+    // Solo si rol == "VENDEDOR"
+    @Field("perfil_vendedor")
     private PerfilVendedor perfilVendedor;
 
-    // PRODUCTOS PUBLICADOS POR EL VENDEDOR
-    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
-    private List<Producto> productos;
+    // Solo si rol == "ADMIN"
+    @Field("perfil_admin")
+    private PerfilAdmin perfilAdmin;
 
-    // CARRITOS COMO COMPRADOR
-    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
-    private List<Carrito> carritos;
-
-    // PEDIDOS COMO COMPRADOR
-    @OneToMany(mappedBy = "cliente", cascade = CascadeType.ALL)
-    private List<Pedido> pedidos;
-
-    // =========================
-    // RELACIÓN CON ROLES
-    // =========================
-    @ManyToOne
-    @JoinColumn(name = "rol_id", nullable = true)
-    private Roles rol;
-
-    // =========================================
-    // CONSTRUCTORES
-    // =========================================
-
+    // Constructores
     public Usuario() {
+        this.createdAt = LocalDateTime.now();
     }
 
-    public Usuario(String nombre, String email, String contrasena) {
+    public Usuario(String nombre, String email, String contrasena, String rol) {
         this.nombre = nombre;
         this.email = email;
         this.contrasena = contrasena;
-    }
-
-    // =========================================
-    // GETTERS Y SETTERS
-    // =========================================
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getNombre() {
-        return nombre;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getContrasena() {
-        return contrasena;
-    }
-
-    public void setContrasena(String contrasena) {
-        this.contrasena = contrasena;
-    }
-
-    public Ciudad getCiudad() {
-        return ciudad;
-    }
-
-    public void setCiudad(Ciudad ciudad) {
-        this.ciudad = ciudad;
-    }
-
-    public Departamento getDepartamento() {
-        return departamento;
-    }
-
-    public void setDepartamento(Departamento departamento) {
-        this.departamento = departamento;
-    }
-
-    public PerfilVendedor getPerfilVendedor() {
-        return perfilVendedor;
-    }
-
-    public void setPerfilVendedor(PerfilVendedor perfilVendedor) {
-        this.perfilVendedor = perfilVendedor;
-    }
-
-    public List<Producto> getProductos() {
-        return productos;
-    }
-
-    public void setProductos(List<Producto> productos) {
-        this.productos = productos;
-    }
-
-    public List<Carrito> getCarritos() {
-        return carritos;
-    }
-
-    public void setCarritos(List<Carrito> carritos) {
-        this.carritos = carritos;
-    }
-
-    public List<Pedido> getPedidos() {
-        return pedidos;
-    }
-
-    public void setPedidos(List<Pedido> pedidos) {
-        this.pedidos = pedidos;
-    }
-
-    public Roles getRol() {
-        return rol;
-    }
-
-    public void setRol(Roles rol) {
         this.rol = rol;
+        this.createdAt = LocalDateTime.now();
     }
 
+    // Getters y Setters
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+
+    public String getNombre() { return nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public String getContrasena() { return contrasena; }
+    public void setContrasena(String contrasena) { this.contrasena = contrasena; }
+
+    public String getRol() { return rol; }
+    public void setRol(String rol) { this.rol = rol; }
+
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public UbicacionUsuario getUbicacion() { return ubicacion; }
+    public void setUbicacion(UbicacionUsuario ubicacion) { this.ubicacion = ubicacion; }
+
+    public PerfilVendedor getPerfilVendedor() { return perfilVendedor; }
+    public void setPerfilVendedor(PerfilVendedor perfilVendedor) { this.perfilVendedor = perfilVendedor; }
+
+    public PerfilAdmin getPerfilAdmin() { return perfilAdmin; }
+    public void setPerfilAdmin(PerfilAdmin perfilAdmin) { this.perfilAdmin = perfilAdmin; }
 }

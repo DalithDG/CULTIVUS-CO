@@ -4,15 +4,16 @@ import java.util.List;
 import com.example.demo.Model.Producto;
 
 public interface ProductoService {
-    
+
     Producto crearProducto(Producto producto);
     List<Producto> listarProductos();
-    Producto buscarPorId(int id);
-    void eliminarProducto(int id);
+    Producto buscarPorId(String id);
+    void eliminarProducto(String id);
     Producto actualizarProducto(Producto producto);
-    List<Producto> buscarPorCategoria(int categoriaId);
-    List<Producto> buscarPorUsuario(int userId);
+    List<Producto> buscarPorCategoria(String categoriaId);
+    List<Producto> buscarPorVendedor(String vendedorId);
     List<Producto> buscarPorNombre(String nombre);
     List<Producto> buscarConStock();
-    List<Producto> buscarPorRangoPrecio(Float precioMin, Float precioMax);
+    List<Producto> buscarPorRangoPrecio(Double precioMin, Double precioMax);
+    List<Producto> listarDisponibles();
 }

@@ -11,10 +11,10 @@
 
 <body>
     <!-- Header dinámico según el rol del usuario -->
-    <div th:if="${usuario.rol != null and usuario.rol.nombre == 'VENDEDOR'}">
+    <div th:if="${usuario.rol != null and usuario.rol == 'VENDEDOR'}">
         <div th:replace="~{fragments/header-vendedor :: siteHeader}"></div>
     </div>
-    <div th:if="${usuario.rol == null or usuario.rol.nombre != 'VENDEDOR'}">
+    <div th:if="${usuario.rol == null or usuario.rol != 'VENDEDOR'}">
         <div th:replace="~{fragments/header-comprador :: siteHeader}"></div>
     </div>
 
@@ -52,16 +52,20 @@
                     </div>
                     <div class="info-item">
                         <label>Departamento:</label>
-                        <p th:text="${usuario.departamento != null ? usuario.departamento.nombre : 'No especificado'}">
+                        <!-- ✅ Antes: usuario.departamento.nombre -->
+                        <p th:text="${usuario.ubicacion != null ? usuario.ubicacion.departamento : 'No especificado'}">
                             Departamento</p>
                     </div>
                     <div class="info-item">
                         <label>Ciudad:</label>
-                        <p th:text="${usuario.ciudad != null ? usuario.ciudad.nombre : 'No especificado'}">Ciudad</p>
+                        <!-- ✅ Antes: usuario.ciudad.nombre -->
+                        <p th:text="${usuario.ubicacion != null ? usuario.ubicacion.ciudad : 'No especificado'}">
+                            Ciudad</p>
                     </div>
                     <div class="info-item">
                         <label>Rol:</label>
-                        <p th:text="${usuario.rol != null ? usuario.rol.nombre : 'COMPRADOR'}">Rol</p>
+                        <!-- ✅ Antes: usuario.rol.nombre -->
+                        <p th:text="${usuario.rol != null ? usuario.rol : 'COMPRADOR'}">Rol</p>
                     </div>
                 </div>
             </div>
@@ -75,7 +79,8 @@
                             <label for="nombre">
                                 <i class="fa-solid fa-user"></i> Nombre Completo
                             </label>
-                            <input type="text" id="nombre" name="nombre" th:value="${usuario.nombre}" required
+                            <input type="text" id="nombre" name="nombre"
+                                th:value="${usuario.nombre}" required
                                 placeholder="Ingrese su nombre completo">
                         </div>
 
@@ -83,7 +88,8 @@
                             <label for="email">
                                 <i class="fa-solid fa-envelope"></i> Correo Electrónico
                             </label>
-                            <input type="email" id="email" name="email" th:value="${usuario.email}" required
+                            <input type="email" id="email" name="email"
+                                th:value="${usuario.email}" required
                                 placeholder="correo@ejemplo.com">
                         </div>
                     </div>
@@ -95,9 +101,11 @@
                             </label>
                             <select id="departamento" name="departamento" required>
                                 <option value="">Seleccione un departamento</option>
-                                <option th:each="dept : ${departamentos}" th:value="${dept.nombre}"
+                                <!-- ✅ Antes: dept.nombre comparado con usuario.departamento.nombre -->
+                                <option th:each="dept : ${departamentos}"
+                                    th:value="${dept.nombre}"
                                     th:text="${dept.nombre}"
-                                    th:selected="${usuario.departamento != null and usuario.departamento.nombre == dept.nombre}">
+                                    th:selected="${usuario.ubicacion != null and usuario.ubicacion.departamento == dept.nombre}">
                                 </option>
                             </select>
                         </div>
@@ -106,9 +114,10 @@
                             <label for="ciudad">
                                 <i class="fa-solid fa-city"></i> Ciudad
                             </label>
+                            <!-- ✅ Antes: usuario.ciudad.nombre -->
                             <input type="text" id="ciudad" name="ciudad"
-                                th:value="${usuario.ciudad != null ? usuario.ciudad.nombre : ''}" required
-                                placeholder="Ingrese su ciudad">
+                                th:value="${usuario.ubicacion != null ? usuario.ubicacion.ciudad : ''}"
+                                required placeholder="Ingrese su ciudad">
                         </div>
                     </div>
 
@@ -127,12 +136,11 @@
                         </button>
                         <a th:href="@{/usuario/inicio}" class="btn btn-secondary">
                             <i class="fa-solid fa-times"></i> Cancelar
-                        </a> 
+                        </a>
                     </div>
                 </form>
             </div>
         </div>
     </div>
 </body>
-
 </html>

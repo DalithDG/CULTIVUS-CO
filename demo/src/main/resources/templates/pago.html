@@ -7,21 +7,6 @@
     <link rel="stylesheet" th:href="@{/style.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f6f8;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            max-width: 1000px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
-        h1 {
-            color: #27ae60;
-            margin-bottom: 30px;
-        }
         .pago-layout {
             display: grid;
             grid-template-columns: 1fr 400px;
@@ -42,27 +27,6 @@
             position: sticky;
             top: 100px;
         }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 600;
-            color: #333;
-        }
-        input, select, textarea {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
-            box-sizing: border-box;
-        }
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: #27ae60;
-        }
         .metodo-pago {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -76,12 +40,14 @@
             cursor: pointer;
             transition: all 0.3s;
             text-align: center;
+            display: block;
         }
         .metodo-option:hover {
             border-color: #27ae60;
         }
+        /* ✅ Fix para que los radio buttons sean visibles */
         .metodo-option input[type="radio"] {
-            width: auto;
+            width: auto !important;
             margin-right: 8px;
         }
         .metodo-option.selected {
@@ -143,7 +109,7 @@
             transition: background 0.3s;
         }
         .btn-pagar:hover {
-            background: #1ef378;
+            background: #219a52;
         }
         .alert {
             padding: 15px;
@@ -153,6 +119,12 @@
         .alert-error {
             background: #f8d7da;
             color: #721c24;
+        }
+        .seguridad-box {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 30px;
         }
         @media (max-width: 768px) {
             .pago-layout {
@@ -170,43 +142,50 @@
         <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
 
         <div class="pago-layout">
+
+            <!-- ── Lado izquierdo: formulario ── -->
             <div class="form-section">
                 <h2 style="margin-bottom: 20px; color: #333;">Información de Pago</h2>
-                
+
                 <form th:action="@{/pago/procesar}" method="post">
+
+                    <!-- ✅ Radio buttons de método de pago -->
                     <div class="form-group">
                         <label>Método de Pago *</label>
                         <div class="metodo-pago">
                             <label class="metodo-option" onclick="selectMetodo(this)">
-                                <input type="radio" name="metodoPago" value="TARJETA_CREDITO" required>
+                                <input type="radio" name="metodoPago" value="TARJETA_CREDITO">
                                 <i class="fa-solid fa-credit-card"></i> Tarjeta de Crédito
                             </label>
                             <label class="metodo-option" onclick="selectMetodo(this)">
-                                <input type="radio" name="metodoPago" value="TARJETA_DEBITO" required>
+                                <input type="radio" name="metodoPago" value="TARJETA_DEBITO">
                                 <i class="fa-solid fa-credit-card"></i> Tarjeta de Débito
                             </label>
                             <label class="metodo-option" onclick="selectMetodo(this)">
-                                <input type="radio" name="metodoPago" value="TRANSFERENCIA" required>
+                                <input type="radio" name="metodoPago" value="TRANSFERENCIA">
                                 <i class="fa-solid fa-building-columns"></i> Transferencia
                             </label>
                             <label class="metodo-option" onclick="selectMetodo(this)">
-                                <input type="radio" name="metodoPago" value="EFECTIVO" required>
+                                <input type="radio" name="metodoPago" value="EFECTIVO">
                                 <i class="fa-solid fa-money-bill"></i> Contra Entrega
                             </label>
                         </div>
                     </div>
 
-                    <div class="form-group">
-                        <label for="direccionEnvio">Dirección de Envío (Opcional)</label>
-                        <textarea id="direccionEnvio" name="direccionEnvio" rows="3" 
-                                  placeholder="Ingrese la dirección de envío si es diferente a la registrada"></textarea>
+                    <div class="form-group" style="margin-top: 20px;">
+                        <label for="direccionEnvio">
+                            <i class="fa-solid fa-location-dot"></i> Dirección de Envío (Opcional)
+                        </label>
+                        <textarea id="direccionEnvio" name="direccionEnvio" rows="3"
+                            placeholder="Ingrese la dirección de envío si es diferente a la registrada"
+                            style="width: 100%; margin-top: 8px;"></textarea>
                     </div>
 
-                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 30px;">
+                    <div class="seguridad-box">
                         <h3 style="margin-bottom: 15px; color: #333;">Información de Seguridad</h3>
                         <p style="color: #666; font-size: 14px; line-height: 1.6;">
                             <i class="fa-solid fa-shield-halved" style="color: #27ae60;"></i>
-                            Sus datos están protegidos. Este es un sistema de demostración. 
+                            Sus datos están protegidos. Este es un sistema de demostración.
                             En producción, aquí se integraría una pasarela de pago segura.
                         </p>
                     </div>
@@ -217,19 +196,23 @@
                 </form>
             </div>
 
+            <!-- ── Lado derecho: resumen del pedido ── -->
             <div class="resumen-section">
                 <div class="resumen-titulo">Resumen del Pedido</div>
-                
+
                 <div style="max-height: 300px; overflow-y: auto; margin-bottom: 20px;">
                     <div th:each="detalle : ${detalles}" class="producto-resumen">
-                        <img th:src="${detalle.producto.imagenUrl}" 
-                             th:alt="${detalle.producto.nombre}"
+                        <!-- ✅ Campos directos de ProductoCarrito -->
+                        <img th:src="${detalle.imagenUrl}"
+                             th:alt="${detalle.nombre}"
                              onerror="this.src='/images/placeholder.jpg'">
                         <div class="producto-resumen-info">
-                            <div style="font-weight: 600; margin-bottom: 5px;" th:text="${detalle.producto.nombre}"></div>
+                            <div style="font-weight: 600; margin-bottom: 5px;"
+                                th:text="${detalle.nombre}"></div>
                             <div style="font-size: 14px; color: #666;">
-                                <span th:text="${detalle.cantidad}">1</span> x 
-                                $<span th:text="${#numbers.formatDecimal(detalle.precioUnitario, 0, 'COMMA', 0, 'POINT')}">0</span>
+                                <span th:text="${detalle.cantidad}">1</span> x
+                                $<span th:text="${#numbers.formatDecimal(
+                                    detalle.precioUnitario, 0, 'COMMA', 0, 'POINT')}">0</span>
                             </div>
                         </div>
                     </div>
@@ -237,7 +220,8 @@
 
                 <div class="resumen-item">
                     <span>Subtotal:</span>
-                    <span>$<span th:text="${#numbers.formatDecimal(total, 0, 'COMMA', 0, 'POINT')}">0</span></span>
+                    <span>$<span th:text="${#numbers.formatDecimal(
+                        total, 0, 'COMMA', 0, 'POINT')}">0</span></span>
                 </div>
                 <div class="resumen-item">
                     <span>Envío:</span>
@@ -245,7 +229,8 @@
                 </div>
                 <div class="resumen-total">
                     <span>Total:</span>
-                    <span>$<span th:text="${#numbers.formatDecimal(total, 0, 'COMMA', 0, 'POINT')}">0</span></span>
+                    <span>$<span th:text="${#numbers.formatDecimal(
+                        total, 0, 'COMMA', 0, 'POINT')}">0</span></span>
                 </div>
             </div>
         </div>
@@ -253,16 +238,21 @@
 
     <script>
         function selectMetodo(element) {
-            // Remover selección anterior
             document.querySelectorAll('.metodo-option').forEach(opt => {
                 opt.classList.remove('selected');
             });
-            // Agregar selección actual
             element.classList.add('selected');
-            // Marcar el radio button
             element.querySelector('input[type="radio"]').checked = true;
         }
+
+        // ✅ Validar método de pago antes de enviar el formulario
+        document.querySelector('form').addEventListener('submit', function (e) {
+            const metodoPago = document.querySelector('input[name="metodoPago"]:checked');
+            if (!metodoPago) {
+                e.preventDefault();
+                alert('Por favor seleccione un método de pago');
+            }
+        });
     </script>
 </body>
 </html>
-

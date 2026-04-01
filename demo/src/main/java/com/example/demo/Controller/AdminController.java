@@ -1,11 +1,9 @@
 package com.example.demo.Controller;
 
-import com.example.demo.Model.Usuario;
 import com.example.demo.Model.Producto;
 import com.example.demo.Model.Resena;
-import com.example.demo.Model.Roles;
+import com.example.demo.Model.Usuario;
 import com.example.demo.services.AdminService;
-import com.example.demo.repository.RolesRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import jakarta.servlet.http.HttpSession;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -23,37 +22,39 @@ public class AdminController {
     @Autowired
     private AdminService adminService;
 
-    @Autowired
-    private RolesRepository rolesRepository;
+    // Roles disponibles — ya no hay tabla de roles
+    private static final List<String> ROLES = Arrays.asList(
+            "COMPRADOR", "VENDEDOR", "ADMIN"
+    );
 
-    // Middleware para verificar que el usuario es admin
-    private boolean verificarAdmin(HttpSession session, RedirectAttributes redirectAttributes) {
+    // Verificar que el usuario es admin
+    private boolean verificarAdmin(HttpSession session,
+            RedirectAttributes redirectAttributes) {
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
 
         if (usuario == null) {
             redirectAttributes.addFlashAttribute("error", "Debe iniciar sesión primero");
             return false;
         }
-
         if (!adminService.esAdmin(usuario.getId())) {
-            redirectAttributes.addFlashAttribute("error", "No tienes permisos de administrador");
+            redirectAttributes.addFlashAttribute("error",
+                    "No tienes permisos de administrador");
             return false;
         }
-
         return true;
     }
 
     // ==================== DASHBOARD ====================
 
     @GetMapping("/dashboard")
-    public String mostrarDashboard(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
+    public String mostrarDashboard(HttpSession session, Model model,
+            RedirectAttributes redirectAttributes) {
+
         if (!verificarAdmin(session, redirectAttributes)) {
             return "redirect:/usuario/login";
         }
 
         Usuario admin = (Usuario) session.getAttribute("usuarioLogueado");
-
-        // Obtener estadísticas
         Map<String, Object> estadisticas = adminService.obtenerEstadisticas();
 
         model.addAttribute("admin", admin);
@@ -65,27 +66,29 @@ public class AdminController {
     // ==================== GESTIÓN DE USUARIOS ====================
 
     @GetMapping("/usuarios")
-    public String mostrarUsuarios(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
+    public String mostrarUsuarios(HttpSession session, Model model,
+            RedirectAttributes redirectAttributes) {
+
         if (!verificarAdmin(session, redirectAttributes)) {
             return "redirect:/usuario/login";
         }
 
         Usuario admin = (Usuario) session.getAttribute("usuarioLogueado");
         List<Usuario> usuarios = adminService.obtenerTodosLosUsuarios();
-        List<Roles> roles = rolesRepository.findAll();
 
         model.addAttribute("admin", admin);
         model.addAttribute("usuarios", usuarios);
-        model.addAttribute("roles", roles);
+        model.addAttribute("roles", ROLES);
 
         return "admin-usuarios";
     }
 
     @PostMapping("/usuarios/{id}/cambiar-rol")
-    public String cambiarRolUsuario(@PathVariable int id,
+    public String cambiarRolUsuario(@PathVariable String id,
             @RequestParam("nuevoRol") String nuevoRol,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
+
         if (!verificarAdmin(session, redirectAttributes)) {
             return "redirect:/usuario/login";
         }
@@ -94,16 +97,18 @@ public class AdminController {
             adminService.cambiarRolUsuario(id, nuevoRol);
             redirectAttributes.addFlashAttribute("mensaje", "Rol actualizado exitosamente");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error al cambiar rol: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error",
+                    "Error al cambiar rol: " + e.getMessage());
         }
 
         return "redirect:/admin/usuarios";
     }
 
     @PostMapping("/usuarios/{id}/eliminar")
-    public String eliminarUsuario(@PathVariable int id,
+    public String eliminarUsuario(@PathVariable String id,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
+
         if (!verificarAdmin(session, redirectAttributes)) {
             return "redirect:/usuario/login";
         }
@@ -112,7 +117,8 @@ public class AdminController {
             adminService.eliminarUsuario(id);
             redirectAttributes.addFlashAttribute("mensaje", "Usuario eliminado exitosamente");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error al eliminar usuario: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error",
+                    "Error al eliminar usuario: " + e.getMessage());
         }
 
         return "redirect:/admin/usuarios";
@@ -121,7 +127,9 @@ public class AdminController {
     // ==================== GESTIÓN DE PRODUCTOS ====================
 
     @GetMapping("/productos")
-    public String mostrarProductos(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
+    public String mostrarProductos(HttpSession session, Model model,
+            RedirectAttributes redirectAttributes) {
+
         if (!verificarAdmin(session, redirectAttributes)) {
             return "redirect:/usuario/login";
         }
@@ -136,9 +144,10 @@ public class AdminController {
     }
 
     @PostMapping("/productos/{id}/eliminar")
-    public String eliminarProducto(@PathVariable int id,
+    public String eliminarProducto(@PathVariable String id,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
+
         if (!verificarAdmin(session, redirectAttributes)) {
             return "redirect:/usuario/login";
         }
@@ -147,7 +156,8 @@ public class AdminController {
             adminService.eliminarProducto(id);
             redirectAttributes.addFlashAttribute("mensaje", "Producto eliminado exitosamente");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error al eliminar producto: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error",
+                    "Error al eliminar producto: " + e.getMessage());
         }
 
         return "redirect:/admin/productos";
@@ -156,7 +166,9 @@ public class AdminController {
     // ==================== GESTIÓN DE RESEÑAS ====================
 
     @GetMapping("/resenas")
-    public String mostrarResenas(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
+    public String mostrarResenas(HttpSession session, Model model,
+            RedirectAttributes redirectAttributes) {
+
         if (!verificarAdmin(session, redirectAttributes)) {
             return "redirect:/usuario/login";
         }
@@ -171,9 +183,10 @@ public class AdminController {
     }
 
     @PostMapping("/resenas/{id}/eliminar")
-    public String eliminarResena(@PathVariable int id,
+    public String eliminarResena(@PathVariable String id,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
+
         if (!verificarAdmin(session, redirectAttributes)) {
             return "redirect:/usuario/login";
         }
@@ -182,7 +195,8 @@ public class AdminController {
             adminService.eliminarResena(id);
             redirectAttributes.addFlashAttribute("mensaje", "Reseña eliminada exitosamente");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error al eliminar reseña: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error",
+                    "Error al eliminar reseña: " + e.getMessage());
         }
 
         return "redirect:/admin/resenas";

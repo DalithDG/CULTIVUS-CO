@@ -55,18 +55,19 @@
                 <label for="unidadMedidaId">Unidad de Medida *</label>
                 <select id="unidadMedidaId" name="unidadMedidaId" required>
                     <option value="">Seleccione una unidad</option>
-                    <option th:each="unidad : ${unidadesMedida}" th:value="${unidad.idUnidad}"
+                    <!-- ✅ Antes: th:value="${unidad.idUnidad}" -->
+                    <option th:each="unidad : ${unidadesMedida}" th:value="${unidad.abreviatura}"
                         th:text="${unidad.nombre + ' (' + unidad.abreviatura + ')'}">
                     </option>
                 </select>
             </div>
-
+            
             <div class="form-group">
                 <label for="categoriaId">Categoría *</label>
                 <select id="categoriaId" name="categoriaId" required>
                     <option value="">Seleccione una categoría</option>
-                    <option th:each="categoria : ${categorias}" th:value="${categoria.idCategoria}"
-                        th:text="${categoria.nombre}">
+                    <!-- ✅ Antes: th:value="${categoria.idCategoria}" -->
+                    <option th:each="categoria : ${categorias}" th:value="${categoria.id}" th:text="${categoria.nombre}">
                     </option>
                 </select>
             </div>

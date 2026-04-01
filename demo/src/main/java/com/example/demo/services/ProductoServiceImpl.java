@@ -1,5 +1,6 @@
 package com.example.demo.services;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,34 +18,31 @@ public class ProductoServiceImpl implements ProductoService {
 
     @Override
     public Producto crearProducto(Producto producto) {
-        // Validaciones de negocio
         if (producto.getNombre() == null || producto.getNombre().isEmpty()) {
             throw new IllegalArgumentException("El nombre del producto no puede estar vacío");
         }
-
-        if (producto.getPrecio() == null || producto.getPrecio() < 0) {
-            throw new IllegalArgumentException("El precio del producto no puede ser negativo");
+        if (producto.getPrecio() == null || producto.getPrecio() <= 0) {
+            throw new IllegalArgumentException("El precio debe ser mayor a cero");
         }
-
         if (producto.getStock() < 0) {
             throw new IllegalArgumentException("El stock no puede ser negativo");
         }
-
         if (producto.getPeso() == null || producto.getPeso() <= 0) {
             throw new IllegalArgumentException("El peso debe ser mayor a cero");
         }
-
         if (producto.getCategoria() == null) {
             throw new IllegalArgumentException("El producto debe tener una categoría");
         }
-
         if (producto.getUnidadMedida() == null) {
             throw new IllegalArgumentException("El producto debe tener una unidad de medida");
         }
-
-        if (producto.getUsuario() == null) {
-            throw new IllegalArgumentException("El producto debe tener un usuario/vendedor asociado");
+        if (producto.getVendedor() == null) {
+            throw new IllegalArgumentException("El producto debe tener un vendedor asociado");
         }
+
+        // Valores automáticos
+        producto.setDisponible(true);
+        producto.setCreatedAt(LocalDateTime.now());
 
         return productoRepository.save(producto);
     }
@@ -55,13 +53,18 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     @Override
-    public Producto buscarPorId(int id) {
+    public List<Producto> listarDisponibles() {
+        return productoRepository.findByDisponibleTrue();
+    }
+
+    @Override
+    public Producto buscarPorId(String id) {
         Optional<Producto> producto = productoRepository.findById(id);
         return producto.orElse(null);
     }
 
     @Override
-    public void eliminarProducto(int id) {
+    public void eliminarProducto(String id) {
         if (!productoRepository.existsById(id)) {
             throw new IllegalArgumentException("Producto no encontrado con ID: " + id);
         }
@@ -70,37 +73,36 @@ public class ProductoServiceImpl implements ProductoService {
 
     @Override
     public Producto actualizarProducto(Producto producto) {
-        if (producto.getId() <= 0) {
+        if (producto.getId() == null || producto.getId().isEmpty()) {
             throw new IllegalArgumentException("ID de producto inválido");
         }
         if (!productoRepository.existsById(producto.getId())) {
             throw new IllegalArgumentException("Producto no encontrado con ID: " + producto.getId());
         }
-        
-        // Aplicar las mismas validaciones que en crear
         if (producto.getNombre() == null || producto.getNombre().isEmpty()) {
             throw new IllegalArgumentException("El nombre del producto no puede estar vacío");
         }
-
-        if (producto.getPrecio() == null || producto.getPrecio() < 0) {
-            throw new IllegalArgumentException("El precio del producto no puede ser negativo");
+        if (producto.getPrecio() == null || producto.getPrecio() <= 0) {
+            throw new IllegalArgumentException("El precio debe ser mayor a cero");
         }
-
         if (producto.getStock() < 0) {
             throw new IllegalArgumentException("El stock no puede ser negativo");
         }
+
+        // Actualizar fecha de modificación
+        producto.setUpdatedAt(LocalDateTime.now());
 
         return productoRepository.save(producto);
     }
 
     @Override
-    public List<Producto> buscarPorCategoria(int categoriaId) {
-        return productoRepository.findByCategoriaIdCategoria(categoriaId);
+    public List<Producto> buscarPorCategoria(String categoriaId) {
+        return productoRepository.findByCategoriaId(categoriaId);
     }
 
     @Override
-    public List<Producto> buscarPorUsuario(int userId) {
-        return productoRepository.findByUsuarioId(userId);
+    public List<Producto> buscarPorVendedor(String vendedorId) {
+        return productoRepository.findByVendedorId(vendedorId);
     }
 
     @Override
@@ -114,12 +116,12 @@ public class ProductoServiceImpl implements ProductoService {
     }
 
     @Override
-    public List<Producto> buscarPorRangoPrecio(Float precioMin, Float precioMax) {
+    public List<Producto> buscarPorRangoPrecio(Double precioMin, Double precioMax) {
         if (precioMin < 0 || precioMax < 0) {
             throw new IllegalArgumentException("Los precios no pueden ser negativos");
         }
         if (precioMin > precioMax) {
-            throw new IllegalArgumentException("El precio mínimo no puede ser mayor al precio máximo");
+            throw new IllegalArgumentException("El precio mínimo no puede ser mayor al máximo");
         }
         return productoRepository.findByPrecioBetween(precioMin, precioMax);
     }

@@ -233,32 +233,48 @@
                 <h2 style="margin-bottom: 20px;">Productos</h2>
 
                 <div th:each="detalle : ${detalles}" class="producto-item">
-                    <img th:src="${detalle.producto.imagenUrl}" th:alt="${detalle.producto.nombre}"
-                        class="producto-imagen" onerror="this.src='/images/placeholder.jpg'">
+                    <!-- ✅ Antes: detalle.producto.imagenUrl -->
+                    <img th:src="${detalle.imagenUrl}"
+                         th:alt="${detalle.nombre}"
+                         class="producto-imagen"
+                         onerror="this.src='/images/placeholder.jpg'">
+
                     <div class="producto-info">
-                        <div class="producto-nombre" th:text="${detalle.producto.nombre}"></div>
+                        <!-- ✅ Antes: detalle.producto.nombre -->
+                        <div class="producto-nombre" th:text="${detalle.nombre}"></div>
+
                         <div class="producto-precio">
-                            $<span
-                                th:text="${#numbers.formatDecimal(detalle.precioUnitario, 0, 'COMMA', 0, 'POINT')}">0</span>
+                            $<span th:text="${#numbers.formatDecimal(
+                                detalle.precioUnitario, 0, 'COMMA', 0, 'POINT')}">0</span>
                             x <span th:text="${detalle.cantidad}">1</span>
                         </div>
+
                         <div class="cantidad-control">
                             <form th:action="@{/carrito/actualizar}" method="post"
                                 style="display: flex; align-items: center; gap: 10px;">
-                                <input type="hidden" name="productoId" th:value="${detalle.producto.id}">
+                                <!-- ✅ Antes: detalle.producto.id -->
+                                <input type="hidden" name="productoId"
+                                    th:value="${detalle.productoId}">
                                 <button type="button" class="btn-cantidad"
                                     onclick="this.parentElement.querySelector('input[name=cantidad]').value = Math.max(1, parseInt(this.parentElement.querySelector('input[name=cantidad]').value) - 1); this.parentElement.submit();">
                                     <i class="fa-solid fa-minus"></i>
                                 </button>
-                                <input type="number" name="cantidad" th:value="${detalle.cantidad}" min="1" max="99"
-                                    onchange="this.form.submit()" readonly class="cantidad-input">
+                                <input type="number" name="cantidad"
+                                    th:value="${detalle.cantidad}"
+                                    min="1" max="99"
+                                    onchange="this.form.submit()"
+                                    readonly class="cantidad-input">
                                 <button type="button" class="btn-cantidad"
                                     onclick="this.parentElement.querySelector('input[name=cantidad]').value = parseInt(this.parentElement.querySelector('input[name=cantidad]').value) + 1; this.parentElement.submit();">
                                     <i class="fa-solid fa-plus"></i>
                                 </button>
                             </form>
-                            <form th:action="@{/carrito/eliminar}" method="post" style="margin-left: auto;">
-                                <input type="hidden" name="productoId" th:value="${detalle.producto.id}">
+
+                            <form th:action="@{/carrito/eliminar}" method="post"
+                                style="margin-left: auto;">
+                                <!-- ✅ Antes: detalle.producto.id -->
+                                <input type="hidden" name="productoId"
+                                    th:value="${detalle.productoId}">
                                 <button type="submit" class="btn-eliminar">
                                     <i class="fa-solid fa-trash"></i> Eliminar
                                 </button>
@@ -272,7 +288,8 @@
                 <div class="resumen-titulo">Resumen del Pedido</div>
                 <div class="resumen-item">
                     <span>Subtotal:</span>
-                    <span>$<span th:text="${#numbers.formatDecimal(total, 0, 'COMMA', 0, 'POINT')}">0</span></span>
+                    <span>$<span th:text="${#numbers.formatDecimal(
+                        total, 0, 'COMMA', 0, 'POINT')}">0</span></span>
                 </div>
                 <div class="resumen-item">
                     <span>Envío:</span>
@@ -280,7 +297,8 @@
                 </div>
                 <div class="resumen-total">
                     <span>Total:</span>
-                    <span>$<span th:text="${#numbers.formatDecimal(total, 0, 'COMMA', 0, 'POINT')}">0</span></span>
+                    <span>$<span th:text="${#numbers.formatDecimal(
+                        total, 0, 'COMMA', 0, 'POINT')}">0</span></span>
                 </div>
                 <a th:href="@{/pago}" class="btn-pagar"
                     style="text-decoration: none; display: block; text-align: center;">

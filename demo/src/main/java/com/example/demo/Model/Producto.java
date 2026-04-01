@@ -1,62 +1,66 @@
 package com.example.demo.Model;
 
-import java.util.List;
-import jakarta.persistence.*;
+import com.example.demo.Model.embebidos.CategoriaProducto;
+import com.example.demo.Model.embebidos.DatosVendedor;
+import com.example.demo.Model.embebidos.UnidadMedida;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
-@Entity
-@Table(name = "Producto")
+import java.time.LocalDateTime;
+
+@Document(collection = "productos")
 public class Producto {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_productos")
-    private int id;
+    private String id;
 
-    @Column(name = "nombre", length = 50, nullable = false)
+    @Field("nombre")
     private String nombre;
 
-    @Column(name = "Precio", nullable = false)
-    private Float precio;
+    @Field("precio")
+    private Double precio;
 
-    @Column(name = "Stock", nullable = false)
+    @Field("stock")
     private int stock;
 
-    @Column(name = "descripcion", length = 255)
+    @Field("descripcion")
     private String descripcion;
 
-    @Column(name = "imagen_url", length = 2000)
+    @Field("imagen_url")
     private String imagenUrl;
 
-    @Column(name = "Peso", nullable = false)
-    private Float peso;
+    @Field("peso")
+    private Double peso;
 
-    @ManyToOne
-    @JoinColumn(name = "id_categoria", nullable = false)
-    private Categoria categoria;
+    @Field("disponible")
+    private boolean disponible = true;
 
-    @ManyToOne
-    @JoinColumn(name = "id_unidad", nullable = false)
+    @Field("created_at")
+    private LocalDateTime createdAt;
+
+    @Field("updated_at")
+    private LocalDateTime updatedAt;
+
+    // Embebidos
+    @Field("categoria")
+    private CategoriaProducto categoria;
+
+    @Field("unidad_medida")
     private UnidadMedida unidadMedida;
 
-    @ManyToOne
-    @JoinColumn(name = "id_user", nullable = false)
-    private Usuario usuario;
+    @Field("vendedor")
+    private DatosVendedor vendedor;
 
-    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL)
-    private List<DetalleCarrito> detallesCarrito;
-
-    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL)
-    private List<DetallePedido> detallesPedido;
-
-    @OneToMany(mappedBy = "producto", cascade = CascadeType.ALL)
-    private List<Resena> resenas;
-
+    // Constructores
     public Producto() {
+        this.createdAt = LocalDateTime.now();
+        this.disponible = true;
     }
 
-    public Producto(int id, String nombre, Float precio, int stock, String descripcion, String imagenUrl, Float peso,
-            Categoria categoria, UnidadMedida unidadMedida, Usuario usuario) {
-        this.id = id;
+    public Producto(String nombre, Double precio, int stock, String descripcion,
+                    String imagenUrl, Double peso, CategoriaProducto categoria,
+                    UnidadMedida unidadMedida, DatosVendedor vendedor) {
         this.nombre = nombre;
         this.precio = precio;
         this.stock = stock;
@@ -65,110 +69,48 @@ public class Producto {
         this.peso = peso;
         this.categoria = categoria;
         this.unidadMedida = unidadMedida;
-        this.usuario = usuario;
+        this.vendedor = vendedor;
+        this.disponible = true;
+        this.createdAt = LocalDateTime.now();
     }
 
-    public int getId() {
-        return id;
-    }
+    // Getters y Setters
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    public String getNombre() { return nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
 
-    public String getNombre() {
-        return nombre;
-    }
+    public Double getPrecio() { return precio; }
+    public void setPrecio(Double precio) { this.precio = precio; }
 
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
+    public int getStock() { return stock; }
+    public void setStock(int stock) { this.stock = stock; }
 
-    public Float getPrecio() {
-        return precio;
-    }
+    public String getDescripcion() { return descripcion; }
+    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
 
-    public void setPrecio(Float precio) {
-        this.precio = precio;
-    }
+    public String getImagenUrl() { return imagenUrl; }
+    public void setImagenUrl(String imagenUrl) { this.imagenUrl = imagenUrl; }
 
-    public int getStock() {
-        return stock;
-    }
+    public Double getPeso() { return peso; }
+    public void setPeso(Double peso) { this.peso = peso; }
 
-    public void setStock(int stock) {
-        this.stock = stock;
-    }
+    public boolean isDisponible() { return disponible; }
+    public void setDisponible(boolean disponible) { this.disponible = disponible; }
 
-    public String getDescripcion() {
-        return descripcion;
-    }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
-    }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 
-    public String getImagenUrl() {
-        return imagenUrl;
-    }
+    public CategoriaProducto getCategoria() { return categoria; }
+    public void setCategoria(CategoriaProducto categoria) { this.categoria = categoria; }
 
-    public void setImagenUrl(String imagenUrl) {
-        this.imagenUrl = imagenUrl;
-    }
+    public UnidadMedida getUnidadMedida() { return unidadMedida; }
+    public void setUnidadMedida(UnidadMedida unidadMedida) { this.unidadMedida = unidadMedida; }
 
-    public Float getPeso() {
-        return peso;
-    }
-
-    public void setPeso(Float peso) {
-        this.peso = peso;
-    }
-
-    public Categoria getCategoria() {
-        return categoria;
-    }
-
-    public void setCategoria(Categoria categoria) {
-        this.categoria = categoria;
-    }
-
-    public UnidadMedida getUnidadMedida() {
-        return unidadMedida;
-    }
-
-    public void setUnidadMedida(UnidadMedida unidadMedida) {
-        this.unidadMedida = unidadMedida;
-    }
-
-    public Usuario getUsuario() {
-        return usuario;
-    }
-
-    public void setUsuario(Usuario usuario) {
-        this.usuario = usuario;
-    }
-
-    public List<DetalleCarrito> getDetallesCarrito() {
-        return detallesCarrito;
-    }
-
-    public void setDetallesCarrito(List<DetalleCarrito> detallesCarrito) {
-        this.detallesCarrito = detallesCarrito;
-    }
-
-    public List<DetallePedido> getDetallesPedido() {
-        return detallesPedido;
-    }
-
-    public void setDetallesPedido(List<DetallePedido> detallesPedido) {
-        this.detallesPedido = detallesPedido;
-    }
-
-    public List<Resena> getResenas() {
-        return resenas;
-    }
-
-    public void setResenas(List<Resena> resenas) {
-        this.resenas = resenas;
-    }
+    public DatosVendedor getVendedor() { return vendedor; }
+    public void setVendedor(DatosVendedor vendedor) { this.vendedor = vendedor; }
 }

@@ -1,21 +1,23 @@
 package com.example.demo.services;
 
-import com.example.demo.Model.*;
-import com.example.demo.repository.*;
+import com.example.demo.Model.Producto;
+import com.example.demo.Model.Resena;
+import com.example.demo.Model.Usuario;
+import com.example.demo.Model.embebidos.PerfilAdmin;
+import com.example.demo.repository.PedidoRepository;
+import com.example.demo.repository.ProductoRepository;
+import com.example.demo.repository.ResenaRepository;
+import com.example.demo.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-import java.util.List;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class AdminService {
-
-    @Autowired
-    private PerfilAdminRepository perfilAdminRepository;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -32,84 +34,82 @@ public class AdminService {
     @Autowired
     private ResenaRepository resenaRepository;
 
-    @Autowired
-    private RolesRepository rolesRepository;
+    // ==================== GESTIÓN DE ADMINS ====================
 
     /**
      * Registra un nuevo usuario como administrador
-     * Este método se usa en el registro, creando automáticamente el perfil admin
      */
-    @Transactional
     public Usuario registrarAdmin(String nombre, String email, String contrasena,
-            String nivelPermisos, String departamentoResponsable) {
+            String nivelPermisos) {
 
-        // Validar email duplicado
         if (usuarioService.existeEmail(email)) {
             throw new IllegalArgumentException("Este correo electrónico ya está registrado");
         }
 
-        // Crear el usuario base (sin ciudad/departamento si no son necesarios para
-        // admin)
+        // Crear perfil admin embebido
+        PerfilAdmin perfilAdmin = new PerfilAdmin(nivelPermisos);
+
+        // Crear usuario con rol ADMIN y perfil embebido
         Usuario usuario = new Usuario();
         usuario.setNombre(nombre);
         usuario.setEmail(email.toLowerCase().trim());
         usuario.setContrasena(contrasena);
+        usuario.setRol("ADMIN");
+        usuario.setPerfilAdmin(perfilAdmin);
 
-        // Guardar usuario primero
-        usuario = usuarioRepository.save(usuario);
-
-        // Crear el perfil de admin automáticamente
-        PerfilAdmin perfilAdmin = new PerfilAdmin(usuario, nivelPermisos, departamentoResponsable);
-        perfilAdmin = perfilAdminRepository.save(perfilAdmin);
-
-        System.out.println("✅ Admin registrado: " + email);
-        return usuario;
+        return usuarioRepository.save(usuario);
     }
 
     /**
      * Verifica si un usuario es administrador
      */
-    public boolean esAdmin(int usuarioId) {
-        return perfilAdminRepository.existsByUsuarioId(usuarioId);
+    public boolean esAdmin(String usuarioId) {
+        return usuarioRepository.findById(usuarioId)
+                .map(u -> "ADMIN".equals(u.getRol()))
+                .orElse(false);
     }
 
     /**
      * Obtiene el perfil de admin de un usuario
      */
-    public Optional<PerfilAdmin> obtenerPerfilPorUsuarioId(int usuarioId) {
-        return perfilAdminRepository.findByUsuarioId(usuarioId);
+    public Optional<PerfilAdmin> obtenerPerfilPorUsuarioId(String usuarioId) {
+        return usuarioRepository.findById(usuarioId)
+                .map(Usuario::getPerfilAdmin);
     }
 
     /**
      * Actualiza el perfil de administrador
      */
-    @Transactional
-    public PerfilAdmin actualizarPerfil(int perfilId, String nivelPermisos,
-            String departamentoResponsable, boolean activo) {
+    public Usuario actualizarPerfil(String usuarioId, String nivelPermisos, boolean activo) {
 
-        PerfilAdmin perfil = perfilAdminRepository.findById(perfilId)
-                .orElseThrow(() -> new IllegalArgumentException("Perfil de admin no encontrado"));
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
 
-        if (nivelPermisos != null)
-            perfil.setNivelPermisos(nivelPermisos);
-        if (departamentoResponsable != null)
-            perfil.setDepartamentoResponsable(departamentoResponsable);
+        PerfilAdmin perfil = usuario.getPerfilAdmin();
+        if (perfil == null) {
+            throw new IllegalArgumentException("Este usuario no tiene perfil de administrador");
+        }
+
+        if (nivelPermisos != null) perfil.setNivelPermisos(nivelPermisos);
         perfil.setActivo(activo);
 
-        return perfilAdminRepository.save(perfil);
+        usuario.setPerfilAdmin(perfil);
+        return usuarioRepository.save(usuario);
     }
 
     /**
-     * Desactiva un administrador (no se elimina, solo se desactiva)
+     * Desactiva un administrador
      */
-    @Transactional
-    public void desactivarAdmin(int usuarioId) {
-        Optional<PerfilAdmin> perfilOpt = perfilAdminRepository.findByUsuarioId(usuarioId);
+    public void desactivarAdmin(String usuarioId) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
 
-        perfilOpt.ifPresent(perfil -> {
+        PerfilAdmin perfil = usuario.getPerfilAdmin();
+        if (perfil != null) {
             perfil.setActivo(false);
-            perfilAdminRepository.save(perfil);
-        });
+            usuario.setPerfilAdmin(perfil);
+            usuarioRepository.save(usuario);
+        }
     }
 
     /**
@@ -121,19 +121,15 @@ public class AdminService {
         if (usuario == null) {
             throw new IllegalArgumentException("Credenciales incorrectas");
         }
-
         if (!usuario.getContrasena().equals(contrasena)) {
             throw new IllegalArgumentException("Credenciales incorrectas");
         }
-
-        // Verificar que sea admin
-        if (!esAdmin(usuario.getId())) {
+        if (!"ADMIN".equals(usuario.getRol())) {
             throw new IllegalArgumentException("No tienes permisos de administrador");
         }
 
-        // Verificar que el admin esté activo
-        Optional<PerfilAdmin> perfilOpt = obtenerPerfilPorUsuarioId(usuario.getId());
-        if (perfilOpt.isPresent() && !perfilOpt.get().isActivo()) {
+        PerfilAdmin perfil = usuario.getPerfilAdmin();
+        if (perfil != null && !perfil.isActivo()) {
             throw new IllegalArgumentException("Tu cuenta de administrador está inactiva");
         }
 
@@ -152,30 +148,25 @@ public class AdminService {
     /**
      * Obtener usuario por ID
      */
-    public Optional<Usuario> obtenerUsuarioPorId(int id) {
+    public Optional<Usuario> obtenerUsuarioPorId(String id) {
         return usuarioRepository.findById(id);
     }
 
     /**
      * Cambiar rol de usuario
      */
-    @Transactional
-    public void cambiarRolUsuario(int usuarioId, String nuevoRol) {
+    public void cambiarRolUsuario(String usuarioId, String nuevoRol) {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
 
-        Roles rol = rolesRepository.findByNombre(nuevoRol)
-                .orElseThrow(() -> new IllegalArgumentException("Rol no encontrado"));
-
-        usuario.setRol(rol);
+        usuario.setRol(nuevoRol);
         usuarioRepository.save(usuario);
     }
 
     /**
      * Eliminar usuario
      */
-    @Transactional
-    public void eliminarUsuario(int usuarioId) {
+    public void eliminarUsuario(String usuarioId) {
         usuarioRepository.deleteById(usuarioId);
     }
 
@@ -191,16 +182,15 @@ public class AdminService {
     /**
      * Eliminar producto
      */
-    @Transactional
-    public void eliminarProducto(int productoId) {
+    public void eliminarProducto(String productoId) {
         productoRepository.deleteById(productoId);
     }
 
     /**
      * Obtener productos por vendedor
      */
-    public List<Producto> obtenerProductosPorVendedor(int vendedorId) {
-        return productoRepository.findByUsuarioId(vendedorId);
+    public List<Producto> obtenerProductosPorVendedor(String vendedorId) {
+        return productoRepository.findByVendedorId(vendedorId);
     }
 
     // ==================== GESTIÓN DE RESEÑAS ====================
@@ -215,8 +205,7 @@ public class AdminService {
     /**
      * Eliminar reseña
      */
-    @Transactional
-    public void eliminarResena(int resenaId) {
+    public void eliminarResena(String resenaId) {
         resenaRepository.deleteById(resenaId);
     }
 
@@ -235,31 +224,20 @@ public class AdminService {
     public Map<String, Object> obtenerEstadisticas() {
         Map<String, Object> estadisticas = new HashMap<>();
 
-        // Contar usuarios
-        long totalUsuarios = usuarioRepository.count();
-        estadisticas.put("totalUsuarios", totalUsuarios);
-
-        // Contar productos
-        long totalProductos = productoRepository.count();
-        estadisticas.put("totalProductos", totalProductos);
-
-        // Contar pedidos
-        long totalPedidos = pedidoRepository.count();
-        estadisticas.put("totalPedidos", totalPedidos);
-
-        // Contar reseñas
-        long totalResenas = resenaRepository.count();
-        estadisticas.put("totalResenas", totalResenas);
+        estadisticas.put("totalUsuarios", usuarioRepository.count());
+        estadisticas.put("totalProductos", productoRepository.count());
+        estadisticas.put("totalPedidos", pedidoRepository.count());
+        estadisticas.put("totalResenas", resenaRepository.count());
 
         // Contar usuarios por rol
-        List<Roles> roles = rolesRepository.findAll();
         Map<String, Long> usuariosPorRol = new HashMap<>();
-        for (Roles rol : roles) {
-            long count = usuarioRepository.findAll().stream()
-                    .filter(u -> u.getRol() != null && u.getRol().getId() == rol.getId())
-                    .count();
-            usuariosPorRol.put(rol.getNombre(), count);
-        }
+        usuariosPorRol.put("COMPRADOR",
+                (long) usuarioRepository.findByRol("COMPRADOR").size());
+        usuariosPorRol.put("VENDEDOR",
+                (long) usuarioRepository.findByRol("VENDEDOR").size());
+        usuariosPorRol.put("ADMIN",
+                (long) usuarioRepository.findByRol("ADMIN").size());
+
         estadisticas.put("usuariosPorRol", usuariosPorRol);
 
         return estadisticas;
