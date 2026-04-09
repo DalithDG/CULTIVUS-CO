@@ -47,7 +47,7 @@ Crear un marketplace digital que apoye la economía local, reduzca intermediario
 - ✅ Registro de usuarios con ubicación (departamento/ciudad)
 - ✅ Sistema de autenticación (login/logout)
 - ✅ Gestión de perfiles
-- ✅ Sistema de roles: **Público**, **Comprador**, **Vendedor**, **Administrador**
+- ✅ Sistema de roles: **Comprador**, **Vendedor**, **Administrador**
 
 ### 📦 Gestión de Productos
 
