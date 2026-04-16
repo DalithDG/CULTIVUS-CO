@@ -24,15 +24,20 @@ public class UsuarioController {
     private final UbicacionService ubicacionService;
     private final VendedorService vendedorService;
     private final ProductoService productoService;
+    // Temporalmente desactivado
+    // private final PasswordEncoder passwordEncoder;
 
     public UsuarioController(UsuarioService usuarioService,
             UbicacionService ubicacionService,
             VendedorService vendedorService,
-            ProductoService productoService) {
+            ProductoService productoService
+            // PasswordEncoder passwordEncoder - Temporalmente desactivado
+            ) {
         this.usuarioService = usuarioService;
         this.ubicacionService = ubicacionService;
         this.vendedorService = vendedorService;
         this.productoService = productoService;
+        // this.passwordEncoder = passwordEncoder;
     }
 
     @GetMapping("/registro")
@@ -149,7 +154,7 @@ public class UsuarioController {
             Usuario usuario = new Usuario();
             usuario.setNombre(nombreLimpio);
             usuario.setEmail(emailLimpio);
-            usuario.setContrasena(contrasena);
+            usuario.setContrasena(contrasena); // Temporal: sin encriptar
             usuario.setRol("COMPRADOR");
             usuario.setUbicacion(ubicacion);
 
@@ -169,40 +174,9 @@ public class UsuarioController {
         return "login";
     }
 
-    @PostMapping("/login")
-    public String validarLogin(@RequestParam("email") String email,
-            @RequestParam("contrasena") String contrasena,
-            HttpSession session,
-            Model model,
-            RedirectAttributes redirectAttributes) {
-
-        if (email == null || email.trim().isEmpty() ||
-                contrasena == null || contrasena.trim().isEmpty()) {
-            model.addAttribute("error", "Correo y contraseña requeridos");
-            return "login";
-        }
-
-        String emailLimpio = email.trim().toLowerCase();
-        Usuario usuario = usuarioService.findByEmail(emailLimpio);
-
-        if (usuario == null || !usuario.getContrasena().equals(contrasena)) {
-            model.addAttribute("error", "Correo o contraseña incorrectos");
-            return "login";
-        }
-
-        session.setAttribute("usuarioLogueado", usuario);
-        redirectAttributes.addFlashAttribute("mensaje", "Bienvenido, " + usuario.getNombre());
-
-        // Redirigir según rol
-        if ("ADMIN".equals(usuario.getRol())) {
-            return "redirect:/admin/dashboard";
-        }
-        return "redirect:/usuario/inicio";
-    }
-
     @GetMapping("/inicio")
     public String mostrarInicio(HttpSession session, Model model,
-            RedirectAttributes redirectAttributes) {
+                                RedirectAttributes redirectAttributes) {
 
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
         if (usuario == null) {
@@ -298,7 +272,7 @@ public class UsuarioController {
 
             // Actualizar contraseña solo si se proporcionó
             if (contrasena != null && !contrasena.trim().isEmpty()) {
-                usuarioActualizado.setContrasena(contrasena);
+                usuarioActualizado.setContrasena(contrasena); // Temporal: sin encriptar
             }
 
             // Actualizar ubicación embebida

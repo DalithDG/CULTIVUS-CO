@@ -17,6 +17,10 @@ public class DataLoader implements CommandLineRunner {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    // Temporalmente desactivado
+    // @Autowired
+    // private PasswordEncoder passwordEncoder;
+
     @Override
     public void run(String... args) {
         try {
@@ -33,7 +37,7 @@ public class DataLoader implements CommandLineRunner {
                 Usuario admin = new Usuario();
                 admin.setNombre("Administrador");
                 admin.setEmail("admin1@demo.com");
-                admin.setContrasena("admin1234");
+                admin.setContrasena("admin1234"); // Temporal: sin encriptar
                 admin.setRol("ADMIN");
                 admin.setPerfilAdmin(perfilAdmin);
 
