@@ -8,12 +8,15 @@ import com.example.demo.repository.CarritoRepository;
 import com.example.demo.repository.ProductoRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -99,7 +102,8 @@ public class CarritoController {
                 if (producto.getStock() < nuevaCantidad) {
                     redirectAttributes.addFlashAttribute("error",
                             "No hay suficiente stock disponible");
-                    return "redirect:/";
+                    // Bug #2 corregido: era redirect:/ (inicio), debe ser redirect:/carrito
+                    return "redirect:/carrito";
                 }
 
                 item.setCantidad(nuevaCantidad);
@@ -130,6 +134,85 @@ public class CarritoController {
         }
 
         return "redirect:/carrito";
+    }
+
+    /**
+     * Endpoint AJAX para agregar al carrito sin recargar la página.
+     * Devuelve JSON con {success, mensaje/error, totalItems}.
+     * Es llamado por carrito-ajax.js desde cualquier página.
+     */
+    @PostMapping("/agregar-ajax")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> agregarAlCarritoAjax(
+            @RequestParam("productoId") String productoId,
+            @RequestParam(value = "cantidad", defaultValue = "1") int cantidad,
+            HttpSession session) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+            if (usuario == null) {
+                response.put("success", false);
+                response.put("error", "Debes iniciar sesión para agregar productos al carrito");
+                response.put("redirectLogin", true);
+                return ResponseEntity.ok(response);
+            }
+
+            Producto producto = productoRepository.findById(productoId)
+                    .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado"));
+
+            if (producto.getStock() < cantidad) {
+                response.put("success", false);
+                response.put("error", "No hay suficiente stock disponible");
+                return ResponseEntity.ok(response);
+            }
+
+            Carrito carrito = carritoRepository.findByUsuarioId(usuario.getId())
+                    .orElseGet(() -> new Carrito(usuario.getId()));
+
+            Optional<ProductoCarrito> itemExistente = carrito.getItems().stream()
+                    .filter(i -> i.getProductoId().equals(productoId))
+                    .findFirst();
+
+            if (itemExistente.isPresent()) {
+                ProductoCarrito item = itemExistente.get();
+                int nuevaCantidad = item.getCantidad() + cantidad;
+                if (producto.getStock() < nuevaCantidad) {
+                    response.put("success", false);
+                    response.put("error", "Solo quedan " + producto.getStock() + " unidades disponibles");
+                    return ResponseEntity.ok(response);
+                }
+                item.setCantidad(nuevaCantidad);
+            } else {
+                ProductoCarrito nuevoItem = new ProductoCarrito(
+                        producto.getId(),
+                        producto.getNombre(),
+                        producto.getImagenUrl(),
+                        producto.getPrecio(),
+                        cantidad
+                );
+                carrito.getItems().add(nuevoItem);
+            }
+
+            carrito.recalcularTotal();
+            carrito.setUpdatedAt(LocalDateTime.now());
+            carritoRepository.save(carrito);
+
+            response.put("success", true);
+            response.put("mensaje", "¡" + producto.getNombre() + " agregado al carrito!");
+            response.put("totalItems", carrito.getItems().size());
+            response.put("totalEstimado", carrito.getTotalEstimado());
+
+        } catch (IllegalArgumentException e) {
+            response.put("success", false);
+            response.put("error", e.getMessage());
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("error", "Error al agregar producto al carrito");
+        }
+
+        return ResponseEntity.ok(response);
     }
 
     /**

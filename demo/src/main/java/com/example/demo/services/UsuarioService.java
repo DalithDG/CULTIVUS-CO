@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.Model.Usuario;
@@ -14,6 +15,9 @@ public class UsuarioService implements IUsuarioService {
 
     @Autowired
     private UsuarioRepository repositorio;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public void actualizarUsuario(Usuario usuario) {
@@ -33,10 +37,17 @@ public class UsuarioService implements IUsuarioService {
 
     @Override
     public Usuario iniciarSesion(String correo, String contrasena) {
-        Optional<Usuario> usuarioOpt = repositorio.findByEmail(correo);
+        if (correo == null || contrasena == null) return null;
+
+        // Normalizar email igual que en el registro
+        String correoLimpio = correo.trim().toLowerCase();
+
+        Optional<Usuario> usuarioOpt = repositorio.findByEmail(correoLimpio);
         if (usuarioOpt.isPresent()) {
             Usuario usuario = usuarioOpt.get();
-            if (usuario.getContrasena().equals(contrasena)) {
+            // Comparar contraseña ingresada contra el hash BCrypt almacenado
+            if (usuario.getContrasena() != null &&
+                    passwordEncoder.matches(contrasena, usuario.getContrasena())) {
                 return usuario;
             }
         }

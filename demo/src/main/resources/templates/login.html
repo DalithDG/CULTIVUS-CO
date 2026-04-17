@@ -33,6 +33,16 @@
             <span th:text="${error}"></span>
         </div>
 
+        <!-- Error de OAuth2 (viene como query param) -->
+        <div th:if="${param.error}" class="alert alert-error">
+            <i class="fas fa-exclamation-circle"></i>
+            <span th:switch="${param.error[0]}">
+                <span th:case="'oauth_failed'">Error al iniciar sesión con Google. Intenta de nuevo.</span>
+                <span th:case="'oauth_email'">Google no proporcionó un correo válido.</span>
+                <span th:case="*">Error de autenticación. Intenta de nuevo.</span>
+            </span>
+        </div>
+
         <!-- Formulario -->
         <form class="login-form" th:action="@{/usuario/login}" method="post">
             <div class="input-group">
@@ -92,13 +102,14 @@
 
         <!-- Social Login -->
         <div class="social-login">
-            <button type="button" class="social-btn google">
+            <!-- Enlace real al flujo OAuth2 de Google (Spring Security lo maneja) -->
+            <a th:href="@{/oauth2/authorization/google}" class="social-btn google" title="Iniciar sesión con Google">
                 <i class="fab fa-google"></i>
-            </button>
-            <button type="button" class="social-btn facebook">
+            </a>
+            <button type="button" class="social-btn facebook" title="Próximamente" disabled>
                 <i class="fab fa-facebook-f"></i>
             </button>
-            <button type="button" class="social-btn twitter">
+            <button type="button" class="social-btn twitter" title="Próximamente" disabled>
                 <i class="fab fa-twitter"></i>
             </button>
         </div>

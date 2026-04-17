@@ -11,7 +11,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.util.Collections;
 
-// @Service - Temporalmente desactivado
+import org.springframework.stereotype.Service;
+
+@Service
 public class CustomUserDetailsService implements UserDetailsService {
 
     @Autowired

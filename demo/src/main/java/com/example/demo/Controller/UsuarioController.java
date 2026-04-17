@@ -7,6 +7,7 @@ import com.example.demo.services.ProductoService;
 import com.example.demo.services.UbicacionService;
 import com.example.demo.services.UsuarioService;
 import com.example.demo.services.VendedorService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -24,20 +25,18 @@ public class UsuarioController {
     private final UbicacionService ubicacionService;
     private final VendedorService vendedorService;
     private final ProductoService productoService;
-    // Temporalmente desactivado
-    // private final PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
     public UsuarioController(UsuarioService usuarioService,
             UbicacionService ubicacionService,
             VendedorService vendedorService,
-            ProductoService productoService
-            // PasswordEncoder passwordEncoder - Temporalmente desactivado
-            ) {
+            ProductoService productoService,
+            PasswordEncoder passwordEncoder) {
         this.usuarioService = usuarioService;
         this.ubicacionService = ubicacionService;
         this.vendedorService = vendedorService;
         this.productoService = productoService;
-        // this.passwordEncoder = passwordEncoder;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @GetMapping("/registro")
@@ -154,7 +153,8 @@ public class UsuarioController {
             Usuario usuario = new Usuario();
             usuario.setNombre(nombreLimpio);
             usuario.setEmail(emailLimpio);
-            usuario.setContrasena(contrasena); // Temporal: sin encriptar
+            // Encriptar contraseña con BCrypt antes de guardar
+            usuario.setContrasena(passwordEncoder.encode(contrasena));
             usuario.setRol("COMPRADOR");
             usuario.setUbicacion(ubicacion);
 
@@ -172,6 +172,45 @@ public class UsuarioController {
     @GetMapping("/login")
     public String mostrarLogin() {
         return "login";
+    }
+
+    @PostMapping("/login")
+    public String procesarLogin(
+            @RequestParam("email") String email,
+            @RequestParam("contrasena") String contrasena,
+            HttpSession session,
+            Model model,
+            RedirectAttributes redirectAttributes) {
+
+        // Validar que los campos no estén vacíos
+        if (email == null || email.trim().isEmpty() ||
+                contrasena == null || contrasena.trim().isEmpty()) {
+            model.addAttribute("error", "El correo y la contraseña son requeridos");
+            return "login";
+        }
+
+        // Normalizar email (igual que cuando se registró)
+        String emailLimpio = email.trim().toLowerCase();
+
+        // Autenticar con el servicio
+        Usuario usuario = usuarioService.iniciarSesion(emailLimpio, contrasena);
+
+        if (usuario == null) {
+            model.addAttribute("error", "Correo o contraseña incorrectos");
+            return "login";
+        }
+
+        // Guardar el usuario en sesión
+        session.setAttribute("usuarioLogueado", usuario);
+
+        // Redirigir según el rol del usuario
+        String rol = usuario.getRol();
+        if ("ADMIN".equalsIgnoreCase(rol)) {
+            return "redirect:/admin/dashboard";
+        } else {
+            // COMPRADOR y VENDEDOR van al mismo inicio (que luego ramifica)
+            return "redirect:/usuario/inicio";
+        }
     }
 
     @GetMapping("/inicio")
@@ -272,7 +311,8 @@ public class UsuarioController {
 
             // Actualizar contraseña solo si se proporcionó
             if (contrasena != null && !contrasena.trim().isEmpty()) {
-                usuarioActualizado.setContrasena(contrasena); // Temporal: sin encriptar
+                // Encriptar la nueva contraseña con BCrypt
+                usuarioActualizado.setContrasena(passwordEncoder.encode(contrasena));
             }
 
             // Actualizar ubicación embebida

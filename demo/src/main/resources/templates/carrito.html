@@ -255,17 +255,19 @@
                                 <!-- ✅ Antes: detalle.producto.id -->
                                 <input type="hidden" name="productoId"
                                     th:value="${detalle.productoId}">
+                                <!-- Bug #3 corregido: se eliminó readonly + onchange muerto.
+                                     Los botones +/- controlan el valor y hacen submit directamente. -->
                                 <button type="button" class="btn-cantidad"
-                                    onclick="this.parentElement.querySelector('input[name=cantidad]').value = Math.max(1, parseInt(this.parentElement.querySelector('input[name=cantidad]').value) - 1); this.parentElement.submit();">
+                                    onclick="cambiarCantidad(this, -1)">
                                     <i class="fa-solid fa-minus"></i>
                                 </button>
                                 <input type="number" name="cantidad"
                                     th:value="${detalle.cantidad}"
                                     min="1" max="99"
-                                    onchange="this.form.submit()"
-                                    readonly class="cantidad-input">
+                                    class="cantidad-input">
+                                <!-- Bug #4 corregido: el botón + respeta max=99 -->
                                 <button type="button" class="btn-cantidad"
-                                    onclick="this.parentElement.querySelector('input[name=cantidad]').value = parseInt(this.parentElement.querySelector('input[name=cantidad]').value) + 1; this.parentElement.submit();">
+                                    onclick="cambiarCantidad(this, +1)">
                                     <i class="fa-solid fa-plus"></i>
                                 </button>
                             </form>
@@ -311,6 +313,24 @@
             </div>
         </div>
     </div>
+
+    <script>
+        /**
+         * Cambia la cantidad del producto en el carrito.
+         * Bug #3 corregido: reemplaza el onchange muerto en input readonly.
+         * Bug #4 corregido: respeta min=1 y max=99 antes de incrementar.
+         */
+        function cambiarCantidad(btn, delta) {
+            const form  = btn.closest('form');
+            const input = form.querySelector('input[name="cantidad"]');
+            const nuevo = (parseInt(input.value) || 1) + delta;
+            const min   = parseInt(input.getAttribute('min')) || 1;
+            const max   = parseInt(input.getAttribute('max')) || 99;
+            if (nuevo < min || nuevo > max) return;
+            input.value = nuevo;
+            form.submit();
+        }
+    </script>
 </body>
 
 </html>
