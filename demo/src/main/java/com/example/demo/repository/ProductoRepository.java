@@ -43,4 +43,7 @@ public interface ProductoRepository extends MongoRepository<Producto, String> {
 
     // Buscar productos disponibles de un vendedor
     List<Producto> findByVendedorIdAndDisponibleTrue(String vendedorId);
+
+    // Eliminar todos los productos de un vendedor
+    void deleteByVendedorId(String vendedorId);
 }

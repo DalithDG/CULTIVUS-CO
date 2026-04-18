@@ -167,7 +167,7 @@ public class AdminService {
      * Eliminar usuario
      */
     public void eliminarUsuario(String usuarioId) {
-        usuarioRepository.deleteById(usuarioId);
+        usuarioService.eliminarUsuario(usuarioId);
     }
 
     // ==================== GESTIÓN DE PRODUCTOS ====================

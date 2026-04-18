@@ -18,6 +18,9 @@ public class Pedido {
     @Id
     private String id;
 
+    @Field("vendedor_id")
+    private String vendedorId;
+
     // PENDIENTE, CONFIRMADO, ENVIADO, ENTREGADO, CANCELADO
     @Field("estado")
     private String estado = "PENDIENTE";
@@ -58,9 +61,10 @@ public class Pedido {
         this.items = new ArrayList<>();
     }
 
-    public Pedido(DatosComprador comprador, DireccionPedido direccionEntrega,
+    public Pedido(DatosComprador comprador, String vendedorId, DireccionPedido direccionEntrega,
                   List<ProductoPedido> items, DatosPago pago) {
         this.comprador = comprador;
+        this.vendedorId = vendedorId;
         this.direccionEntrega = direccionEntrega;
         this.items = items;
         this.pago = pago;
@@ -80,6 +84,9 @@ public class Pedido {
     // Getters y Setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
+
+    public String getVendedorId() { return vendedorId; }
+    public void setVendedorId(String vendedorId) { this.vendedorId = vendedorId; }
 
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }

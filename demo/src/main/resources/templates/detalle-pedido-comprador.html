@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cultivus - Detalle del Pedido</title>
+    <title>Cultivus - Factura de Compra</title>
 
     <link rel="stylesheet" th:href="@{/style.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
@@ -112,47 +112,6 @@
             color: #27ae60;
         }
 
-        .acciones-section {
-            margin-top: 30px;
-            padding: 20px;
-            background: #f8f9fa;
-            border-radius: 8px;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-            color: #333;
-        }
-
-        .form-group select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-
-        .btn-actualizar {
-            background: #27ae60;
-            color: white;
-            padding: 12px 30px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background 0.3s;
-        }
-
-        .btn-actualizar:hover {
-            background: #1ef378;
-        }
-
         .btn-volver {
             background: #6c757d;
             color: white;
@@ -173,38 +132,39 @@
 </head>
 
 <body>
-    <header th:replace="fragments/header-vendedor :: siteHeader"></header>
+    <header th:replace="~{fragments/header-comprador :: siteHeader}"></header>
 
     <div class="detalle-container">
-        <a th:href="@{/vendedor/ventas}" class="btn-volver">
-            <i class="fa-solid fa-arrow-left"></i> Volver a Mis Ventas
+        <a th:href="@{/usuario/pedidos}" class="btn-volver">
+            <i class="fa-solid fa-arrow-left"></i> Volver a Mis Compras
         </a>
 
         <div class="pedido-card">
             <div class="pedido-header">
-                <div class="pedido-id">Pedido #<span th:text="${pedido.id}"></span></div>
+                <div class="pedido-id">Factura #<span th:text="${#strings.length(pedido.id) > 8 ? #strings.substring(pedido.id, #strings.length(pedido.id) - 8) : pedido.id}" style="text-transform: uppercase;"></span></div>
                 <div class="pedido-info">
                     <div class="info-item">
-                        <strong>Fecha:</strong>
+                        <strong><i class="fa-solid fa-calendar"></i> Fecha:</strong>
                         <span th:text="${#temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm')}"></span>
                     </div>
                     <div class="info-item">
-                        <strong>Cliente:</strong>
-                        <span th:text="${pedido.comprador.nombre}"></span>
+                        <strong><i class="fa-solid fa-store"></i> Tienda Local:</strong>
+                        <span th:text="${#strings.length(pedido.vendedorId) > 8 ? '...' + #strings.substring(pedido.vendedorId, #strings.length(pedido.vendedorId) - 8) : pedido.vendedorId}"></span>
                     </div>
                     <div class="info-item">
-                        <strong>Estado:</strong>
+                        <strong><i class="fa-solid fa-truck"></i> Estado:</strong>
                         <span class="estado-badge" 
                               th:classappend="${pedido.estado == 'PENDIENTE' ? 'estado-pendiente' : 
                                              (pedido.estado == 'EN_PROCESO' || pedido.estado == 'PROCESANDO' ? 'estado-proceso' : 
                                              'estado-completado')}"
-                              th:text="${pedido.estado}">
+                              th:text="${pedido.estado == 'EN_PROCESO' || pedido.estado == 'PROCESANDO' ? 'En proceso de preparación' : 
+                                       (pedido.estado == 'PENDIENTE' ? 'Pendiente de confirmación' : 'Pedido Completado')}">
                         </span>
                     </div>
                 </div>
             </div>
 
-            <h3 style="margin-top: 30px; color: #27ae60;">Productos en este pedido</h3>
+            <h3 style="margin-top: 30px; color: #27ae60;">Productos en este paquete</h3>
             <table class="productos-table">
                 <thead>
                     <tr>
@@ -228,25 +188,8 @@
 
             <div class="total-section">
                 <div class="total-amount">
-                    Total: $<span th:text="${#numbers.formatDecimal(pedido.total, 0, 'COMMA', 2, 'POINT')}">0.00</span>
+                    Subtotal del Paquete: $<span th:text="${#numbers.formatDecimal(pedido.total, 0, 'COMMA', 2, 'POINT')}">0.00</span>
                 </div>
-            </div>
-
-            <div class="acciones-section">
-                <h3 style="margin-bottom: 15px; color: #27ae60;">Actualizar Estado del Pedido</h3>
-                <form th:action="@{/vendedor/ventas/pedido/{id}/actualizar-estado(id=${pedido.id})}" method="post">
-                    <div class="form-group">
-                        <label for="estado">Nuevo Estado:</label>
-                        <select id="estado" name="estado" required>
-                            <option value="PENDIENTE" th:selected="${pedido.estado == 'PENDIENTE'}">Pendiente</option>
-                            <option value="EN_PROCESO" th:selected="${pedido.estado == 'EN_PROCESO' || pedido.estado == 'PROCESANDO'}">En Proceso</option>
-                            <option value="COMPLETADO" th:selected="${pedido.estado == 'COMPLETADO' || pedido.estado == 'ENTREGADO'}">Completado</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn-actualizar">
-                        <i class="fa-solid fa-save"></i> Actualizar Estado
-                    </button>
-                </form>
             </div>
         </div>
     </div>
@@ -259,6 +202,6 @@
         <span th:text="${error}"></span>
     </div>
 
+    <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
 </body>
 </html>
-

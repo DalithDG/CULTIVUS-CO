@@ -8,6 +8,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.Model.Usuario;
+import com.example.demo.repository.ProductoRepository;
 import com.example.demo.repository.UsuarioRepository;
 
 @Service
@@ -15,6 +16,9 @@ public class UsuarioService implements IUsuarioService {
 
     @Autowired
     private UsuarioRepository repositorio;
+
+    @Autowired
+    private ProductoRepository productoRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -61,7 +65,12 @@ public class UsuarioService implements IUsuarioService {
 
     @Override
     public boolean eliminarUsuario(String id) {
-        if (repositorio.existsById(id)) {
+        Optional<Usuario> usuarioOpt = repositorio.findById(id);
+        if (usuarioOpt.isPresent()) {
+            Usuario usuario = usuarioOpt.get();
+            if ("VENDEDOR".equals(usuario.getRol())) {
+                productoRepository.deleteByVendedorId(id);
+            }
             repositorio.deleteById(id);
             return true;
         }

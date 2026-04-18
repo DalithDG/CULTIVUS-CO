@@ -128,9 +128,14 @@ public class PagoController {
                 }
             }
 
-            // Construir items del pedido como snapshots históricos
-            List<ProductoPedido> itemsPedido = new ArrayList<>();
+            // Agrupar items por vendedor para crear subórdenes (Modelo Amazon)
+            java.util.Map<String, java.util.List<ProductoPedido>> itemsPorVendedor = new java.util.HashMap<>();
+
             for (ProductoCarrito item : carrito.getItems()) {
+                Producto producto = productoRepository.findById(item.getProductoId())
+                    .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado"));
+                String vendedorIdLocal = producto.getVendedor().getId();
+                
                 ProductoPedido itemPedido = new ProductoPedido(
                         item.getProductoId(),
                         item.getNombre(),
@@ -138,7 +143,8 @@ public class PagoController {
                         item.getPrecioUnitario(),
                         item.getCantidad()
                 );
-                itemsPedido.add(itemPedido);
+                
+                itemsPorVendedor.computeIfAbsent(vendedorIdLocal, k -> new java.util.ArrayList<>()).add(itemPedido);
             }
 
             // Construir comprador embebido
@@ -154,12 +160,20 @@ public class PagoController {
                     usuario.getUbicacion() != null ? usuario.getUbicacion().getDepartamento() : ""
             );
 
-            // Construir pago embebido
-            DatosPago datosPago = new DatosPago(metodoPago, carrito.getTotalEstimado());
+            java.util.List<String> pedidosGenerados = new java.util.ArrayList<>();
 
-            // Crear pedido con todo embebido
-            Pedido pedido = new Pedido(comprador, direccionEntrega, itemsPedido, datosPago);
-            pedido = pedidoRepository.save(pedido);
+            // Crear un pedido por cada vendedor
+            for (java.util.Map.Entry<String, java.util.List<ProductoPedido>> entry : itemsPorVendedor.entrySet()) {
+                String vendedorIdLocal = entry.getKey();
+                java.util.List<ProductoPedido> itemsVendedor = entry.getValue();
+                
+                double subtotalVendedor = itemsVendedor.stream().mapToDouble(ProductoPedido::getSubtotal).sum();
+                DatosPago datosPagoVendedor = new DatosPago(metodoPago, subtotalVendedor);
+                
+                Pedido pedidoVendedor = new Pedido(comprador, vendedorIdLocal, direccionEntrega, itemsVendedor, datosPagoVendedor);
+                pedidoVendedor = pedidoRepository.save(pedidoVendedor);
+                pedidosGenerados.add(pedidoVendedor.getId());
+            }
 
             // Actualizar stock de cada producto
             for (ProductoCarrito item : carrito.getItems()) {
@@ -176,9 +190,15 @@ public class PagoController {
             // Limpiar carrito después del pago
             carritoRepository.delete(carrito);
 
-            redirectAttributes.addFlashAttribute("mensaje",
-                    "¡Pago procesado exitosamente! Pedido #" + pedido.getId());
-            return "redirect:/pago/confirmacion/" + pedido.getId();
+            String mensajeConfirmacion = "¡Pago procesado exitosamente! ";
+            if (pedidosGenerados.size() > 1) {
+                mensajeConfirmacion += "Se dividió su compra en " + pedidosGenerados.size() + " pedidos separados por vendedor.";
+            } else {
+                mensajeConfirmacion += "Pedido #" + pedidosGenerados.get(0);
+            }
+
+            redirectAttributes.addFlashAttribute("mensaje", mensajeConfirmacion);
+            return "redirect:/pago/confirmacion/" + pedidosGenerados.get(0);
 
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error",

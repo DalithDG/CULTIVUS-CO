@@ -20,11 +20,9 @@ public interface PedidoRepository extends MongoRepository<Pedido, String> {
     // Buscar pedidos de un comprador por estado
     List<Pedido> findByCompradorIdAndEstado(String compradorId, String estado);
 
-    // Buscar pedidos que contienen productos de un vendedor específico
-    @Query("{ 'items.vendedor_id': ?0 }")
-    List<Pedido> findPedidosByVendedorId(String vendedorId);
+    // Buscar pedidos de un vendedor específico
+    List<Pedido> findByVendedorId(String vendedorId);
 
     // Buscar pedidos de un vendedor por estado
-    @Query("{ 'items.vendedor_id': ?0, 'estado': ?1 }")
-    List<Pedido> findPedidosByVendedorIdAndEstado(String vendedorId, String estado);
+    List<Pedido> findByVendedorIdAndEstado(String vendedorId, String estado);
 }

@@ -12,6 +12,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import com.example.demo.repository.PedidoRepository;
+import com.example.demo.Model.Pedido;
 
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
@@ -26,17 +28,20 @@ public class UsuarioController {
     private final VendedorService vendedorService;
     private final ProductoService productoService;
     private final PasswordEncoder passwordEncoder;
+    private final PedidoRepository pedidoRepository;
 
     public UsuarioController(UsuarioService usuarioService,
             UbicacionService ubicacionService,
             VendedorService vendedorService,
             ProductoService productoService,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            PedidoRepository pedidoRepository) {
         this.usuarioService = usuarioService;
         this.ubicacionService = ubicacionService;
         this.vendedorService = vendedorService;
         this.productoService = productoService;
         this.passwordEncoder = passwordEncoder;
+        this.pedidoRepository = pedidoRepository;
     }
 
     @GetMapping("/registro")
@@ -243,6 +248,10 @@ public class UsuarioController {
         if ("VENDEDOR".equalsIgnoreCase(usuario.getRol())) {
             return "inicio-vendedor";
         }
+        
+        long totalPedidos = pedidoRepository.findByCompradorId(usuario.getId()).size();
+        model.addAttribute("totalPedidos", totalPedidos);
+        
         return "inicio-comprador";
     }
 
@@ -339,6 +348,48 @@ public class UsuarioController {
     public String cerrarSesion(HttpSession session) {
         session.invalidate();
         return "redirect:/";
+    }
+
+    // --- SECCIÓN DE PEDIDOS DEL COMPRADOR ---
+
+    @GetMapping("/pedidos")
+    public String mostrarMisPedidos(HttpSession session, Model model,
+                                   RedirectAttributes redirectAttributes) {
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuario == null) {
+            redirectAttributes.addFlashAttribute("error", "Debe iniciar sesión primero");
+            return "redirect:/usuario/login";
+        }
+
+        List<Pedido> misPedidos = pedidoRepository.findByCompradorId(usuario.getId());
+        model.addAttribute("usuario", usuario);
+        model.addAttribute("pedidos", misPedidos);
+        
+        return "pedidos-comprador";
+    }
+
+    @GetMapping("/pedidos/{id}")
+    public String mostrarDetallePedidoComprador(@PathVariable String id,
+                                               HttpSession session, Model model,
+                                               RedirectAttributes redirectAttributes) {
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuario == null) {
+            redirectAttributes.addFlashAttribute("error", "Debe iniciar sesión primero");
+            return "redirect:/usuario/login";
+        }
+
+        Pedido pedido = pedidoRepository.findById(id).orElse(null);
+        
+        if (pedido == null || !pedido.getComprador().getId().equals(usuario.getId())) {
+            redirectAttributes.addFlashAttribute("error", "No tienes acceso a este pedido");
+            return "redirect:/usuario/pedidos";
+        }
+
+        model.addAttribute("usuario", usuario);
+        model.addAttribute("pedido", pedido);
+        model.addAttribute("detalles", pedido.getItems());
+        
+        return "detalle-pedido-comprador";
     }
 
     private void preservarDatosFormulario(Model model, String nombre, String email,

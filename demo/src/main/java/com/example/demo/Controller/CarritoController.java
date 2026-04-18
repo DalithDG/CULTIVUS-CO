@@ -201,7 +201,7 @@ public class CarritoController {
 
             response.put("success", true);
             response.put("mensaje", "¡" + producto.getNombre() + " agregado al carrito!");
-            response.put("totalItems", carrito.getItems().size());
+            response.put("totalItems", carrito.getTotalArticulos());
             response.put("totalEstimado", carrito.getTotalEstimado());
 
         } catch (IllegalArgumentException e) {

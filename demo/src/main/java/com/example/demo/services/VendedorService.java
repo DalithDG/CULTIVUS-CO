@@ -119,18 +119,14 @@ public class VendedorService {
      * Obtiene todos los pedidos del vendedor
      */
     public List<Pedido> obtenerPedidosDelVendedor(String vendedorId) {
-        // TODO: activar cuando se agregue vendedor_id en ProductoPedido
-        // return pedidoRepository.findPedidosByVendedorId(vendedorId);
-        return List.of();
+        return pedidoRepository.findByVendedorId(vendedorId);
     }
 
     /**
      * Obtiene los pedidos del vendedor filtrados por estado
      */
     public List<Pedido> obtenerPedidosDelVendedorPorEstado(String vendedorId, String estado) {
-        // TODO: activar cuando se agregue vendedor_id en ProductoPedido
-        // return pedidoRepository.findPedidosByVendedorIdAndEstado(vendedorId, estado);
-        return List.of();
+        return pedidoRepository.findByVendedorIdAndEstado(vendedorId, estado);
     }
 
     /**
@@ -148,7 +144,10 @@ public class VendedorService {
      * Calcula el total de ventas del vendedor
      */
     public double calcularTotalVentas(String vendedorId) {
-        // TODO: activar cuando se agregue vendedor_id en ProductoPedido
-        return 0.0;
+        List<Pedido> pedidos = pedidoRepository.findByVendedorId(vendedorId);
+        return pedidos.stream()
+                .filter(p -> !"CANCELADO".equals(p.getEstado())) // Consideramos ventas no canceladas
+                .mapToDouble(Pedido::getTotal)
+                .sum();
     }
 }

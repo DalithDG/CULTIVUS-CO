@@ -51,15 +51,19 @@
                     <span>Vender</span>
                 </a>
 
-            <div class="header-nav">
+            <div class="header-nav" style="display: flex; align-items: center; gap: 15px;">
+                <a th:href="@{/usuario/pedidos}" class="btn-profile-link" title="Mis Compras" style="color: #666; transition: color 0.3s;">
+                    <i class="fas fa-box" style="font-size: 22px;"></i>
+                </a>
+
                 <!-- Mi Perfil -->
-                <a th:href="@{/usuario/perfil}" class="btn-profile-link">
-                    <i class="fas fa-user-circle"></i>  
+                <a th:href="@{/usuario/perfil}" class="btn-profile-link" title="Mi Perfil" style="color: #666; transition: color 0.3s;">
+                    <i class="fas fa-user-circle" style="font-size: 24px;"></i>  
                 </a>
 
                 <!-- Cerrar Sesión -->
-                <a th:href="@{/usuario/logout}" class="btn-logout">
-                    <i class="fas fa-sign-out-alt"></i>
+                <a th:href="@{/usuario/logout}" class="btn-logout" title="Cerrar Sesión" style="color: #666; transition: color 0.3s;">
+                    <i class="fas fa-sign-out-alt" style="font-size: 22px;"></i>
                 </a>
             </div>
 
@@ -92,6 +96,7 @@
             <a th:href="@{/category}"><i class="fas fa-th-large"></i> Categorías</a>
             <a th:href="@{/category}"><i class="fas fa-shopping-basket"></i> Productos</a>
             <div class="mobile-divider"></div>
+            <a th:href="@{/usuario/pedidos}"><i class="fas fa-box"></i> Mis Compras</a>
             <a th:href="@{/vendedor/registro}" class="mobile-highlight"><i class="fas fa-store"></i> Convertirse en Vendedor</a>
             <a th:href="@{/usuario/perfil}"><i class="fas fa-user"></i> Mi Perfil</a>
             <a th:href="@{/usuario/logout}"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>

@@ -324,7 +324,7 @@ public class VendedorController {
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("pedido", pedido);
-        model.addAttribute("items", pedido.getItems());
+        model.addAttribute("detalles", pedido.getItems());
         return "detalle-pedido-vendedor";
     }
 

@@ -84,6 +84,7 @@
     const selectores = [
       '.cart-count',
       '.carrito-count',
+      '.cart-badge',
       '#cart-count',
       '#cartCount',
       '[data-cart-count]'

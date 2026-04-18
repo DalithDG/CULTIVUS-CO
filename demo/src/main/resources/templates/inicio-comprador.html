@@ -31,10 +31,10 @@
                         <span class="stat-number">0</span>
                         <span class="stat-label">En el carrito</span>
                     </div>
-                    <div class="stat-card">
-                        <span class="stat-number">0</span>
-                        <span class="stat-label">Pedidos</span>
-                    </div>
+                    <a th:href="@{/usuario/pedidos}" class="stat-card" style="text-decoration: none; color: inherit; cursor: pointer; transition: transform 0.2s;">
+                        <span class="stat-number" th:text="${totalPedidos != null ? totalPedidos : 0}">0</span>
+                        <span class="stat-label">Pedidos <i class="fas fa-arrow-right" style="font-size: 10px; margin-left: 5px;"></i></span>
+                    </a>
                 </div>
             </div>
         </div>
