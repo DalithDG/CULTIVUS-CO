@@ -1,0 +1,34 @@
+server.port=8080
+spring.application.name=demo
+
+# Thymeleaf
+spring.thymeleaf.cache=false
+
+# ============================================================
+# MONGODB
+# Opción A — MongoDB local (instalado en tu máquina)
+#   URI: mongodb://localhost:27017/cultivus
+# Opción B — MongoDB Atlas (en la nube)
+#   URI: mongodb+srv://<usuario>:<password>@cluster0.xxxxx.mongodb.net/cultivus
+# ============================================================
+spring.data.mongodb.uri=mongodb://localhost:27017/cultivus
+spring.data.mongodb.database=cultivus
+
+server.error.include-message=always
+server.error.include-stacktrace=always
+
+# ============================================================
+# GOOGLE OAUTH2
+# Pasos para obtener tus credenciales:
+#   1. Ve a https://console.cloud.google.com/
+#   2. Crea un proyecto (o usa uno existente)
+#   3. Habilita la API de Google+ / People API
+#   4. Ve a "Credenciales" → "Crear credenciales" → "ID de cliente OAuth"
+#   5. Tipo de aplicación: Aplicación web
+#   6. URI de redirección autorizado: http://localhost:8080/login/oauth2/code/google
+#   7. Copia el Client ID y Client Secret aquí abajo
+# ============================================================
+spring.security.oauth2.client.registration.google.client-id=TU_CLIENT_ID_AQUI
+spring.security.oauth2.client.registration.google.client-secret=TU_CLIENT_SECRET_AQUI
+spring.security.oauth2.client.registration.google.scope=openid,email,profile
+spring.security.oauth2.client.registration.google.redirect-uri={baseUrl}/login/oauth2/code/google
