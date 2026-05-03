@@ -201,7 +201,7 @@
                     </div>
                     <div class="producto-meta">
                         <span
-                            th:text="${producto.categoria != null ? producto.categoria.nombre : 'Sin categoría'}">Categoría</span>
+                             <span th:text="'Stock: ' + ${producto.stock} + ' ' + ${producto.unidadMedida != null ? producto.unidadMedida.abreviatura : 'unidades'}">Stock</span>
                         |
                         <span th:text="'Stock: ' + ${producto.stock}">Stock</span>
                     </div>

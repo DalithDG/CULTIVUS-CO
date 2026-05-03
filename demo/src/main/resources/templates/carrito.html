@@ -246,7 +246,7 @@
                         <div class="producto-precio">
                             $<span th:text="${#numbers.formatDecimal(
                                 detalle.precioUnitario, 0, 'COMMA', 0, 'POINT')}">0</span>
-                            x <span th:text="${detalle.cantidad}">1</span>
+                            x <span th:text="${detalle.cantidad} + ' ' + ${detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : ''}">1</span>
                         </div>
 
                         <div class="cantidad-control">
@@ -263,7 +263,7 @@
                                 </button>
                                 <input type="number" name="cantidad"
                                     th:value="${detalle.cantidad}"
-                                    min="1" max="99"
+                                    min="0.01" max="9999" step="any"
                                     class="cantidad-input">
                                 <!-- Bug #4 corregido: el botón + respeta max=99 -->
                                 <button type="button" class="btn-cantidad"
@@ -323,11 +323,13 @@
         function cambiarCantidad(btn, delta) {
             const form  = btn.closest('form');
             const input = form.querySelector('input[name="cantidad"]');
-            const nuevo = (parseInt(input.value) || 1) + delta;
-            const min   = parseInt(input.getAttribute('min')) || 1;
-            const max   = parseInt(input.getAttribute('max')) || 99;
-            if (nuevo < min || nuevo > max) return;
-            input.value = nuevo;
+            const val = parseFloat(input.value) || 1;
+            let nuevo = val + delta;
+            const min = parseFloat(input.getAttribute('min')) || 1;
+            const max = parseFloat(input.getAttribute('max')) || 9999;
+            if (nuevo < min) nuevo = min;
+            if (nuevo > max) nuevo = max;
+            input.value = Number.isInteger(nuevo) ? nuevo : parseFloat(nuevo.toFixed(2));
             form.submit();
         }
     </script>

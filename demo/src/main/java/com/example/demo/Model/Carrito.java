@@ -52,8 +52,8 @@ public class Carrito {
         this.updatedAt = LocalDateTime.now();
     }
 
-    public int getTotalArticulos() {
-        return items.stream().mapToInt(ProductoCarrito::getCantidad).sum();
+    public Double getTotalArticulos() {
+        return items.stream().mapToDouble(ProductoCarrito::getCantidad).sum();
     }
 
     // Getters y Setters

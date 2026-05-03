@@ -37,11 +37,11 @@ public class Usuario {
     @Field("ubicacion")
     private UbicacionUsuario ubicacion;
 
-    // Solo si rol == "VENDEDOR"
+    // Perfil de vendedor — disponible para cualquier usuario (rol flexible)
     @Field("perfil_vendedor")
     private PerfilVendedor perfilVendedor;
 
-    // Solo si rol == "ADMIN"
+    // Perfil de administrador — disponible para cualquier usuario (rol flexible)
     @Field("perfil_admin")
     private PerfilAdmin perfilAdmin;
 

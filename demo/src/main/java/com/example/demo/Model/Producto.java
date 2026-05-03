@@ -22,7 +22,7 @@ public class Producto {
     private Double precio;
 
     @Field("stock")
-    private int stock;
+    private Double stock;
 
     @Field("descripcion")
     private String descripcion;
@@ -35,6 +35,9 @@ public class Producto {
 
     @Field("disponible")
     private boolean disponible = true;
+
+    @Field("compra_minima")
+    private Double compraMinima = 1.0;
 
     @Field("created_at")
     private LocalDateTime createdAt;
@@ -58,7 +61,7 @@ public class Producto {
         this.disponible = true;
     }
 
-    public Producto(String nombre, Double precio, int stock, String descripcion,
+    public Producto(String nombre, Double precio, Double stock, String descripcion,
                     String imagenUrl, Double peso, CategoriaProducto categoria,
                     UnidadMedida unidadMedida, DatosVendedor vendedor) {
         this.nombre = nombre;
@@ -84,8 +87,8 @@ public class Producto {
     public Double getPrecio() { return precio; }
     public void setPrecio(Double precio) { this.precio = precio; }
 
-    public int getStock() { return stock; }
-    public void setStock(int stock) { this.stock = stock; }
+    public Double getStock() { return stock; }
+    public void setStock(Double stock) { this.stock = stock; }
 
     public String getDescripcion() { return descripcion; }
     public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
@@ -98,6 +101,9 @@ public class Producto {
 
     public boolean isDisponible() { return disponible; }
     public void setDisponible(boolean disponible) { this.disponible = disponible; }
+
+    public Double getCompraMinima() { return compraMinima != null ? compraMinima : 1.0; }
+    public void setCompraMinima(Double compraMinima) { this.compraMinima = compraMinima; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

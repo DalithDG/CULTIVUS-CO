@@ -136,12 +136,14 @@ public class PagoController {
                     .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado"));
                 String vendedorIdLocal = producto.getVendedor().getId();
                 
+                String unidadAb = item.getUnidadAbreviatura() != null ? item.getUnidadAbreviatura() : "unid";
                 ProductoPedido itemPedido = new ProductoPedido(
                         item.getProductoId(),
                         item.getNombre(),
                         item.getImagenUrl(),
                         item.getPrecioUnitario(),
-                        item.getCantidad()
+                        item.getCantidad(),
+                        unidadAb
                 );
                 
                 itemsPorVendedor.computeIfAbsent(vendedorIdLocal, k -> new java.util.ArrayList<>()).add(itemPedido);
