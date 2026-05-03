@@ -64,7 +64,7 @@ public class CarritoController {
     @PostMapping("/agregar")
     public String agregarAlCarrito(
             @RequestParam("productoId") String productoId,
-            @RequestParam(value = "cantidad", defaultValue = "1") int cantidad,
+            @RequestParam(value = "cantidad", defaultValue = "1") Double cantidad,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
         try {
@@ -85,6 +85,14 @@ public class CarritoController {
                 return "redirect:/";
             }
 
+            // Verificar compra mínima
+            if (cantidad < producto.getCompraMinima()) {
+                String unidad = producto.getUnidadMedida() != null ? producto.getUnidadMedida().getAbreviatura() : "unidades";
+                redirectAttributes.addFlashAttribute("error",
+                        "La compra mínima para este producto es " + producto.getCompraMinima() + " " + unidad);
+                return "redirect:/productos/" + productoId;
+            }
+
             // Obtener o crear carrito
             Carrito carrito = carritoRepository.findByUsuarioId(usuario.getId())
                     .orElseGet(() -> new Carrito(usuario.getId()));
@@ -97,7 +105,7 @@ public class CarritoController {
             if (itemExistente.isPresent()) {
                 // Actualizar cantidad del item existente
                 ProductoCarrito item = itemExistente.get();
-                int nuevaCantidad = item.getCantidad() + cantidad;
+                Double nuevaCantidad = item.getCantidad() + cantidad;
 
                 if (producto.getStock() < nuevaCantidad) {
                     redirectAttributes.addFlashAttribute("error",
@@ -109,12 +117,15 @@ public class CarritoController {
                 item.setCantidad(nuevaCantidad);
             } else {
                 // Agregar nuevo item al carrito
+                String unidadAb = producto.getUnidadMedida() != null && producto.getUnidadMedida().getAbreviatura() != null 
+                        ? producto.getUnidadMedida().getAbreviatura() : "unid";
                 ProductoCarrito nuevoItem = new ProductoCarrito(
                         producto.getId(),
                         producto.getNombre(),
                         producto.getImagenUrl(),
                         producto.getPrecio(),
-                        cantidad
+                        cantidad,
+                        unidadAb
                 );
                 carrito.getItems().add(nuevoItem);
             }
@@ -145,7 +156,7 @@ public class CarritoController {
     @ResponseBody
     public ResponseEntity<Map<String, Object>> agregarAlCarritoAjax(
             @RequestParam("productoId") String productoId,
-            @RequestParam(value = "cantidad", defaultValue = "1") int cantidad,
+            @RequestParam(value = "cantidad", defaultValue = "1") Double cantidad,
             HttpSession session) {
 
         Map<String, Object> response = new HashMap<>();
@@ -168,6 +179,14 @@ public class CarritoController {
                 return ResponseEntity.ok(response);
             }
 
+            // Verificar compra mínima
+            if (cantidad < producto.getCompraMinima()) {
+                String unidad = producto.getUnidadMedida() != null ? producto.getUnidadMedida().getAbreviatura() : "unidades";
+                response.put("success", false);
+                response.put("error", "La compra mínima es " + producto.getCompraMinima() + " " + unidad);
+                return ResponseEntity.ok(response);
+            }
+
             Carrito carrito = carritoRepository.findByUsuarioId(usuario.getId())
                     .orElseGet(() -> new Carrito(usuario.getId()));
 
@@ -177,7 +196,7 @@ public class CarritoController {
 
             if (itemExistente.isPresent()) {
                 ProductoCarrito item = itemExistente.get();
-                int nuevaCantidad = item.getCantidad() + cantidad;
+                Double nuevaCantidad = item.getCantidad() + cantidad;
                 if (producto.getStock() < nuevaCantidad) {
                     response.put("success", false);
                     response.put("error", "Solo quedan " + producto.getStock() + " unidades disponibles");
@@ -185,12 +204,15 @@ public class CarritoController {
                 }
                 item.setCantidad(nuevaCantidad);
             } else {
+                String unidadAb = producto.getUnidadMedida() != null && producto.getUnidadMedida().getAbreviatura() != null 
+                        ? producto.getUnidadMedida().getAbreviatura() : "unid";
                 ProductoCarrito nuevoItem = new ProductoCarrito(
                         producto.getId(),
                         producto.getNombre(),
                         producto.getImagenUrl(),
                         producto.getPrecio(),
-                        cantidad
+                        cantidad,
+                        unidadAb
                 );
                 carrito.getItems().add(nuevoItem);
             }
@@ -221,7 +243,7 @@ public class CarritoController {
     @PostMapping("/actualizar")
     public String actualizarCantidad(
             @RequestParam("productoId") String productoId,
-            @RequestParam("cantidad") int cantidad,
+            @RequestParam("cantidad") Double cantidad,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
         try {

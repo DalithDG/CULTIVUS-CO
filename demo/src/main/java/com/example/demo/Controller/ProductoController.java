@@ -38,13 +38,13 @@ public class ProductoController {
 
     // Unidades de medida fijas — ya no tienen colección propia
     private static final List<UnidadMedida> UNIDADES_MEDIDA = Arrays.asList(
-            new UnidadMedida("Kilogramos", "kg"),
-            new UnidadMedida("Gramos", "g"),
-            new UnidadMedida("Libras", "lb"),
-            new UnidadMedida("Litros", "L"),
-            new UnidadMedida("Mililitros", "ml"),
-            new UnidadMedida("Unidades", "un"),
-            new UnidadMedida("Docena", "doc")
+            new UnidadMedida("Kilogramos", "kg", "kg"),
+            new UnidadMedida("Gramos", "g", "kg"),
+            new UnidadMedida("Libras", "lb", "lb"),
+            new UnidadMedida("Litros", "L", "L"),
+            new UnidadMedida("Mililitros", "ml", "L"),
+            new UnidadMedida("Unidades", "un", "unidad"),
+            new UnidadMedida("Docena", "doc", "paquete")
     );
 
     /**
@@ -85,12 +85,13 @@ public class ProductoController {
     public String guardarProducto(
             @RequestParam("nombre") String nombre,
             @RequestParam("precio") Double precio,
-            @RequestParam("stock") int stock,
+            @RequestParam("stock") Double stock,
             @RequestParam("descripcion") String descripcion,
             @RequestParam("imagenUrl") String imagenUrl,
             @RequestParam("peso") Double peso,
             @RequestParam("categoriaId") String categoriaId,
             @RequestParam("unidadMedidaId") String unidadMedidaAbreviatura,
+            @RequestParam(value = "compraMinima", defaultValue = "1") Double compraMinima,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
         try {
@@ -116,12 +117,15 @@ public class ProductoController {
                     .findFirst()
                     .orElseThrow(() -> new IllegalArgumentException("Unidad de medida no encontrada"));
 
-            // Crear datos del vendedor embebidos
+            // Crear datos del vendedor embebidos (snapshot enriquecido)
             DatosVendedor datosVendedor = new DatosVendedor(
                     usuario.getId(),
                     usuario.getNombre(),
                     usuario.getPerfilVendedor() != null &&
-                    usuario.getPerfilVendedor().isVerificado()
+                    usuario.getPerfilVendedor().isVerificado(),
+                    usuario.getPerfilVendedor() != null ? usuario.getPerfilVendedor().getRazonSocial() : null,
+                    usuario.getPerfilVendedor() != null ? usuario.getPerfilVendedor().getTelefonoContacto() : null,
+                    usuario.getPerfilVendedor() != null ? usuario.getPerfilVendedor().getDescripcionNegocio() : null
             );
 
             // Crear el producto
@@ -132,6 +136,7 @@ public class ProductoController {
             producto.setDescripcion(descripcion);
             producto.setImagenUrl(imagenUrl);
             producto.setPeso(peso);
+            producto.setCompraMinima(compraMinima > 0 ? compraMinima : 1.0);
             producto.setCategoria(categoriaEmbebida);
             producto.setUnidadMedida(unidadMedida);
             producto.setVendedor(datosVendedor);
@@ -226,12 +231,13 @@ public class ProductoController {
     public String actualizarProducto(@PathVariable String id,
             @RequestParam("nombre") String nombre,
             @RequestParam("precio") Double precio,
-            @RequestParam("stock") int stock,
+            @RequestParam("stock") Double stock,
             @RequestParam("descripcion") String descripcion,
             @RequestParam("peso") Double peso,
             @RequestParam("imagenUrl") String imagenUrl,
             @RequestParam("categoriaId") String categoriaId,
             @RequestParam("unidadMedidaId") String unidadMedidaAbreviatura,
+            @RequestParam(value = "compraMinima", defaultValue = "1") Double compraMinima,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
 
@@ -259,6 +265,7 @@ public class ProductoController {
             producto.setDescripcion(descripcion);
             producto.setPeso(peso);
             producto.setImagenUrl(imagenUrl);
+            producto.setCompraMinima(compraMinima > 0 ? compraMinima : 1.0);
 
             // Actualizar categoría embebida
             categoriaRepository.findById(categoriaId).ifPresent(cat ->

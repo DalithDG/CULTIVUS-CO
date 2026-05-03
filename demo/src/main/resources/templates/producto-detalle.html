@@ -150,11 +150,15 @@
                     </div>
                     <div class="meta-item">
                         <strong>Stock disponible:</strong><br>
-                        <span th:text="${producto.stock} + ' unidades'">0 unidades</span>
+                        <span th:text="${producto.stock} + ' ' + ${producto.unidadMedida != null ? producto.unidadMedida.abreviatura : 'unidades'}">0 unidades</span>
                     </div>
                     <div class="meta-item">
                         <strong>Peso:</strong><br>
                         <span th:text="${producto.peso} + ' ' + ${producto.unidadMedida != null ? producto.unidadMedida.abreviatura : ''}">0 kg</span>
+                    </div>
+                    <div class="meta-item" th:if="${producto.compraMinima != null}">
+                        <strong>🛒 Compra mínima:</strong><br>
+                        <span th:text="${producto.compraMinima} + ' ' + ${producto.unidadMedida != null ? producto.unidadMedida.abreviatura : 'unidades'}">1 unidades</span>
                     </div>
                 </div>
 
@@ -166,10 +170,10 @@
                     <form th:action="@{/carrito/agregar}" method="post" style="display:flex; gap:15px; align-items:center;">
                         <input type="hidden" name="productoId" th:value="${producto.id}">
                         <label style="display:flex; flex-direction:column; font-size:0.9rem; color:#555;">
-                            Cantidad
-                            <input type="number" name="cantidad" min="1"
-                                   th:attr="max=${producto.stock}"
-                                   value="1">
+                            <span th:text="'Cantidad (' + ${producto.unidadMedida != null ? producto.unidadMedida.abreviatura : 'unidades'} + ')'">Cantidad</span>
+                            <input type="number" name="cantidad" step="any"
+                                   th:attr="min=${producto.compraMinima != null ? producto.compraMinima : 0.01}, max=${producto.stock}"
+                                   th:value="${producto.compraMinima != null ? producto.compraMinima : 1}">
                         </label>
                         <button type="submit" class="btn-add-cart">
                             <i class="fa-solid fa-cart-plus"></i> Agregar al carrito
@@ -177,11 +181,29 @@
                     </form>
                 </div>
 
-                <div class="detalle-vendedor" th:if="${producto.usuario != null}">
-                    <h4><i class="fa-solid fa-user"></i> Vendedor</h4>
-                    <p>
-                        <strong th:text="${producto.usuario.nombre}">Nombre vendedor</strong><br>
-                        <span th:text="${producto.usuario.email}">email@demo.com</span>
+                <!-- Tarjeta del vendedor -->
+                <div class="detalle-vendedor" th:if="${producto.vendedor != null}">
+                    <h4>
+                        <i class="fa-solid fa-store"></i> Vendedor
+                        <span th:if="${producto.vendedor.verificado}"
+                              style="background:#27ae60;color:#fff;font-size:0.72rem;padding:2px 8px;border-radius:20px;margin-left:8px;font-weight:600;">
+                            ✓ Verificado
+                        </span>
+                    </h4>
+                    <p style="margin:6px 0 0;">
+                        <strong th:text="${producto.vendedor.razonSocial != null ? producto.vendedor.razonSocial : producto.vendedor.nombre}">Nombre negocio</strong>
+                    </p>
+                    <p style="margin:2px 0 0; font-size:0.85rem; color:#666;"
+                       th:if="${producto.vendedor.nombre != null}"
+                       th:text="'Vendedor: ' + ${producto.vendedor.nombre}">
+                    </p>
+                    <p style="margin:4px 0; color:#3a7a50; font-size:0.9rem;"
+                       th:if="${producto.vendedor.descripcionNegocio != null}"
+                       th:text="${producto.vendedor.descripcionNegocio}">
+                    </p>
+                    <p style="margin:8px 0 0; font-size:0.88rem;" th:if="${producto.vendedor.telefonoContacto != null}">
+                        <i class="fa-solid fa-phone" style="color:#27ae60;"></i>
+                        <span th:text="${producto.vendedor.telefonoContacto}">Telefóno</span>
                     </p>
                 </div>
             </div>

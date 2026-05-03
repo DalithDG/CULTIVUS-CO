@@ -6,19 +6,21 @@ public class ProductoCarrito {
     private String nombre;
     private String imagenUrl;
     private Double precioUnitario;
-    private int cantidad;
+    private Double cantidad;
+    private String unidadAbreviatura;
     private Double subtotal;
 
     public ProductoCarrito() {
     }
 
     public ProductoCarrito(String productoId, String nombre, String imagenUrl,
-                           Double precioUnitario, int cantidad) {
+                           Double precioUnitario, Double cantidad, String unidadAbreviatura) {
         this.productoId = productoId;
         this.nombre = nombre;
         this.imagenUrl = imagenUrl;
         this.precioUnitario = precioUnitario;
         this.cantidad = cantidad;
+        this.unidadAbreviatura = unidadAbreviatura;
         this.subtotal = precioUnitario * cantidad;
     }
 
@@ -38,11 +40,14 @@ public class ProductoCarrito {
         this.subtotal = precioUnitario * this.cantidad;
     }
 
-    public int getCantidad() { return cantidad; }
-    public void setCantidad(int cantidad) {
+    public Double getCantidad() { return cantidad; }
+    public void setCantidad(Double cantidad) {
         this.cantidad = cantidad;
         this.subtotal = this.precioUnitario * cantidad;
     }
+
+    public String getUnidadAbreviatura() { return unidadAbreviatura; }
+    public void setUnidadAbreviatura(String unidadAbreviatura) { this.unidadAbreviatura = unidadAbreviatura; }
 
     public Double getSubtotal() { return subtotal; }
     public void setSubtotal(Double subtotal) { this.subtotal = subtotal; }
