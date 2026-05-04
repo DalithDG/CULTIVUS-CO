@@ -1,5 +1,6 @@
 package com.example.demo.security;
 
+import com.example.demo.Model.Role;
 import com.example.demo.Model.Usuario;
 import com.example.demo.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,8 +15,8 @@ import java.util.Optional;
 /**
  * Servicio que se ejecuta después de que Google autentica al usuario.
  * Recibe los datos del perfil de Google (email, nombre, foto) y:
- *   - Si el usuario ya existe en MongoDB → lo actualiza si es necesario
- *   - Si es la primera vez → crea automáticamente un Usuario nuevo
+ * - Si el usuario ya existe en MongoDB → lo actualiza si es necesario
+ * - Si es la primera vez → crea automáticamente un Usuario nuevo
  */
 @Service
 public class OAuth2UsuarioService extends DefaultOAuth2UserService {
@@ -38,7 +39,7 @@ public class OAuth2UsuarioService extends DefaultOAuth2UserService {
      * Si ya existe, actualiza su nombre si cambió en Google.
      */
     private void procesarUsuarioOAuth2(OAuth2User oAuth2User) {
-        String email  = oAuth2User.getAttribute("email");
+        String email = oAuth2User.getAttribute("email");
         String nombre = oAuth2User.getAttribute("name");
 
         if (email == null) {
@@ -63,7 +64,7 @@ public class OAuth2UsuarioService extends DefaultOAuth2UserService {
             nuevoUsuario.setNombre(nombre != null ? nombre : emailLimpio);
             // Sin contraseña: este usuario solo puede autenticarse vía Google
             nuevoUsuario.setContrasena(null);
-            nuevoUsuario.setRol("COMPRADOR");
+            nuevoUsuario.setRol(Role.COMPRADOR);
 
             usuarioRepository.save(nuevoUsuario);
         }

@@ -2,14 +2,19 @@ package com.example.demo.services;
 
 import com.example.demo.Model.Producto;
 import com.example.demo.Model.Resena;
+import com.example.demo.Model.Role;
 import com.example.demo.Model.Usuario;
 import com.example.demo.Model.embebidos.PerfilAdmin;
+import com.example.demo.repository.CategoriaRepository;
 import com.example.demo.repository.PedidoRepository;
 import com.example.demo.repository.ProductoRepository;
 import com.example.demo.repository.ResenaRepository;
 import com.example.demo.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import com.example.demo.Model.Categoria;
+import com.example.demo.Model.Pedido;
 
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +39,9 @@ public class AdminService {
     @Autowired
     private ResenaRepository resenaRepository;
 
+    @Autowired
+    private CategoriaRepository categoriaRepository;
+
     // ==================== GESTIÓN DE ADMINS ====================
 
     /**
@@ -54,7 +62,7 @@ public class AdminService {
         usuario.setNombre(nombre);
         usuario.setEmail(email.toLowerCase().trim());
         usuario.setContrasena(contrasena);
-        usuario.setRol("ADMIN");
+        usuario.setRol(Role.ADMIN);
         usuario.setPerfilAdmin(perfilAdmin);
 
         return usuarioRepository.save(usuario);
@@ -65,7 +73,7 @@ public class AdminService {
      */
     public boolean esAdmin(String usuarioId) {
         return usuarioRepository.findById(usuarioId)
-                .map(u -> "ADMIN".equals(u.getRol()))
+                .map(u -> Role.ADMIN.equals(u.getRol()))
                 .orElse(false);
     }
 
@@ -90,7 +98,8 @@ public class AdminService {
             throw new IllegalArgumentException("Este usuario no tiene perfil de administrador");
         }
 
-        if (nivelPermisos != null) perfil.setNivelPermisos(nivelPermisos);
+        if (nivelPermisos != null)
+            perfil.setNivelPermisos(nivelPermisos);
         perfil.setActivo(activo);
 
         usuario.setPerfilAdmin(perfil);
@@ -124,7 +133,7 @@ public class AdminService {
         if (!usuario.getContrasena().equals(contrasena)) {
             throw new IllegalArgumentException("Credenciales incorrectas");
         }
-        if (!"ADMIN".equals(usuario.getRol())) {
+        if (!Role.ADMIN.equals(usuario.getRol())) {
             throw new IllegalArgumentException("No tienes permisos de administrador");
         }
 
@@ -159,7 +168,7 @@ public class AdminService {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
 
-        usuario.setRol(nuevoRol);
+        usuario.setRol(Role.valueOf(nuevoRol));
         usuarioRepository.save(usuario);
     }
 
@@ -168,6 +177,50 @@ public class AdminService {
      */
     public void eliminarUsuario(String usuarioId) {
         usuarioService.eliminarUsuario(usuarioId);
+    }
+
+    // ==================== VERIFICACIÓN DE TIENDAS ====================
+
+    /**
+     * Obtiene todos los vendedores pendientes de verificación
+     */
+    public List<Usuario> obtenerVendedoresPendientes() {
+        return usuarioRepository.findAll().stream()
+                .filter(u -> u.getPerfilVendedor() != null && !u.getPerfilVendedor().isVerificado())
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    /**
+     * Obtiene todos los vendedores ya verificados
+     */
+    public List<Usuario> obtenerVendedoresVerificados() {
+        return usuarioRepository.findAll().stream()
+                .filter(u -> u.getPerfilVendedor() != null && u.getPerfilVendedor().isVerificado())
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    /**
+     * Aprueba la tienda de un vendedor
+     */
+    public void aprobarVendedor(String usuarioId) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+        if (usuario.getPerfilVendedor() == null)
+            throw new IllegalArgumentException("El usuario no tiene perfil de vendedor");
+        usuario.getPerfilVendedor().setVerificado(true);
+        usuarioRepository.save(usuario);
+    }
+
+    /**
+     * Rechaza/revoca la verificación de un vendedor
+     */
+    public void rechazarVendedor(String usuarioId) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+        if (usuario.getPerfilVendedor() == null)
+            throw new IllegalArgumentException("El usuario no tiene perfil de vendedor");
+        usuario.getPerfilVendedor().setVerificado(false);
+        usuarioRepository.save(usuario);
     }
 
     // ==================== GESTIÓN DE PRODUCTOS ====================
@@ -214,6 +267,16 @@ public class AdminService {
      */
     public List<Resena> obtenerUltimasResenas() {
         return resenaRepository.findTop10ByOrderByFechaDesc();
+    }
+
+    // ==================== GESTIÓN DE CATEGORÍAS ====================
+    public List<Categoria> obtenerTodasLasCategorias() {
+        return categoriaRepository.findAll();
+    }
+
+    // ==================== GESTIÓN DE PEDIDOS ====================
+    public List<Pedido> obtenerTodosLosPedidos() {
+        return pedidoRepository.findAll();
     }
 
     // ==================== ESTADÍSTICAS ====================

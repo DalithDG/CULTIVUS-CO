@@ -18,6 +18,24 @@
     <!-- Header Vendedor -->
     <header th:replace="fragments/header-vendedor :: siteHeader"></header>
 
+    <!-- Mensajes de Feedback -->
+    <div th:if="${mensaje}" style="background:#E8F5E9; color:#2E7D32; padding:15px; text-align:center; font-weight:bold; border-bottom:1px solid #C8E6C9;">
+        <i class="fas fa-check-circle"></i> <span th:text="${mensaje}"></span>
+    </div>
+
+    <!-- Banner: En Validación -->
+    <div th:if="${usuario.perfilVendedor != null and !usuario.perfilVendedor.verificado}"
+         style="background:linear-gradient(135deg,#FFF3E0,#FFE0B2);border-left:5px solid #FF9800;
+                padding:18px 28px;display:flex;align-items:center;gap:16px;
+                font-size:15px;color:#E65100;">
+        <i class="fas fa-clock" style="font-size:28px;color:#FF9800;"></i>
+        <div>
+            <strong style="font-size:17px;">Tu tienda está en validación</strong><br>
+            Nuestro equipo está revisando tu solicitud. Pronto recibirás confirmación.
+            Mientras tanto, puedes explorar la plataforma pero tus productos no serán visibles al público.
+        </div>
+    </div>
+
     <!-- Hero Section -->
     <section class="hero-vendedor">
         <div class="container">

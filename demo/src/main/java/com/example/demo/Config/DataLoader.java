@@ -1,5 +1,6 @@
 package com.example.demo.Config;
 
+import com.example.demo.Model.Role;
 import com.example.demo.Model.Usuario;
 import com.example.demo.Model.embebidos.PerfilAdmin;
 import com.example.demo.repository.UsuarioRepository;
@@ -21,7 +22,7 @@ public class DataLoader implements CommandLineRunner {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    private static final String ADMIN_EMAIL    = "admin1@demo.com";
+    private static final String ADMIN_EMAIL = "admin1@demo.com";
     private static final String ADMIN_PASSWORD = "Admin1234!";
 
     @Override
@@ -30,9 +31,8 @@ public class DataLoader implements CommandLineRunner {
             logger.info("🚀 Iniciando DataLoader...");
 
             usuarioRepository.findByEmail(ADMIN_EMAIL).ifPresentOrElse(
-                admin -> migrarAdminSiEsNecesario(admin),
-                () -> crearAdmin()
-            );
+                    admin -> migrarAdminSiEsNecesario(admin),
+                    () -> crearAdmin());
 
             logger.info("✅ DataLoader finalizado correctamente");
 
@@ -72,7 +72,7 @@ public class DataLoader implements CommandLineRunner {
         admin.setNombre("Administrador");
         admin.setEmail(ADMIN_EMAIL);
         admin.setContrasena(passwordEncoder.encode(ADMIN_PASSWORD));
-        admin.setRol("ADMIN");
+        admin.setRol(Role.ADMIN);
         admin.setPerfilAdmin(perfilAdmin);
 
         usuarioRepository.save(admin);

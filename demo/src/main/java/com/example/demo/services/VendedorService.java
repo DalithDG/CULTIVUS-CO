@@ -1,6 +1,7 @@
 package com.example.demo.services;
 
 import com.example.demo.Model.Pedido;
+import com.example.demo.Model.Role;
 import com.example.demo.Model.Usuario;
 import com.example.demo.Model.embebidos.PerfilVendedor;
 import com.example.demo.repository.PedidoRepository;
@@ -24,9 +25,9 @@ public class VendedorService {
      * Crea un perfil de vendedor para un usuario existente
      */
     public Usuario crearPerfilVendedor(String usuarioId, String razonSocial,
-                                       String telefonoContacto, String direccionNegocio,
-                                       String descripcionNegocio, String cuentaBancaria,
-                                       String banco) {
+            String telefonoContacto, String direccionNegocio,
+            String descripcionNegocio, String cuentaBancaria,
+            String banco) {
 
         // Validar que el usuario existe
         Usuario usuario = usuarioRepository.findById(usuarioId)
@@ -54,7 +55,7 @@ public class VendedorService {
 
         // Embeber el perfil y cambiar el rol dentro del mismo documento
         usuario.setPerfilVendedor(perfil);
-        usuario.setRol("VENDEDOR");
+        usuario.setRol(Role.VENDEDOR);
 
         return usuarioRepository.save(usuario);
     }
@@ -72,7 +73,7 @@ public class VendedorService {
      */
     public boolean esVendedor(String usuarioId) {
         return usuarioRepository.findById(usuarioId)
-                .map(u -> "VENDEDOR".equals(u.getRol()))
+                .map(u -> Role.VENDEDOR.equals(u.getRol()))
                 .orElse(false);
     }
 
@@ -80,9 +81,9 @@ public class VendedorService {
      * Actualiza el perfil de vendedor
      */
     public Usuario actualizarPerfil(String usuarioId, String razonSocial,
-                                    String telefonoContacto, String direccionNegocio,
-                                    String descripcionNegocio, String cuentaBancaria,
-                                    String banco) {
+            String telefonoContacto, String direccionNegocio,
+            String descripcionNegocio, String cuentaBancaria,
+            String banco) {
 
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
@@ -92,12 +93,18 @@ public class VendedorService {
             throw new IllegalArgumentException("Este usuario no tiene perfil de vendedor");
         }
 
-        if (razonSocial != null) perfil.setRazonSocial(razonSocial);
-        if (telefonoContacto != null) perfil.setTelefonoContacto(telefonoContacto);
-        if (direccionNegocio != null) perfil.setDireccionNegocio(direccionNegocio);
-        if (descripcionNegocio != null) perfil.setDescripcionNegocio(descripcionNegocio);
-        if (cuentaBancaria != null) perfil.setCuentaBancaria(cuentaBancaria);
-        if (banco != null) perfil.setBanco(banco);
+        if (razonSocial != null)
+            perfil.setRazonSocial(razonSocial);
+        if (telefonoContacto != null)
+            perfil.setTelefonoContacto(telefonoContacto);
+        if (direccionNegocio != null)
+            perfil.setDireccionNegocio(direccionNegocio);
+        if (descripcionNegocio != null)
+            perfil.setDescripcionNegocio(descripcionNegocio);
+        if (cuentaBancaria != null)
+            perfil.setCuentaBancaria(cuentaBancaria);
+        if (banco != null)
+            perfil.setBanco(banco);
 
         usuario.setPerfilVendedor(perfil);
         return usuarioRepository.save(usuario);
@@ -111,7 +118,7 @@ public class VendedorService {
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
 
         usuario.setPerfilVendedor(null);
-        usuario.setRol("COMPRADOR");
+        usuario.setRol(Role.COMPRADOR); // Cambia el rol a COMPRADOR al eliminar el perfil de vendedor
         usuarioRepository.save(usuario);
     }
 

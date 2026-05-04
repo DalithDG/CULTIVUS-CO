@@ -1,6 +1,7 @@
 package com.example.demo.Controller;
 
 import com.example.demo.Model.Producto;
+import com.example.demo.Model.Role;
 import com.example.demo.Model.Usuario;
 import com.example.demo.Model.embebidos.UbicacionUsuario;
 import com.example.demo.services.ProductoService;
@@ -151,8 +152,7 @@ public class UsuarioController {
             // ── Crear ubicación embebida ──────────────────────────────
             UbicacionUsuario ubicacion = new UbicacionUsuario(
                     nombreCiudad.trim(),
-                    nombreDepartamento.trim()
-            );
+                    nombreDepartamento.trim());
 
             // ── Crear usuario ─────────────────────────────────────────
             Usuario usuario = new Usuario();
@@ -160,7 +160,7 @@ public class UsuarioController {
             usuario.setEmail(emailLimpio);
             // Encriptar contraseña con BCrypt antes de guardar
             usuario.setContrasena(passwordEncoder.encode(contrasena));
-            usuario.setRol("COMPRADOR");
+            usuario.setRol(Role.COMPRADOR);
             usuario.setUbicacion(ubicacion);
 
             usuarioService.save(usuario);
@@ -209,8 +209,8 @@ public class UsuarioController {
         session.setAttribute("usuarioLogueado", usuario);
 
         // Redirigir según el rol del usuario
-        String rol = usuario.getRol();
-        if ("ADMIN".equalsIgnoreCase(rol)) {
+        Role rol = usuario.getRol();
+        if (rol == Role.ADMIN) {
             return "redirect:/admin/dashboard";
         } else {
             // COMPRADOR y VENDEDOR van al mismo inicio (que luego ramifica)
@@ -220,7 +220,7 @@ public class UsuarioController {
 
     @GetMapping("/inicio")
     public String mostrarInicio(HttpSession session, Model model,
-                                RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirectAttributes) {
 
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
         if (usuario == null) {
@@ -245,13 +245,13 @@ public class UsuarioController {
         model.addAttribute("productos", productos);
 
         // Redirigir según rol
-        if ("VENDEDOR".equalsIgnoreCase(usuario.getRol())) {
+        if (usuario.getRol() == Role.VENDEDOR) {
             return "inicio-vendedor";
         }
-        
+
         long totalPedidos = pedidoRepository.findByCompradorId(usuario.getId()).size();
         model.addAttribute("totalPedidos", totalPedidos);
-        
+
         return "inicio-comprador";
     }
 
@@ -327,8 +327,7 @@ public class UsuarioController {
             // Actualizar ubicación embebida
             UbicacionUsuario ubicacion = new UbicacionUsuario(
                     nombreCiudad.trim(),
-                    nombreDepartamento.trim()
-            );
+                    nombreDepartamento.trim());
             usuarioActualizado.setUbicacion(ubicacion);
 
             usuarioService.actualizarUsuario(usuarioActualizado);
@@ -354,7 +353,7 @@ public class UsuarioController {
 
     @GetMapping("/pedidos")
     public String mostrarMisPedidos(HttpSession session, Model model,
-                                   RedirectAttributes redirectAttributes) {
+            RedirectAttributes redirectAttributes) {
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
         if (usuario == null) {
             redirectAttributes.addFlashAttribute("error", "Debe iniciar sesión primero");
@@ -364,14 +363,14 @@ public class UsuarioController {
         List<Pedido> misPedidos = pedidoRepository.findByCompradorId(usuario.getId());
         model.addAttribute("usuario", usuario);
         model.addAttribute("pedidos", misPedidos);
-        
+
         return "pedidos-comprador";
     }
 
     @GetMapping("/pedidos/{id}")
     public String mostrarDetallePedidoComprador(@PathVariable String id,
-                                               HttpSession session, Model model,
-                                               RedirectAttributes redirectAttributes) {
+            HttpSession session, Model model,
+            RedirectAttributes redirectAttributes) {
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
         if (usuario == null) {
             redirectAttributes.addFlashAttribute("error", "Debe iniciar sesión primero");
@@ -379,7 +378,7 @@ public class UsuarioController {
         }
 
         Pedido pedido = pedidoRepository.findById(id).orElse(null);
-        
+
         if (pedido == null || !pedido.getComprador().getId().equals(usuario.getId())) {
             redirectAttributes.addFlashAttribute("error", "No tienes acceso a este pedido");
             return "redirect:/usuario/pedidos";
@@ -388,15 +387,19 @@ public class UsuarioController {
         model.addAttribute("usuario", usuario);
         model.addAttribute("pedido", pedido);
         model.addAttribute("detalles", pedido.getItems());
-        
+
         return "detalle-pedido-comprador";
     }
 
     private void preservarDatosFormulario(Model model, String nombre, String email,
             String departamento, String ciudad) {
-        if (nombre != null) model.addAttribute("nombre", nombre);
-        if (email != null) model.addAttribute("email", email);
-        if (departamento != null) model.addAttribute("departamento", departamento);
-        if (ciudad != null) model.addAttribute("ciudad", ciudad);
+        if (nombre != null)
+            model.addAttribute("nombre", nombre);
+        if (email != null)
+            model.addAttribute("email", email);
+        if (departamento != null)
+            model.addAttribute("departamento", departamento);
+        if (ciudad != null)
+            model.addAttribute("ciudad", ciudad);
     }
 }

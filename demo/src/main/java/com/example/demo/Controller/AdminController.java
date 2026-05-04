@@ -13,7 +13,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.servlet.http.HttpSession;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 @Controller
 @RequestMapping("/admin")
@@ -24,8 +23,7 @@ public class AdminController {
 
     // Roles disponibles — ya no hay tabla de roles
     private static final List<String> ROLES = Arrays.asList(
-            "COMPRADOR", "VENDEDOR", "ADMIN"
-    );
+            "COMPRADOR", "VENDEDOR", "ADMIN");
 
     // Verificar que el usuario es admin
     private boolean verificarAdmin(HttpSession session,
@@ -44,6 +42,19 @@ public class AdminController {
         return true;
     }
 
+    private void cargarDatosDashboard(Model model, Usuario admin) {
+        model.addAttribute("admin", admin);
+        model.addAttribute("estadisticas", adminService.obtenerEstadisticas());
+        model.addAttribute("usuarios", adminService.obtenerTodosLosUsuarios());
+        model.addAttribute("roles", ROLES);
+        model.addAttribute("productos", adminService.obtenerTodosLosProductos());
+        model.addAttribute("resenas", adminService.obtenerTodasLasResenas());
+        model.addAttribute("categorias", adminService.obtenerTodasLasCategorias());
+        model.addAttribute("pedidos", adminService.obtenerTodosLosPedidos());
+        model.addAttribute("vendedoresPendientes", adminService.obtenerVendedoresPendientes());
+        model.addAttribute("vendedoresVerificados", adminService.obtenerVendedoresVerificados());
+    }
+
     // ==================== DASHBOARD ====================
 
     @GetMapping("/dashboard")
@@ -55,10 +66,8 @@ public class AdminController {
         }
 
         Usuario admin = (Usuario) session.getAttribute("usuarioLogueado");
-        Map<String, Object> estadisticas = adminService.obtenerEstadisticas();
-
-        model.addAttribute("admin", admin);
-        model.addAttribute("estadisticas", estadisticas);
+        cargarDatosDashboard(model, admin);
+        model.addAttribute("activePage", "dashboard");
 
         return "admin-dashboard";
     }
@@ -74,13 +83,10 @@ public class AdminController {
         }
 
         Usuario admin = (Usuario) session.getAttribute("usuarioLogueado");
-        List<Usuario> usuarios = adminService.obtenerTodosLosUsuarios();
+        cargarDatosDashboard(model, admin);
+        model.addAttribute("activePage", "usuarios");
 
-        model.addAttribute("admin", admin);
-        model.addAttribute("usuarios", usuarios);
-        model.addAttribute("roles", ROLES);
-
-        return "admin-usuarios";
+        return "admin-dashboard";
     }
 
     @PostMapping("/usuarios/{id}/cambiar-rol")
@@ -135,12 +141,10 @@ public class AdminController {
         }
 
         Usuario admin = (Usuario) session.getAttribute("usuarioLogueado");
-        List<Producto> productos = adminService.obtenerTodosLosProductos();
+        cargarDatosDashboard(model, admin);
+        model.addAttribute("activePage", "catalogo");
 
-        model.addAttribute("admin", admin);
-        model.addAttribute("productos", productos);
-
-        return "admin-productos";
+        return "admin-dashboard";
     }
 
     @PostMapping("/productos/{id}/eliminar")
@@ -174,12 +178,10 @@ public class AdminController {
         }
 
         Usuario admin = (Usuario) session.getAttribute("usuarioLogueado");
-        List<Resena> resenas = adminService.obtenerTodasLasResenas();
+        cargarDatosDashboard(model, admin);
+        model.addAttribute("activePage", "actividad");
 
-        model.addAttribute("admin", admin);
-        model.addAttribute("resenas", resenas);
-
-        return "admin-resenas";
+        return "admin-dashboard";
     }
 
     @PostMapping("/resenas/{id}/eliminar")
@@ -200,5 +202,60 @@ public class AdminController {
         }
 
         return "redirect:/admin/resenas";
+    }
+
+    // ==================== VERIFICACIÓN DE TIENDAS ====================
+
+    @GetMapping("/verificacion-tiendas")
+    public String mostrarVerificacionTiendas(HttpSession session, Model model,
+            RedirectAttributes redirectAttributes) {
+
+        if (!verificarAdmin(session, redirectAttributes)) {
+            return "redirect:/usuario/login";
+        }
+
+        Usuario admin = (Usuario) session.getAttribute("usuarioLogueado");
+        cargarDatosDashboard(model, admin);
+        model.addAttribute("activePage", "verificacion-tiendas");
+
+        return "admin-dashboard";
+    }
+
+    @PostMapping("/tiendas/{id}/aprobar")
+    public String aprobarVendedor(@PathVariable String id,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        if (!verificarAdmin(session, redirectAttributes)) {
+            return "redirect:/usuario/login";
+        }
+
+        try {
+            adminService.aprobarVendedor(id);
+            redirectAttributes.addFlashAttribute("mensaje", "Tienda aprobada exitosamente");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al aprobar tienda: " + e.getMessage());
+        }
+
+        return "redirect:/admin/verificacion-tiendas";
+    }
+
+    @PostMapping("/tiendas/{id}/rechazar")
+    public String rechazarVendedor(@PathVariable String id,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        if (!verificarAdmin(session, redirectAttributes)) {
+            return "redirect:/usuario/login";
+        }
+
+        try {
+            adminService.rechazarVendedor(id);
+            redirectAttributes.addFlashAttribute("mensaje", "Verificación revocada");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al rechazar tienda: " + e.getMessage());
+        }
+
+        return "redirect:/admin/verificacion-tiendas";
     }
 }

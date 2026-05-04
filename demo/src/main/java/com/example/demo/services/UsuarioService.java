@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.Model.Role;
 import com.example.demo.Model.Usuario;
 import com.example.demo.repository.ProductoRepository;
 import com.example.demo.repository.UsuarioRepository;
@@ -41,7 +42,8 @@ public class UsuarioService implements IUsuarioService {
 
     @Override
     public Usuario iniciarSesion(String correo, String contrasena) {
-        if (correo == null || contrasena == null) return null;
+        if (correo == null || contrasena == null)
+            return null;
 
         // Normalizar email igual que en el registro
         String correoLimpio = correo.trim().toLowerCase();
@@ -68,7 +70,7 @@ public class UsuarioService implements IUsuarioService {
         Optional<Usuario> usuarioOpt = repositorio.findById(id);
         if (usuarioOpt.isPresent()) {
             Usuario usuario = usuarioOpt.get();
-            if ("VENDEDOR".equals(usuario.getRol())) {
+            if (Role.VENDEDOR.equals(usuario.getRol())) {
                 productoRepository.deleteByVendedorId(id);
             }
             repositorio.deleteById(id);
@@ -80,8 +82,8 @@ public class UsuarioService implements IUsuarioService {
     @Override
     public Usuario save(Usuario usuario) {
         // Si no tiene rol asignado, se le asigna COMPRADOR por defecto
-        if (usuario.getRol() == null || usuario.getRol().isEmpty()) {
-            usuario.setRol("COMPRADOR");
+        if (usuario.getRol() == null || usuario.getRol() == Role.COMPRADOR) {
+            usuario.setRol(Role.COMPRADOR);
         }
         return repositorio.save(usuario);
     }

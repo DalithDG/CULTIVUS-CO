@@ -15,8 +15,10 @@ import org.springframework.stereotype.Component;
 import java.io.IOException;
 
 /**
- * Se ejecuta automáticamente cuando el usuario se autentica con Google exitosamente.
- * Recupera el Usuario desde MongoDB, lo pone en HttpSession y redirige según su rol.
+ * Se ejecuta automáticamente cuando el usuario se autentica con Google
+ * exitosamente.
+ * Recupera el Usuario desde MongoDB, lo pone en HttpSession y redirige según su
+ * rol.
  */
 @Component
 public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
@@ -26,8 +28,8 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
-                                        HttpServletResponse response,
-                                        Authentication authentication) throws IOException, ServletException {
+            HttpServletResponse response,
+            Authentication authentication) throws IOException, ServletException {
 
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         String email = oAuth2User.getAttribute("email");
@@ -53,7 +55,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         session.setAttribute("usuarioLogueado", usuario);
 
         // Redirigir según el rol
-        String rol = usuario.getRol();
+        String rol = usuario.getRol().name(); // Asumiendo que rol es un enum Role
         if ("ADMIN".equalsIgnoreCase(rol)) {
             getRedirectStrategy().sendRedirect(request, response, "/admin/dashboard");
         } else {
