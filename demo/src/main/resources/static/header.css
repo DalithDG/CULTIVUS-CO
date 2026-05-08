@@ -146,6 +146,23 @@
   transform: translateX(-50%) scaleX(1);
 }
 
+.nav-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--gray-200);
+  margin: 0 8px;
+}
+
+.nav-link.highlight {
+  color: var(--cultivus-primary);
+  background: rgba(107, 124, 46, 0.1);
+}
+
+.nav-link.highlight:hover {
+  background: var(--cultivus-primary);
+  color: var(--white);
+}
+
 /* ========================================
    BUSCADOR
    ======================================== */
@@ -360,6 +377,46 @@
   border-radius: 10px;
   padding: 0 6px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Botón Notificaciones */
+.btn-notification {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--gray-100);
+  color: var(--text-primary);
+  text-decoration: none;
+  border-radius: 50%;
+  font-size: 18px;
+  transition: var(--transition);
+}
+
+.btn-notification:hover {
+  background: var(--cultivus-primary);
+  color: var(--white);
+  transform: scale(1.05);
+}
+
+.badge-count {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ff4757;
+  color: var(--white);
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 50%;
+  border: 2px solid var(--white);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* ========================================

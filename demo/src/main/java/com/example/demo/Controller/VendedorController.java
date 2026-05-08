@@ -110,7 +110,7 @@ public class VendedorController {
             session.setAttribute("usuarioLogueado", usuarioActualizado);
 
             redirectAttributes.addFlashAttribute("mensaje",
-                    "¡Felicidades! Ahora eres vendedor en Cultivus");
+                    "Tu solicitud ha sido enviada. Tu perfil de vendedor está ahora en proceso de validación por un administrador.");
             return "redirect:/vendedor/inicio";
 
         } catch (IllegalArgumentException e) {

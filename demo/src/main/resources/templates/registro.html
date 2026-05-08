@@ -112,16 +112,24 @@
                             <label for="departamento">
                                 <i class="fa-solid fa-map-marked-alt"></i> Departamento
                             </label>
-                            <input type="text" id="departamento" name="departamento" required 
-                                   placeholder="Ej: Bolívar" th:value="${departamento}">
+                            <div class="select-wrapper">
+                                <select id="departamento" name="departamento" required>
+                                    <option value="">Cargando departamentos...</option>
+                                </select>
+                                <i class="fas fa-chevron-down select-arrow"></i>
+                            </div>
                         </div>
 
                         <div class="form-group">
                             <label for="ciudad">
                                 <i class="fa-solid fa-city"></i> Ciudad
                             </label>
-                            <input type="text" id="ciudad" name="ciudad" required 
-                                   placeholder="Ej: Cartagena" th:value="${ciudad}">
+                            <div class="select-wrapper">
+                                <select id="ciudad" name="ciudad" required disabled>
+                                    <option value="">Selecciona un departamento primero</option>
+                                </select>
+                                <i class="fas fa-chevron-down select-arrow"></i>
+                            </div>
                         </div>
                     </div>
 
@@ -137,6 +145,17 @@
                     </p>
                 </form>
 
+                <!-- Divider -->
+                <div class="registro-divider">
+                    <span>o regístrate con</span>
+                </div>
+
+                <!-- Registro con Google -->
+                <a th:href="@{/oauth2/authorization/google}" class="btn-google-registro">
+                    <i class="fab fa-google"></i>
+                    <span>Continuar con Google</span>
+                </a>
+
                 <div class="form-footer">
                     <p>¿Ya tienes cuenta? <a th:href="@{/usuario/login}">Inicia sesión</a></p>
                     <a th:href="@{/}" class="back-link">
@@ -148,6 +167,9 @@
     </div>
 
     <script>
+        // =============================================
+        // Toggle de contraseña
+        // =============================================
         function togglePassword(inputId) {
             const input = document.getElementById(inputId);
             const button = input.nextElementSibling;
@@ -163,6 +185,62 @@
                 icon.classList.add('fa-eye');
             }
         }
+
+        // =============================================
+        // API Colombia — Departamentos y Ciudades
+        // =============================================
+        const deptSelect = document.getElementById('departamento');
+        const ciudadSelect = document.getElementById('ciudad');
+
+        // Cargar departamentos al iniciar la página
+        fetch('https://api-colombia.com/api/v1/Department')
+            .then(res => res.json())
+            .then(data => {
+                const sorted = data.sort((a, b) => a.name.localeCompare(b.name));
+                deptSelect.innerHTML = '<option value="">Selecciona un departamento</option>';
+                sorted.forEach(dept => {
+                    const opt = document.createElement('option');
+                    opt.value = dept.name;
+                    opt.dataset.id = dept.id;
+                    opt.textContent = dept.name;
+                    deptSelect.appendChild(opt);
+                });
+            })
+            .catch(() => {
+                deptSelect.innerHTML = '<option value="">Error al cargar departamentos</option>';
+            });
+
+        // Cargar ciudades al cambiar el departamento
+        deptSelect.addEventListener('change', function () {
+            const selectedOpt = this.options[this.selectedIndex];
+            const deptId = selectedOpt.dataset.id;
+
+            ciudadSelect.innerHTML = '<option value="">Cargando ciudades...</option>';
+            ciudadSelect.disabled = true;
+
+            if (!deptId) {
+                ciudadSelect.innerHTML = '<option value="">Selecciona un departamento primero</option>';
+                return;
+            }
+
+            fetch(`https://api-colombia.com/api/v1/Department/${deptId}/Cities`)
+                .then(res => res.json())
+                .then(cities => {
+                    const sorted = cities.sort((a, b) => a.name.localeCompare(b.name));
+                    ciudadSelect.innerHTML = '<option value="">Selecciona una ciudad</option>';
+                    sorted.forEach(city => {
+                        const opt = document.createElement('option');
+                        opt.value = city.name;
+                        opt.textContent = city.name;
+                        ciudadSelect.appendChild(opt);
+                    });
+                    ciudadSelect.disabled = false;
+                })
+                .catch(() => {
+                    ciudadSelect.innerHTML = '<option value="">Error al cargar ciudades</option>';
+                    ciudadSelect.disabled = false;
+                });
+        });
     </script>
 </body>
 </html>

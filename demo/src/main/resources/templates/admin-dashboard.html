@@ -1,64 +1,884 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Admin</title>
-    <link rel="stylesheet" th:href="@{/admin.css}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <title>Panel Administrador - Cultivus</title>
+    <link rel="stylesheet" th:href="@{/Administrador_panel.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
-
 <body>
-    <div th:replace="fragments/header-admin :: adminHeader"></div>
-
-    <div class="admin-container">
-        <h1><i class="fa-solid fa-chart-line"></i> Dashboard</h1>
-
-        <div class="stats-grid">
-            <div class="stat-card">
-                <i class="fa-solid fa-users"></i>
-                <h3 th:text="${estadisticas.totalUsuarios}">0</h3>
-                <p>Usuarios Totales</p>
-            </div>
-
-            <div class="stat-card">
-                <i class="fa-solid fa-box"></i>
-                <h3 th:text="${estadisticas.totalProductos}">0</h3>
-                <p>Productos</p>
-            </div>
-
-            <div class="stat-card">
-                <i class="fa-solid fa-shopping-cart"></i>
-                <h3 th:text="${estadisticas.totalPedidos}">0</h3>
-                <p>Pedidos</p>
-            </div>
-
-            <div class="stat-card">
-                <i class="fa-solid fa-star"></i>
-                <h3 th:text="${estadisticas.totalResenas}">0</h3>
-                <p>Reseñas</p>
+    <!-- SIDEBAR -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <button class="menu-btn" id="menuBtn">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="brand">
+                <i class="fas fa-leaf"></i>
+                <span class="brand-text">Cultivus</span>
             </div>
         </div>
 
-        <div class="quick-actions">
-            <h2>Acciones Rápidas</h2>
-            <div class="actions-grid">
-                <a th:href="@{/admin/usuarios}" class="action-btn">
-                    <i class="fa-solid fa-users-cog"></i>
-                    Gestionar Usuarios
+        <nav class="menu">
+            <!-- Dashboard -->
+            <div class="menu-item">
+                <a th:href="@{/admin/dashboard}" class="menu-link" data-page="dashboard">
+                    <i class="fas fa-home"></i>
+                    <span class="menu-text">Dashboard</span>
                 </a>
-                <a th:href="@{/admin/productos}" class="action-btn">
-                    <i class="fa-solid fa-boxes"></i>
-                    Gestionar Productos
+            </div>
+
+            <!-- Usuarios - Desplegable -->
+            <div class="menu-item has-submenu">
+                <a href="#" class="menu-link" data-submenu="usuarios">
+                    <i class="fas fa-users"></i>
+                    <span class="menu-text">Usuarios</span>
+                    <i class="fas fa-chevron-down submenu-icon"></i>
                 </a>
-                <a th:href="@{/admin/resenas}" class="action-btn">
-                    <i class="fa-solid fa-comments"></i>
-                    Gestionar Reseñas
+                <div class="submenu" id="usuarios-submenu">
+                    <a th:href="@{/admin/usuarios}" class="submenu-link" data-page="usuarios">Gestionar Usuarios</a>
+                    <a href="#" class="submenu-link" data-page="roles">Roles y Permisos</a>
+                    <a th:href="@{/admin/resenas}" class="submenu-link" data-page="actividad">Actividad</a>
+                </div>
+            </div>
+
+            <!-- Productos - Desplegable -->
+            <div class="menu-item has-submenu">
+                <a href="#" class="menu-link" data-submenu="productos">
+                    <i class="fas fa-box"></i>
+                    <span class="menu-text">Productos</span>
+                    <i class="fas fa-chevron-down submenu-icon"></i>
+                </a>
+                <div class="submenu" id="productos-submenu">
+                    <a th:href="@{/admin/productos}" class="submenu-link" data-page="catalogo">Catálogo</a>
+                    <a href="#" class="submenu-link" data-page="inventario">Inventario</a>
+                    <a href="#" class="submenu-link" data-page="categorias">Categorías</a>
+                    <a href="#" class="submenu-link" data-page="agregar-producto">Añadir Producto</a>
+                </div>
+            </div>
+
+            
+            <div class="menu-item has-submenu">
+                <a href="#" class="menu-link" data-submenu="ventas">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="menu-text">Ventas</span>
+                    <i class="fas fa-chevron-down submenu-icon"></i>
+                </a>
+                <div class="submenu" id="ventas-submenu">
+                    <a href="#" class="submenu-link" data-page="ordenes">Órdenes</a>
+                    <a href="#" class="submenu-link" data-page="reportes">Reportes</a>
+                    <a href="#" class="submenu-link" data-page="clientes">Clientes</a>
+                </div>
+            </div>
+
+            <!-- Configuración - Desplegable -->
+            <div class="menu-item has-submenu">
+                <a href="#" class="menu-link" data-submenu="configuracion">
+                    <i class="fas fa-cog"></i>
+                    <span class="menu-text">Configuración</span>
+                    <i class="fas fa-chevron-down submenu-icon"></i>
+                </a>
+                <div class="submenu" id="configuracion-submenu">
+                    <a href="#" class="submenu-link" data-page="general">General</a>
+                    <a href="#" class="submenu-link" data-page="seguridad">Seguridad</a>
+                    <a href="#" class="submenu-link" data-page="respaldos">Respaldos</a>
+                    <a href="#" class="submenu-link" data-page="integraciones">Integraciones</a>
+                </div>
+            </div>
+
+            <!-- Ayuda -->
+            <div class="menu-item">
+                <a href="#" class="menu-link" data-page="ayuda">
+                    <i class="fas fa-question-circle"></i>
+                    <span class="menu-text">Ayuda</span>
+                </a>
+            </div>
+
+            <!-- Verificación de Tiendas -->
+            <div class="menu-item">
+                <a th:href="@{/admin/verificacion-tiendas}" class="menu-link" data-page="verificacion-tiendas">
+                    <i class="fas fa-store"></i>
+                    <span class="menu-text">Verificar Tiendas</span>
+                    <span class="badge-menu" th:if="${#lists.size(vendedoresPendientes) > 0}"
+                          th:text="${#lists.size(vendedoresPendientes)}"
+                          style="background:#FF5252;color:white;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-left:auto;"></span>
+                </a>
+            </div>
+
+            <!-- Sesiones Activas -->
+            <div class="menu-item">
+                <a th:href="@{/admin/sesiones}" class="menu-link" data-page="sesiones">
+                    <i class="fas fa-user-clock"></i>
+                    <span class="menu-text">Sesiones</span>
+                </a>
+            </div>
+
+            <!-- Notificaciones -->
+            <div class="menu-item">
+                <a th:href="@{/admin/notificaciones}" class="menu-link" data-page="notificaciones">
+                    <i class="fas fa-bell"></i>
+                    <span class="menu-text">Notificaciones</span>
+                </a>
+            </div>
+
+            <!-- Mensajes -->
+            <div class="menu-item">
+                <a th:href="@{/admin/mensajes}" class="menu-link" data-page="mensajes">
+                    <i class="fas fa-envelope"></i>
+                    <span class="menu-text">Mensajes</span>
+                </a>
+            </div>
+        </nav>
+
+        <!-- Profile Section -->
+        <div class="sidebar-footer">
+            <div class="user-profile">
+                <img src="https://via.placeholder.com/40" alt="Profile" class="profile-img">
+                <div class="profile-info">
+                    <p class="profile-name" th:text="${admin != null ? admin.nombre : 'Admin'}">Admin</p>
+                    <span class="profile-status">Online</span>
+                </div>
+                <a th:href="@{/usuario/logout}" style="color: white; margin-left: 10px;">
+                    <i class="fas fa-sign-out-alt"></i>
                 </a>
             </div>
         </div>
     </div>
-</body>
 
+    <!-- MAIN CONTENT -->
+    <div class="main-content" id="mainContent">
+        <!-- Top Bar -->
+        <div class="topbar">
+            <div class="topbar-left">
+                <h2 id="page-title">Bienvenido al Panel Administrador</h2>
+            </div>
+            <div class="topbar-right">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Buscar...">
+                </div>
+                <div class="topbar-icons">
+                    <a href="#" class="icon-btn">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge">3</span>
+                    </a>
+                    <a href="#" class="icon-btn">
+                        <i class="fas fa-envelope"></i>
+                        <span class="notification-badge">2</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content">
+            <!-- DASHBOARD PAGE -->
+            <div class="page" id="dashboard-page">
+                <div class="welcome-card">
+                    <h1>Hola, Administrador</h1>
+                    <p>Bienvenido a tu panel de control. Aquí puedes gestionar todos los aspectos de tu aplicación Cultivus.</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #4CAF50;">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>Usuarios</h3>
+                            <p class="stat-number" th:text="${estadisticas.totalUsuarios}">1,234</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #2196F3;">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>Ventas</h3>
+                            <p class="stat-number" th:text="${estadisticas.totalPedidos}">$45,230</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #FF9800;">
+                            <i class="fas fa-box"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>Productos</h3>
+                            <p class="stat-number" th:text="${estadisticas.totalProductos}">567</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #9C27B0;">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>Reseñas</h3>
+                            <p class="stat-number" th:text="${estadisticas.totalResenas}">+12.5%</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- USUARIOS PAGE -->
+            <div class="page" id="usuarios-page" style="display: none;">
+                <div class="page-card">
+                    <h2><i class="fas fa-users"></i> Gestionar Usuarios</h2>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Email</th>
+                                <th>Rol</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="user : ${usuarios}">
+                                <td th:text="${user.id}">#001</td>
+                                <td th:text="${user.nombre}">Juan García</td>
+                                <td th:text="${user.email}">juan@cultivus.com</td>
+                                <td>
+                                    <span class="badge" 
+                                          th:classappend="${user.rol != null ? (user.rol.name() == 'ADMIN' ? 'badge-admin' : (user.rol.name() == 'VENDEDOR' ? 'badge-mod' : 'badge-user')) : 'badge-user'}" 
+                                          th:text="${user.rol != null ? user.rol : 'SIN ROL'}">Rol</span>
+                                </td>
+                                <td><span class="badge badge-active">Activo</span></td>
+                                <td>
+                                    <form th:action="@{/admin/usuarios/{id}/cambiar-rol(id=${user.id})}" method="post" style="display:inline;">
+                                        <select name="nuevoRol" onchange="this.form.submit()">
+                                            <option th:each="r : ${roles}" th:value="${r}" th:text="${r}" 
+                                                    th:selected="${user.rol != null && user.rol.name() == r}"></option>
+                                        </select>
+                                    </form>
+                                    <form th:action="@{/admin/usuarios/{id}/eliminar(id=${user.id})}" method="post" style="display:inline;" onsubmit="return confirm('¿Eliminar usuario?')">
+                                        <button type="submit" class="btn-action" style="background: #f44336; border:none; cursor:pointer;"><i class="fas fa-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ROLES PAGE -->
+            <div class="page" id="roles-page" style="display: none;">
+                <div class="page-card">
+                    <h2><i class="fas fa-shield-alt"></i> Roles y Permisos</h2>
+                    <div class="roles-container">
+                        <div class="role-card">
+                            <h3>Administrador</h3>
+                            <p class="role-desc">Acceso completo al sistema</p>
+                            <p><strong th:text="${estadisticas.usuariosPorRol.ADMIN}">0</strong> usuarios con este rol</p>
+                        </div>
+                        <div class="role-card">
+                            <h3>Vendedor</h3>
+                            <p class="role-desc">Acceso a gestión de productos y pedidos</p>
+                            <p><strong th:text="${estadisticas.usuariosPorRol.VENDEDOR}">0</strong> usuarios con este rol</p>
+                        </div>
+                        <div class="role-card">
+                            <h3>Comprador</h3>
+                            <p class="role-desc">Acceso básico de cliente</p>
+                            <p><strong th:text="${estadisticas.usuariosPorRol.COMPRADOR}">0</strong> usuarios con este rol</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACTIVIDAD PAGE -->
+            <div class="page" id="actividad-page" style="display: none;">
+                <div class="page-card">
+                    <h2><i class="fas fa-history"></i> Registro de Actividad</h2>
+                    <div class="activity-log">
+                        <div class="activity-item" th:each="resena : ${resenas}">
+                            <div class="activity-icon" style="background: #2196F3;">
+                                <i class="fas fa-comment"></i>
+                            </div>
+                            <div class="activity-content">
+                                <h4 th:text="${resena.usuarioId}">Nueva reseña</h4>
+                                <p th:text="${resena.comentario}">Comentario</p>
+                                <span class="time" th:text="${#temporals.format(resena.fecha, 'dd/MM/yyyy')}">Hace poco</span>
+                                <form th:action="@{/admin/resenas/{id}/eliminar(id=${resena.id})}" method="post" style="display:inline;">
+                                    <button type="submit" style="color:red; background:none; border:none; cursor:pointer;"><i class="fas fa-trash"></i></button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CATALOGO PAGE -->
+            <div class="page" id="catalogo-page" style="display: none;">
+                <div class="page-card">
+                    <h2><i class="fas fa-list"></i> Catálogo de Productos</h2>
+                    <div class="products-grid">
+                        <div class="product-item" th:each="p : ${productos}">
+                            <div class="product-img" style="background: #E8F5E9;">
+                                <img th:if="${p.imagenUrl}" th:src="${p.imagenUrl}" style="width:100%; height:100%; object-fit:cover;">
+                                <i th:unless="${p.imagenUrl}" class="fas fa-leaf fa-3x" style="color: #4CAF50;"></i>
+                            </div>
+                            <h4 th:text="${p.nombre}">Producto</h4>
+                            <p class="price" th:text="${'$' + p.precio}">$12.99</p>
+                            <p class="stock" th:text="${'Stock: ' + p.stock}">Stock: 150</p>
+                            <form th:action="@{/admin/productos/{id}/eliminar(id=${p.id})}" method="post">
+                                <button type="submit" class="btn-action" style="background:#f44336; border:none; color:white; width:100%;"><i class="fas fa-trash"></i> Eliminar</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INVENTARIO PAGE -->
+            <div class="page" id="inventario-page" style="display: none;">
+                <div class="page-card">
+                    <h2><i class="fas fa-warehouse"></i> Inventario</h2>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>SKU</th>
+                                <th>Stock Actual</th>
+                                <th>Stock Mínimo</th>
+                                <th>Ubicación</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="p : ${productos}">
+                                <td th:text="${p.nombre}">Producto</td>
+                                <td th:text="${p.id}">SKU</td>
+                                <td th:text="${p.stock}">150</td>
+                                <td th:text="${p.compraMinima}">1</td>
+                                <td>Almacén General</td>
+                                <td>
+                                    <span class="badge" th:classappend="${(p.stock ?: 0) > 10 ? 'badge-active' : 'badge-warning'}" th:text="${(p.stock ?: 0) > 10 ? 'Ok' : 'Bajo'}">Estado</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- CATEGORIAS PAGE -->
+            <div class="page" id="categorias-page" style="display: none;">
+                <div class="page-card">
+                    <h2><i class="fas fa-tags"></i> Categorías</h2>
+                    <div class="categories-list">
+                        <div class="category-item" th:each="cat : ${categorias}">
+                            <div class="category-icon"><i class="fas fa-tags"></i></div>
+                            <div class="category-info">
+                                <h4 th:text="${cat.nombre}">Nombre Categoría</h4>
+                                <p th:text="${cat.descripcion}">Descripción</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AGREGAR PRODUCTO PAGE -->
+            <div class="page" id="agregar-producto-page" style="display: none;">
+                <div class="page-card">
+                    <h2><i class="fas fa-plus-circle"></i> Agregar Nuevo Producto</h2>
+                    <form class="form-container" th:action="@{/vendedor/productos/guardar}" method="post">
+                        <div class="form-group">
+                            <label>Nombre del Producto</label>
+                            <input type="text" name="nombre" placeholder="Ingrese el nombre del producto" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Descripción</label>
+                            <textarea name="descripcion" placeholder="Describa el producto" rows="4" required></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Precio</label>
+                                <input type="number" name="precio" placeholder="$0.00" step="0.01" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Stock</label>
+                                <input type="number" name="stock" placeholder="0" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Peso</label>
+                                <input type="number" name="peso" placeholder="0.0" step="0.1" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Imagen URL</label>
+                                <input type="text" name="imagenUrl" placeholder="http://..." required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Categoría</label>
+                            <select name="categoriaId" required>
+                                <option value="">Seleccione una categoría</option>
+                                <option th:each="cat : ${categorias}" th:value="${cat.id}" th:text="${cat.nombre}"></option>
+                            </select>
+                        </div>
+                        <input type="hidden" name="unidadMedidaId" value="un">
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Guardar Producto</button>
+                            <button type="reset" class="btn btn-secondary">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ORDENES PAGE -->
+            <div class="page" id="ordenes-page" style="display: none;">
+                <div class="page-card">
+                    <h2><i class="fas fa-shopping-bag"></i> Órdenes</h2>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Orden ID</th>
+                                <th>Cliente</th>
+                                <th>Total</th>
+                                <th>Fecha</th>
+                                <th>Estado</th>
+                                <th>Acción</th>
+                            </tr>
+                        <tbody>
+                            <tr th:each="pedido : ${pedidos}">
+                                <td th:text="${pedido.id}">#ORD-001</td>
+                                <td th:text="${pedido.comprador != null ? pedido.comprador.nombre : 'Anónimo'}">Pedro Sánchez</td>
+                                <td th:text="${'$' + (pedido.total ?: 0)}">$156.99</td>
+                                <td th:text="${pedido.fechaPedido != null ? #temporals.format(pedido.fechaPedido, 'dd/MM/yyyy') : '-'}">22/04/2026</td>
+                                <td>
+                                    <span class="badge" th:classappend="${pedido.estado == 'ENTREGADO' ? 'badge-success' : 'badge-warning'}" th:text="${pedido.estado}">Estado</span>
+                                </td>
+                                <td><button class="btn-action">Ver</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- REPORTES PAGE -->
+            <div class="page" id="reportes-page" style="display: none;">
+                <div class="page-card">
+                    <h2><i class="fas fa-chart-bar"></i> Reportes</h2>
+                    <div class="reports-container">
+                        <div class="report-card">
+                            <h4>Total Usuarios</h4>
+                            <p class="report-value" th:text="${estadisticas.totalUsuarios}">12,450</p>
+                            <p class="report-change">En el sistema</p>
+                        </div>
+                        <div class="report-card">
+                            <h4>Total Productos</h4>
+                            <p class="report-value" th:text="${estadisticas.totalProductos}">234</p>
+                            <p class="report-change">En el catálogo</p>
+                        </div>
+                        <div class="report-card">
+                            <h4>Total Órdenes</h4>
+                            <p class="report-value" th:text="${estadisticas.totalPedidos}">45</p>
+                            <p class="report-change">Procesadas</p>
+                        </div>
+                        <div class="report-card">
+                            <h4>Total Reseñas</h4>
+                            <p class="report-value" th:text="${estadisticas.totalResenas}">3.2%</p>
+                            <p class="report-change">De clientes</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CLIENTES PAGE -->
+            <div class="page" id="clientes-page" style="display: none;">
+                <div class="page-card">
+                    <h2><i class="fas fa-users-alt"></i> Clientes</h2>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Email</th>
+                                <th>Teléfono</th>
+                                <th>Órdenes</th>
+                                <th>Total Gastado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                             <tr th:each="user : ${usuarios}" th:if="${user.rol != null && user.rol.name() == 'COMPRADOR'}">
+                                <td th:text="${user.nombre}">Nombre</td>
+                                <td th:text="${user.email}">Email</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- CONFIGURACION GENERAL PAGE -->
+            <div class="page" id="general-page" style="display: none;">
+                <div class="page-card">
+                    <h2><i class="fas fa-sliders-h"></i> Configuración General</h2>
+                    <form class="settings-form">
+                        <div class="form-group">
+                            <label>Nombre de la Tienda</label>
+                            <input type="text" th:value="${admin.nombre}" placeholder="Nombre de la tienda">
+                        </div>
+                        <div class="form-group">
+                            <label>Correo de Contacto</label>
+                            <input type="email" th:value="${admin.email}" placeholder="Email">
+                        </div>
+                        <div class="form-group">
+                            <label>Teléfono</label>
+                            <input type="tel" placeholder="Teléfono">
+                        </div>
+                        <div class="form-group">
+                            <label>Dirección</label>
+                            <input type="text" placeholder="Dirección completa">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- SEGURIDAD PAGE -->
+            <div class="page" id="seguridad-page" style="display: none;">
+                <div class="page-card">
+                    <h2><i class="fas fa-lock"></i> Configuración de Seguridad</h2>
+                    <div class="security-settings">
+                        <div class="security-item">
+                            <h4>Autenticación de Dos Factores</h4>
+                            <p>Añade una capa extra de seguridad a tu cuenta</p>
+                            <button class="btn btn-secondary">Configurar</button>
+                        </div>
+                        <div class="security-item">
+                            <h4>Contraseña</h4>
+                            <p>Cambia tu contraseña regularmente para mantener tu cuenta segura</p>
+                            <button class="btn btn-secondary">Cambiar Contraseña</button>
+                        </div>
+                        <div class="security-item">
+                            <h4>Sesiones Activas</h4>
+                            <p>Gestiona tus sesiones activas en diferentes dispositivos</p>
+                            <button class="btn btn-secondary">Ver Sesiones</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RESPALDOS PAGE -->
+            <div class="page" id="respaldos-page" style="display: none;">
+                <div class="page-card">
+                    <h2><i class="fas fa-cloud-download-alt"></i> Respaldos</h2>
+                    <div class="backups-container">
+                        <button class="btn btn-primary" style="margin-bottom: 20px;">
+                            <i class="fas fa-cloud-upload-alt"></i> Crear Respaldo Ahora
+                        </button>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Tamaño</th>
+                                    <th>Tipo</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>22/04/2026 14:30</td>
+                                    <td>245 MB</td>
+                                    <td>Automático</td>
+                                    <td><span class="badge badge-success">Completo</span></td>
+                                    <td><button class="btn-action">Descargar</button></td>
+                                </tr>
+                                <tr>
+                                    <td>21/04/2026 02:15</td>
+                                    <td>243 MB</td>
+                                    <td>Automático</td>
+                                    <td><span class="badge badge-success">Completo</span></td>
+                                    <td><button class="btn-action">Descargar</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INTEGRACIONES PAGE -->
+            <div class="page" id="integraciones-page" style="display: none;">
+                <div class="page-card">
+                    <h2><i class="fas fa-plug"></i> Integraciones</h2>
+                    <div class="integrations-grid">
+                        <div class="integration-card">
+                            <h4>PayPal</h4>
+                            <p>Procesa pagos con PayPal</p>
+                            <button class="btn btn-secondary">Conectar</button>
+                        </div>
+                        <div class="integration-card">
+                            <h4>Stripe</h4>
+                            <p>Integración de pagos con Stripe</p>
+                            <button class="btn btn-secondary">Conectar</button>
+                        </div>
+                        <div class="integration-card">
+                            <h4>Google Analytics</h4>
+                            <p>Analiza el tráfico de tu sitio</p>
+                            <button class="btn btn-secondary">Conectar</button>
+                        </div>
+                        <div class="integration-card">
+                            <h4>Correo Electrónico</h4>
+                            <p>Configura tu servicio de correo</p>
+                            <button class="btn btn-secondary">Conectar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AYUDA PAGE -->
+            <div class="page" id="ayuda-page" style="display: none;">
+                <div class="page-card">
+                    <h2><i class="fas fa-info-circle"></i> Centro de Ayuda</h2>
+                    <div class="faq-container">
+                        <div class="faq-item">
+                            <h4><i class="fas fa-question"></i> ¿Cómo agregó un nuevo producto?</h4>
+                            <p>Ve a la sección de Productos > Añadir Producto e ingresa los detalles del producto. Luego haz clic en "Guardar Producto".</p>
+                        </div>
+                        <div class="faq-item">
+                            <h4><i class="fas fa-question"></i> ¿Cómo gestiono usuarios?</h4>
+                            <p>Accede a Usuarios > Gestionar Usuarios para ver la lista de usuarios y editar sus permisos.</p>
+                        </div>
+                        <div class="faq-item">
+                            <h4><i class="fas fa-question"></i> ¿Cómo veo los reportes de ventas?</h4>
+                            <p>Dirígete a Ventas > Reportes para ver gráficos y estadísticas detalladas de tus ventas.</p>
+                        </div>
+                        <div class="faq-item">
+                            <h4><i class="fas fa-question"></i> ¿Cómo creo un respaldo?</h4>
+                            <p>Ve a Configuración > Respaldos y haz clic en "Crear Respaldo Ahora".</p>
+                        </div>
+                        <div class="contact-support">
+                            <h3>¿Necesitas más ayuda?</h3>
+                            <p>Contáctanos en <strong>soporte@cultivus.com</strong> o llama al <strong>+34 123 456 789</strong></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VERIFICACIÓN DE TIENDAS PAGE -->
+            <div class="page" id="verificacion-tiendas-page" style="display:none;">
+
+                <!-- Pendientes -->
+                <div class="page-card" style="margin-bottom:24px;">
+                    <h2><i class="fas fa-hourglass-half" style="color:#FF9800;"></i> Solicitudes Pendientes</h2>
+                    <p style="color:#999;margin-bottom:16px;">Vendedores que esperan aprobación para operar su tienda.</p>
+
+                    <div th:if="${#lists.isEmpty(vendedoresPendientes)}" style="text-align:center;padding:40px;color:#999;">
+                        <i class="fas fa-check-circle" style="font-size:40px;color:#4CAF50;margin-bottom:12px;display:block;"></i>
+                        <p>No hay solicitudes pendientes. ¡Todo al día!</p>
+                    </div>
+
+                    <table class="table" th:unless="${#lists.isEmpty(vendedoresPendientes)}">
+                        <thead>
+                            <tr>
+                                <th>Vendedor</th>
+                                <th>Email</th>
+                                <th>Razón Social</th>
+                                <th>Teléfono</th>
+                                <th>Descripción</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="v : ${vendedoresPendientes}">
+                                <td th:text="${v.nombre}">Nombre</td>
+                                <td th:text="${v.email}">email@ejemplo.com</td>
+                                <td th:text="${v.perfilVendedor.razonSocial}">Razón Social</td>
+                                <td th:text="${v.perfilVendedor.telefonoContacto}">Teléfono</td>
+                                <td th:text="${v.perfilVendedor.descripcionNegocio != null ? v.perfilVendedor.descripcionNegocio : '-'}">Descripción</td>
+                                <td style="white-space:nowrap;">
+                                    <form th:action="@{/admin/tiendas/{id}/aprobar(id=${v.id})}" method="post" style="display:inline;">
+                                        <button type="submit" class="btn-action" style="background:#4CAF50;">
+                                            <i class="fas fa-check"></i> Aprobar
+                                        </button>
+                                    </form>
+                                    <form th:action="@{/admin/tiendas/{id}/rechazar(id=${v.id})}" method="post" style="display:inline;margin-left:6px;">
+                                        <button type="submit" class="btn-action" style="background:#f44336;">
+                                            <i class="fas fa-times"></i> Rechazar
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Verificados -->
+                <div class="page-card">
+                    <h2><i class="fas fa-store" style="color:#4CAF50;"></i> Tiendas Verificadas</h2>
+                    <p style="color:#999;margin-bottom:16px;">Vendedores con tienda activa y aprobada.</p>
+
+                    <div th:if="${#lists.isEmpty(vendedoresVerificados)}" style="text-align:center;padding:40px;color:#999;">
+                        <i class="fas fa-store-slash" style="font-size:40px;color:#ccc;margin-bottom:12px;display:block;"></i>
+                        <p>Aún no hay tiendas verificadas.</p>
+                    </div>
+
+                    <table class="table" th:unless="${#lists.isEmpty(vendedoresVerificados)}">
+                        <thead>
+                            <tr>
+                                <th>Vendedor</th>
+                                <th>Email</th>
+                                <th>Razón Social</th>
+                                <th>Estado</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="v : ${vendedoresVerificados}">
+                                <td th:text="${v.nombre}">Nombre</td>
+                                <td th:text="${v.email}">email@ejemplo.com</td>
+                                <td th:text="${v.perfilVendedor.razonSocial}">Razón Social</td>
+                                <td><span class="badge badge-active"><i class="fas fa-check-circle"></i> Verificado</span></td>
+                                <td>
+                                    <form th:action="@{/admin/tiendas/{id}/rechazar(id=${v.id})}" method="post"
+                                          onsubmit="return confirm('¿Revocar verificación a esta tienda?')">
+                                        <button type="submit" class="btn-action" style="background:#FF9800;">
+                                            <i class="fas fa-ban"></i> Revocar
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- SESIONES PAGE -->
+            <div class="page" id="sesiones-page" style="display:none;">
+                <div class="page-card">
+                    <h2><i class="fas fa-user-clock"></i> Sesiones Activas (Últimas 24h)</h2>
+                    <p style="color:#999;margin-bottom:16px;">Usuarios que han interactuado con la plataforma recientemente.</p>
+                    
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Usuario</th>
+                                <th>Email</th>
+                                <th>Rol</th>
+                                <th>Última Conexión</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="user : ${usuariosActivos}">
+                                <td th:text="${user.nombre}">Nombre</td>
+                                <td th:text="${user.email}">email@ejemplo.com</td>
+                                <td>
+                                    <span class="badge" th:classappend="${user.rol != null ? (user.rol.name() == 'ADMIN' ? 'badge-admin' : (user.rol.name() == 'VENDEDOR' ? 'badge-mod' : 'badge-user')) : 'badge-user'}" th:text="${user.rol != null ? user.rol : 'SIN ROL'}">Rol</span>
+                                </td>
+                                <td th:text="${#temporals.format(user.ultimaConexion, 'dd/MM/yyyy HH:mm')}">Fecha</td>
+                                <td><span class="badge badge-active">Conectado</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- NOTIFICACIONES PAGE -->
+            <div class="page" id="notificaciones-page" style="display:none;">
+                <div class="page-card" style="margin-bottom:24px;">
+                    <h2><i class="fas fa-paper-plane"></i> Enviar Notificación del Sistema</h2>
+                    <form th:action="@{/admin/notificaciones/enviar}" method="post" class="form-container">
+                        <div class="form-group">
+                            <label>Título</label>
+                            <input type="text" name="titulo" placeholder="Ej: Mantenimiento programado" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Mensaje</label>
+                            <textarea name="mensaje" rows="3" placeholder="Escriba el anuncio aquí..." required></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Tipo</label>
+                                <select name="tipo">
+                                    <option value="INFO">Información (Azul)</option>
+                                    <option value="SUCCESS">Éxito (Verde)</option>
+                                    <option value="WARNING">Advertencia (Naranja)</option>
+                                    <option value="DANGER">Urgente (Rojo)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Usuario ID (Opcional)</label>
+                                <input type="text" name="usuarioId" placeholder="ID de usuario específico o vacío para todos">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-send"></i> Enviar a todos</button>
+                    </form>
+                </div>
+
+                <div class="page-card">
+                    <h2><i class="fas fa-history"></i> Historial de Notificaciones</h2>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Título</th>
+                                <th>Tipo</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="n : ${notificaciones}">
+                                <td th:text="${#temporals.format(n.fecha, 'dd/MM HH:mm')}">Fecha</td>
+                                <td th:text="${n.titulo}">Título</td>
+                                <td><span class="badge" th:text="${n.tipo}">Tipo</span></td>
+                                <td>
+                                    <form th:action="@{/admin/notificaciones/{id}/eliminar(id=${n.id})}" method="post">
+                                        <button type="submit" class="btn-action" style="background:#f44336;"><i class="fas fa-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- MENSAJES PAGE -->
+            <div class="page" id="mensajes-page" style="display:none;">
+                <div class="page-card">
+                    <h2><i class="fas fa-envelope-open-text"></i> Centro de Mensajes</h2>
+                    <div th:if="${#lists.isEmpty(mensajesRecibidos)}" style="text-align:center;padding:40px;color:#999;">
+                        <i class="fas fa-inbox" style="font-size:40px;margin-bottom:12px;display:block;"></i>
+                        <p>No hay mensajes nuevos.</p>
+                    </div>
+                    <div class="activity-log" th:unless="${#lists.isEmpty(mensajesRecibidos)}">
+                        <div class="activity-item" th:each="m : ${mensajesRecibidos}">
+                            <div class="activity-icon" style="background: #9C27B0;">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="activity-content">
+                                <h4 th:text="${m.emisorNombre + ' - ' + m.asunto}">Remitente</h4>
+                                <p th:text="${m.contenido}">Contenido del mensaje...</p>
+                                <span class="time" th:text="${#temporals.format(m.fecha, 'dd/MM/yyyy HH:mm')}">Fecha</span>
+                                <form th:action="@{/admin/mensajes/{id}/eliminar(id=${m.id})}" method="post" style="display:inline;">
+                                    <button type="submit" style="color:red; background:none; border:none; cursor:pointer;"><i class="fas fa-trash"></i></button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <script th:src="@{/js/admin-panel.js}"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        document.addEventListener('DOMContentLoaded', function() {
+            const activePage = /*[[${activePage}]]*/ 'dashboard';
+            if (typeof navigateToPage === 'function') {
+                navigateToPage(activePage);
+            }
+        });
+        /*]]>*/
+    </script>
+</body>
 </html>

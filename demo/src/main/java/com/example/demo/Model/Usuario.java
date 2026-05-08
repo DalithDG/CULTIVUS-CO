@@ -28,7 +28,7 @@ public class Usuario {
 
     // "ADMIN", "COMPRADOR", "VENDEDOR"
     @Field("rol")
-    private String rol;
+    private Role rol;
 
     @Field("created_at")
     private LocalDateTime createdAt;
@@ -45,12 +45,15 @@ public class Usuario {
     @Field("perfil_admin")
     private PerfilAdmin perfilAdmin;
 
+    @Field("ultima_conexion")
+    private LocalDateTime ultimaConexion;
+
     // Constructores
     public Usuario() {
         this.createdAt = LocalDateTime.now();
     }
 
-    public Usuario(String nombre, String email, String contrasena, String rol) {
+    public Usuario(String nombre, String email, String contrasena, Role rol) {
         this.nombre = nombre;
         this.email = email;
         this.contrasena = contrasena;
@@ -59,30 +62,83 @@ public class Usuario {
     }
 
     // Getters y Setters
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
+    public String getId() {
+        return id;
+    }
 
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
+    public void setId(String id) {
+        this.id = id;
+    }
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public String getNombre() {
+        return nombre;
+    }
 
-    public String getContrasena() { return contrasena; }
-    public void setContrasena(String contrasena) { this.contrasena = contrasena; }
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
 
-    public String getRol() { return rol; }
-    public void setRol(String rol) { this.rol = rol; }
+    public String getEmail() {
+        return email;
+    }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
-    public UbicacionUsuario getUbicacion() { return ubicacion; }
-    public void setUbicacion(UbicacionUsuario ubicacion) { this.ubicacion = ubicacion; }
+    public String getContrasena() {
+        return contrasena;
+    }
 
-    public PerfilVendedor getPerfilVendedor() { return perfilVendedor; }
-    public void setPerfilVendedor(PerfilVendedor perfilVendedor) { this.perfilVendedor = perfilVendedor; }
+    public void setContrasena(String contrasena) {
+        this.contrasena = contrasena;
+    }
 
-    public PerfilAdmin getPerfilAdmin() { return perfilAdmin; }
-    public void setPerfilAdmin(PerfilAdmin perfilAdmin) { this.perfilAdmin = perfilAdmin; }
+    public Role getRol() {
+        return rol;
+    }
+
+    public void setRol(Role nuevoRol) {
+        this.rol = nuevoRol;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public UbicacionUsuario getUbicacion() {
+        return ubicacion;
+    }
+
+    public void setUbicacion(UbicacionUsuario ubicacion) {
+        this.ubicacion = ubicacion;
+    }
+
+    public PerfilVendedor getPerfilVendedor() {
+        return perfilVendedor;
+    }
+
+    public void setPerfilVendedor(PerfilVendedor perfilVendedor) {
+        this.perfilVendedor = perfilVendedor;
+    }
+
+    public PerfilAdmin getPerfilAdmin() {
+        return perfilAdmin;
+    }
+
+    public void setPerfilAdmin(PerfilAdmin perfilAdmin) {
+        this.perfilAdmin = perfilAdmin;
+    }
+
+    public LocalDateTime getUltimaConexion() {
+        return ultimaConexion;
+    }
+
+    public void setUltimaConexion(LocalDateTime ultimaConexion) {
+        this.ultimaConexion = ultimaConexion;
+    }
 }

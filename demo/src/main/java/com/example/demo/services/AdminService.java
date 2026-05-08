@@ -1,23 +1,20 @@
 package com.example.demo.services;
 
-import com.example.demo.Model.Producto;
-import com.example.demo.Model.Resena;
-import com.example.demo.Model.Usuario;
+import com.example.demo.Model.*;
 import com.example.demo.Model.embebidos.PerfilAdmin;
-import com.example.demo.repository.PedidoRepository;
-import com.example.demo.repository.ProductoRepository;
-import com.example.demo.repository.ResenaRepository;
-import com.example.demo.repository.UsuarioRepository;
+import com.example.demo.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class AdminService {
+
+    @Autowired
+    private NotificacionService notificacionService;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -33,6 +30,15 @@ public class AdminService {
 
     @Autowired
     private ResenaRepository resenaRepository;
+
+    @Autowired
+    private CategoriaRepository categoriaRepository;
+
+    @Autowired
+    private NotificacionRepository notificacionRepository;
+
+    @Autowired
+    private MensajeRepository mensajeRepository;
 
     // ==================== GESTIÓN DE ADMINS ====================
 
@@ -54,7 +60,7 @@ public class AdminService {
         usuario.setNombre(nombre);
         usuario.setEmail(email.toLowerCase().trim());
         usuario.setContrasena(contrasena);
-        usuario.setRol("ADMIN");
+        usuario.setRol(Role.ADMIN);
         usuario.setPerfilAdmin(perfilAdmin);
 
         return usuarioRepository.save(usuario);
@@ -65,7 +71,7 @@ public class AdminService {
      */
     public boolean esAdmin(String usuarioId) {
         return usuarioRepository.findById(usuarioId)
-                .map(u -> "ADMIN".equals(u.getRol()))
+                .map(u -> Role.ADMIN.equals(u.getRol()))
                 .orElse(false);
     }
 
@@ -90,7 +96,8 @@ public class AdminService {
             throw new IllegalArgumentException("Este usuario no tiene perfil de administrador");
         }
 
-        if (nivelPermisos != null) perfil.setNivelPermisos(nivelPermisos);
+        if (nivelPermisos != null)
+            perfil.setNivelPermisos(nivelPermisos);
         perfil.setActivo(activo);
 
         usuario.setPerfilAdmin(perfil);
@@ -124,7 +131,7 @@ public class AdminService {
         if (!usuario.getContrasena().equals(contrasena)) {
             throw new IllegalArgumentException("Credenciales incorrectas");
         }
-        if (!"ADMIN".equals(usuario.getRol())) {
+        if (!Role.ADMIN.equals(usuario.getRol())) {
             throw new IllegalArgumentException("No tienes permisos de administrador");
         }
 
@@ -159,7 +166,7 @@ public class AdminService {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
 
-        usuario.setRol(nuevoRol);
+        usuario.setRol(Role.valueOf(nuevoRol));
         usuarioRepository.save(usuario);
     }
 
@@ -168,6 +175,66 @@ public class AdminService {
      */
     public void eliminarUsuario(String usuarioId) {
         usuarioService.eliminarUsuario(usuarioId);
+    }
+
+    // ==================== VERIFICACIÓN DE TIENDAS ====================
+
+    /**
+     * Obtiene todos los vendedores pendientes de verificación
+     */
+    public List<Usuario> obtenerVendedoresPendientes() {
+        return usuarioRepository.findAll().stream()
+                .filter(u -> u.getPerfilVendedor() != null && !u.getPerfilVendedor().isVerificado())
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    /**
+     * Obtiene todos los vendedores ya verificados
+     */
+    public List<Usuario> obtenerVendedoresVerificados() {
+        return usuarioRepository.findAll().stream()
+                .filter(u -> u.getPerfilVendedor() != null && u.getPerfilVendedor().isVerificado())
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    /**
+     * Aprueba la tienda de un vendedor
+     */
+    public void aprobarVendedor(String usuarioId) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+        if (usuario.getPerfilVendedor() == null)
+            throw new IllegalArgumentException("El usuario no tiene perfil de vendedor");
+        usuario.getPerfilVendedor().setVerificado(true);
+        usuarioRepository.save(usuario);
+
+        // Notificar al Vendedor
+        notificacionService.enviar(
+                usuarioId,
+                "Tienda Verificada",
+                "¡Felicidades! Tu tienda ha sido aprobada por el administrador. Ya puedes empezar a vender.",
+                "SUCCESS"
+        );
+    }
+
+    /**
+     * Rechaza/revoca la verificación de un vendedor
+     */
+    public void rechazarVendedor(String usuarioId) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+        if (usuario.getPerfilVendedor() == null)
+            throw new IllegalArgumentException("El usuario no tiene perfil de vendedor");
+        usuario.getPerfilVendedor().setVerificado(false);
+        usuarioRepository.save(usuario);
+
+        // Notificar al Vendedor
+        notificacionService.enviar(
+                usuarioId,
+                "Verificación de Tienda",
+                "Tu solicitud de verificación de tienda ha sido rechazada o revocada. Contacta con soporte para más detalles.",
+                "WARNING"
+        );
     }
 
     // ==================== GESTIÓN DE PRODUCTOS ====================
@@ -216,6 +283,16 @@ public class AdminService {
         return resenaRepository.findTop10ByOrderByFechaDesc();
     }
 
+    // ==================== GESTIÓN DE CATEGORÍAS ====================
+    public List<Categoria> obtenerTodasLasCategorias() {
+        return categoriaRepository.findAll();
+    }
+
+    // ==================== GESTIÓN DE PEDIDOS ====================
+    public List<Pedido> obtenerTodosLosPedidos() {
+        return pedidoRepository.findAll();
+    }
+
     // ==================== ESTADÍSTICAS ====================
 
     /**
@@ -241,5 +318,42 @@ public class AdminService {
         estadisticas.put("usuariosPorRol", usuariosPorRol);
 
         return estadisticas;
+    }
+
+    // ==================== GESTIÓN DE NOTIFICACIONES ====================
+
+    public List<Notificacion> obtenerTodasLasNotificaciones() {
+        return notificacionRepository.findAll();
+    }
+
+    public Notificacion enviarNotificacion(String titulo, String mensaje, String tipo, String usuarioId) {
+        Notificacion notificacion = new Notificacion(titulo, mensaje, tipo);
+        notificacion.setUsuarioId(usuarioId);
+        return notificacionRepository.save(notificacion);
+    }
+
+    public void eliminarNotificacion(String id) {
+        notificacionRepository.deleteById(id);
+    }
+
+    // ==================== GESTIÓN DE MENSAJES ====================
+
+    public List<Mensaje> obtenerTodosLosMensajes() {
+        return mensajeRepository.findAll();
+    }
+
+    public void eliminarMensaje(String id) {
+        mensajeRepository.deleteById(id);
+    }
+
+    // ==================== SESIONES (Actividad Reciente) ====================
+
+    public List<Usuario> obtenerUsuariosActivos() {
+        // Consideramos "activos" a los que se conectaron en las últimas 24 horas
+        LocalDateTime hace24Horas = LocalDateTime.now().minusHours(24);
+        return usuarioRepository.findAll().stream()
+                .filter(u -> u.getUltimaConexion() != null && u.getUltimaConexion().isAfter(hace24Horas))
+                .sorted(Comparator.comparing(Usuario::getUltimaConexion).reversed())
+                .collect(Collectors.toList());
     }
 }
