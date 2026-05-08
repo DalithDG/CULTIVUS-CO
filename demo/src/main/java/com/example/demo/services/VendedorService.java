@@ -21,6 +21,9 @@ public class VendedorService {
     @Autowired
     private PedidoRepository pedidoRepository;
 
+    @Autowired
+    private NotificacionService notificacionService;
+
     /**
      * Crea un perfil de vendedor para un usuario existente
      */
@@ -145,6 +148,14 @@ public class VendedorService {
 
         pedido.setEstado(nuevoEstado);
         pedidoRepository.save(pedido);
+
+        // Notificar al Comprador
+        notificacionService.enviar(
+                pedido.getComprador().getId(),
+                "Actualización de Pedido",
+                "El estado de tu pedido #" + pedido.getId() + " ha cambiado a: " + nuevoEstado,
+                "INFO"
+        );
     }
 
     /**

@@ -55,8 +55,9 @@ public class OAuth2UsuarioService extends DefaultOAuth2UserService {
             Usuario usuario = usuarioExistente.get();
             if (nombre != null && !nombre.equals(usuario.getNombre())) {
                 usuario.setNombre(nombre);
-                usuarioRepository.save(usuario);
             }
+            usuario.setUltimaConexion(java.time.LocalDateTime.now());
+            usuarioRepository.save(usuario);
         } else {
             // Primera vez con Google → crear cuenta automáticamente
             Usuario nuevoUsuario = new Usuario();
@@ -65,6 +66,7 @@ public class OAuth2UsuarioService extends DefaultOAuth2UserService {
             // Sin contraseña: este usuario solo puede autenticarse vía Google
             nuevoUsuario.setContrasena(null);
             nuevoUsuario.setRol(Role.COMPRADOR);
+            nuevoUsuario.setUltimaConexion(java.time.LocalDateTime.now());
 
             usuarioRepository.save(nuevoUsuario);
         }

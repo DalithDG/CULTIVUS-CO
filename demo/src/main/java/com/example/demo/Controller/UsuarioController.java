@@ -14,7 +14,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.example.demo.repository.PedidoRepository;
+import com.example.demo.repository.NotificacionRepository;
 import com.example.demo.Model.Pedido;
+import com.example.demo.Model.Notificacion;
 
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
@@ -30,19 +32,22 @@ public class UsuarioController {
     private final ProductoService productoService;
     private final PasswordEncoder passwordEncoder;
     private final PedidoRepository pedidoRepository;
+    private final NotificacionRepository notificacionRepository;
 
     public UsuarioController(UsuarioService usuarioService,
             UbicacionService ubicacionService,
             VendedorService vendedorService,
             ProductoService productoService,
             PasswordEncoder passwordEncoder,
-            PedidoRepository pedidoRepository) {
+            PedidoRepository pedidoRepository,
+            NotificacionRepository notificacionRepository) {
         this.usuarioService = usuarioService;
         this.ubicacionService = ubicacionService;
         this.vendedorService = vendedorService;
         this.productoService = productoService;
         this.passwordEncoder = passwordEncoder;
         this.pedidoRepository = pedidoRepository;
+        this.notificacionRepository = notificacionRepository;
     }
 
     @GetMapping("/registro")
@@ -206,7 +211,14 @@ public class UsuarioController {
         }
 
         // Guardar el usuario en sesión
+        usuario.setUltimaConexion(java.time.LocalDateTime.now());
+        usuarioService.save(usuario);
         session.setAttribute("usuarioLogueado", usuario);
+
+        // Contar notificaciones no leídas
+        long notificacionesCount = notificacionRepository.findByUsuarioIdOrderByFechaDesc(usuario.getId())
+                .stream().filter(n -> !n.isLeida()).count();
+        session.setAttribute("notificacionesCount", notificacionesCount);
 
         // Redirigir según el rol del usuario
         Role rol = usuario.getRol();
@@ -401,5 +413,41 @@ public class UsuarioController {
             model.addAttribute("departamento", departamento);
         if (ciudad != null)
             model.addAttribute("ciudad", ciudad);
+    }
+
+    // --- SECCIÓN DE NOTIFICACIONES ---
+
+    @GetMapping("/notificaciones")
+    public String mostrarNotificaciones(HttpSession session, Model model,
+            RedirectAttributes redirectAttributes) {
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuario == null) {
+            redirectAttributes.addFlashAttribute("error", "Debe iniciar sesión primero");
+            return "redirect:/usuario/login";
+        }
+
+        List<Notificacion> notificaciones = notificacionRepository.findByUsuarioIdOrderByFechaDesc(usuario.getId());
+        
+        // También incluir notificaciones generales (sin usuarioId)
+        List<Notificacion> generales = notificacionRepository.findByUsuarioIdIsNullOrderByFechaDesc();
+        notificaciones.addAll(generales);
+        
+        // Ordenar por fecha descendente
+        notificaciones.sort((n1, n2) -> n2.getFecha().compareTo(n1.getFecha()));
+
+        model.addAttribute("usuario", usuario);
+        model.addAttribute("notificaciones", notificaciones);
+        
+        // Marcar como leídas (simplificado)
+        notificaciones.forEach(n -> {
+            if (n.getUsuarioId() != null && n.getUsuarioId().equals(usuario.getId())) {
+                n.setLeida(true);
+                notificacionRepository.save(n);
+            }
+        });
+        
+        session.setAttribute("notificacionesCount", 0);
+
+        return "notificaciones";
     }
 }

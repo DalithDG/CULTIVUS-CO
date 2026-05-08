@@ -105,6 +105,30 @@
                           style="background:#FF5252;color:white;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-left:auto;"></span>
                 </a>
             </div>
+
+            <!-- Sesiones Activas -->
+            <div class="menu-item">
+                <a th:href="@{/admin/sesiones}" class="menu-link" data-page="sesiones">
+                    <i class="fas fa-user-clock"></i>
+                    <span class="menu-text">Sesiones</span>
+                </a>
+            </div>
+
+            <!-- Notificaciones -->
+            <div class="menu-item">
+                <a th:href="@{/admin/notificaciones}" class="menu-link" data-page="notificaciones">
+                    <i class="fas fa-bell"></i>
+                    <span class="menu-text">Notificaciones</span>
+                </a>
+            </div>
+
+            <!-- Mensajes -->
+            <div class="menu-item">
+                <a th:href="@{/admin/mensajes}" class="menu-link" data-page="mensajes">
+                    <i class="fas fa-envelope"></i>
+                    <span class="menu-text">Mensajes</span>
+                </a>
+            </div>
         </nav>
 
         <!-- Profile Section -->
@@ -112,7 +136,7 @@
             <div class="user-profile">
                 <img src="https://via.placeholder.com/40" alt="Profile" class="profile-img">
                 <div class="profile-info">
-                    <p class="profile-name" th:text="${admin.nombre}">Admin</p>
+                    <p class="profile-name" th:text="${admin != null ? admin.nombre : 'Admin'}">Admin</p>
                     <span class="profile-status">Online</span>
                 </div>
                 <a th:href="@{/usuario/logout}" style="color: white; margin-left: 10px;">
@@ -220,13 +244,16 @@
                                 <td th:text="${user.nombre}">Juan García</td>
                                 <td th:text="${user.email}">juan@cultivus.com</td>
                                 <td>
-                                    <span class="badge" th:classappend="${user.rol.name() == 'ADMIN' ? 'badge-admin' : (user.rol.name() == 'VENDEDOR' ? 'badge-mod' : 'badge-user')}" th:text="${user.rol}">Rol</span>
+                                    <span class="badge" 
+                                          th:classappend="${user.rol != null ? (user.rol.name() == 'ADMIN' ? 'badge-admin' : (user.rol.name() == 'VENDEDOR' ? 'badge-mod' : 'badge-user')) : 'badge-user'}" 
+                                          th:text="${user.rol != null ? user.rol : 'SIN ROL'}">Rol</span>
                                 </td>
                                 <td><span class="badge badge-active">Activo</span></td>
                                 <td>
                                     <form th:action="@{/admin/usuarios/{id}/cambiar-rol(id=${user.id})}" method="post" style="display:inline;">
                                         <select name="nuevoRol" onchange="this.form.submit()">
-                                            <option th:each="r : ${roles}" th:value="${r}" th:text="${r}" th:selected="${user.rol == r}"></option>
+                                            <option th:each="r : ${roles}" th:value="${r}" th:text="${r}" 
+                                                    th:selected="${user.rol != null && user.rol.name() == r}"></option>
                                         </select>
                                     </form>
                                     <form th:action="@{/admin/usuarios/{id}/eliminar(id=${user.id})}" method="post" style="display:inline;" onsubmit="return confirm('¿Eliminar usuario?')">
@@ -273,9 +300,9 @@
                                 <i class="fas fa-comment"></i>
                             </div>
                             <div class="activity-content">
-                                <h4 th:text="${resena.usuarioNombre}">Nueva reseña</h4>
+                                <h4 th:text="${resena.usuarioId}">Nueva reseña</h4>
                                 <p th:text="${resena.comentario}">Comentario</p>
-                                <span class="time" th:text="${#temporals.format(resena.fecha, 'dd/MM/yyyy HH:mm')}">Hace poco</span>
+                                <span class="time" th:text="${#temporals.format(resena.fecha, 'dd/MM/yyyy')}">Hace poco</span>
                                 <form th:action="@{/admin/resenas/{id}/eliminar(id=${resena.id})}" method="post" style="display:inline;">
                                     <button type="submit" style="color:red; background:none; border:none; cursor:pointer;"><i class="fas fa-trash"></i></button>
                                 </form>
@@ -329,7 +356,7 @@
                                 <td th:text="${p.compraMinima}">1</td>
                                 <td>Almacén General</td>
                                 <td>
-                                    <span class="badge" th:classappend="${p.stock > 10 ? 'badge-active' : 'badge-warning'}" th:text="${p.stock > 10 ? 'Ok' : 'Bajo'}">Estado</span>
+                                    <span class="badge" th:classappend="${(p.stock ?: 0) > 10 ? 'badge-active' : 'badge-warning'}" th:text="${(p.stock ?: 0) > 10 ? 'Ok' : 'Bajo'}">Estado</span>
                                 </td>
                             </tr>
                         </tbody>
@@ -419,9 +446,9 @@
                         <tbody>
                             <tr th:each="pedido : ${pedidos}">
                                 <td th:text="${pedido.id}">#ORD-001</td>
-                                <td th:text="${pedido.usuarioNombre}">Pedro Sánchez</td>
-                                <td th:text="${'$' + pedido.total}">$156.99</td>
-                                <td th:text="${#temporals.format(pedido.fecha, 'dd/MM/yyyy')}">22/04/2026</td>
+                                <td th:text="${pedido.comprador != null ? pedido.comprador.nombre : 'Anónimo'}">Pedro Sánchez</td>
+                                <td th:text="${'$' + (pedido.total ?: 0)}">$156.99</td>
+                                <td th:text="${pedido.fechaPedido != null ? #temporals.format(pedido.fechaPedido, 'dd/MM/yyyy') : '-'}">22/04/2026</td>
                                 <td>
                                     <span class="badge" th:classappend="${pedido.estado == 'ENTREGADO' ? 'badge-success' : 'badge-warning'}" th:text="${pedido.estado}">Estado</span>
                                 </td>
@@ -476,7 +503,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr th:each="user : ${usuarios}" th:if="${user.rol.name() == 'COMPRADOR'}">
+                             <tr th:each="user : ${usuarios}" th:if="${user.rol != null && user.rol.name() == 'COMPRADOR'}">
                                 <td th:text="${user.nombre}">Nombre</td>
                                 <td th:text="${user.email}">Email</td>
                                 <td>-</td>
@@ -636,7 +663,6 @@
                     </div>
                 </div>
             </div>
-        </div>
 
             <!-- VERIFICACIÓN DE TIENDAS PAGE -->
             <div class="page" id="verificacion-tiendas-page" style="display:none;">
@@ -726,8 +752,122 @@
                 </div>
             </div>
 
-    </div>
-</div>
+            <!-- SESIONES PAGE -->
+            <div class="page" id="sesiones-page" style="display:none;">
+                <div class="page-card">
+                    <h2><i class="fas fa-user-clock"></i> Sesiones Activas (Últimas 24h)</h2>
+                    <p style="color:#999;margin-bottom:16px;">Usuarios que han interactuado con la plataforma recientemente.</p>
+                    
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Usuario</th>
+                                <th>Email</th>
+                                <th>Rol</th>
+                                <th>Última Conexión</th>
+                                <th>Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="user : ${usuariosActivos}">
+                                <td th:text="${user.nombre}">Nombre</td>
+                                <td th:text="${user.email}">email@ejemplo.com</td>
+                                <td>
+                                    <span class="badge" th:classappend="${user.rol != null ? (user.rol.name() == 'ADMIN' ? 'badge-admin' : (user.rol.name() == 'VENDEDOR' ? 'badge-mod' : 'badge-user')) : 'badge-user'}" th:text="${user.rol != null ? user.rol : 'SIN ROL'}">Rol</span>
+                                </td>
+                                <td th:text="${#temporals.format(user.ultimaConexion, 'dd/MM/yyyy HH:mm')}">Fecha</td>
+                                <td><span class="badge badge-active">Conectado</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- NOTIFICACIONES PAGE -->
+            <div class="page" id="notificaciones-page" style="display:none;">
+                <div class="page-card" style="margin-bottom:24px;">
+                    <h2><i class="fas fa-paper-plane"></i> Enviar Notificación del Sistema</h2>
+                    <form th:action="@{/admin/notificaciones/enviar}" method="post" class="form-container">
+                        <div class="form-group">
+                            <label>Título</label>
+                            <input type="text" name="titulo" placeholder="Ej: Mantenimiento programado" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Mensaje</label>
+                            <textarea name="mensaje" rows="3" placeholder="Escriba el anuncio aquí..." required></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Tipo</label>
+                                <select name="tipo">
+                                    <option value="INFO">Información (Azul)</option>
+                                    <option value="SUCCESS">Éxito (Verde)</option>
+                                    <option value="WARNING">Advertencia (Naranja)</option>
+                                    <option value="DANGER">Urgente (Rojo)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Usuario ID (Opcional)</label>
+                                <input type="text" name="usuarioId" placeholder="ID de usuario específico o vacío para todos">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-send"></i> Enviar a todos</button>
+                    </form>
+                </div>
+
+                <div class="page-card">
+                    <h2><i class="fas fa-history"></i> Historial de Notificaciones</h2>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Título</th>
+                                <th>Tipo</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="n : ${notificaciones}">
+                                <td th:text="${#temporals.format(n.fecha, 'dd/MM HH:mm')}">Fecha</td>
+                                <td th:text="${n.titulo}">Título</td>
+                                <td><span class="badge" th:text="${n.tipo}">Tipo</span></td>
+                                <td>
+                                    <form th:action="@{/admin/notificaciones/{id}/eliminar(id=${n.id})}" method="post">
+                                        <button type="submit" class="btn-action" style="background:#f44336;"><i class="fas fa-trash"></i></button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- MENSAJES PAGE -->
+            <div class="page" id="mensajes-page" style="display:none;">
+                <div class="page-card">
+                    <h2><i class="fas fa-envelope-open-text"></i> Centro de Mensajes</h2>
+                    <div th:if="${#lists.isEmpty(mensajesRecibidos)}" style="text-align:center;padding:40px;color:#999;">
+                        <i class="fas fa-inbox" style="font-size:40px;margin-bottom:12px;display:block;"></i>
+                        <p>No hay mensajes nuevos.</p>
+                    </div>
+                    <div class="activity-log" th:unless="${#lists.isEmpty(mensajesRecibidos)}">
+                        <div class="activity-item" th:each="m : ${mensajesRecibidos}">
+                            <div class="activity-icon" style="background: #9C27B0;">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div class="activity-content">
+                                <h4 th:text="${m.emisorNombre + ' - ' + m.asunto}">Remitente</h4>
+                                <p th:text="${m.contenido}">Contenido del mensaje...</p>
+                                <span class="time" th:text="${#temporals.format(m.fecha, 'dd/MM/yyyy HH:mm')}">Fecha</span>
+                                <form th:action="@{/admin/mensajes/{id}/eliminar(id=${m.id})}" method="post" style="display:inline;">
+                                    <button type="submit" style="color:red; background:none; border:none; cursor:pointer;"><i class="fas fa-trash"></i></button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     <script th:src="@{/js/admin-panel.js}"></script>
     <script th:inline="javascript">

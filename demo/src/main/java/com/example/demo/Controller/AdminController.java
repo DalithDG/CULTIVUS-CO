@@ -53,6 +53,9 @@ public class AdminController {
         model.addAttribute("pedidos", adminService.obtenerTodosLosPedidos());
         model.addAttribute("vendedoresPendientes", adminService.obtenerVendedoresPendientes());
         model.addAttribute("vendedoresVerificados", adminService.obtenerVendedoresVerificados());
+        model.addAttribute("usuariosActivos", adminService.obtenerUsuariosActivos());
+        model.addAttribute("notificaciones", adminService.obtenerTodasLasNotificaciones());
+        model.addAttribute("mensajesRecibidos", adminService.obtenerTodosLosMensajes());
     }
 
     // ==================== DASHBOARD ====================
@@ -257,5 +260,108 @@ public class AdminController {
         }
 
         return "redirect:/admin/verificacion-tiendas";
+    }
+
+    // ==================== SESIONES ====================
+
+    @GetMapping("/sesiones")
+    public String mostrarSesiones(HttpSession session, Model model,
+            RedirectAttributes redirectAttributes) {
+
+        if (!verificarAdmin(session, redirectAttributes)) {
+            return "redirect:/usuario/login";
+        }
+
+        Usuario admin = (Usuario) session.getAttribute("usuarioLogueado");
+        cargarDatosDashboard(model, admin);
+        model.addAttribute("activePage", "sesiones");
+
+        return "admin-dashboard";
+    }
+
+    // ==================== NOTIFICACIONES ====================
+
+    @GetMapping("/notificaciones")
+    public String mostrarNotificaciones(HttpSession session, Model model,
+            RedirectAttributes redirectAttributes) {
+
+        if (!verificarAdmin(session, redirectAttributes)) {
+            return "redirect:/usuario/login";
+        }
+
+        Usuario admin = (Usuario) session.getAttribute("usuarioLogueado");
+        cargarDatosDashboard(model, admin);
+        model.addAttribute("activePage", "notificaciones");
+
+        return "admin-dashboard";
+    }
+
+    @PostMapping("/notificaciones/enviar")
+    public String enviarNotificacion(@RequestParam("titulo") String titulo,
+            @RequestParam("mensaje") String mensaje,
+            @RequestParam("tipo") String tipo,
+            @RequestParam(value = "usuarioId", required = false) String usuarioId,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        if (!verificarAdmin(session, redirectAttributes)) {
+            return "redirect:/usuario/login";
+        }
+
+        try {
+            // Normalizar usuarioId: si está vacío, tratar como null (notificación global)
+            String uid = (usuarioId != null && !usuarioId.trim().isEmpty()) ? usuarioId : null;
+            adminService.enviarNotificacion(titulo, mensaje, tipo, uid);
+            redirectAttributes.addFlashAttribute("mensaje", "Notificación enviada");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error: " + e.getMessage());
+        }
+
+        return "redirect:/admin/notificaciones";
+    }
+
+    @PostMapping("/notificaciones/{id}/eliminar")
+    public String eliminarNotificacion(@PathVariable String id,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        if (!verificarAdmin(session, redirectAttributes)) {
+            return "redirect:/usuario/login";
+        }
+
+        adminService.eliminarNotificacion(id);
+        redirectAttributes.addFlashAttribute("mensaje", "Notificación eliminada");
+        return "redirect:/admin/notificaciones";
+    }
+
+    // ==================== MENSAJES ====================
+
+    @GetMapping("/mensajes")
+    public String mostrarMensajes(HttpSession session, Model model,
+            RedirectAttributes redirectAttributes) {
+
+        if (!verificarAdmin(session, redirectAttributes)) {
+            return "redirect:/usuario/login";
+        }
+
+        Usuario admin = (Usuario) session.getAttribute("usuarioLogueado");
+        cargarDatosDashboard(model, admin);
+        model.addAttribute("activePage", "mensajes");
+
+        return "admin-dashboard";
+    }
+
+    @PostMapping("/mensajes/{id}/eliminar")
+    public String eliminarMensaje(@PathVariable String id,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        if (!verificarAdmin(session, redirectAttributes)) {
+            return "redirect:/usuario/login";
+        }
+
+        adminService.eliminarMensaje(id);
+        redirectAttributes.addFlashAttribute("mensaje", "Mensaje eliminado");
+        return "redirect:/admin/mensajes";
     }
 }

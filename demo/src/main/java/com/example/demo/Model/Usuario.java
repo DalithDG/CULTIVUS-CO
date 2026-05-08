@@ -45,6 +45,9 @@ public class Usuario {
     @Field("perfil_admin")
     private PerfilAdmin perfilAdmin;
 
+    @Field("ultima_conexion")
+    private LocalDateTime ultimaConexion;
+
     // Constructores
     public Usuario() {
         this.createdAt = LocalDateTime.now();
@@ -129,5 +132,13 @@ public class Usuario {
 
     public void setPerfilAdmin(PerfilAdmin perfilAdmin) {
         this.perfilAdmin = perfilAdmin;
+    }
+
+    public LocalDateTime getUltimaConexion() {
+        return ultimaConexion;
+    }
+
+    public void setUltimaConexion(LocalDateTime ultimaConexion) {
+        this.ultimaConexion = ultimaConexion;
     }
 }

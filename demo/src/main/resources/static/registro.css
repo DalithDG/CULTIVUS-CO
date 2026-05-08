@@ -656,3 +656,125 @@ body {
   background: var(--cultivus-primary);
   color: var(--white);
 }
+
+/* ========================================
+   SELECTS — Departamento y Ciudad
+   ======================================== */
+
+.select-wrapper {
+  position: relative;
+}
+
+.select-wrapper select {
+  width: 100%;
+  padding: 13px 40px 13px 16px;
+  font-size: 15px;
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  transition: var(--transition);
+  font-family: inherit;
+  color: var(--gray-900);
+  background: var(--white);
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+}
+
+.select-wrapper select::placeholder {
+  color: var(--gray-400);
+}
+
+.select-wrapper select:focus {
+  outline: none;
+  border-color: var(--cultivus-primary);
+  box-shadow: 0 0 0 4px rgba(107, 124, 46, 0.1);
+}
+
+.select-wrapper select:disabled {
+  background: var(--gray-100);
+  color: var(--gray-500);
+  cursor: not-allowed;
+  border-color: var(--gray-200);
+  opacity: 0.7;
+}
+
+.select-arrow {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--gray-500);
+  font-size: 13px;
+  transition: var(--transition-fast);
+}
+
+.select-wrapper select:focus ~ .select-arrow {
+  color: var(--cultivus-primary);
+  transform: translateY(-50%) rotate(180deg);
+}
+
+/* ========================================
+   DIVIDER + BOTÓN GOOGLE EN REGISTRO
+   ======================================== */
+
+.registro-divider {
+  position: relative;
+  text-align: center;
+  margin: 28px 0 20px;
+}
+
+.registro-divider::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--gray-200);
+}
+
+.registro-divider span {
+  position: relative;
+  background: var(--white);
+  padding: 0 16px;
+  font-size: 13px;
+  color: var(--gray-500);
+  font-weight: 500;
+}
+
+.btn-google-registro {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 20px;
+  background: var(--white);
+  border: 2px solid var(--gray-200);
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--gray-800);
+  text-decoration: none;
+  cursor: pointer;
+  transition: var(--transition);
+  margin-bottom: 8px;
+}
+
+.btn-google-registro i {
+  font-size: 18px;
+  color: #db4437;
+}
+
+.btn-google-registro:hover {
+  border-color: #db4437;
+  background: #fff5f5;
+  color: #db4437;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-google-registro:active {
+  transform: translateY(0);
+}

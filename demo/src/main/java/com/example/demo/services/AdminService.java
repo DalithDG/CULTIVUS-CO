@@ -1,28 +1,20 @@
 package com.example.demo.services;
 
-import com.example.demo.Model.Producto;
-import com.example.demo.Model.Resena;
-import com.example.demo.Model.Role;
-import com.example.demo.Model.Usuario;
+import com.example.demo.Model.*;
 import com.example.demo.Model.embebidos.PerfilAdmin;
-import com.example.demo.repository.CategoriaRepository;
-import com.example.demo.repository.PedidoRepository;
-import com.example.demo.repository.ProductoRepository;
-import com.example.demo.repository.ResenaRepository;
-import com.example.demo.repository.UsuarioRepository;
+import com.example.demo.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.demo.Model.Categoria;
-import com.example.demo.Model.Pedido;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class AdminService {
+
+    @Autowired
+    private NotificacionService notificacionService;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -41,6 +33,12 @@ public class AdminService {
 
     @Autowired
     private CategoriaRepository categoriaRepository;
+
+    @Autowired
+    private NotificacionRepository notificacionRepository;
+
+    @Autowired
+    private MensajeRepository mensajeRepository;
 
     // ==================== GESTIÓN DE ADMINS ====================
 
@@ -209,6 +207,14 @@ public class AdminService {
             throw new IllegalArgumentException("El usuario no tiene perfil de vendedor");
         usuario.getPerfilVendedor().setVerificado(true);
         usuarioRepository.save(usuario);
+
+        // Notificar al Vendedor
+        notificacionService.enviar(
+                usuarioId,
+                "Tienda Verificada",
+                "¡Felicidades! Tu tienda ha sido aprobada por el administrador. Ya puedes empezar a vender.",
+                "SUCCESS"
+        );
     }
 
     /**
@@ -221,6 +227,14 @@ public class AdminService {
             throw new IllegalArgumentException("El usuario no tiene perfil de vendedor");
         usuario.getPerfilVendedor().setVerificado(false);
         usuarioRepository.save(usuario);
+
+        // Notificar al Vendedor
+        notificacionService.enviar(
+                usuarioId,
+                "Verificación de Tienda",
+                "Tu solicitud de verificación de tienda ha sido rechazada o revocada. Contacta con soporte para más detalles.",
+                "WARNING"
+        );
     }
 
     // ==================== GESTIÓN DE PRODUCTOS ====================
@@ -304,5 +318,42 @@ public class AdminService {
         estadisticas.put("usuariosPorRol", usuariosPorRol);
 
         return estadisticas;
+    }
+
+    // ==================== GESTIÓN DE NOTIFICACIONES ====================
+
+    public List<Notificacion> obtenerTodasLasNotificaciones() {
+        return notificacionRepository.findAll();
+    }
+
+    public Notificacion enviarNotificacion(String titulo, String mensaje, String tipo, String usuarioId) {
+        Notificacion notificacion = new Notificacion(titulo, mensaje, tipo);
+        notificacion.setUsuarioId(usuarioId);
+        return notificacionRepository.save(notificacion);
+    }
+
+    public void eliminarNotificacion(String id) {
+        notificacionRepository.deleteById(id);
+    }
+
+    // ==================== GESTIÓN DE MENSAJES ====================
+
+    public List<Mensaje> obtenerTodosLosMensajes() {
+        return mensajeRepository.findAll();
+    }
+
+    public void eliminarMensaje(String id) {
+        mensajeRepository.deleteById(id);
+    }
+
+    // ==================== SESIONES (Actividad Reciente) ====================
+
+    public List<Usuario> obtenerUsuariosActivos() {
+        // Consideramos "activos" a los que se conectaron en las últimas 24 horas
+        LocalDateTime hace24Horas = LocalDateTime.now().minusHours(24);
+        return usuarioRepository.findAll().stream()
+                .filter(u -> u.getUltimaConexion() != null && u.getUltimaConexion().isAfter(hace24Horas))
+                .sorted(Comparator.comparing(Usuario::getUltimaConexion).reversed())
+                .collect(Collectors.toList());
     }
 }

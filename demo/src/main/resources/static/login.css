@@ -79,10 +79,10 @@ body {
 /* Card Principal - Flotante */
 .login-card {
   width: 100%;
-  max-width: 440px;
+  max-width: 400px;
   background: var(--white);
   border-radius: var(--radius-xl);
-  padding: 48px 40px;
+  padding: 36px 32px;
   box-shadow: var(--shadow-2xl);
   position: relative;
   z-index: 1;
@@ -103,13 +103,13 @@ body {
 /* Header del Card */
 .login-header {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 24px;
 }
 
 .logo-circle {
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 20px;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 14px;
   background: linear-gradient(
     135deg,
     var(--cultivus-primary),
@@ -135,15 +135,15 @@ body {
 }
 
 .logo-circle i {
-  font-size: 36px;
+  font-size: 28px;
   color: var(--white);
 }
 
 .login-header h1 {
-  font-size: 32px;
+  font-size: 26px;
   font-weight: 700;
   color: var(--gray-900);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   letter-spacing: -0.5px;
   animation: fadeIn 0.6s ease-out 0.3s backwards;
 }
@@ -158,7 +158,7 @@ body {
 }
 
 .subtitle {
-  font-size: 15px;
+  font-size: 13px;
   color: var(--gray-600);
   font-weight: 400;
   animation: fadeIn 0.6s ease-out 0.4s backwards;
@@ -206,11 +206,11 @@ body {
 
 /* Formulario */
 .login-form {
-  margin-bottom: 32px;
+  margin-bottom: 20px;
 }
 
 .input-group {
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   animation: fadeInUp 0.5s ease-out backwards;
 }
 
@@ -250,8 +250,8 @@ body {
 
 .input-group input {
   width: 100%;
-  padding: 14px 16px;
-  font-size: 15px;
+  padding: 12px 14px;
+  font-size: 14px;
   border: 2px solid var(--gray-200);
   border-radius: var(--radius-md);
   transition: var(--transition);
@@ -307,7 +307,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 28px;
+  margin-bottom: 18px;
   animation: fadeInUp 0.5s ease-out 0.7s backwards;
 }
 
@@ -373,7 +373,7 @@ body {
 /* Botón Principal */
 .btn-primary {
   width: 100%;
-  padding: 16px 24px;
+  padding: 13px 20px;
   background: linear-gradient(
     135deg,
     var(--cultivus-primary),
@@ -433,7 +433,7 @@ body {
 .divider {
   position: relative;
   text-align: center;
-  margin: 32px 0;
+  margin: 20px 0;
   animation: fadeIn 0.5s ease-out 0.9s backwards;
 }
 
@@ -460,13 +460,13 @@ body {
 .social-login {
   display: flex;
   gap: 12px;
-  margin-bottom: 32px;
+  margin-bottom: 20px;
   animation: fadeInUp 0.5s ease-out 1s backwards;
 }
 
 .social-btn {
   flex: 1;
-  padding: 14px;
+  padding: 11px;
   border: 2px solid var(--gray-200);
   background: var(--white);
   border-radius: var(--radius-md);
@@ -475,7 +475,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
+  font-size: 16px;
+  text-decoration: none;
 }
 
 .social-btn:hover {
@@ -517,9 +518,9 @@ body {
 }
 
 .card-footer p {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--gray-600);
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 }
 
 .signup-link {
@@ -563,35 +564,35 @@ body {
   }
 
   .login-card {
-    padding: 36px 28px;
+    padding: 28px 22px;
     border-radius: var(--radius-lg);
   }
 
   .logo-circle {
-    width: 70px;
-    height: 70px;
+    width: 54px;
+    height: 54px;
   }
 
   .logo-circle i {
-    font-size: 32px;
+    font-size: 24px;
   }
 
   .login-header h1 {
-    font-size: 28px;
+    font-size: 22px;
   }
 
   .subtitle {
-    font-size: 14px;
+    font-size: 12px;
   }
 
   .input-group input {
-    padding: 13px 15px;
+    padding: 11px 14px;
     font-size: 16px; /* Evita zoom en iOS */
   }
 
   .btn-primary {
-    padding: 15px 20px;
-    font-size: 15px;
+    padding: 12px 18px;
+    font-size: 14px;
   }
 
   .social-login {
@@ -599,7 +600,7 @@ body {
   }
 
   .social-btn {
-    padding: 12px;
+    padding: 10px;
   }
 }
 

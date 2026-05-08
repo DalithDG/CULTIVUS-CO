@@ -12,6 +12,7 @@ import com.example.demo.Model.embebidos.ProductoPedido;
 import com.example.demo.repository.CarritoRepository;
 import com.example.demo.repository.PedidoRepository;
 import com.example.demo.repository.ProductoRepository;
+import com.example.demo.services.NotificacionService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -34,6 +35,9 @@ public class PagoController {
 
     @Autowired
     private ProductoRepository productoRepository;
+
+    @Autowired
+    private NotificacionService notificacionService;
 
     /**
      * Muestra el formulario de pago
@@ -175,7 +179,23 @@ public class PagoController {
                 Pedido pedidoVendedor = new Pedido(comprador, vendedorIdLocal, direccionEntrega, itemsVendedor, datosPagoVendedor);
                 pedidoVendedor = pedidoRepository.save(pedidoVendedor);
                 pedidosGenerados.add(pedidoVendedor.getId());
+
+                // Notificar al Vendedor
+                notificacionService.enviar(
+                        vendedorIdLocal,
+                        "¡Nueva Venta!",
+                        "Has recibido un nuevo pedido #" + pedidoVendedor.getId() + " de " + usuario.getNombre(),
+                        "SUCCESS"
+                );
             }
+
+            // Notificar al Comprador
+            notificacionService.enviar(
+                    usuario.getId(),
+                    "Pedido Confirmado",
+                    "Tu compra ha sido procesada con éxito. Pedidos generados: " + pedidosGenerados.size(),
+                    "SUCCESS"
+            );
 
             // Actualizar stock de cada producto
             for (ProductoCarrito item : carrito.getItems()) {
