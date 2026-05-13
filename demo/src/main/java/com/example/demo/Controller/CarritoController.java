@@ -85,13 +85,15 @@ public class CarritoController {
                 return "redirect:/";
             }
 
-            // Verificar compra mínima
+            // Verificar compra mínima (POSTERGADO AL PAGO según requerimiento)
+            /*
             if (cantidad < producto.getCompraMinima()) {
                 String unidad = producto.getUnidadMedida() != null ? producto.getUnidadMedida().getAbreviatura() : "unidades";
                 redirectAttributes.addFlashAttribute("error",
                         "La compra mínima para este producto es " + producto.getCompraMinima() + " " + unidad);
                 return "redirect:/productos/" + productoId;
             }
+            */
 
             // Obtener o crear carrito
             Carrito carrito = carritoRepository.findByUsuarioId(usuario.getId())
@@ -125,7 +127,8 @@ public class CarritoController {
                         producto.getImagenUrl(),
                         producto.getPrecio(),
                         cantidad,
-                        unidadAb
+                        unidadAb,
+                        producto.getCompraMinima()
                 );
                 carrito.getItems().add(nuevoItem);
             }
@@ -179,13 +182,15 @@ public class CarritoController {
                 return ResponseEntity.ok(response);
             }
 
-            // Verificar compra mínima
+            // Verificar compra mínima (POSTERGADO AL PAGO según requerimiento)
+            /*
             if (cantidad < producto.getCompraMinima()) {
                 String unidad = producto.getUnidadMedida() != null ? producto.getUnidadMedida().getAbreviatura() : "unidades";
                 response.put("success", false);
                 response.put("error", "La compra mínima es " + producto.getCompraMinima() + " " + unidad);
                 return ResponseEntity.ok(response);
             }
+            */
 
             Carrito carrito = carritoRepository.findByUsuarioId(usuario.getId())
                     .orElseGet(() -> new Carrito(usuario.getId()));
@@ -212,7 +217,8 @@ public class CarritoController {
                         producto.getImagenUrl(),
                         producto.getPrecio(),
                         cantidad,
-                        unidadAb
+                        unidadAb,
+                        producto.getCompraMinima()
                 );
                 carrito.getItems().add(nuevoItem);
             }

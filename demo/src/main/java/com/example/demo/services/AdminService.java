@@ -71,7 +71,7 @@ public class AdminService {
      */
     public boolean esAdmin(String usuarioId) {
         return usuarioRepository.findById(usuarioId)
-                .map(u -> Role.ADMIN.equals(u.getRol()))
+                .map(u -> u.hasRole(Role.ADMIN))
                 .orElse(false);
     }
 
@@ -131,7 +131,7 @@ public class AdminService {
         if (!usuario.getContrasena().equals(contrasena)) {
             throw new IllegalArgumentException("Credenciales incorrectas");
         }
-        if (!Role.ADMIN.equals(usuario.getRol())) {
+        if (!usuario.hasRole(Role.ADMIN)) {
             throw new IllegalArgumentException("No tienes permisos de administrador");
         }
 
@@ -166,7 +166,8 @@ public class AdminService {
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
 
-        usuario.setRol(Role.valueOf(nuevoRol));
+        usuario.getRoles().clear(); // Si el admin quiere forzar UN rol específico
+        usuario.addRole(Role.valueOf(nuevoRol));
         usuarioRepository.save(usuario);
     }
 
@@ -257,7 +258,7 @@ public class AdminService {
      * Obtener productos por vendedor
      */
     public List<Producto> obtenerProductosPorVendedor(String vendedorId) {
-        return productoRepository.findByVendedorId(vendedorId);
+        return productoRepository.findByVendedor_Id(vendedorId);
     }
 
     // ==================== GESTIÓN DE RESEÑAS ====================
@@ -309,11 +310,11 @@ public class AdminService {
         // Contar usuarios por rol
         Map<String, Long> usuariosPorRol = new HashMap<>();
         usuariosPorRol.put("COMPRADOR",
-                (long) usuarioRepository.findByRol("COMPRADOR").size());
+                (long) usuarioRepository.findByRolesContaining(Role.COMPRADOR).size());
         usuariosPorRol.put("VENDEDOR",
-                (long) usuarioRepository.findByRol("VENDEDOR").size());
+                (long) usuarioRepository.findByRolesContaining(Role.VENDEDOR).size());
         usuariosPorRol.put("ADMIN",
-                (long) usuarioRepository.findByRol("ADMIN").size());
+                (long) usuarioRepository.findByRolesContaining(Role.ADMIN).size());
 
         estadisticas.put("usuariosPorRol", usuariosPorRol);
 

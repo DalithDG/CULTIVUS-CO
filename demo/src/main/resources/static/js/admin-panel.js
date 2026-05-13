@@ -14,7 +14,8 @@ window.navigateToPage = function(pageName) {
         'sesiones': 'Sesiones Activas',
         'notificaciones': 'Gestión de Notificaciones',
         'mensajes': 'Centro de Mensajes',
-        'catalogo': 'Catálogo de Productos'
+        'catalogo': 'Catálogo de Productos',
+        'configuracion': 'Configuración del Sistema'
     };
 
     const targetPage = document.getElementById(pageName + '-page');

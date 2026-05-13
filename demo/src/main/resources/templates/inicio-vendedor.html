@@ -16,7 +16,7 @@
 <body>
 
     <!-- Header Vendedor -->
-    <header th:replace="fragments/header-vendedor :: siteHeader"></header>
+    <header th:replace="~{fragments/header-vendedor :: siteHeader}"></header>
 
     <!-- Mensajes de Feedback -->
     <div th:if="${mensaje}" style="background:#E8F5E9; color:#2E7D32; padding:15px; text-align:center; font-weight:bold; border-bottom:1px solid #C8E6C9;">
@@ -54,6 +54,32 @@
                     <a href="#beneficios" class="btn-hero btn-secondary">
                         <i class="fas fa-info-circle"></i>
                         Conocer Más
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Sección Multi-Rol: Actividad de Comprador -->
+    <section class="buyer-activity-section" style="padding: 40px 0; background: #f9fbf9;">
+        <div class="container">
+            <div style="background: white; border-radius: 16px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 20px;">
+                    <div style="width: 60px; height: 60px; background: #e8f5e9; color: #2e7d32; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+                        <i class="fas fa-shopping-basket"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.2rem; color: #333;">También eres Comprador</h3>
+                        <p style="margin: 5px 0 0; color: #666;">Gestiona tus pedidos realizados a otros productores.</p>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 30px;">
+                    <div style="text-align: center;">
+                        <span style="display: block; font-size: 1.5rem; font-weight: bold; color: #2e7d32;" th:text="${totalPedidos}">0</span>
+                        <span style="font-size: 0.8rem; color: #999; text-transform: uppercase;">Pedidos Realizados</span>
+                    </div>
+                    <a th:href="@{/usuario/pedidos}" class="btn-hero" style="padding: 12px 25px; font-size: 0.9rem; background: #2e7d32;">
+                        Ver Mis Compras
                     </a>
                 </div>
             </div>

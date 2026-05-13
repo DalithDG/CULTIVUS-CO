@@ -70,8 +70,8 @@ public class UsuarioService implements IUsuarioService {
         Optional<Usuario> usuarioOpt = repositorio.findById(id);
         if (usuarioOpt.isPresent()) {
             Usuario usuario = usuarioOpt.get();
-            if (Role.VENDEDOR.equals(usuario.getRol())) {
-                productoRepository.deleteByVendedorId(id);
+            if (usuario.hasRole(Role.VENDEDOR)) {
+                productoRepository.deleteByVendedor_Id(id);
             }
             repositorio.deleteById(id);
             return true;
@@ -81,9 +81,9 @@ public class UsuarioService implements IUsuarioService {
 
     @Override
     public Usuario save(Usuario usuario) {
-        // Si no tiene rol asignado, se le asigna COMPRADOR por defecto
-        if (usuario.getRol() == null || usuario.getRol() == Role.COMPRADOR) {
-            usuario.setRol(Role.COMPRADOR);
+        // Si no tiene roles asignados, se le asigna COMPRADOR por defecto
+        if (usuario.getRoles() == null || usuario.getRoles().isEmpty()) {
+            usuario.addRole(Role.COMPRADOR);
         }
         return repositorio.save(usuario);
     }
@@ -105,11 +105,11 @@ public class UsuarioService implements IUsuarioService {
 
     // Obtener todos los vendedores
     public List<Usuario> obtenerVendedores() {
-        return repositorio.findByRol("VENDEDOR");
+        return repositorio.findByRolesContaining(Role.VENDEDOR);
     }
 
     // Obtener todos los compradores
     public List<Usuario> obtenerCompradores() {
-        return repositorio.findByRol("COMPRADOR");
+        return repositorio.findByRolesContaining(Role.COMPRADOR);
     }
 }

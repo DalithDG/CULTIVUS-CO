@@ -11,10 +11,10 @@
 
 <body>
     <!-- Header dinámico según el rol del usuario -->
-    <div th:if="${usuario.rol != null and usuario.rol == 'VENDEDOR'}">
+    <div th:if="${usuario.rol != null and usuario.rol.name() == 'VENDEDOR'}">
         <div th:replace="~{fragments/header-vendedor :: siteHeader}"></div>
     </div>
-    <div th:if="${usuario.rol == null or usuario.rol != 'VENDEDOR'}">
+    <div th:if="${usuario.rol == null or usuario.rol.name() != 'VENDEDOR'}">
         <div th:replace="~{fragments/header-comprador :: siteHeader}"></div>
     </div>
 
@@ -63,10 +63,60 @@
                             Ciudad</p>
                     </div>
                     <div class="info-item">
-                        <label>Rol:</label>
-                        <!-- ✅ Antes: usuario.rol.nombre -->
+                        <label>Rol Principal:</label>
                         <p th:text="${usuario.rol != null ? usuario.rol : 'COMPRADOR'}">Rol</p>
                     </div>
+                    <div class="info-item" th:if="${usuario.hasRole(T(com.example.demo.Model.Role).VENDEDOR)}">
+                        <label>Estado Tienda:</label>
+                        <p th:text="${usuario.perfilVendedor != null and usuario.perfilVendedor.verificado ? 'Verificada' : 'En Validación'}"
+                           th:style="${usuario.perfilVendedor != null and usuario.perfilVendedor.verificado ? 'color: #2e7d32; font-weight: bold;' : 'color: #f39c12; font-weight: bold;'}">
+                           Estado
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección de Vendedor (Solo si tiene el rol) -->
+            <div class="info-section seller-info" th:if="${usuario.hasRole(T(com.example.demo.Model.Role).VENDEDOR)}" 
+                 style="margin-top: 30px; border-top: 2px dashed #eee; padding-top: 25px;">
+                <h2 style="color: #2e7d32;"><i class="fa-solid fa-store"></i> Datos de mi Negocio</h2>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Razón Social:</label>
+                        <p th:text="${usuario.perfilVendedor.razonSocial}">Mi Negocio</p>
+                    </div>
+                    <div class="info-item">
+                        <label>Teléfono Negocio:</label>
+                        <p th:text="${usuario.perfilVendedor.telefonoContacto}">0000000</p>
+                    </div>
+                    <div class="info-item">
+                        <label>Dirección:</label>
+                        <p th:text="${usuario.perfilVendedor.direccionNegocio}">Calle Falsa 123</p>
+                    </div>
+                    <div class="info-item" th:if="${usuario.perfilVendedor.banco != null}">
+                        <label>Banco:</label>
+                        <p th:text="${usuario.perfilVendedor.banco}">Banco</p>
+                    </div>
+                </div>
+                <div style="margin-top: 15px;">
+                    <a th:href="@{/vendedor/editar}" class="btn btn-secondary" style="font-size: 0.85rem; padding: 8px 15px;">
+                        <i class="fa-solid fa-edit"></i> Editar Perfil de Vendedor
+                    </a>
+                </div>
+            </div>
+
+            <!-- Banner Invitación a Vendedor (Si NO tiene el rol) -->
+            <div class="seller-invite-banner" th:if="${!usuario.hasRole(T(com.example.demo.Model.Role).VENDEDOR)}"
+                 style="margin-top: 30px; background: linear-gradient(135deg, #f1f8e9, #dcedc8); padding: 25px; border-radius: 12px; border: 1px solid #c5e1a5; display: flex; align-items: center; gap: 20px;">
+                <div style="font-size: 40px; color: #33691e;">
+                    <i class="fa-solid fa-seedling"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; color: #1b5e20;">¿Eres productor?</h3>
+                    <p style="margin: 5px 0 15px; color: #33691e; font-size: 0.95rem;">Empieza a vender tus productos directamente a miles de compradores y haz crecer tu negocio.</p>
+                    <a th:href="@{/vendedor/registro}" class="btn btn-primary" style="background: #2e7d32; border: none;">
+                        <i class="fa-solid fa-rocket"></i> Convertirme en Vendedor
+                    </a>
                 </div>
             </div>
 

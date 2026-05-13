@@ -14,7 +14,7 @@ public interface ProductoRepository extends MongoRepository<Producto, String> {
     List<Producto> findByCategoriaId(String categoriaId);
 
     // Buscar productos por vendedor
-    List<Producto> findByVendedorId(String vendedorId);
+    List<Producto> findByVendedor_Id(String vendedorId);
 
     // Buscar productos por nombre (búsqueda parcial)
     List<Producto> findByNombreContainingIgnoreCase(String nombre);
@@ -42,8 +42,8 @@ public interface ProductoRepository extends MongoRepository<Producto, String> {
     List<Producto> findByCategoriaIdAndDisponibleTrue(String categoriaId);
 
     // Buscar productos disponibles de un vendedor
-    List<Producto> findByVendedorIdAndDisponibleTrue(String vendedorId);
+    List<Producto> findByVendedor_IdAndDisponibleTrue(String vendedorId);
 
     // Eliminar todos los productos de un vendedor
-    void deleteByVendedorId(String vendedorId);
+    void deleteByVendedor_Id(String vendedorId);
 }

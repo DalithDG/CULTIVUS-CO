@@ -221,8 +221,7 @@ public class UsuarioController {
         session.setAttribute("notificacionesCount", notificacionesCount);
 
         // Redirigir según el rol del usuario
-        Role rol = usuario.getRol();
-        if (rol == Role.ADMIN) {
+        if (usuario.hasRole(Role.ADMIN)) {
             return "redirect:/admin/dashboard";
         } else {
             // COMPRADOR y VENDEDOR van al mismo inicio (que luego ramifica)
@@ -231,7 +230,8 @@ public class UsuarioController {
     }
 
     @GetMapping("/inicio")
-    public String mostrarInicio(HttpSession session, Model model,
+    public String mostrarInicio(@RequestParam(value = "modo", required = false) String modo,
+            HttpSession session, Model model,
             RedirectAttributes redirectAttributes) {
 
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
@@ -256,13 +256,19 @@ public class UsuarioController {
         model.addAttribute("usuario", usuario);
         model.addAttribute("productos", productos);
 
-        // Redirigir según rol
-        if (usuario.getRol() == Role.VENDEDOR) {
-            return "inicio-vendedor";
-        }
-
+        // Estadísticas de comprador para el dashboard (independiente del rol actual)
         long totalPedidos = pedidoRepository.findByCompradorId(usuario.getId()).size();
         model.addAttribute("totalPedidos", totalPedidos);
+
+        // Redirigir según rol (priorizar vendedor para su inicio especial, pero ambos pueden comprar)
+        // Si se solicita explícitamente modo comprador, mostrar inicio-comprador
+        if ("comprador".equals(modo)) {
+            return "inicio-comprador";
+        }
+        
+        if (usuario.hasRole(Role.VENDEDOR)) {
+            return "inicio-vendedor";
+        }
 
         return "inicio-comprador";
     }

@@ -55,8 +55,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         session.setAttribute("usuarioLogueado", usuario);
 
         // Redirigir según el rol
-        String rol = usuario.getRol().name(); // Asumiendo que rol es un enum Role
-        if ("ADMIN".equalsIgnoreCase(rol)) {
+        if (usuario.hasRole(com.example.demo.Model.Role.ADMIN)) {
             getRedirectStrategy().sendRedirect(request, response, "/admin/dashboard");
         } else {
             getRedirectStrategy().sendRedirect(request, response, "/usuario/inicio");
