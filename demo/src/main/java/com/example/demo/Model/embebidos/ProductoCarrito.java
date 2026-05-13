@@ -9,18 +9,20 @@ public class ProductoCarrito {
     private Double cantidad;
     private String unidadAbreviatura;
     private Double subtotal;
+    private Double compraMinima;
 
     public ProductoCarrito() {
     }
 
     public ProductoCarrito(String productoId, String nombre, String imagenUrl,
-                           Double precioUnitario, Double cantidad, String unidadAbreviatura) {
+                           Double precioUnitario, Double cantidad, String unidadAbreviatura, Double compraMinima) {
         this.productoId = productoId;
         this.nombre = nombre;
         this.imagenUrl = imagenUrl;
         this.precioUnitario = precioUnitario;
         this.cantidad = cantidad;
         this.unidadAbreviatura = unidadAbreviatura;
+        this.compraMinima = compraMinima;
         this.subtotal = precioUnitario * cantidad;
     }
 
@@ -51,4 +53,7 @@ public class ProductoCarrito {
 
     public Double getSubtotal() { return subtotal; }
     public void setSubtotal(Double subtotal) { this.subtotal = subtotal; }
+
+    public Double getCompraMinima() { return compraMinima; }
+    public void setCompraMinima(Double compraMinima) { this.compraMinima = compraMinima; }
 }

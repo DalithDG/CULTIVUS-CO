@@ -54,7 +54,9 @@
                     <a th:href="@{/admin/productos}" class="submenu-link" data-page="catalogo">Catálogo</a>
                     <a href="#" class="submenu-link" data-page="inventario">Inventario</a>
                     <a href="#" class="submenu-link" data-page="categorias">Categorías</a>
-                    <a href="#" class="submenu-link" data-page="agregar-producto">Añadir Producto</a>
+                    <a href="#" class="submenu-link" data-page="agregar-producto" style="color: #4facfe; font-weight: 600;">
+                        <i class="fas fa-plus-circle" style="margin-right: 5px;"></i> Nuevo Producto
+                    </a>
                 </div>
             </div>
 
@@ -80,6 +82,7 @@
                     <i class="fas fa-chevron-down submenu-icon"></i>
                 </a>
                 <div class="submenu" id="configuracion-submenu">
+                    <a th:href="@{/admin/configuracion}" class="submenu-link" data-page="configuracion">Límites y Parámetros</a>
                     <a href="#" class="submenu-link" data-page="general">General</a>
                     <a href="#" class="submenu-link" data-page="seguridad">Seguridad</a>
                     <a href="#" class="submenu-link" data-page="respaldos">Respaldos</a>
@@ -382,51 +385,262 @@
 
             <!-- AGREGAR PRODUCTO PAGE -->
             <div class="page" id="agregar-producto-page" style="display: none;">
-                <div class="page-card">
-                    <h2><i class="fas fa-plus-circle"></i> Agregar Nuevo Producto</h2>
-                    <form class="form-container" th:action="@{/vendedor/productos/guardar}" method="post">
-                        <div class="form-group">
-                            <label>Nombre del Producto</label>
-                            <input type="text" name="nombre" placeholder="Ingrese el nombre del producto" required>
+                <div class="minimalist-container">
+                    <div class="minimalist-header">
+                        <div class="header-icon">
+                            <i class="fas fa-plus-circle"></i>
                         </div>
-                        <div class="form-group">
-                            <label>Descripción</label>
-                            <textarea name="descripcion" placeholder="Describa el producto" rows="4" required></textarea>
+                        <div class="header-text">
+                            <h2>Nuevo Producto</h2>
+                            <p>Completa la información básica para añadir un nuevo artículo al catálogo.</p>
                         </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Precio</label>
-                                <input type="number" name="precio" placeholder="$0.00" step="0.01" required>
+                    </div>
+
+                    <form class="minimalist-form" th:action="@{/vendedor/productos/guardar}" method="post" enctype="multipart/form-data">
+                        <div class="form-section">
+                            <h3>Información General</h3>
+                            <div class="input-grid">
+                                <div class="input-group">
+                                    <label>Nombre del Producto</label>
+                                    <input type="text" name="nombre" placeholder="Ej: Semillas de Girasol" required>
+                                </div>
+                                <div class="input-group">
+                                    <label>Categoría</label>
+                                    <select name="categoriaId" required>
+                                        <option value="">Selecciona una categoría</option>
+                                        <option th:each="cat : ${categorias}" th:value="${cat.id}" th:text="${cat.nombre}"></option>
+                                    </select>
+                                </div>
                             </div>
-                            <div class="form-group">
-                                <label>Stock</label>
-                                <input type="number" name="stock" placeholder="0" required>
+                            <div class="input-group full">
+                                <label>Descripción Detallada</label>
+                                <textarea name="descripcion" placeholder="Describe las características principales..." rows="3" required></textarea>
                             </div>
                         </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Peso</label>
-                                <input type="number" name="peso" placeholder="0.0" step="0.1" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Imagen URL</label>
-                                <input type="text" name="imagenUrl" placeholder="http://..." required>
+
+                        <div class="form-section">
+                            <h3>Precios e Inventario</h3>
+                            <div class="input-grid-3">
+                                <div class="input-group">
+                                    <label>Precio Unitario</label>
+                                    <div class="input-with-icon">
+                                        <span>$</span>
+                                        <input type="number" name="precio" placeholder="0.00" step="0.01" required>
+                                    </div>
+                                </div>
+                                <div class="input-group">
+                                    <label>Stock Inicial</label>
+                                    <input type="number" name="stock" placeholder="0" required>
+                                </div>
+                                <div class="input-group">
+                                    <label>Peso (kg)</label>
+                                    <input type="number" name="peso" placeholder="0.0" step="0.1" required>
+                                </div>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label>Categoría</label>
-                            <select name="categoriaId" required>
-                                <option value="">Seleccione una categoría</option>
-                                <option th:each="cat : ${categorias}" th:value="${cat.id}" th:text="${cat.nombre}"></option>
-                            </select>
+
+                        <div class="form-section">
+                            <h3>Multimedia</h3>
+                            <div class="image-upload-wrapper">
+                                <div class="input-group full">
+                                    <label>URL de la Imagen</label>
+                                    <div class="input-with-icon">
+                                        <i class="fas fa-link" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #888;"></i>
+                                        <input type="text" name="imagenUrl" placeholder="https://ejemplo.com/imagen.jpg" style="padding-left: 45px;" required>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+
                         <input type="hidden" name="unidadMedidaId" value="un">
-                        <div class="form-actions">
-                            <button type="submit" class="btn btn-primary">Guardar Producto</button>
-                            <button type="reset" class="btn btn-secondary">Cancelar</button>
+                        
+                        <div class="form-footer">
+                            <button type="reset" class="btn-cancel">Descartar</button>
+                            <button type="submit" class="btn-submit">
+                                <i class="fas fa-save"></i> Publicar Producto
+                            </button>
                         </div>
                     </form>
                 </div>
+
+                <style>
+                    .minimalist-container {
+                        max-width: 800px;
+                        margin: 2rem auto;
+                        background: white;
+                        border-radius: 20px;
+                        box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+                        overflow: hidden;
+                        border: 1px solid #f0f0f0;
+                        animation: slideUp 0.5s ease-out;
+                    }
+
+                    @keyframes slideUp {
+                        from { opacity: 0; transform: translateY(20px); }
+                        to { opacity: 1; transform: translateY(0); }
+                    }
+
+                    .minimalist-header {
+                        padding: 2.5rem;
+                        background: #fdfdfd;
+                        border-bottom: 1px solid #f5f5f5;
+                        display: flex;
+                        align-items: center;
+                        gap: 20px;
+                    }
+
+                    .minimalist-header .header-icon {
+                        width: 60px;
+                        height: 60px;
+                        background: #e8f5e9;
+                        color: #2e7d32;
+                        border-radius: 15px;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 1.5rem;
+                    }
+
+                    .minimalist-header h2 {
+                        margin: 0;
+                        font-size: 1.6rem;
+                        color: #1a1a1a;
+                    }
+
+                    .minimalist-header p {
+                        margin: 5px 0 0;
+                        color: #666;
+                        font-size: 0.95rem;
+                    }
+
+                    .minimalist-form {
+                        padding: 2.5rem;
+                    }
+
+                    .form-section {
+                        margin-bottom: 2.5rem;
+                    }
+
+                    .form-section h3 {
+                        font-size: 0.9rem;
+                        text-transform: uppercase;
+                        letter-spacing: 1px;
+                        color: #2e7d32;
+                        margin-bottom: 1.5rem;
+                        border-bottom: 1px dashed #e0e0e0;
+                        padding-bottom: 10px;
+                    }
+
+                    .input-grid {
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
+                        gap: 20px;
+                    }
+
+                    .input-grid-3 {
+                        display: grid;
+                        grid-template-columns: 1fr 1fr 1fr;
+                        gap: 20px;
+                    }
+
+                    .input-group {
+                        margin-bottom: 1.5rem;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 8px;
+                    }
+
+                    .input-group.full {
+                        grid-column: span 2;
+                    }
+
+                    .input-group label {
+                        font-size: 0.85rem;
+                        font-weight: 600;
+                        color: #444;
+                    }
+
+                    .minimalist-form input, 
+                    .minimalist-form select, 
+                    .minimalist-form textarea {
+                        padding: 12px 16px;
+                        border: 1px solid #e0e0e0;
+                        border-radius: 12px;
+                        font-size: 0.95rem;
+                        transition: all 0.3s;
+                        background: #fafafa;
+                    }
+
+                    .minimalist-form input:focus, 
+                    .minimalist-form select:focus, 
+                    .minimalist-form textarea:focus {
+                        border-color: #2e7d32;
+                        background: white;
+                        box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.05);
+                        outline: none;
+                    }
+
+                    .input-with-icon {
+                        position: relative;
+                        display: flex;
+                        align-items: center;
+                    }
+
+                    .input-with-icon span {
+                        position: absolute;
+                        left: 15px;
+                        color: #888;
+                        font-weight: 600;
+                    }
+
+                    .input-with-icon input {
+                        padding-left: 30px;
+                        width: 100%;
+                    }
+
+                    .form-footer {
+                        display: flex;
+                        justify-content: flex-end;
+                        gap: 15px;
+                        padding-top: 20px;
+                        border-top: 1px solid #f5f5f5;
+                    }
+
+                    .btn-cancel {
+                        padding: 12px 25px;
+                        border-radius: 12px;
+                        border: 1px solid #e0e0e0;
+                        background: white;
+                        color: #666;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                    }
+
+                    .btn-cancel:hover {
+                        background: #f5f5f5;
+                    }
+
+                    .btn-submit {
+                        padding: 12px 30px;
+                        border-radius: 12px;
+                        border: none;
+                        background: linear-gradient(135deg, #2e7d32 0%, #43a047 100%);
+                        color: white;
+                        font-weight: 700;
+                        cursor: pointer;
+                        display: flex;
+                        align-items: center;
+                        gap: 10px;
+                        transition: all 0.3s;
+                        box-shadow: 0 4px 15px rgba(46, 125, 50, 0.2);
+                    }
+
+                    .btn-submit:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 6px 20px rgba(46, 125, 50, 0.3);
+                    }
+                </style>
             </div>
 
             <!-- ORDENES PAGE -->
@@ -863,6 +1077,32 @@
                                     <button type="submit" style="color:red; background:none; border:none; cursor:pointer;"><i class="fas fa-trash"></i></button>
                                 </form>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONFIGURACION PAGE -->
+            <div class="page" id="configuracion-page" style="display:none;">
+                <div class="page-card">
+                    <h2><i class="fas fa-tools"></i> Límites y Parámetros del Sistema</h2>
+                    <p style="color:#999;margin-bottom:20px;">Ajusta los parámetros operativos de la plataforma. Los cambios se aplican de inmediato.</p>
+                    
+                    <div class="config-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px;">
+                        <div class="report-card" th:each="config : ${configuraciones}" style="text-align: left; padding: 20px;">
+                            <h4 th:text="${config.clave}" style="color: #4CAF50; margin-bottom: 8px;">CLAVE</h4>
+                            <p th:text="${config.descripcion}" style="font-size: 0.9em; color: #666; margin-bottom: 15px; height: 40px; overflow: hidden;">Descripción</p>
+                            
+                            <form th:action="@{/admin/configuracion/actualizar}" method="post" style="display: flex; gap: 10px;">
+                                <input type="hidden" name="id" th:value="${config.id}">
+                                <input th:type="${config.tipo == 'NUMBER' ? 'number' : 'text'}" 
+                                       name="valor" th:value="${config.valor}" 
+                                       class="form-control" 
+                                       style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <button type="submit" class="btn-action" style="background: #4CAF50;">
+                                    <i class="fas fa-save"></i>
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>

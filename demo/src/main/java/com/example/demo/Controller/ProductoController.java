@@ -173,7 +173,8 @@ public class ProductoController {
             return "redirect:/vendedor/registro";
         }
 
-        List<Producto> productos = productoRepository.findByVendedorId(usuario.getId());
+        // Obtener productos del vendedor usando el repositorio directamente o el servicio
+        List<Producto> productos = productoRepository.findByVendedor_Id(usuario.getId());
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("productos", productos);

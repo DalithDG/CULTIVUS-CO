@@ -4,105 +4,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrarse como Vendedor - Cultivus</title>
-    <link rel="stylesheet" th:href="@{/registro-vendedor.css}">
+    <title>Únete como Vendedor | Cultivus</title>
+
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Iconos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- CSS Propios -->
+    <link rel="stylesheet" th:href="@{/header.css}">
+    <link rel="stylesheet" th:href="@{/registro-vendedor.css}">
 </head>
 
 <body>
-    <div class="container">
-        <div class="header">
-            <h1><i class="fa-solid fa-store"></i> Conviértete en Vendedor</h1>
-            <p>Conecta el campo con tu mesa</p>
+    <!-- Header Comprador (Ya que aún no es vendedor) -->
+    <header th:replace="~{fragments/header-comprador :: siteHeader}"></header>
+
+    <main class="register-main">
+        <div class="register-overlay"></div>
+
+        <div class="register-content">
+            <div class="register-grid">
+                <!-- Columna de Información -->
+                <div class="info-side">
+                    <div class="info-badge">Inicia tu Negocio</div>
+                    <h1>Lleva tus productos del campo a <span class="highlight">todo el país</span></h1>
+                    <p class="subtitle">Únete a la red de productores más grande de Colombia y vende sin intermediarios.
+                    </p>
+
+                    <div class="benefits-list">
+                        <div class="benefit-item">
+                            <div class="benefit-icon"><i class="fas fa-rocket"></i></div>
+                            <div class="benefit-text">
+                                <h3>Venta Directa</h3>
+                                <p>Controla tus precios y recibe pagos justos.</p>
+                            </div>
+                        </div>
+                        <div class="benefit-item">
+                            <div class="benefit-icon"><i class="fas fa-shield-alt"></i></div>
+                            <div class="benefit-text">
+                                <h3>Seguridad Total</h3>
+                                <p>Pagos garantizados y soporte continuo.</p>
+                            </div>
+                        </div>
+                        <div class="benefit-item">
+                            <div class="benefit-icon"><i class="fas fa-chart-pie"></i></div>
+                            <div class="benefit-text">
+                                <h3>Gestión Simple</h3>
+                                <p>Inventario y ventas en una sola herramienta.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Columna del Formulario -->
+                <div class="form-side">
+                    <div class="register-card">
+                        <div class="card-header">
+                            <h2>Formulario de Registro</h2>
+                            <p>Completa tus datos para empezar</p>
+                        </div>
+
+                        <!-- Alertas -->
+                        <div th:if="${error}" class="alert alert-error">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span th:text="${error}">Error</span>
+                        </div>
+                        <div th:if="${mensaje}" class="alert alert-success">
+                            <i class="fas fa-check-circle"></i>
+                            <span th:text="${mensaje}">Éxito</span>
+                        </div>
+
+                        <form th:action="@{/vendedor/guardar}" method="POST" class="modern-form">
+                            <div class="form-grid">
+                                <!-- Razón Social -->
+                                <div class="form-group full-width">
+                                    <label for="razonSocial">Razón Social o Nombre del Negocio <span
+                                            style="color: red;">*</span></label>
+                                    <div class="input-wrapper">
+                                        <i class="fas fa-store"></i>
+                                        <input type="text" id="razonSocial" name="razonSocial"
+                                            placeholder="Ej: Finca El Porvenir" required>
+                                    </div>
+                                    <small class="form-help">Nombre con el que aparecerás en la plataforma</small>
+                                </div>
+
+                                <!-- Teléfono -->
+                                <div class="form-group">
+                                    <label for="telefonoContacto">Teléfono de Contacto <span
+                                            style="color: red;">*</span></label>
+                                    <div class="input-wrapper">
+                                        <i class="fas fa-phone"></i>
+                                        <input type="tel" id="telefonoContacto" name="telefonoContacto"
+                                            placeholder="300 123 4567" required>
+                                    </div>
+                                </div>
+
+                                <!-- Dirección -->
+                                <div class="form-group">
+                                    <label for="direccionNegocio">Dirección del Negocio <span
+                                            style="color: red;">*</span></label>
+                                    <div class="input-wrapper">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                        <input type="text" id="direccionNegocio" name="direccionNegocio"
+                                            placeholder="Ej: Vereda La Esperanza, Km 5" required>
+                                    </div>
+                                </div>
+
+                                <!-- Tipo de Productos -->
+                                <div class="form-group full-width">
+                                    <label for="tipoProductos">¿Qué tipo de productos vendes? <span
+                                            style="color: red;">*</span></label>
+                                    <div class="input-wrapper">
+                                        <i class="fas fa-leaf"></i>
+                                        <input type="text" id="tipoProductos" name="tipoProductos"
+                                            placeholder="Ej: Frutas, Verduras, Café, Miel..." required>
+                                    </div>
+                                    <small class="form-help">Esto nos ayuda a categorizar tu tienda</small>
+                                </div>
+
+                                <!-- Descripción -->
+                                <div class="form-group full-width">
+                                    <label for="descripcionNegocio">Descripción de tu Negocio</label>
+                                    <div class="input-wrapper">
+                                        <i class="fas fa-file-alt"></i>
+                                        <textarea id="descripcionNegocio" name="descripcionNegocio"
+                                            placeholder="Cuéntanos sobre tu negocio, tus productos y qué te hace especial..."></textarea>
+                                    </div>
+                                    <small class="form-help">Opcional pero recomendado para atraer más clientes</small>
+                                </div>
+
+                                <div class="form-section-title full-width">Información Bancaria (Para recibir tus pagos)
+                                </div>
+
+                                <!-- Banco -->
+                                <div class="form-group">
+                                    <label for="banco">Banco</label>
+                                    <div class="input-wrapper">
+                                        <i class="fas fa-university"></i>
+                                        <input type="text" id="banco" name="banco" placeholder="Ej: Bancolombia">
+                                    </div>
+                                </div>
+
+                                <!-- Número de Cuenta -->
+                                <div class="form-group">
+                                    <label for="cuentaBancaria">Número de Cuenta</label>
+                                    <div class="input-wrapper">
+                                        <i class="fas fa-credit-card"></i>
+                                        <input type="text" id="cuentaBancaria" name="cuentaBancaria"
+                                            placeholder="Ej: 12345678901">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" class="btn-submit">
+                                    <i class="fas fa-check"></i>
+                                    <span>Registrarme como Vendedor</span>
+                                </button>
+                                <a th:href="@{/}" class="btn-back">
+                                    <i class="fas fa-arrow-left"></i> Volver al inicio
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
         </div>
+    </main>
 
-        <div class="info-box">
-            <h3><i class="fa-solid fa-check-circle"></i> Beneficios de ser vendedor en Cultivus:</h3>
-            <ul>
-                <li>Vende tus productos directamente a clientes</li>
-                <li>Gestiona tu inventario fácilmente</li>
-                <li>Alcanza clientes en toda Colombia</li>
-                <li>Sin comisiones ocultas</li>
-            </ul>
-        </div>
-
-        <!-- Mensaje de error -->
-        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
-
-        <form th:action="@{/vendedor/guardar}" method="POST">
-            <!-- Razón Social -->
-            <div class="form-group">
-                <label for="razonSocial">
-                    <i class="fa-solid fa-building"></i> Razón Social o Nombre del Negocio <span
-                        class="required">*</span>
-                </label>
-                <input type="text" id="razonSocial" name="razonSocial" placeholder="Ej: Finca El Paraíso" required>
-                <small>Nombre con el que aparecerás en la plataforma</small>
-            </div>
-
-            <!-- Teléfono de Contacto -->
-            <div class="form-group">
-                <label for="telefonoContacto">
-                    <i class="fa-solid fa-phone"></i> Teléfono de Contacto <span class="required">*</span>
-                </label>
-                <input type="tel" id="telefonoContacto" name="telefonoContacto" placeholder="Ej: 3001234567" required>
-                <small>Para que los clientes puedan contactarte</small>
-            </div>
-
-            <!-- Dirección del Negocio -->
-            <div class="form-group">
-                <label for="direccionNegocio">
-                    <i class="fa-solid fa-map-marker-alt"></i> Dirección del Negocio <span class="required">*</span>
-                </label>
-                <input type="text" id="direccionNegocio" name="direccionNegocio"
-                    placeholder="Ej: Vereda La Esperanza, Km 5" required>
-            </div>
-
-            <!-- Tipo de Productos -->
-            <div class="form-group">
-                <label for="tipoProductos">
-                    <i class="fa-solid fa-leaf"></i> Tipo de Productos que Vendes <span class="required">*</span>
-                </label>
-                <input type="text" id="tipoProductos" name="tipoProductos" placeholder="Ej: Frutas, Verduras, Café"
-                    required>
-            </div>
-
-            <!-- Descripción del Negocio -->
-            <div class="form-group">
-                <label for="descripcionNegocio">
-                    <i class="fa-solid fa-file-alt"></i> Descripción de tu Negocio
-                </label>
-                <textarea id="descripcionNegocio" name="descripcionNegocio"
-                    placeholder="Cuéntanos sobre tu negocio, tus productos y qué te hace especial..."></textarea>
-                <small>Opcional pero recomendado para atraer más clientes</small>
-            </div>
-
-            <!-- Información Bancaria (Opcional) -->
-            <div class="form-group">
-                <label for="banco">
-                    <i class="fa-solid fa-university"></i> Banco
-                </label>
-                <input type="text" id="banco" name="banco" placeholder="Ej: Bancolombia">
-                <small>Para recibir tus pagos (puedes agregarlo después)</small>
-            </div>
-
-            <div class="form-group">
-                <label for="cuentaBancaria">
-                    <i class="fa-solid fa-credit-card"></i> Número de Cuenta
-                </label>
-                <input type="text" id="cuentaBancaria" name="cuentaBancaria" placeholder="Ej: 12345678901">
-            </div>
-
-            <!-- Botones -->
-            <button type="submit" class="btn btn-primary">
-                <i class="fa-solid fa-check"></i> Registrarme como Vendedor
-            </button>
-
-            <button type="button" class="btn btn-secondary" onclick="window.location.href='/usuario/inicio'">
-                <i class="fa-solid fa-arrow-left"></i> Volver al Inicio
-            </button>
-        </form>
-    </div>
+    <script th:src="@{/js/header.js}"></script>
 </body>
 
 </html>

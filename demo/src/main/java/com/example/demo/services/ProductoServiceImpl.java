@@ -9,12 +9,16 @@ import org.springframework.stereotype.Service;
 
 import com.example.demo.Model.Producto;
 import com.example.demo.repository.ProductoRepository;
+import com.example.demo.services.AppConfigService;
 
 @Service
 public class ProductoServiceImpl implements ProductoService {
 
     @Autowired
     private ProductoRepository productoRepository;
+
+    @Autowired
+    private AppConfigService configService;
 
     @Override
     public Producto crearProducto(Producto producto) {
@@ -38,6 +42,13 @@ public class ProductoServiceImpl implements ProductoService {
         }
         if (producto.getVendedor() == null) {
             throw new IllegalArgumentException("El producto debe tener un vendedor asociado");
+        }
+
+        // Validar límite de productos por vendedor
+        int maxProductos = configService.obtenerValorInt("MAX_PRODUCTOS_VENDEDOR", 50);
+        long productosActuales = productoRepository.findByVendedor_Id(producto.getVendedor().getId()).size();
+        if (productosActuales >= maxProductos) {
+            throw new IllegalArgumentException("Has alcanzado el límite máximo de " + maxProductos + " productos permitidos.");
         }
 
         // Valores automáticos
@@ -102,7 +113,7 @@ public class ProductoServiceImpl implements ProductoService {
 
     @Override
     public List<Producto> buscarPorVendedor(String vendedorId) {
-        return productoRepository.findByVendedorId(vendedorId);
+        return productoRepository.findByVendedor_Id(vendedorId);
     }
 
     @Override

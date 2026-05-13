@@ -24,15 +24,15 @@
    HEADER PRINCIPAL
    ======================================== */
 .header-premium {
-  position: fixed;
-  top: 0;
-  left: 0;
+  position: relative; /* Cambiado a relative para evitar interferencias */
   width: 100%;
   height: var(--header-height);
   background: var(--white);
   box-shadow: var(--shadow-sm);
   z-index: 1000;
   transition: var(--transition);
+  display: flex;
+  align-items: center;
 }
 
 .header-premium.scrolled {
@@ -48,6 +48,7 @@
   display: flex;
   align-items: center;
   gap: 32px;
+  width: 100%;
 }
 
 .header-nav a {
@@ -602,61 +603,20 @@
 }
 
 /* ========================================
-   ANIMACIONES
+   ANIMACIONES Y UTILIDADES
    ======================================== */
 @keyframes slideInRight {
-  from {
-    transform: translateX(100%);
-  }
-  to {
-    transform: translateX(0);
-  }
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
 }
 
 @keyframes pulse {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
 }
 
 .cart-badge.updated {
   animation: pulse 0.3s ease;
-}
-
-/* ========================================
-   UTILIDADES
-   ======================================== */
-.header-premium + * {
-  margin-top: var(--header-height);
-}
-
-body.menu-open {
-  overflow: hidden;
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-}
-
-.cart-badge.updated {
-  animation: pulse 0.3s ease;
-}
-
-/* ========================================
-   UTILIDADES
-   ======================================== */
-.header-premium + * {
-  margin-top: var(--header-height);
 }
 
 body.menu-open {

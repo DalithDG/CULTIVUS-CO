@@ -9,6 +9,8 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.index.Indexed;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Document(collection = "usuarios")
 public class Usuario {
@@ -26,9 +28,9 @@ public class Usuario {
     @Field("contrasena")
     private String contrasena;
 
-    // "ADMIN", "COMPRADOR", "VENDEDOR"
-    @Field("rol")
-    private Role rol;
+    // Capacidad de múltiples roles: "ADMIN", "COMPRADOR", "VENDEDOR"
+    @Field("roles")
+    private Set<Role> roles = new HashSet<>();
 
     @Field("created_at")
     private LocalDateTime createdAt;
@@ -57,7 +59,10 @@ public class Usuario {
         this.nombre = nombre;
         this.email = email;
         this.contrasena = contrasena;
-        this.rol = rol;
+        this.roles = new HashSet<>();
+        if (rol != null) {
+            this.roles.add(rol);
+        }
         this.createdAt = LocalDateTime.now();
     }
 
@@ -94,12 +99,34 @@ public class Usuario {
         this.contrasena = contrasena;
     }
 
+    public Set<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
+    }
+
     public Role getRol() {
-        return rol;
+        if (roles == null || roles.isEmpty()) return null;
+        // Retornar el rol de mayor jerarquía o el primero para compatibilidad
+        if (roles.contains(Role.ADMIN)) return Role.ADMIN;
+        if (roles.contains(Role.VENDEDOR)) return Role.VENDEDOR;
+        return roles.iterator().next();
     }
 
     public void setRol(Role nuevoRol) {
-        this.rol = nuevoRol;
+        if (this.roles == null) this.roles = new HashSet<>();
+        this.roles.add(nuevoRol);
+    }
+
+    public void addRole(Role role) {
+        if (this.roles == null) this.roles = new HashSet<>();
+        this.roles.add(role);
+    }
+
+    public boolean hasRole(Role role) {
+        return this.roles != null && this.roles.contains(role);
     }
 
     public LocalDateTime getCreatedAt() {

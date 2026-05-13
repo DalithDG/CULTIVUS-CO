@@ -4,6 +4,7 @@ import com.example.demo.Model.Producto;
 import com.example.demo.Model.Resena;
 import com.example.demo.Model.Usuario;
 import com.example.demo.services.AdminService;
+import com.example.demo.services.AppConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,6 +21,9 @@ public class AdminController {
 
     @Autowired
     private AdminService adminService;
+
+    @Autowired
+    private AppConfigService configService;
 
     // Roles disponibles — ya no hay tabla de roles
     private static final List<String> ROLES = Arrays.asList(
@@ -56,6 +60,7 @@ public class AdminController {
         model.addAttribute("usuariosActivos", adminService.obtenerUsuariosActivos());
         model.addAttribute("notificaciones", adminService.obtenerTodasLasNotificaciones());
         model.addAttribute("mensajesRecibidos", adminService.obtenerTodosLosMensajes());
+        model.addAttribute("configuraciones", configService.obtenerTodas());
     }
 
     // ==================== DASHBOARD ====================
@@ -363,5 +368,42 @@ public class AdminController {
         adminService.eliminarMensaje(id);
         redirectAttributes.addFlashAttribute("mensaje", "Mensaje eliminado");
         return "redirect:/admin/mensajes";
+    }
+
+    // ==================== CONFIGURACIÓN ====================
+
+    @GetMapping("/configuracion")
+    public String mostrarConfiguracion(HttpSession session, Model model,
+            RedirectAttributes redirectAttributes) {
+
+        if (!verificarAdmin(session, redirectAttributes)) {
+            return "redirect:/usuario/login";
+        }
+
+        Usuario admin = (Usuario) session.getAttribute("usuarioLogueado");
+        cargarDatosDashboard(model, admin);
+        model.addAttribute("activePage", "configuracion");
+
+        return "admin-dashboard";
+    }
+
+    @PostMapping("/configuracion/actualizar")
+    public String actualizarConfig(@RequestParam("id") String id,
+            @RequestParam("valor") String valor,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        if (!verificarAdmin(session, redirectAttributes)) {
+            return "redirect:/usuario/login";
+        }
+
+        try {
+            configService.actualizarValor(id, valor);
+            redirectAttributes.addFlashAttribute("mensaje", "Parámetro actualizado correctamente");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al actualizar: " + e.getMessage());
+        }
+
+        return "redirect:/admin/configuracion";
     }
 }

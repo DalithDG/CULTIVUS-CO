@@ -6,12 +6,14 @@ import com.example.demo.Model.Producto;
 import com.example.demo.Model.Usuario;
 import com.example.demo.Model.embebidos.DatosComprador;
 import com.example.demo.Model.embebidos.DatosPago;
+import com.example.demo.Model.embebidos.DatosVendedor;
 import com.example.demo.Model.embebidos.DireccionPedido;
 import com.example.demo.Model.embebidos.ProductoCarrito;
 import com.example.demo.Model.embebidos.ProductoPedido;
 import com.example.demo.repository.CarritoRepository;
 import com.example.demo.repository.PedidoRepository;
 import com.example.demo.repository.ProductoRepository;
+import com.example.demo.services.AppConfigService;
 import com.example.demo.services.NotificacionService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +41,9 @@ public class PagoController {
     @Autowired
     private NotificacionService notificacionService;
 
+    @Autowired
+    private AppConfigService configService;
+
     /**
      * Muestra el formulario de pago
      */
@@ -62,11 +67,24 @@ public class PagoController {
             return "redirect:/carrito";
         }
 
-        // Validar total mínimo
-        if (carrito.getTotalEstimado() < 200000) {
+        // 1. Validar total mínimo usando parámetro de configuración (Global)
+        double compraMinimaGlobal = configService.obtenerValorDouble("COMPRA_MINIMA_GLOBAL", 200000.0);
+        if (carrito.getTotalEstimado() < compraMinimaGlobal) {
             redirectAttributes.addFlashAttribute("error",
-                    "El total debe ser mayor a $200.000");
+                    "El total debe ser mayor a $" + String.format("%,.0f", compraMinimaGlobal));
             return "redirect:/carrito";
+        }
+
+        // 2. Validar compra mínima por PRODUCTO (Vendedor)
+        for (ProductoCarrito item : carrito.getItems()) {
+            Producto producto = productoRepository.findById(item.getProductoId()).orElse(null);
+            if (producto != null && item.getCantidad() < producto.getCompraMinima()) {
+                String unidad = producto.getUnidadMedida() != null ? producto.getUnidadMedida().getAbreviatura() : "unid";
+                redirectAttributes.addFlashAttribute("error",
+                        "El producto '" + item.getNombre() + "' requiere una compra mínima de " + 
+                        producto.getCompraMinima() + " " + unidad + ". Tienes " + item.getCantidad());
+                return "redirect:/carrito";
+            }
         }
 
         model.addAttribute("usuario", usuario);
@@ -120,14 +138,32 @@ public class PagoController {
                 return "redirect:/carrito";
             }
 
-            // Verificar stock de todos los productos antes de procesar
+            // Validar límite máximo de compra
+            double limiteMaximo = configService.obtenerValorDouble("LIMITE_COMPRA_MAX", 5000000.0);
+            if (carrito.getTotalEstimado() > limiteMaximo) {
+                redirectAttributes.addFlashAttribute("error",
+                        "El total de su compra excede el límite permitido de $" + String.format("%,.0f", limiteMaximo));
+                return "redirect:/pago";
+            }
+
+            // Verificar stock y COMPRA MÍNIMA de todos los productos antes de procesar
             for (ProductoCarrito item : carrito.getItems()) {
                 Producto producto = productoRepository.findById(item.getProductoId())
                         .orElseThrow(() -> new IllegalArgumentException(
                                 "Producto no encontrado: " + item.getNombre()));
+                
+                // Validar Stock
                 if (producto.getStock() < item.getCantidad()) {
                     redirectAttributes.addFlashAttribute("error",
                             "El producto " + item.getNombre() + " no tiene suficiente stock");
+                    return "redirect:/carrito";
+                }
+
+                // Validar Compra Mínima
+                if (item.getCantidad() < producto.getCompraMinima()) {
+                    String unidad = producto.getUnidadMedida() != null ? producto.getUnidadMedida().getAbreviatura() : "unid";
+                    redirectAttributes.addFlashAttribute("error",
+                            "No cumples con la compra mínima de " + producto.getCompraMinima() + " " + unidad + " para el producto: " + item.getNombre());
                     return "redirect:/carrito";
                 }
             }
@@ -137,9 +173,9 @@ public class PagoController {
 
             for (ProductoCarrito item : carrito.getItems()) {
                 Producto producto = productoRepository.findById(item.getProductoId())
-                    .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado"));
+                        .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado"));
                 String vendedorIdLocal = producto.getVendedor().getId();
-                
+
                 String unidadAb = item.getUnidadAbreviatura() != null ? item.getUnidadAbreviatura() : "unid";
                 ProductoPedido itemPedido = new ProductoPedido(
                         item.getProductoId(),
@@ -147,24 +183,30 @@ public class PagoController {
                         item.getImagenUrl(),
                         item.getPrecioUnitario(),
                         item.getCantidad(),
-                        unidadAb
-                );
-                
+                        unidadAb);
+
                 itemsPorVendedor.computeIfAbsent(vendedorIdLocal, k -> new java.util.ArrayList<>()).add(itemPedido);
+            }
+
+            // Obtener snapshots de vendedores para los pedidos
+            java.util.Map<String, DatosVendedor> snapshotsVendedores = new java.util.HashMap<>();
+            for (ProductoCarrito item : carrito.getItems()) {
+                Producto producto = productoRepository.findById(item.getProductoId()).orElse(null);
+                if (producto != null && !snapshotsVendedores.containsKey(producto.getVendedor().getId())) {
+                    snapshotsVendedores.put(producto.getVendedor().getId(), producto.getVendedor());
+                }
             }
 
             // Construir comprador embebido
             DatosComprador comprador = new DatosComprador(
                     usuario.getId(),
-                    usuario.getNombre()
-            );
+                    usuario.getNombre());
 
             // Construir dirección de entrega embebida
             DireccionPedido direccionEntrega = new DireccionPedido(
                     direccionEnvio != null ? direccionEnvio : "",
                     usuario.getUbicacion() != null ? usuario.getUbicacion().getCiudad() : "",
-                    usuario.getUbicacion() != null ? usuario.getUbicacion().getDepartamento() : ""
-            );
+                    usuario.getUbicacion() != null ? usuario.getUbicacion().getDepartamento() : "");
 
             java.util.List<String> pedidosGenerados = new java.util.ArrayList<>();
 
@@ -172,11 +214,13 @@ public class PagoController {
             for (java.util.Map.Entry<String, java.util.List<ProductoPedido>> entry : itemsPorVendedor.entrySet()) {
                 String vendedorIdLocal = entry.getKey();
                 java.util.List<ProductoPedido> itemsVendedor = entry.getValue();
-                
+                DatosVendedor snapshotVendedor = snapshotsVendedores.get(vendedorIdLocal);
+
                 double subtotalVendedor = itemsVendedor.stream().mapToDouble(ProductoPedido::getSubtotal).sum();
                 DatosPago datosPagoVendedor = new DatosPago(metodoPago, subtotalVendedor);
-                
-                Pedido pedidoVendedor = new Pedido(comprador, vendedorIdLocal, direccionEntrega, itemsVendedor, datosPagoVendedor);
+
+                Pedido pedidoVendedor = new Pedido(comprador, snapshotVendedor, direccionEntrega, itemsVendedor,
+                        datosPagoVendedor);
                 pedidoVendedor = pedidoRepository.save(pedidoVendedor);
                 pedidosGenerados.add(pedidoVendedor.getId());
 
@@ -185,8 +229,7 @@ public class PagoController {
                         vendedorIdLocal,
                         "¡Nueva Venta!",
                         "Has recibido un nuevo pedido #" + pedidoVendedor.getId() + " de " + usuario.getNombre(),
-                        "SUCCESS"
-                );
+                        "SUCCESS");
             }
 
             // Notificar al Comprador
@@ -194,8 +237,7 @@ public class PagoController {
                     usuario.getId(),
                     "Pedido Confirmado",
                     "Tu compra ha sido procesada con éxito. Pedidos generados: " + pedidosGenerados.size(),
-                    "SUCCESS"
-            );
+                    "SUCCESS");
 
             // Actualizar stock de cada producto
             for (ProductoCarrito item : carrito.getItems()) {
@@ -214,7 +256,8 @@ public class PagoController {
 
             String mensajeConfirmacion = "¡Pago procesado exitosamente! ";
             if (pedidosGenerados.size() > 1) {
-                mensajeConfirmacion += "Se dividió su compra en " + pedidosGenerados.size() + " pedidos separados por vendedor.";
+                mensajeConfirmacion += "Se dividió su compra en " + pedidosGenerados.size()
+                        + " pedidos separados por vendedor.";
             } else {
                 mensajeConfirmacion += "Pedido #" + pedidosGenerados.get(0);
             }

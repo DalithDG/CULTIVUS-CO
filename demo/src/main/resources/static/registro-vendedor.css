@@ -1,198 +1,350 @@
+/* ========================================
+   CULTIVUS - REGISTRO VENDEDOR PREMIUM
+   ======================================== */
+
+:root {
+    --primary: #6b7c2e;
+    --primary-dark: #5a6825;
+    --secondary: #7d9a3c;
+    --white: #ffffff;
+    --black: #000000;
+    --text-main: #2d3436;
+    --text-muted: #636e72;
+    --bg-light: #f9fbf9;
+    --radius: 16px;
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 body {
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #6b7c2e 0%, #7d9a3c 100%);
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
+    font-family: 'Inter', sans-serif;
+    color: var(--text-main);
+    background: var(--bg-light);
+    min-height: 100vh;
 }
 
-.container {
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  max-width: 600px;
-  width: 100%;
-  padding: 40px;
+/* ── Main Layout ── */
+.register-main {
+    position: relative;
+    min-height: calc(100vh - 70px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-image: url('/images/registro-hero.png');
+    background-size: cover;
+    background-position: center;
+    padding: 40px 20px;
 }
 
-.header {
-  text-align: center;
-  margin-bottom: 30px;
+.register-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.7) 100%);
+    backdrop-filter: blur(8px);
+    z-index: 1;
 }
 
-.header h1 {
-  color: #6b7c2e;
-  font-size: 32px;
-  margin-bottom: 10px;
-  font-weight: 700;
+.register-content {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 1200px;
 }
 
-.header p {
-  color: #666;
-  font-size: 16px;
+.register-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 60px;
+    align-items: center;
 }
 
-.alert {
-  padding: 15px;
-  border-radius: 10px;
-  margin-bottom: 20px;
-  font-size: 14px;
+/* ── Info Side ── */
+.info-side {
+    padding-right: 20px;
 }
 
-.alert-error {
-  background-color: #fee;
-  color: #c33;
-  border: 1px solid #fcc;
+.info-badge {
+    display: inline-block;
+    padding: 8px 16px;
+    background: rgba(107, 124, 46, 0.1);
+    color: var(--primary);
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 24px;
 }
 
-.form-group {
-  margin-bottom: 20px;
+.info-side h1 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 48px;
+    line-height: 1.2;
+    margin-bottom: 20px;
+}
+
+.info-side h1 .highlight {
+    color: var(--primary);
+}
+
+.info-side .subtitle {
+    font-size: 18px;
+    color: var(--text-muted);
+    margin-bottom: 40px;
+}
+
+.benefits-list {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.benefit-item {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.benefit-icon {
+    width: 50px;
+    height: 50px;
+    background: var(--white);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+    font-size: 20px;
+    box-shadow: var(--shadow);
+}
+
+.benefit-text h3 {
+    font-size: 18px;
+    margin-bottom: 4px;
+}
+
+.benefit-text p {
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+/* ── Form Side ── */
+.register-card {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 40px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.card-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.card-header h2 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.card-header p {
+    color: var(--text-muted);
+    font-size: 15px;
+}
+
+/* ── Forms ── */
+.modern-form .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.full-width {
+    grid-column: span 2;
 }
 
 .form-group label {
-  display: block;
-  margin-bottom: 8px;
-  color: #333;
-  font-weight: 600;
-  font-size: 14px;
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: var(--text-main);
 }
 
-.form-group input,
-.form-group textarea,
-.form-group select {
-  width: 100%;
-  padding: 12px 15px;
-  border: 2px solid #e0e0e0;
-  border-radius: 10px;
-  font-size: 14px;
-  transition: all 0.3s;
-  font-family: inherit;
+.input-wrapper {
+    position: relative;
 }
 
-.form-group input:focus,
-.form-group textarea:focus,
-.form-group select:focus {
-  outline: none;
-  border-color: #6b7c2e;
-  box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
-}
-
-.form-group textarea {
-  resize: vertical;
-  min-height: 100px;
-}
-
-.form-group small {
-  display: block;
-  margin-top: 5px;
-  color: #999;
-  font-size: 12px;
-}
-
-.required {
-  color: #e74c3c;
-}
-
-.btn {
-  width: 100%;
-  padding: 15px;
-  border: none;
-  border-radius: 10px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-  font-family: inherit;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, #6b7c2e 0%, #7d9a3c 100%);
-  color: white;
-  box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
-}
-
-.btn-primary:hover {
-  background: linear-gradient(135deg, #7d9a3c 0%, #6b7c2e 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
-}
-
-.btn-secondary {
-  background: #e0e0e0;
-  color: #666;
-  margin-top: 10px;
-}
-
-.btn-secondary:hover {
-  background: #d0d0d0;
-}
-
-.info-box {
-  background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
-  border: 2px solid #6b7c2e;
-  border-radius: 15px;
-  padding: 20px;
-  margin-bottom: 25px;
-}
-
-.info-box h3 {
-  color: #6b7c2e;
-  font-size: 18px;
-  margin-bottom: 12px;
-  font-weight: 700;
-}
-
-.info-box ul {
-  margin-left: 20px;
-  color: #333;
-  font-size: 14px;
-}
-
-.info-box ul li {
-  margin-bottom: 8px;
-  line-height: 1.5;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .container {
-    padding: 30px 20px;
-  }
-
-  .header h1 {
-    font-size: 26px;
-  }
-
-  .info-box {
-    padding: 15px;
-  }
-}
-
-@media (max-width: 480px) {
-  body {
-    padding: 10px;
-  }
-
-  .container {
-    padding: 25px 15px;
-  }
-
-  .header h1 {
-    font-size: 22px;
-  }
-
-  .form-group input,
-  .form-group textarea,
-  .form-group select {
+.input-wrapper i {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
     font-size: 16px;
-    /* Prevent zoom on iOS */
-  }
+    pointer-events: none;
+}
+
+.input-wrapper input,
+.input-wrapper textarea {
+    width: 100%;
+    padding: 12px 16px 12px 48px;
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 15px;
+    background: #fcfcfc;
+    transition: var(--transition);
+}
+
+.input-wrapper textarea {
+    min-height: 100px;
+    padding-top: 15px;
+    resize: vertical;
+}
+
+.input-wrapper input:focus,
+.input-wrapper textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    background: var(--white);
+    box-shadow: 0 0 0 4px rgba(107, 124, 46, 0.1);
+}
+
+.form-help {
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.form-section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--primary);
+    margin-top: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ── Alerts ── */
+.alert {
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.alert-error {
+    background: #fff5f5;
+    color: #e53e3e;
+    border: 1px solid #feb2b2;
+}
+
+.alert-success {
+    background: #f0fff4;
+    color: #38a169;
+    border: 1px solid #9ae6b4;
+}
+
+/* ── Actions ── */
+.form-actions {
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.btn-submit {
+    width: 100%;
+    padding: 16px;
+    background: var(--primary);
+    color: var(--white);
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    transition: var(--transition);
+}
+
+.btn-submit:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(107, 124, 46, 0.3);
+}
+
+.btn-submit i {
+    transition: var(--transition);
+}
+
+.btn-submit:hover i {
+    transform: translateX(4px);
+}
+
+.btn-back {
+    text-align: center;
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.btn-back:hover {
+    color: var(--primary);
+}
+
+/* ── Responsive ── */
+@media (max-width: 1024px) {
+    .register-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+    
+    .info-side {
+        text-align: center;
+        padding-right: 0;
+    }
+    
+    .benefits-list {
+        max-width: 600px;
+        margin: 0 auto;
+        text-align: left;
+    }
+
+    .info-side h1 {
+        font-size: 36px;
+    }
+}
+
+@media (max-width: 600px) {
+    .register-card {
+        padding: 30px 20px;
+    }
+    
+    .modern-form .form-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .full-width {
+        grid-column: span 1;
+    }
+
+    .register-main {
+        padding: 20px 10px;
+    }
 }

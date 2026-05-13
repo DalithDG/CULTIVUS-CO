@@ -2,6 +2,7 @@ package com.example.demo.Model;
 
 import com.example.demo.Model.embebidos.DatosComprador;
 import com.example.demo.Model.embebidos.DatosPago;
+import com.example.demo.Model.embebidos.DatosVendedor;
 import com.example.demo.Model.embebidos.DireccionPedido;
 import com.example.demo.Model.embebidos.ProductoPedido;
 import org.springframework.data.annotation.Id;
@@ -18,8 +19,8 @@ public class Pedido {
     @Id
     private String id;
 
-    @Field("vendedor_id")
-    private String vendedorId;
+    @Field("vendedor")
+    private DatosVendedor vendedor;
 
     // PENDIENTE, CONFIRMADO, ENVIADO, ENTREGADO, CANCELADO
     @Field("estado")
@@ -61,10 +62,10 @@ public class Pedido {
         this.items = new ArrayList<>();
     }
 
-    public Pedido(DatosComprador comprador, String vendedorId, DireccionPedido direccionEntrega,
-                  List<ProductoPedido> items, DatosPago pago) {
+    public Pedido(DatosComprador comprador, DatosVendedor vendedor, DireccionPedido direccionEntrega,
+                   List<ProductoPedido> items, DatosPago pago) {
         this.comprador = comprador;
-        this.vendedorId = vendedorId;
+        this.vendedor = vendedor;
         this.direccionEntrega = direccionEntrega;
         this.items = items;
         this.pago = pago;
@@ -85,8 +86,8 @@ public class Pedido {
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
-    public String getVendedorId() { return vendedorId; }
-    public void setVendedorId(String vendedorId) { this.vendedorId = vendedorId; }
+    public DatosVendedor getVendedor() { return vendedor; }
+    public void setVendedor(DatosVendedor vendedor) { this.vendedor = vendedor; }
 
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }

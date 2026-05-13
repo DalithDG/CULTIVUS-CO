@@ -47,7 +47,10 @@ body {
   min-height: 100vh;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI",
     Roboto, "Helvetica Neue", Arial, sans-serif;
-  background: var(--gray-50);
+  background: linear-gradient(135deg,
+      rgba(0, 0, 0, 0.596) 0%,
+      rgba(0, 0, 0, 0.459) 100%),
+    url("/images/login-bg.png") center/cover no-repeat;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -73,6 +76,7 @@ body {
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -84,11 +88,9 @@ body {
    ======================================== */
 
 .hero-section {
-  background: linear-gradient(
-      135deg,
+  background: linear-gradient(135deg,
       rgba(0, 0, 0, 0.603) 0%,
-      rgba(0, 0, 0, 0.596) 100%
-    ),
+      rgba(0, 0, 0, 0.596) 100%),
     url("/images/registro-hero.png") center/cover no-repeat;
   padding: 60px 50px;
   color: var(--white);
@@ -106,11 +108,9 @@ body {
   right: -50%;
   width: 200%;
   height: 200%;
-  background: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.1) 0%,
-    transparent 70%
-  );
+  background: radial-gradient(circle,
+      rgba(255, 255, 255, 0.1) 0%,
+      transparent 70%);
   animation: rotate 30s linear infinite;
 }
 
@@ -118,6 +118,7 @@ body {
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -148,6 +149,7 @@ body {
     opacity: 0;
     transform: translateX(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -167,7 +169,7 @@ body {
   animation: fadeInLeft 0.6s ease-out 0.3s backwards;
 }
 
-.hero-section > p {
+.hero-section>p {
   font-size: 18px;
   line-height: 1.6;
   opacity: 0.95;
@@ -191,9 +193,11 @@ body {
 .feature-item:nth-child(1) {
   animation-delay: 0.5s;
 }
+
 .feature-item:nth-child(2) {
   animation-delay: 0.6s;
 }
+
 .feature-item:nth-child(3) {
   animation-delay: 0.7s;
 }
@@ -254,6 +258,7 @@ body {
     opacity: 0;
     transform: translateX(20px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
@@ -297,6 +302,7 @@ body {
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -415,11 +421,9 @@ body {
 .btn-submit {
   width: 100%;
   padding: 16px 24px;
-  background: linear-gradient(
-    135deg,
-    var(--cultivus-primary),
-    var(--cultivus-secondary)
-  );
+  background: linear-gradient(135deg,
+      var(--cultivus-primary),
+      var(--cultivus-secondary));
   color: var(--white);
   border: none;
   border-radius: var(--radius-md);
@@ -500,6 +504,7 @@ body {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -580,7 +585,7 @@ body {
     font-size: 32px;
   }
 
-  .hero-section > p {
+  .hero-section>p {
     font-size: 16px;
   }
 
@@ -599,7 +604,8 @@ body {
 
   .form-group input {
     padding: 13px 15px;
-    font-size: 16px; /* Evita zoom en iOS */
+    font-size: 16px;
+    /* Evita zoom en iOS */
   }
 
   .btn-submit {
@@ -637,6 +643,7 @@ body {
 
 /* Accesibilidad */
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
@@ -709,7 +716,7 @@ body {
   transition: var(--transition-fast);
 }
 
-.select-wrapper select:focus ~ .select-arrow {
+.select-wrapper select:focus~.select-arrow {
   color: var(--cultivus-primary);
   transform: translateY(-50%) rotate(180deg);
 }

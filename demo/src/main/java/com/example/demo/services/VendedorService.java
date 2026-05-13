@@ -56,9 +56,9 @@ public class VendedorService {
         perfil.setBanco(banco);
         perfil.setVerificado(false);
 
-        // Embeber el perfil y cambiar el rol dentro del mismo documento
+        // Embeber el perfil y agregar el rol VENDEDOR (manteniendo otros roles como COMPRADOR)
         usuario.setPerfilVendedor(perfil);
-        usuario.setRol(Role.VENDEDOR);
+        usuario.addRole(Role.VENDEDOR);
 
         return usuarioRepository.save(usuario);
     }
@@ -76,7 +76,7 @@ public class VendedorService {
      */
     public boolean esVendedor(String usuarioId) {
         return usuarioRepository.findById(usuarioId)
-                .map(u -> Role.VENDEDOR.equals(u.getRol()))
+                .map(u -> u.hasRole(Role.VENDEDOR))
                 .orElse(false);
     }
 
@@ -121,7 +121,13 @@ public class VendedorService {
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
 
         usuario.setPerfilVendedor(null);
-        usuario.setRol(Role.COMPRADOR); // Cambia el rol a COMPRADOR al eliminar el perfil de vendedor
+        if (usuario.getRoles() != null) {
+            usuario.getRoles().remove(Role.VENDEDOR);
+            // Asegurar que siempre tenga al menos el rol COMPRADOR
+            if (usuario.getRoles().isEmpty()) {
+                usuario.addRole(Role.COMPRADOR);
+            }
+        }
         usuarioRepository.save(usuario);
     }
 
@@ -129,14 +135,14 @@ public class VendedorService {
      * Obtiene todos los pedidos del vendedor
      */
     public List<Pedido> obtenerPedidosDelVendedor(String vendedorId) {
-        return pedidoRepository.findByVendedorId(vendedorId);
+        return pedidoRepository.findByVendedor_Id(vendedorId);
     }
 
     /**
      * Obtiene los pedidos del vendedor filtrados por estado
      */
     public List<Pedido> obtenerPedidosDelVendedorPorEstado(String vendedorId, String estado) {
-        return pedidoRepository.findByVendedorIdAndEstado(vendedorId, estado);
+        return pedidoRepository.findByVendedor_IdAndEstado(vendedorId, estado);
     }
 
     /**
@@ -162,7 +168,7 @@ public class VendedorService {
      * Calcula el total de ventas del vendedor
      */
     public double calcularTotalVentas(String vendedorId) {
-        List<Pedido> pedidos = pedidoRepository.findByVendedorId(vendedorId);
+        List<Pedido> pedidos = pedidoRepository.findByVendedor_Id(vendedorId);
         return pedidos.stream()
                 .filter(p -> !"CANCELADO".equals(p.getEstado())) // Consideramos ventas no canceladas
                 .mapToDouble(Pedido::getTotal)

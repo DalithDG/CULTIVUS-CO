@@ -4,6 +4,7 @@ import com.example.demo.Model.Role;
 import com.example.demo.Model.Usuario;
 import com.example.demo.Model.embebidos.PerfilAdmin;
 import com.example.demo.repository.UsuarioRepository;
+import com.example.demo.services.AppConfigService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,9 @@ public class DataLoader implements CommandLineRunner {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private AppConfigService configService;
+
     private static final String ADMIN_EMAIL = "admin1@demo.com";
     private static final String ADMIN_PASSWORD = "Admin1234!";
 
@@ -33,6 +37,8 @@ public class DataLoader implements CommandLineRunner {
             usuarioRepository.findByEmail(ADMIN_EMAIL).ifPresentOrElse(
                     admin -> migrarAdminSiEsNecesario(admin),
                     () -> crearAdmin());
+
+            inicializarConfiguracion();
 
             logger.info("✅ DataLoader finalizado correctamente");
 
@@ -82,6 +88,25 @@ public class DataLoader implements CommandLineRunner {
         logger.info("   🔑 Contraseña: {}", ADMIN_PASSWORD);
         System.out.println("✅ Usuario ADMIN creado:");
         System.out.println("   📧 Email: " + ADMIN_EMAIL);
+        System.out.println("   📧 Email: " + ADMIN_EMAIL);
         System.out.println("   🔑 Contraseña: " + ADMIN_PASSWORD);
+    }
+
+    private void inicializarConfiguracion() {
+        logger.info("⚙️  Inicializando parámetros de configuración...");
+
+        configService.guardarConfig("LIMITE_COMPRA_MAX", "5000000", "Límite máximo por transacción de compra (COP)",
+                "NUMBER");
+        configService.guardarConfig("COMPRA_MINIMA_GLOBAL", "50000",
+                "Monto mínimo global para realizar un pedido (COP)",
+                "NUMBER");
+        configService.guardarConfig("MAX_PRODUCTOS_VENDEDOR", "50", "Cantidad máxima de productos activos por vendedor",
+                "NUMBER");
+        configService.guardarConfig("COMISION_VENTA_PORCENTAJE", "5.0",
+                "Porcentaje de comisión que cobra la plataforma por cada venta (%)", "NUMBER");
+        configService.guardarConfig("MENSAJE_BIENVENIDA", "¡Bienvenido a Cultivus! Del campo a tu mesa.",
+                "Mensaje que se muestra en el inicio", "STRING");
+
+        logger.info("✅ Parámetros de configuración inicializados.");
     }
 }

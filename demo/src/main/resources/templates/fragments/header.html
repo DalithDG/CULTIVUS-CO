@@ -1,23 +1,31 @@
 <!-- Header dinámico que selecciona el header correcto según el rol del usuario -->
 <header th:fragment="siteHeader">
     <!-- Si el usuario está logueado, mostrar header según su rol -->
-    <div th:if="${session.usuarioLogueado != null}">
-        <!-- Header para Admin -->
-        <!-- ✅ Antes: session.usuarioLogueado.rol.nombre == 'ADMIN' -->
-        <div th:if="${session.usuarioLogueado.rol != null and session.usuarioLogueado.rol.name() == 'ADMIN'}">
-            <div th:replace="~{fragments/header-admin :: siteHeader}"></div>
-        </div>
+    <th:block th:if="${session.usuarioLogueado != null}">
+        <!-- Obtener el nombre del rol de forma segura -->
+        <th:block th:with="rolName=${session.usuarioLogueado.rol != null ? session.usuarioLogueado.rol.name() : 'GUEST'}">
+            
+            <!-- Header para Admin -->
+            <div th:if="${rolName == 'ADMIN'}">
+                <div th:replace="~{fragments/header-admin :: siteHeader}"></div>
+            </div>
 
-        <!-- Header para Vendedor -->
-        <div th:if="${session.usuarioLogueado.rol != null and session.usuarioLogueado.rol.name() == 'VENDEDOR'}">
-            <div th:replace="~{fragments/header-vendedor :: siteHeader}"></div>
-        </div>
+            <!-- Header para Vendedor -->
+            <div th:if="${rolName == 'VENDEDOR'}">
+                <div th:replace="~{fragments/header-vendedor :: siteHeader}"></div>
+            </div>
 
-        <!-- Header para Comprador -->
-        <div th:if="${session.usuarioLogueado.rol != null and session.usuarioLogueado.rol.name() == 'COMPRADOR'}">
-            <div th:replace="~{fragments/header-comprador :: siteHeader}"></div>
-        </div>
-    </div>
+            <!-- Header para Comprador -->
+            <div th:if="${rolName == 'COMPRADOR'}">
+                <div th:replace="~{fragments/header-comprador :: siteHeader}"></div>
+            </div>
+            
+            <!-- Fallback para roles desconocidos -->
+            <div th:if="${rolName == 'GUEST'}">
+                <div th:replace="~{fragments/header-publico :: siteHeader}"></div>
+            </div>
+        </th:block>
+    </th:block>
 
     <!-- Si no está logueado, mostrar header público -->
     <div th:if="${session.usuarioLogueado == null}">
