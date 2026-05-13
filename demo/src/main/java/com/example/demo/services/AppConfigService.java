@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class AppConfigService {
@@ -45,11 +44,11 @@ public class AppConfigService {
     public void guardarConfig(String clave, String valor, String descripcion, String tipo) {
         AppConfig config = configRepository.findByClave(clave)
                 .orElse(new AppConfig(clave, valor, descripcion, tipo));
-        
+
         config.setValor(valor);
         config.setDescripcion(descripcion);
         config.setTipo(tipo);
-        
+
         configRepository.save(config);
     }
 
