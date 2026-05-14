@@ -39,6 +39,12 @@ public class Producto {
     @Field("compra_minima")
     private Double compraMinima = 1.0;
 
+    @Field("en_oferta")
+    private boolean enOferta = false;
+
+    @Field("precio_oferta")
+    private Double precioOferta;
+
     @Field("created_at")
     private LocalDateTime createdAt;
 
@@ -104,6 +110,18 @@ public class Producto {
 
     public Double getCompraMinima() { return compraMinima != null ? compraMinima : 1.0; }
     public void setCompraMinima(Double compraMinima) { this.compraMinima = compraMinima; }
+
+    public boolean isEnOferta() { return enOferta; }
+    public void setEnOferta(boolean enOferta) { this.enOferta = enOferta; }
+
+    public Double getPrecioOferta() { return precioOferta; }
+    public void setPrecioOferta(Double precioOferta) { this.precioOferta = precioOferta; }
+
+    /** Calcula el porcentaje de descuento redondeado */
+    public int getPorcentajeDescuento() {
+        if (precioOferta == null || precio == null || precio == 0) return 0;
+        return (int) Math.round((1 - precioOferta / precio) * 100);
+    }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

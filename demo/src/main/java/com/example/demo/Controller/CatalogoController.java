@@ -4,6 +4,7 @@ import com.example.demo.Model.Producto;
 import com.example.demo.Model.Resena;
 import com.example.demo.Model.Usuario;
 import com.example.demo.repository.ProductoRepository;
+import com.example.demo.repository.UsuarioRepository;
 import com.example.demo.services.ResenaService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,9 @@ public class CatalogoController {
     @Autowired
     private ResenaService resenaService;
 
+    @Autowired
+    private UsuarioRepository usuarioRepository;
+
     /**
      * Muestra todos los productos disponibles (página pública)
      */
@@ -39,6 +43,20 @@ public class CatalogoController {
         model.addAttribute("usuario", usuario);
 
         return "category";
+    }
+
+    /**
+     * Muestra los productos en oferta
+     */
+    @GetMapping("/ofertas")
+    public String verOfertas(Model model, HttpSession session) {
+        List<Producto> productosEnOferta = productoRepository.findByEnOfertaTrueAndDisponibleTrue();
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+
+        model.addAttribute("productos", productosEnOferta);
+        model.addAttribute("usuario", usuario);
+
+        return "ofertas";
     }
 
     /**
@@ -70,6 +88,42 @@ public class CatalogoController {
 
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/category";
+        }
+    }
+
+    /**
+     * Muestra el perfil de un vendedor y sus productos
+     */
+    @GetMapping("/vendedor/perfil/{id}")
+    public String verPerfilVendedor(@PathVariable String id, 
+            Model model, 
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+        try {
+            Usuario vendedor = usuarioRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Vendedor no encontrado"));
+
+            // Verificar si tiene el rol de vendedor (opcional pero recomendado)
+            if (!vendedor.getRoles().contains(com.example.demo.Model.Role.VENDEDOR)) {
+                // Si no es vendedor, podríamos redirigir o mostrar un mensaje
+                // Por ahora permitimos si tiene el perfil_vendedor inicializado
+            }
+
+            List<Producto> productos = productoRepository.findByVendedor_IdAndDisponibleTrue(id);
+            Usuario usuarioLogueado = (Usuario) session.getAttribute("usuarioLogueado");
+
+            model.addAttribute("vendedor", vendedor);
+            model.addAttribute("productos", productos);
+            model.addAttribute("usuario", usuarioLogueado);
+
+            return "vendedor-perfil";
+
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/category";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al cargar el perfil del vendedor");
             return "redirect:/category";
         }
     }

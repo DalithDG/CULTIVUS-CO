@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Descubre las mejores ofertas en productos frescos y naturales en Cultivus">
+    <title>Ofertas - Cultivus</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/header.css}">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #f6f7fb;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Banner */
+        .ofertas-banner {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 50%, #922b21 100%);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .ofertas-banner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        .ofertas-banner h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: white;
+            position: relative;
+            z-index: 1;
+        }
+        .ofertas-banner h1 i {
+            margin-right: 10px;
+            animation: shake 0.8s ease-in-out infinite alternate;
+        }
+        @keyframes shake {
+            0% { transform: rotate(-5deg); }
+            100% { transform: rotate(5deg); }
+        }
+        .ofertas-banner p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Container */
+        .ofertas-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px 60px;
+        }
+        .ofertas-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .ofertas-header h2 {
+            font-size: 1.4rem;
+            color: #2c3e50;
+        }
+        .ofertas-count {
+            color: #999;
+            font-size: 0.9rem;
+        }
+        .btn-volver {
+            color: #e74c3c;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+        }
+        .btn-volver:hover {
+            text-decoration: underline;
+        }
+
+        /* Grid */
+        .ofertas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        /* Card */
+        .oferta-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+        }
+        .oferta-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+        }
+        .oferta-card a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* Badge de descuento */
+        .badge-descuento {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: #e74c3c;
+            color: white;
+            font-size: 0.85rem;
+            font-weight: 800;
+            padding: 6px 14px;
+            border-radius: 20px;
+            z-index: 2;
+            box-shadow: 0 3px 10px rgba(231,76,60,0.4);
+        }
+        .badge-oferta {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #f39c12;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            z-index: 2;
+        }
+
+        /* Imagen */
+        .oferta-img {
+            width: 100%;
+            height: 220px;
+            overflow: hidden;
+            background: #f0f3f5;
+            position: relative;
+        }
+        .oferta-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        .oferta-card:hover .oferta-img img {
+            transform: scale(1.1);
+        }
+
+        /* Body */
+        .oferta-body {
+            padding: 18px;
+        }
+        .oferta-body h3 {
+            font-size: 1.05rem;
+            color: #2c3e50;
+            margin-bottom: 4px;
+        }
+        .oferta-body .categoria {
+            font-size: 0.8rem;
+            color: #999;
+            margin-bottom: 12px;
+        }
+        .oferta-body .vendedor-name {
+            font-size: 0.78rem;
+            color: #27ae60;
+            margin-bottom: 10px;
+        }
+        .oferta-body .vendedor-name i {
+            margin-right: 4px;
+        }
+
+        /* Precios */
+        .precios-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+        .precio-oferta {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: #e74c3c;
+        }
+        .precio-original {
+            font-size: 0.95rem;
+            color: #bbb;
+            text-decoration: line-through;
+        }
+        .ahorro {
+            font-size: 0.78rem;
+            color: #27ae60;
+            font-weight: 600;
+        }
+
+        /* Footer card */
+        .oferta-footer {
+            padding: 0 18px 18px;
+        }
+        .btn-agregar {
+            width: 100%;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 11px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.3s ease;
+        }
+        .btn-agregar:hover {
+            background: #c0392b;
+        }
+
+        /* Estado vacío */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #999;
+        }
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            display: block;
+            color: #ddd;
+        }
+        .empty-state h3 {
+            color: #666;
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+        .empty-state p {
+            margin-bottom: 20px;
+        }
+        .btn-explorar {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #27ae60;
+            color: white;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: background 0.3s ease;
+        }
+        .btn-explorar:hover {
+            background: #1f8a4e;
+        }
+
+        @media (max-width: 768px) {
+            .ofertas-banner h1 { font-size: 1.8rem; }
+            .ofertas-header { flex-direction: column; gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <header th:replace="~{fragments/header :: siteHeader}"></header>
+
+    <!-- Banner -->
+    <section class="ofertas-banner">
+        <h1><i class="fa-solid fa-fire"></i> Ofertas Especiales</h1>
+        <p>Los mejores precios en productos frescos del campo colombiano</p>
+    </section>
+
+    <div class="ofertas-container">
+        <!-- Header de la sección -->
+        <div class="ofertas-header">
+            <div>
+                <h2>Productos en Oferta</h2>
+                <span class="ofertas-count" th:text="${productos != null ? productos.size() : 0} + ' ofertas disponibles'">0 ofertas</span>
+            </div>
+            <a th:href="@{/category}" class="btn-volver">
+                <i class="fa-solid fa-arrow-left"></i> Ver todo el catálogo
+            </a>
+        </div>
+
+        <!-- Grid de productos en oferta -->
+        <div th:if="${productos != null and !productos.isEmpty()}" class="ofertas-grid">
+            <div th:each="producto : ${productos}" class="oferta-card">
+                <!-- Badge de descuento -->
+                <span class="badge-descuento" th:if="${producto.precioOferta != null}"
+                      th:text="'-' + ${producto.porcentajeDescuento} + '%'">-20%</span>
+                <span class="badge-oferta">
+                    <i class="fa-solid fa-tag"></i> OFERTA
+                </span>
+
+                <a th:href="@{/producto/{id}(id=${producto.id})}">
+                    <div class="oferta-img">
+                        <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}"
+                             onerror="this.src='/images/placeholder.jpg'">
+                    </div>
+                    <div class="oferta-body">
+                        <h3 th:text="${producto.nombre}">Nombre del Producto</h3>
+                        <p class="categoria"
+                           th:text="${producto.categoria != null ? producto.categoria.nombre : 'Sin categoría'}">Categoría</p>
+                        <p class="vendedor-name" th:if="${producto.vendedor != null}">
+                            <i class="fa-solid fa-store"></i>
+                            <span th:text="${producto.vendedor.razonSocial != null ? producto.vendedor.razonSocial : producto.vendedor.nombre}">Vendedor</span>
+                        </p>
+
+                        <!-- Precios -->
+                        <div class="precios-wrapper">
+                            <span class="precio-oferta"
+                                  th:text="'$' + ${producto.precioOferta != null ? #numbers.formatDecimal(producto.precioOferta, 0, 'COMMA', 0, 'POINT') : #numbers.formatDecimal(producto.precio, 0, 'COMMA', 0, 'POINT')}">$0</span>
+                            <span class="precio-original" th:if="${producto.precioOferta != null}"
+                                  th:text="'$' + ${#numbers.formatDecimal(producto.precio, 0, 'COMMA', 0, 'POINT')}">$0</span>
+                        </div>
+                        <span class="ahorro" th:if="${producto.precioOferta != null}"
+                              th:text="'Ahorras $' + ${#numbers.formatDecimal(producto.precio - producto.precioOferta, 0, 'COMMA', 0, 'POINT')}">Ahorras $0</span>
+                    </div>
+                </a>
+                <div class="oferta-footer">
+                    <form th:action="@{/carrito/agregar}" method="post">
+                        <input type="hidden" name="productoId" th:value="${producto.id}">
+                        <button type="submit" class="btn-agregar">
+                            <i class="fas fa-cart-plus"></i> Agregar al Carrito
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estado vacío -->
+        <div th:if="${productos == null or productos.isEmpty()}" class="empty-state">
+            <i class="fa-solid fa-tags"></i>
+            <h3>No hay ofertas disponibles en este momento</h3>
+            <p>¡Vuelve pronto! Nuestros productores actualizan sus ofertas constantemente.</p>
+            <a th:href="@{/category}" class="btn-explorar">
+                <i class="fa-solid fa-seedling"></i> Explorar el catálogo completo
+            </a>
+        </div>
+    </div>
+
+    <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
+</body>
+</html>

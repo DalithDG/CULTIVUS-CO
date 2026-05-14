@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${vendedor.nombre} + ' | Cultivus'">Perfil del Vendedor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/header.css}">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #f6f7fb;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .vendedor-banner {
+            background: linear-gradient(135deg, #27ae60 0%, #1a7a42 50%, #145a32 100%);
+            color: white;
+            padding: 80px 20px 100px;
+            text-align: center;
+        }
+        .vendedor-banner h1 {
+            font-size: 2rem;
+            margin-bottom: 8px;
+            color: white;
+        }
+        .vendedor-banner p {
+            font-size: 1.05rem;
+            opacity: 0.85;
+        }
+        .perfil-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px 60px;
+        }
+        .vendedor-card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 25px;
+            align-items: center;
+            margin-top: -60px;
+            position: relative;
+            z-index: 2;
+        }
+        .vendedor-icon {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #eef8f2, #d4edda);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: #27ae60;
+            flex-shrink: 0;
+        }
+        .vendedor-datos h2 {
+            font-size: 1.6rem;
+            color: #2c3e50;
+            margin-bottom: 6px;
+        }
+        .badge-verificado {
+            display: inline-block;
+            background: #27ae60;
+            color: white;
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 20px;
+            margin-bottom: 8px;
+        }
+        .vendedor-descripcion {
+            color: #636e72;
+            line-height: 1.6;
+            margin-bottom: 12px;
+            font-size: 0.95rem;
+        }
+        .vendedor-meta {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            font-size: 0.88rem;
+            color: #555;
+        }
+        .vendedor-meta span i {
+            color: #27ae60;
+            margin-right: 5px;
+        }
+
+        /* Sección de productos */
+        .productos-titulo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 40px 0 25px;
+        }
+        .productos-titulo h2 {
+            font-size: 1.4rem;
+            color: #2c3e50;
+        }
+        .btn-volver {
+            color: #27ae60;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.9rem;
+        }
+        .btn-volver:hover {
+            text-decoration: underline;
+        }
+
+        /* Grid de productos */
+        .productos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 25px;
+        }
+        .producto-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .producto-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+        }
+        .producto-card a {
+            text-decoration: none;
+            color: inherit;
+        }
+        .producto-img {
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+            background: #f0f3f5;
+        }
+        .producto-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+        .producto-card:hover .producto-img img {
+            transform: scale(1.08);
+        }
+        .producto-body {
+            padding: 18px;
+        }
+        .producto-body h3 {
+            font-size: 1.05rem;
+            color: #2c3e50;
+            margin-bottom: 4px;
+        }
+        .producto-body .categoria {
+            font-size: 0.82rem;
+            color: #999;
+            margin-bottom: 10px;
+        }
+        .producto-body .precio {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #27ae60;
+        }
+        .producto-footer {
+            padding: 0 18px 18px;
+        }
+        .btn-agregar {
+            width: 100%;
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.3s ease;
+        }
+        .btn-agregar:hover {
+            background: #1f8a4e;
+        }
+
+        /* Estado vacío */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            display: block;
+            color: #ccc;
+        }
+        .empty-state h3 {
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .vendedor-card {
+                flex-direction: column;
+                text-align: center;
+            }
+            .vendedor-meta {
+                justify-content: center;
+            }
+            .productos-titulo {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header th:replace="~{fragments/header :: siteHeader}"></header>
+
+    <!-- Banner -->
+    <section class="vendedor-banner">
+        <h1>Perfil del Productor</h1>
+        <p>Directo del campo a tu mesa</p>
+    </section>
+
+    <div class="perfil-container">
+        <!-- Tarjeta del vendedor -->
+        <div class="vendedor-card">
+            <div class="vendedor-icon">
+                <i class="fa-solid fa-store"></i>
+            </div>
+            <div class="vendedor-datos">
+                <!-- Badge verificado -->
+                <th:block th:if="${vendedor.perfilVendedor != null}">
+                    <span class="badge-verificado" th:if="${vendedor.perfilVendedor.verificado}">
+                        <i class="fa-solid fa-circle-check"></i> Verificado
+                    </span>
+                </th:block>
+
+                <!-- Nombre: usa razón social si existe, si no el nombre -->
+                <h2 th:text="${vendedor.perfilVendedor != null and vendedor.perfilVendedor.razonSocial != null and !vendedor.perfilVendedor.razonSocial.isEmpty()} ? ${vendedor.perfilVendedor.razonSocial} : ${vendedor.nombre}">Nombre del Negocio</h2>
+
+                <!-- Descripción del negocio -->
+                <p class="vendedor-descripcion"
+                   th:if="${vendedor.perfilVendedor != null and vendedor.perfilVendedor.descripcionNegocio != null}"
+                   th:text="${vendedor.perfilVendedor.descripcionNegocio}">
+                </p>
+                <p class="vendedor-descripcion"
+                   th:if="${vendedor.perfilVendedor == null or vendedor.perfilVendedor.descripcionNegocio == null}">
+                    Este productor aún no ha añadido una descripción.
+                </p>
+
+                <!-- Meta datos -->
+                <div class="vendedor-meta">
+                    <span th:if="${vendedor.ubicacion != null}">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <th:block th:if="${vendedor.ubicacion.ciudad != null}" th:text="${vendedor.ubicacion.ciudad} + ', '"></th:block>
+                        <th:block th:if="${vendedor.ubicacion.departamento != null}" th:text="${vendedor.ubicacion.departamento}"></th:block>
+                    </span>
+                    <span>
+                        <i class="fa-solid fa-box"></i>
+                        <th:block th:text="${productos != null ? productos.size() : 0}">0</th:block> productos
+                    </span>
+                    <span th:if="${vendedor.perfilVendedor != null and vendedor.perfilVendedor.telefonoContacto != null}">
+                        <i class="fa-solid fa-phone"></i>
+                        <th:block th:text="${vendedor.perfilVendedor.telefonoContacto}">Teléfono</th:block>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Título sección productos -->
+        <div class="productos-titulo">
+            <h2>Productos de este vendedor</h2>
+            <a th:href="@{/category}" class="btn-volver">
+                <i class="fa-solid fa-arrow-left"></i> Volver al catálogo
+            </a>
+        </div>
+
+        <!-- Grid de productos -->
+        <div th:if="${productos != null and !productos.isEmpty()}" class="productos-grid">
+            <div th:each="producto : ${productos}" class="producto-card">
+                <a th:href="@{/producto/{id}(id=${producto.id})}">
+                    <div class="producto-img">
+                        <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}"
+                             onerror="this.src='/images/placeholder.jpg'">
+                    </div>
+                    <div class="producto-body">
+                        <h3 th:text="${producto.nombre}">Nombre</h3>
+                        <p class="categoria" th:text="${producto.categoria != null ? producto.categoria.nombre : 'Sin categoría'}">Categoría</p>
+                        <span class="precio" th:text="'$' + ${#numbers.formatDecimal(producto.precio, 0, 'COMMA', 0, 'POINT')}">$0</span>
+                    </div>
+                </a>
+                <div class="producto-footer">
+                    <form th:action="@{/carrito/agregar}" method="post">
+                        <input type="hidden" name="productoId" th:value="${producto.id}">
+                        <button type="submit" class="btn-agregar">
+                            <i class="fas fa-cart-plus"></i> Agregar al Carrito
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Estado vacío -->
+        <div th:if="${productos == null or productos.isEmpty()}" class="empty-state">
+            <i class="fas fa-box-open"></i>
+            <h3>Este vendedor no tiene productos disponibles actualmente</h3>
+            <p>Vuelve más tarde para ver sus nuevas ofertas.</p>
+        </div>
+    </div>
+
+    <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
+</body>
+</html>
