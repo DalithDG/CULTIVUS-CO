@@ -40,69 +40,6 @@
         </div>
     </section>
 
-    <!-- Categorías Rápidas -->
-    <section class="quick-categories">
-        <div class="container">
-            <div class="section-header">
-                <h2>Explorar por Categoría</h2>
-                <a th:href="@{/category}" class="view-all">
-                    Ver todas
-                    <i class="fas fa-arrow-right"></i>
-                </a>
-            </div>
-
-            <div class="categories-grid">
-                <a th:href="@{/frutas}" class="category-quick">
-                    <div class="category-icon">
-                        <i class="fas fa-apple-alt"></i>
-                    </div>
-                    <h3>Frutas</h3>
-                    <p>Frescas</p>
-                </a>
-
-                <a th:href="@{/verduras}" class="category-quick">
-                    <div class="category-icon">
-                        <i class="fas fa-carrot"></i>
-                    </div>
-                    <h3>Verduras</h3>
-                    <p>Del campo</p>
-                </a>
-
-                <a th:href="@{/lacteos}" class="category-quick">
-                    <div class="category-icon">
-                        <i class="fas fa-cheese"></i>
-                    </div>
-                    <h3>Lácteos</h3>
-                    <p>Naturales</p>
-                </a>
-
-                <a th:href="@{/cafe}" class="category-quick">
-                    <div class="category-icon">
-                        <i class="fas fa-mug-hot"></i>
-                    </div>
-                    <h3>Café</h3>
-                    <p>Colombiano</p>
-                </a>
-
-                <a th:href="@{/granos}" class="category-quick">
-                    <div class="category-icon">
-                        <i class="fas fa-seedling"></i>
-                    </div>
-                    <h3>Granos</h3>
-                    <p>Orgánicos</p>
-                </a>
-
-                <a th:href="@{/miel}" class="category-quick">
-                    <div class="category-icon">
-                        <i class="fas fa-jar"></i>
-                    </div>
-                    <h3>Miel</h3>
-                    <p>Pura</p>
-                </a>
-            </div>
-        </div>
-    </section>
-
     <!-- Productos Destacados -->
     <section class="products-section">
         <div class="container">
@@ -129,20 +66,15 @@
                             <span>Productor local</span>
                         </div>
                         <div class="product-price">
-                            <span th:text="'$' + ${#numbers.formatDecimal(producto.precio, 0, 'COMMA', 0, 'POINT')}">$0</span>
+                            <span th:if="${producto.precioMinimo != null}"
+                                th:text="'Desde $' + ${#numbers.formatDecimal(producto.precioMinimo, 0, 'COMMA', 0, 'POINT')}">Desde $0</span>
+                            <span th:unless="${producto.precioMinimo != null}">Próximamente</span>
                         </div>
                         <div class="product-actions">
-                            <a th:href="@{/producto/{id}(id=${producto.id})}" class="btn-view">
+                            <a th:href="@{/producto/{id}(id=${producto.id})}" class="btn-view" style="width: 100%; text-align: center;">
                                 <i class="fas fa-eye"></i>
-                                Ver
+                                Ver opciones
                             </a>
-                            <form th:action="@{/carrito/agregar}" method="post" style="flex: 1;">
-                                <input type="hidden" name="productoId" th:value="${producto.id}">
-                                <button type="submit" class="btn-add-cart">
-                                    <i class="fas fa-cart-plus"></i>
-                                    Agregar
-                                </button>
-                            </form>
                         </div>
                     </div>
                 </div>
@@ -163,6 +95,36 @@
         </div>
     </section>
 
+    <!-- Categorías Rápidas -->
+    <section class="quick-categories">
+        <div class="container">
+            <div class="section-header">
+                <h2>Explorar por Categoría</h2>
+                <a th:href="@{/category}" class="view-all">
+                    Ver todas
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="categories-grid">
+                <a th:each="cat : ${categorias}" th:href="@{/category(categoria=${cat.id})}" class="category-quick">
+                    <div class="category-icon">
+                        <i th:class="${#strings.toLowerCase(cat.nombre).contains('fruta') ? 'fas fa-apple-alt' : 
+                                      #strings.toLowerCase(cat.nombre).contains('verdura') ? 'fas fa-carrot' : 
+                                      #strings.toLowerCase(cat.nombre).contains('lácteo') ? 'fas fa-cheese' : 
+                                      #strings.toLowerCase(cat.nombre).contains('carne') ? 'fas fa-drumstick-bite' : 
+                                      #strings.toLowerCase(cat.nombre).contains('café') ? 'fas fa-mug-hot' : 
+                                      #strings.toLowerCase(cat.nombre).contains('grano') ? 'fas fa-seedling' : 
+                                      #strings.toLowerCase(cat.nombre).contains('miel') ? 'fas fa-honey-pot' : 
+                                      'fas fa-leaf'}"></i>
+                    </div>
+                    <h3 th:text="${cat.nombre}">Categoría</h3>
+                    <p>Explorar</p>
+                </a>
+            </div>
+        </div>
+    </section>
+
     <!-- Últimos Productos -->
     <section class="products-section">
         <div class="container">
@@ -174,16 +136,37 @@
                 </a>
             </div>
 
-            <div class="products-grid">
-                <!-- Aquí irían los últimos productos agregados -->
-                <!-- Por ahora mostramos un mensaje si no hay -->
-                <div class="empty-state">
-                    <div class="empty-icon">
-                        <i class="fas fa-clock"></i>
+            <div th:if="${productos != null and !productos.isEmpty()}" class="products-grid">
+                <div th:each="producto : ${productos}" class="product-card">
+                    <div class="product-image">
+                        <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}"
+                            onerror="this.src='/images/placeholder.jpg'">
+                        <div class="product-badge">Nuevo</div>
                     </div>
-                    <h3>Nuevos productos próximamente</h3>
-                    <p>Mantente atento a las novedades de nuestros productores.</p>
+                    <div class="product-info">
+                        <h3 th:text="${producto.nombre}">Nombre del Producto</h3>
+                        <div class="product-price">
+                            <span th:if="${producto.precioMinimo != null}"
+                                th:text="'Desde $' + ${#numbers.formatDecimal(producto.precioMinimo, 0, 'COMMA', 0, 'POINT')}">Desde $0</span>
+                            <span th:unless="${producto.precioMinimo != null}">Próximamente</span>
+                        </div>
+                        <div class="product-actions">
+                            <a th:href="@{/producto/{id}(id=${producto.id})}" class="btn-view" style="width: 100%; text-align: center;">
+                                <i class="fas fa-eye"></i>
+                                Ver opciones
+                            </a>
+                        </div>
+                    </div>
                 </div>
+            </div>
+
+            <!-- Si NO hay productos -->
+            <div th:if="${productos == null or productos.isEmpty()}" class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <h3>Nuevos productos próximamente</h3>
+                <p>Mantente atento a las novedades de nuestros productores.</p>
             </div>
         </div>
     </section>

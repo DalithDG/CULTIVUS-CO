@@ -54,6 +54,12 @@
                     <a th:href="@{/admin/productos}" class="submenu-link" data-page="catalogo">Catálogo</a>
                     <a href="#" class="submenu-link" data-page="inventario">Inventario</a>
                     <a href="#" class="submenu-link" data-page="categorias">Categorías</a>
+                    <a th:href="@{/admin/moderacion}" class="submenu-link" data-page="moderacion">
+                        Moderación 
+                        <span class="badge-menu" th:if="${#lists.size(catalogoPendiente) > 0}"
+                              th:text="${#lists.size(catalogoPendiente)}"
+                              style="background:#FF9800;color:white;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;margin-left:5px;"></span>
+                    </a>
                     <a href="#" class="submenu-link" data-page="agregar-producto" style="color: #4facfe; font-weight: 600;">
                         <i class="fas fa-plus-circle" style="margin-right: 5px;"></i> Nuevo Producto
                     </a>
@@ -327,7 +333,7 @@
                             </div>
                             <h4 th:text="${p.nombre}">Producto</h4>
                             <p class="price" th:text="${'$' + p.precio}">$12.99</p>
-                            <p class="stock" th:text="${'Stock: ' + p.stock}">Stock: 150</p>
+                            <p class="stock" th:text="${'Stock: ' + (p.stock % 1 == 0 ? #numbers.formatDecimal(p.stock, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(p.stock, 1, 'POINT', 2, 'COMMA'))}">Stock: 150</p>
                             <form th:action="@{/admin/productos/{id}/eliminar(id=${p.id})}" method="post">
                                 <button type="submit" class="btn-action" style="background:#f44336; border:none; color:white; width:100%;"><i class="fas fa-trash"></i> Eliminar</button>
                             </form>
@@ -355,8 +361,8 @@
                             <tr th:each="p : ${productos}">
                                 <td th:text="${p.nombre}">Producto</td>
                                 <td th:text="${p.id}">SKU</td>
-                                <td th:text="${p.stock}">150</td>
-                                <td th:text="${p.compraMinima}">1</td>
+                                <td th:text="${(p.stock % 1 == 0 ? #numbers.formatDecimal(p.stock, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(p.stock, 1, 'POINT', 2, 'COMMA'))}">150</td>
+                                <td th:text="${(p.compraMinima % 1 == 0 ? #numbers.formatDecimal(p.compraMinima, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(p.compraMinima, 1, 'POINT', 2, 'COMMA'))}">1</td>
                                 <td>Almacén General</td>
                                 <td>
                                     <span class="badge" th:classappend="${(p.stock ?: 0) > 10 ? 'badge-active' : 'badge-warning'}" th:text="${(p.stock ?: 0) > 10 ? 'Ok' : 'Bajo'}">Estado</span>
@@ -1107,7 +1113,62 @@
                     </div>
                 </div>
             </div>
+
+            <!-- MODERACIÓN DE CATÁLOGO PAGE -->
+            <div class="page" id="moderacion-page" style="display: none;">
+                <div class="page-card">
+                    <h2><i class="fas fa-gavel"></i> Moderación de Catálogo</h2>
+                    <p style="color:#999;margin-bottom:16px;">Sugerencias de productos enviadas por vendedores para el catálogo global.</p>
+
+                    <div th:if="${#lists.isEmpty(catalogoPendiente)}" style="text-align:center;padding:40px;color:#999;">
+                        <i class="fas fa-check-circle" style="font-size:40px;color:#4CAF50;margin-bottom:12px;display:block;"></i>
+                        <p>No hay sugerencias pendientes de moderación. ¡Buen trabajo!</p>
+                    </div>
+
+                    <table class="table" th:unless="${#lists.isEmpty(catalogoPendiente)}">
+                        <thead>
+                            <tr>
+                                <th>Imagen</th>
+                                <th>Producto</th>
+                                <th>Categoría</th>
+                                <th>Unidad</th>
+                                <th>Descripción</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="p : ${catalogoPendiente}">
+                                <td>
+                                    <img th:if="${p.imagenUrl}" th:src="${p.imagenUrl}" style="width:50px; height:50px; object-fit:cover; border-radius:8px;">
+                                    <i th:unless="${p.imagenUrl}" class="fas fa-leaf" style="color:#4CAF50;"></i>
+                                </td>
+                                <td th:text="${p.nombre}">Nombre</td>
+                                <td>
+                                    <span class="badge" style="background:#E8F5E9; color:#2E7D32;" 
+                                          th:text="${p.categoria != null ? p.categoria.nombre : 'Sin categoría'}">Categoría</span>
+                                </td>
+                                <td th:text="${p.unidadMedida}">kg</td>
+                                <td th:text="${p.descripcion}" style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">Descripción</td>
+                                <td style="white-space:nowrap;">
+                                    <form th:action="@{/admin/catalogo/{id}/aprobar(id=${p.id})}" method="post" style="display:inline;">
+                                        <button type="submit" class="btn-action" style="background:#4CAF50; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">
+                                            <i class="fas fa-check"></i> Aprobar
+                                        </button>
+                                    </form>
+                                    <form th:action="@{/admin/catalogo/{id}/rechazar(id=${p.id})}" method="post" style="display:inline; margin-left:6px;">
+                                        <button type="submit" class="btn-action" style="background:#f44336; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;"
+                                                onclick="return confirm('¿Rechazar esta sugerencia?')">
+                                            <i class="fas fa-times"></i> Rechazar
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
+    </div>
 
     <script th:src="@{/js/admin-panel.js}"></script>
     <script th:inline="javascript">

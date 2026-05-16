@@ -15,7 +15,8 @@ window.navigateToPage = function(pageName) {
         'notificaciones': 'Gestión de Notificaciones',
         'mensajes': 'Centro de Mensajes',
         'catalogo': 'Catálogo de Productos',
-        'configuracion': 'Configuración del Sistema'
+        'configuracion': 'Configuración del Sistema',
+        'moderacion': 'Moderar Ofertas y Catálogo'
     };
 
     const targetPage = document.getElementById(pageName + '-page');

@@ -58,62 +58,6 @@
         </div>
     </section>
 
-    <!-- Categorías Destacadas -->
-    <section class="categories-section">
-        <div class="container">
-            <div class="section-header">
-                <h2>Explora Nuestras Categorías</h2>
-                <p>Encuentra productos frescos y de calidad en cada categoría</p>
-            </div>
-
-            <div class="categories-grid">
-                <a th:href="@{/frutas}" class="category-card">
-                    <div class="category-icon">
-                        <i class="fas fa-apple-alt"></i>
-                    </div>
-                    <h3>Frutas</h3>
-                    <p>Frescas y naturales</p>
-                    <div class="category-arrow">
-                        <i class="fas fa-arrow-right"></i>
-                    </div>
-                </a>
-
-                <a th:href="@{/verduras}" class="category-card">
-                    <div class="category-icon">
-                        <i class="fas fa-carrot"></i>
-                    </div>
-                    <h3>Verduras</h3>
-                    <p>Directo del campo</p>
-                    <div class="category-arrow">
-                        <i class="fas fa-arrow-right"></i>
-                    </div>
-                </a>
-
-                <a th:href="@{/lacteos}" class="category-card">
-                    <div class="category-icon">
-                        <i class="fas fa-cheese"></i>
-                    </div>
-                    <h3>Lácteos</h3>
-                    <p>100% naturales</p>
-                    <div class="category-arrow">
-                        <i class="fas fa-arrow-right"></i>
-                    </div>
-                </a>
-
-                <a th:href="@{/cafe}" class="category-card">
-                    <div class="category-icon">
-                        <i class="fas fa-mug-hot"></i>
-                    </div>
-                    <h3>Café y Cacao</h3>
-                    <p>Aroma colombiano</p>
-                    <div class="category-arrow">
-                        <i class="fas fa-arrow-right"></i>
-                    </div>
-                </a>
-            </div>
-        </div>
-    </section>
-
     <!-- Productos Destacados -->
     <section class="products-section">
         <div class="container">
@@ -133,8 +77,9 @@
                     <div class="product-info">
                         <h3 th:text="${producto.nombre}">Nombre del Producto</h3>
                         <div class="product-price">
-                            <span class="price"
-                                th:text="'$' + ${#numbers.formatDecimal(producto.precio, 0, 'COMMA', 0, 'POINT')}">$0</span>
+                            <span class="price" th:if="${producto.precioMinimo != null}"
+                                th:text="'Desde $' + ${#numbers.formatDecimal(producto.precioMinimo, 0, 'COMMA', 0, 'POINT')}">Desde $0</span>
+                            <span class="price" th:unless="${producto.precioMinimo != null}">Próximamente</span>
                         </div>
                         <div class="product-actions">
                             <a th:href="@{/producto/{id}(id=${producto.id})}" class="btn-view">
@@ -166,6 +111,36 @@
                 <a th:href="@{/category}" class="btn-view-all">
                     Ver todos los productos
                     <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Categorías Destacadas -->
+    <section class="categories-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Explora Nuestras Categorías</h2>
+                <p>Encuentra productos frescos y de calidad en cada categoría</p>
+            </div>
+
+            <div class="categories-grid">
+                <a th:each="cat : ${categorias}" th:href="@{/category(categoria=${cat.id})}" class="category-card">
+                    <div class="category-icon">
+                        <i th:class="${#strings.toLowerCase(cat.nombre).contains('fruta') ? 'fas fa-apple-alt' : 
+                                      #strings.toLowerCase(cat.nombre).contains('verdura') ? 'fas fa-carrot' : 
+                                      #strings.toLowerCase(cat.nombre).contains('lácteo') ? 'fas fa-cheese' : 
+                                      #strings.toLowerCase(cat.nombre).contains('carne') ? 'fas fa-drumstick-bite' : 
+                                      #strings.toLowerCase(cat.nombre).contains('café') ? 'fas fa-mug-hot' : 
+                                      #strings.toLowerCase(cat.nombre).contains('grano') ? 'fas fa-seedling' : 
+                                      #strings.toLowerCase(cat.nombre).contains('miel') ? 'fas fa-honey-pot' : 
+                                      'fas fa-leaf'}"></i>
+                    </div>
+                    <h3 th:text="${cat.nombre}">Categoría</h3>
+                    <p th:text="${cat.descripcion}">Descripción</p>
+                    <div class="category-arrow">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
                 </a>
             </div>
         </div>

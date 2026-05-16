@@ -4,122 +4,365 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar Producto - Cultivus</title>
-    <link rel="stylesheet" th:href="@{/style.css}">
+    <title>Editar Oferta - Cultivus</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" th:href="@{/agregarProductos.css}">
+    <link rel="stylesheet" th:href="@{/header.css}">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8faf8;
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .edit-product-wrapper {
+            max-width: 820px;
+            margin: 2.5rem auto;
+            padding: 0 1.5rem;
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            margin-bottom: 2rem;
+        }
+
+        .page-header .icon-circle {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            color: #1565c0;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+
+        .page-header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        .page-header p {
+            color: #777;
+            font-size: 0.9rem;
+            margin-top: 2px;
+        }
+
+        .alert {
+            padding: 14px 20px;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .alert-success { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+        .alert-error { background: #ffebee; color: #c62828; border: 1px solid #ef9a9a; }
+
+        .form-card {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+            border: 1px solid #eee;
+            overflow: hidden;
+        }
+
+        .product-summary {
+            padding: 1.5rem 2.5rem;
+            background: #f1f8e9;
+            border-bottom: 1px solid #e1e8d9;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .product-summary img {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            object-fit: cover;
+            border: 2px solid #fff;
+        }
+
+        .product-summary-text h3 {
+            font-size: 1.1rem;
+            color: #1b5e20;
+            margin-bottom: 2px;
+        }
+
+        .product-summary-text p {
+            font-size: 0.85rem;
+            color: #558b2f;
+            font-weight: 500;
+        }
+
+        .form-section {
+            padding: 2rem 2.5rem;
+            border-bottom: 1px solid #f3f3f3;
+        }
+
+        .section-title {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: #2e7d32;
+            font-weight: 700;
+            margin-bottom: 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1.2rem;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.2rem;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .field label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .field input, .field textarea {
+            padding: 11px 14px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 0.92rem;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.25s ease;
+            background: #fafafa;
+        }
+
+        .field input:focus, .field textarea:focus {
+            outline: none;
+            border-color: #4caf50;
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.08);
+        }
+
+        .currency-input {
+            position: relative;
+        }
+
+        .currency-input span {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-weight: 600;
+            color: #999;
+        }
+
+        .currency-input input {
+            padding-left: 30px;
+        }
+
+        .image-preview {
+            margin-top: 10px;
+            max-width: 200px;
+            max-height: 150px;
+            border-radius: 12px;
+            border: 2px solid #eee;
+            object-fit: cover;
+            display: none;
+        }
+
+        .form-footer {
+            padding: 1.5rem 2.5rem;
+            background: #fdfdfd;
+            border-top: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .btn-back {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #666;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+            background: #fff;
+            transition: 0.2s;
+        }
+
+        .btn-submit {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 28px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #2e7d32, #43a047);
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 4px 14px rgba(46, 125, 50, 0.2);
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(46, 125, 50, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .grid-3, .grid-2 { grid-template-columns: 1fr; }
+            .form-footer { flex-direction: column-reverse; gap: 12px; }
+            .btn-back, .btn-submit { width: 100%; justify-content: center; }
+        }
+    </style>
 </head>
 
 <body>
     <header th:replace="fragments/header-vendedor :: siteHeader"></header>
 
-    <div class="container">
-        <h1><i class="fa-solid fa-edit"></i> Editar Producto</h1>
-
-        <div th:if="${mensaje}" class="alert alert-success" th:text="${mensaje}"></div>
-        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
-
-        <form th:action="@{/vendedor/productos/actualizar/{id}(id=${producto.id})}" method="post">
-            <div class="form-group">
-                <label for="nombre">Nombre del Producto *</label>
-                <input type="text" id="nombre" name="nombre" required minlength="3" maxlength="50"
-                    th:value="${producto.nombre}" placeholder="Ej: Tomate Orgánico">
+    <div class="edit-product-wrapper">
+        <div class="page-header">
+            <div class="icon-circle">
+                <i class="fas fa-edit"></i>
             </div>
-
-            <div class="form-group">
-                <label for="precio">Precio (COP) *</label>
-                <input type="number" id="precio" name="precio" required min="500" step="0.01"
-                    th:value="${producto.precio}" placeholder="0.00">
+            <div>
+                <h1>Editar Oferta</h1>
+                <p>Actualiza el precio, stock o detalles de tu producto</p>
             </div>
+        </div>
 
-            <div class="form-group">
-                <label for="stock">Stock Disponible *</label>
-                <input type="number" id="stock" name="stock" required min="1" max="10000" th:value="${producto.stock}"
-                    placeholder="0">
-            </div>
+        <div th:if="${mensaje}" class="alert alert-success">
+            <i class="fas fa-check-circle"></i>
+            <span th:text="${mensaje}"></span>
+        </div>
+        <div th:if="${error}" class="alert alert-error">
+            <i class="fas fa-exclamation-circle"></i>
+            <span th:text="${error}"></span>
+        </div>
 
-            <div class="form-group">
-                <label for="descripcion">Descripción *</label>
-                <textarea id="descripcion" name="descripcion" required minlength="10" maxlength="255" rows="4"
-                    placeholder="Describe tu producto..." th:text="${producto.descripcion}"></textarea>
-            </div>
-
-            <div class="form-group">
-                <label for="peso">Peso *</label>
-                <input type="number" id="peso" name="peso" required min="0.01" step="0.01" th:value="${producto.peso}"
-                    placeholder="0.00">
+        <div class="form-card">
+            <!-- Producto del Catálogo Info -->
+            <div class="product-summary">
+                <img th:src="${oferta.imagenUrl}" th:alt="${oferta.nombreProducto}" onerror="this.src='/images/placeholder.jpg'">
+                <div class="product-summary-text">
+                    <h3 th:text="${oferta.nombreProducto}">Producto</h3>
+                    <p th:text="${'Vendido por ' + (productoCatalogo != null ? productoCatalogo.unidadMedida : 'unidad')}">Unidad</p>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label for="unidadMedidaId">Unidad de Medida *</label>
-                <select id="unidadMedidaId" name="unidadMedidaId" required>
-                    <option value="">Seleccione una unidad</option>
-                    <!-- ✅ Antes: th:value="${unidad.idUnidad}" y th:selected con idUnidad -->
-                    <option th:each="unidad : ${unidadesMedida}" th:value="${unidad.abreviatura}"
-                        th:text="${unidad.nombre + ' (' + unidad.abreviatura + ')'}" th:selected="${producto.unidadMedida != null
-                                and producto.unidadMedida.abreviatura == unidad.abreviatura}">
-                    </option>
-                </select>
-            </div>
-            
-            <div class="form-group">
-                <label for="categoriaId">Categoría *</label>
-                <select id="categoriaId" name="categoriaId" required>
-                    <option value="">Seleccione una categoría</option>
-                    <!-- ✅ Antes: th:value="${categoria.idCategoria}" y th:selected con idCategoria -->
-                    <option th:each="categoria : ${categorias}" th:value="${categoria.id}" th:text="${categoria.nombre}"
-                        th:selected="${producto.categoria != null
-                                and producto.categoria.id == categoria.id}">
-                    </option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="imagenUrl">URL de la Imagen *</label>
-                <input type="url" id="imagenUrl" name="imagenUrl" required th:value="${producto.imagenUrl}"
-                    placeholder="https://ejemplo.com/imagen.jpg">
-                <img id="imagePreview" class="image-preview" alt="Vista previa" th:src="${producto.imagenUrl}">
-            </div>
+            <form th:action="@{/vendedor/productos/actualizar/{id}(id=${oferta.id})}" method="post">
+                <!-- Precios y Stock -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fas fa-tag"></i> Precio y Disponibilidad
+                    </div>
+                    <div class="grid-3">
+                        <div class="field">
+                            <label for="precio">Precio por <span th:text="${productoCatalogo != null ? productoCatalogo.unidadMedida : 'unidad'}"></span> (COP) *</label>
+                            <div class="currency-input">
+                                <span>$</span>
+                                <input type="number" id="precio" name="precio" required min="500" step="0.01" th:value="${oferta.precio}">
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label for="stock">Stock Disponible (<span th:text="${productoCatalogo != null ? productoCatalogo.unidadMedida : 'unidad'}"></span>) *</label>
+                            <input type="number" id="stock" name="stock" required min="0" max="10000" th:value="${oferta.stock}">
+                        </div>
+                        <div class="field">
+                            <label for="compraMinima">Compra Mínima *</label>
+                            <input type="number" id="compraMinima" name="compraMinima" required min="0.01" step="any" th:value="${oferta.compraMinima}">
+                        </div>
+                    </div>
+                </div>
 
-            <div class="form-group">
-                <label for="compraMinima">Compra Mínima *</label>
-                <input type="number" id="compraMinima" name="compraMinima" required min="0.01" step="any"
-                    th:value="${producto.compraMinima != null ? producto.compraMinima : 1}">
-                <small style="color:#666;">Cantidad mínima que el comprador debe agregar al carrito</small>
-            </div>
+                <!-- Detalles Dinámicos -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fas fa-info-circle"></i> Detalles Específicos
+                    </div>
+                    <div class="grid-2">
+                        <div class="field" th:if="${productoCatalogo != null and productoCatalogo.tipoVenta == 'PESO'}">
+                            <label for="pesoPromedioUnidad">Peso promedio por unidad (kg/lb)</label>
+                            <input type="number" id="pesoPromedioUnidad" name="pesoPromedioUnidad" min="0.01" step="0.01" th:value="${oferta.pesoPromedioUnidad}">
+                        </div>
+                        <div class="field" th:if="${productoCatalogo != null and productoCatalogo.tipoVenta == 'UNIDAD'}">
+                            <label for="descripcionPaquete">Descripción del paquete</label>
+                            <input type="text" id="descripcionPaquete" name="descripcionPaquete" th:value="${oferta.descripcionPaquete}" placeholder="Ej: Manojo de 12 unidades">
+                        </div>
+                        <div class="field" style="grid-column: 1 / -1;">
+                            <label for="descripcionVendedor">Descripción de tu oferta</label>
+                            <textarea id="descripcionVendedor" name="descripcionVendedor" rows="3" th:text="${oferta.descripcionVendedor}"></textarea>
+                        </div>
+                    </div>
+                </div>
 
-            <div class="form-actions">
-                <a th:href="@{/vendedor/Miproductos}" class="btn-cancel">
-                    <i class="fa-solid fa-times"></i> Cancelar
-                </a>
-                <button type="submit" class="btn-submit">
-                    <i class="fa-solid fa-save"></i> Guardar Cambios
-                </button>
-            </div>
-        </form>
+                <!-- Imagen -->
+                <div class="form-section">
+                    <div class="section-title">
+                        <i class="fas fa-image"></i> Imagen de la Oferta
+                    </div>
+                    <div class="field">
+                        <label for="imagenUrl">URL de la Imagen (opcional)</label>
+                        <input type="url" id="imagenUrl" name="imagenUrl" th:value="${oferta.imagenUrl}">
+                        <img id="imagePreview" class="image-preview" alt="Vista previa" th:src="${oferta.imagenUrl}" style="display: block;">
+                    </div>
+                </div>
+
+                <div class="form-footer">
+                    <a th:href="@{/vendedor/Miproductos}" class="btn-back">
+                        <i class="fas fa-arrow-left"></i> Volver
+                    </a>
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-save"></i> Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script>
-        // Vista previa de imagen
-        document.getElementById('imagenUrl').addEventListener('input', function () {
-            const preview = document.getElementById('imagePreview');
-            const url = this.value;
-            if (url) {
-                preview.src = url;
-                preview.style.display = 'block';
-            } else {
-                preview.style.display = 'none';
-            }
-        });
-
-        // Mostrar imagen actual al cargar
-        window.addEventListener('DOMContentLoaded', function () {
-            const preview = document.getElementById('imagePreview');
-            const url = document.getElementById('imagenUrl').value;
-            if (url) {
-                preview.style.display = 'block';
-            }
-        });
+        const imagenInput = document.getElementById('imagenUrl');
+        const preview = document.getElementById('imagePreview');
+        if (imagenInput) {
+            imagenInput.addEventListener('input', function() {
+                if (this.value) {
+                    preview.src = this.value;
+                    preview.style.display = 'block';
+                } else {
+                    preview.style.display = 'none';
+                }
+            });
+        }
     </script>
 </body>
-
 </html>

@@ -1,9 +1,10 @@
 package com.example.demo.Controller;
 
-import com.example.demo.Model.Producto;
+import com.example.demo.Model.ProductoCatalogo;
 import com.example.demo.Model.Role;
 import com.example.demo.Model.Usuario;
 import com.example.demo.Model.embebidos.UbicacionUsuario;
+import com.example.demo.services.CatalogoService;
 import com.example.demo.services.ProductoService;
 import com.example.demo.services.UbicacionService;
 import com.example.demo.services.UsuarioService;
@@ -15,11 +16,13 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.example.demo.repository.PedidoRepository;
 import com.example.demo.repository.NotificacionRepository;
+import com.example.demo.repository.CategoriaRepository;
 import com.example.demo.Model.Pedido;
 import com.example.demo.Model.Notificacion;
 
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.stream.Collectors;
 
 @Controller
@@ -33,14 +36,19 @@ public class UsuarioController {
     private final PasswordEncoder passwordEncoder;
     private final PedidoRepository pedidoRepository;
     private final NotificacionRepository notificacionRepository;
+    private final CatalogoService catalogoService;
+    private final CategoriaRepository categoriaRepository;
 
+    @org.springframework.beans.factory.annotation.Autowired
     public UsuarioController(UsuarioService usuarioService,
             UbicacionService ubicacionService,
             VendedorService vendedorService,
             ProductoService productoService,
             PasswordEncoder passwordEncoder,
             PedidoRepository pedidoRepository,
-            NotificacionRepository notificacionRepository) {
+            NotificacionRepository notificacionRepository,
+            CatalogoService catalogoService,
+            CategoriaRepository categoriaRepository) {
         this.usuarioService = usuarioService;
         this.ubicacionService = ubicacionService;
         this.vendedorService = vendedorService;
@@ -48,6 +56,8 @@ public class UsuarioController {
         this.passwordEncoder = passwordEncoder;
         this.pedidoRepository = pedidoRepository;
         this.notificacionRepository = notificacionRepository;
+        this.catalogoService = catalogoService;
+        this.categoriaRepository = categoriaRepository;
     }
 
     @GetMapping("/registro")
@@ -247,14 +257,15 @@ public class UsuarioController {
             session.setAttribute("usuarioLogueado", usuario);
         }
 
-        // Cargar productos disponibles más recientes
-        List<Producto> productos = productoService.listarDisponibles()
+        // Cargar productos del catálogo aprobados
+        List<ProductoCatalogo> productos = catalogoService.listarCatalogo()
                 .stream()
                 .limit(8)
                 .collect(Collectors.toList());
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("productos", productos);
+        model.addAttribute("categorias", categoriaRepository.findAll());
 
         // Estadísticas de comprador para el dashboard (independiente del rol actual)
         long totalPedidos = pedidoRepository.findByCompradorId(usuario.getId()).size();
@@ -432,7 +443,7 @@ public class UsuarioController {
             return "redirect:/usuario/login";
         }
 
-        List<Notificacion> notificaciones = notificacionRepository.findByUsuarioIdOrderByFechaDesc(usuario.getId());
+        List<Notificacion> notificaciones = new ArrayList<>(notificacionRepository.findByUsuarioIdOrderByFechaDesc(usuario.getId()));
         
         // También incluir notificaciones generales (sin usuarioId)
         List<Notificacion> generales = notificacionRepository.findByUsuarioIdIsNullOrderByFechaDesc();

@@ -1,10 +1,14 @@
 package com.example.demo.Controller;
 
+import com.example.demo.Model.OfertaVendedor;
 import com.example.demo.Model.Producto;
+import com.example.demo.Model.ProductoCatalogo;
 import com.example.demo.Model.Resena;
 import com.example.demo.Model.Usuario;
 import com.example.demo.services.AdminService;
 import com.example.demo.services.AppConfigService;
+import com.example.demo.services.CatalogoService;
+import com.example.demo.services.OfertaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -24,6 +28,12 @@ public class AdminController {
 
     @Autowired
     private AppConfigService configService;
+
+    @Autowired
+    private CatalogoService catalogoService;
+
+    @Autowired
+    private OfertaService ofertaService;
 
     // Roles disponibles — ya no hay tabla de roles
     private static final List<String> ROLES = Arrays.asList(
@@ -61,6 +71,9 @@ public class AdminController {
         model.addAttribute("notificaciones", adminService.obtenerTodasLasNotificaciones());
         model.addAttribute("mensajesRecibidos", adminService.obtenerTodosLosMensajes());
         model.addAttribute("configuraciones", configService.obtenerTodas());
+
+        // ── Datos de moderación del catálogo ──
+        model.addAttribute("catalogoPendiente", catalogoService.listarPendientes());
     }
 
     // ==================== DASHBOARD ====================
@@ -405,5 +418,62 @@ public class AdminController {
         }
 
         return "redirect:/admin/configuracion";
+    }
+
+    // ==================== MODERACIÓN DE OFERTAS Y CATÁLOGO ====================
+
+    @GetMapping("/moderacion")
+    public String mostrarModeracion(HttpSession session, Model model,
+            RedirectAttributes redirectAttributes) {
+
+        if (!verificarAdmin(session, redirectAttributes)) {
+            return "redirect:/usuario/login";
+        }
+
+        Usuario admin = (Usuario) session.getAttribute("usuarioLogueado");
+        cargarDatosDashboard(model, admin);
+        model.addAttribute("activePage", "moderacion");
+
+        return "admin-dashboard";
+    }
+
+
+
+    @PostMapping("/catalogo/{id}/aprobar")
+    public String aprobarProductoCatalogo(@PathVariable String id,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        if (!verificarAdmin(session, redirectAttributes)) {
+            return "redirect:/usuario/login";
+        }
+
+        try {
+            catalogoService.aprobarProducto(id);
+            redirectAttributes.addFlashAttribute("mensaje", "Producto aprobado en el catálogo");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al aprobar producto: " + e.getMessage());
+        }
+
+        return "redirect:/admin/moderacion";
+    }
+
+    @PostMapping("/catalogo/{id}/rechazar")
+    public String rechazarProductoCatalogo(@PathVariable String id,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        if (!verificarAdmin(session, redirectAttributes)) {
+            return "redirect:/usuario/login";
+        }
+
+        try {
+            catalogoService.rechazarProducto(id);
+            redirectAttributes.addFlashAttribute("mensaje", "Producto rechazado del catálogo");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al rechazar producto: " + e.getMessage());
+        }
+
+        return "redirect:/admin/moderacion";
     }
 }

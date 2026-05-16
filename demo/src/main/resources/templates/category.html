@@ -42,127 +42,85 @@
             <h2 class="section-title">Categorías de Productos</h2>
             <div class="carrusel">
 
-                <a th:href="@{/frutas}" class="categoria-card">
-                    <div class="card-image">
-                        <img th:src="@{/images/frutas.jpg.webp}" alt="Frutas">
-                    </div>
-                    <div class="card-content">
-                        <h3>Frutas</h3>
-                        <p>Frescas y naturales</p>
-                    </div>
-                </a>
+                <!-- Dinámico desde la base de datos -->
+                <th:block th:each="cat : ${categorias}">
+                    <a th:href="@{/category(categoria=${cat.id})}" class="categoria-card">
+                        <div class="card-image">
+                            <!-- Lógica robusta de imágenes: intenta .jpg, .webp, .png y luego versión sin acentos -->
+                            <img th:src="${'/images/' + #strings.toLowerCase(cat.nombre) + '.jpg'}" 
+                                 th:alt="${cat.nombre}"
+                                 th:data-name="${#strings.toLowerCase(cat.nombre)}"
+                                 onerror="
+                                    let n = this.getAttribute('data-name');
+                                    if(!this.dataset.step){
+                                        this.dataset.step = '1';
+                                        this.src = '/images/' + n + '.webp';
+                                    } else if(this.dataset.step == '1'){
+                                        this.dataset.step = '2';
+                                        this.src = '/images/' + n + '.png';
+                                    } else if(this.dataset.step == '2'){
+                                        this.dataset.step = '3';
+                                        let clean = n.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                                        this.src = '/images/' + clean + '.jpg';
+                                    } else if(this.dataset.step == '3'){
+                                        this.dataset.step = '4';
+                                        let clean = n.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                                        this.src = '/images/' + clean + '.webp';
+                                    } else if(this.dataset.step == '4'){
+                                        this.dataset.step = '5';
+                                        let clean = n.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                                        this.src = '/images/' + clean + '.png';
+                                    } else {
+                                        this.src = '/images/LogoCultivus.png';
+                                        this.onerror = null;
+                                    }
+                                 ">
+                        </div>
+                        <div class="card-content">
+                            <h3 th:text="${cat.nombre}">Nombre</h3>
+                            <p th:text="${cat.descripcion}">Descripción</p>
+                        </div>
+                    </a>
+                </th:block>
 
-                <a th:href="@{/verduras}" class="categoria-card">
-                    <div class="card-image">
-                        <img th:src="@{/images/Verduras.jpg}" alt="Verduras">
-                    </div>
-                    <div class="card-content">
-                        <h3>Verduras</h3>
-                        <p>Directo del campo</p>
-                    </div>
-                </a>
-
-                <a th:href="@{/lacteos}" class="categoria-card">
-                    <div class="card-image">
-                        <img th:src="@{/images/lacteos.jpg}" alt="Lácteos">
-                    </div>
-                    <div class="card-content">
-                        <h3>Lácteos</h3>
-                        <p>100% naturales</p>
-                    </div>
-                </a>
-
-                <a th:href="@{/cafe}" class="categoria-card">
-                    <div class="card-image">
-                        <img th:src="@{/images/cafe.webp}" alt="Café">
-                    </div>
-                    <div class="card-content">
-                        <h3>Café y Cacao</h3>
-                        <p>Aroma colombiano</p>
-                    </div>
-                </a>
-
-                <!-- Duplicados para efecto infinito -->
-                <a th:href="@{/frutas}" class="categoria-card">
-                    <div class="card-image">
-                        <img th:src="@{/images/frutas.jpg.webp}" alt="Frutas">
-                    </div>
-                    <div class="card-content">
-                        <h3>Frutas</h3>
-                        <p>Frescas y naturales</p>
-                    </div>
-                </a>
-
-                <a th:href="@{/verduras}" class="categoria-card">
-                    <div class="card-image">
-                        <img th:src="@{/images/Verduras.jpg}" alt="Verduras">
-                    </div>
-                    <div class="card-content">
-                        <h3>Verduras</h3>
-                        <p>Directo del campo</p>
-                    </div>
-                </a>
-
-                <a th:href="@{/lacteos}" class="categoria-card">
-                    <div class="card-image">
-                        <img th:src="@{/images/lacteos.jpg}" alt="Lácteos">
-                    </div>
-                    <div class="card-content">
-                        <h3>Lácteos</h3>
-                        <p>100% naturales</p>
-                    </div>
-                </a>
-
-                <a th:href="@{/cafe}" class="categoria-card">
-                    <div class="card-image">
-                        <img th:src="@{/images/cafe.webp}" alt="Café">
-                    </div>
-                    <div class="card-content">
-                        <h3>Café y Cacao</h3>
-                        <p>Aroma colombiano</p>
-                    </div>
-                </a>
-
-                <!-- Segunda copia -->
-                <a th:href="@{/frutas}" class="categoria-card">
-                    <div class="card-image">
-                        <img th:src="@{/images/frutas.jpg.webp}" alt="Frutas">
-                    </div>
-                    <div class="card-content">
-                        <h3>Frutas</h3>
-                        <p>Frescas y naturales</p>
-                    </div>
-                </a>
-
-                <a th:href="@{/verduras}" class="categoria-card">
-                    <div class="card-image">
-                        <img th:src="@{/images/Verduras.jpg}" alt="Verduras">
-                    </div>
-                    <div class="card-content">
-                        <h3>Verduras</h3>
-                        <p>Directo del campo</p>
-                    </div>
-                </a>
-
-                <a th:href="@{/lacteos}" class="categoria-card">
-                    <div class="card-image">
-                        <img th:src="@{/images/lacteos.jpg}" alt="Lácteos">
-                    </div>
-                    <div class="card-content">
-                        <h3>Lácteos</h3>
-                        <p>100% naturales</p>
-                    </div>
-                </a>
-
-                <a th:href="@{/cafe}" class="categoria-card">
-                    <div class="card-image">
-                        <img th:src="@{/images/cafe.webp}" alt="Café">
-                    </div>
-                    <div class="card-content">
-                        <h3>Café y Cacao</h3>
-                        <p>Aroma colombiano</p>
-                    </div>
-                </a>
+                <!-- Duplicados para efecto infinito (si hay pocos items) -->
+                <th:block th:if="${categorias.size() < 6}" th:each="cat : ${categorias}">
+                    <a th:href="@{/category(categoria=${cat.id})}" class="categoria-card">
+                        <div class="card-image">
+                            <img th:src="${'/images/' + #strings.toLowerCase(cat.nombre) + '.jpg'}" 
+                                 th:alt="${cat.nombre}"
+                                 th:data-name="${#strings.toLowerCase(cat.nombre)}"
+                                 onerror="
+                                    let n = this.getAttribute('data-name');
+                                    if(!this.dataset.step){
+                                        this.dataset.step = '1';
+                                        this.src = '/images/' + n + '.webp';
+                                    } else if(this.dataset.step == '1'){
+                                        this.dataset.step = '2';
+                                        this.src = '/images/' + n + '.png';
+                                    } else if(this.dataset.step == '2'){
+                                        this.dataset.step = '3';
+                                        let clean = n.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                                        this.src = '/images/' + clean + '.jpg';
+                                    } else if(this.dataset.step == '3'){
+                                        this.dataset.step = '4';
+                                        let clean = n.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                                        this.src = '/images/' + clean + '.webp';
+                                    } else if(this.dataset.step == '4'){
+                                        this.dataset.step = '5';
+                                        let clean = n.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                                        this.src = '/images/' + clean + '.png';
+                                    } else {
+                                        this.src = '/images/LogoCultivus.png';
+                                        this.onerror = null;
+                                    }
+                                 ">
+                        </div>
+                        <div class="card-content">
+                            <h3 th:text="${cat.nombre}">Nombre</h3>
+                        </div>
+                    </a>
+                </th:block>
 
             </div>
         </div>
@@ -185,35 +143,11 @@
                     <div class="filtro-grupo">
                         <h4>Categoría</h4>
                         <div class="filtro-opciones">
-                            <label class="filtro-checkbox">
-                                <input type="checkbox" name="categoria" value="frutas"
-                                    th:checked="${param.categoria != null and #lists.contains(param.categoria, 'frutas')}">
+                            <label class="filtro-checkbox" th:each="cat : ${categorias}">
+                                <input type="checkbox" name="categoria" th:value="${cat.id}"
+                                    th:checked="${categoriaSeleccionada != null and #lists.contains(categoriaSeleccionada, cat.id)}">
                                 <span class="checkmark"></span>
-                                Frutas
-                            </label>
-                            <label class="filtro-checkbox">
-                                <input type="checkbox" name="categoria" value="verduras"
-                                    th:checked="${param.categoria != null and #lists.contains(param.categoria, 'verduras')}">
-                                <span class="checkmark"></span>
-                                Verduras
-                            </label>
-                            <label class="filtro-checkbox">
-                                <input type="checkbox" name="categoria" value="lacteos"
-                                    th:checked="${param.categoria != null and #lists.contains(param.categoria, 'lacteos')}">
-                                <span class="checkmark"></span>
-                                Lácteos
-                            </label>
-                            <label class="filtro-checkbox">
-                                <input type="checkbox" name="categoria" value="cafe"
-                                    th:checked="${param.categoria != null and #lists.contains(param.categoria, 'cafe')}">
-                                <span class="checkmark"></span>
-                                Café
-                            </label>
-                            <label class="filtro-checkbox">
-                                <input type="checkbox" name="categoria" value="cacao"
-                                    th:checked="${param.categoria != null and #lists.contains(param.categoria, 'cacao')}">
-                                <span class="checkmark"></span>
-                                Cacao
+                                <span th:text="${cat.nombre}">Categoría</span>
                             </label>
                         </div>
                     </div>
@@ -224,37 +158,43 @@
                 </form>
             </aside>
 
-            <!-- Área de Productos -->
+            <!-- Área de Productos del Catálogo -->
             <main class="productos-main">
                 <div class="productos-header">
                     <div class="resultados-info">
                         <p>
-                            <strong th:text="${productos != null ? productos.size() : 0}">0</strong>
-                            productos encontrados
+                            <strong th:text="${catalogo != null ? catalogo.size() : 0}">0</strong>
+                            <span th:text="${catalogo != null and catalogo.size() == 1 ? 'producto encontrado' : 'productos encontrados'}">productos encontrados</span>
                         </p>
                     </div>
                     <div class="productos-ordenar">
                         <label for="ordenar">Ordenar por:</label>
                         <select id="ordenar" class="select-ordenar" onchange="ordenarProductos(this.value)">
-                            <option value="relevancia">Relevancia</option>
-                            <option value="precio-menor">Precio: Menor a Mayor</option>
-                            <option value="precio-mayor">Precio: Mayor a Menor</option>
-                            <option value="nombre">Nombre A-Z</option>
-                            <option value="recientes">Más Recientes</option>
+                            <option value="relevancia" th:selected="${ordenSeleccionado == 'relevancia'}">Relevancia</option>
+                            <option value="precio-menor" th:selected="${ordenSeleccionado == 'precio-menor'}">Precio: Menor a Mayor</option>
+                            <option value="precio-mayor" th:selected="${ordenSeleccionado == 'precio-mayor'}">Precio: Mayor a Menor</option>
+                            <option value="nombre" th:selected="${ordenSeleccionado == 'nombre'}">Nombre A-Z</option>
+                            <option value="recientes" th:selected="${ordenSeleccionado == 'recientes'}">Más Recientes</option>
                         </select>
                     </div>
                 </div>
 
-                <!-- Grid de productos -->
+                <!-- Grid de productos del catálogo -->
                 <div class="productos-grid">
 
-                    <!-- Si HAY productos -->
-                    <div th:if="${productos != null and !productos.isEmpty()}" class="grid-productos-real">
-                        <div th:each="producto : ${productos}" class="producto-card">
+                    <!-- Si HAY productos en el catálogo -->
+                    <div th:if="${catalogo != null and !catalogo.isEmpty()}" class="grid-productos-real">
+                        <div th:each="producto : ${catalogo}" class="producto-card">
                             <a th:href="@{/producto/{id}(id=${producto.id})}" class="producto-link">
                                 <div class="producto-imagen">
                                     <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}"
                                         onerror="this.src='/images/placeholder.jpg'">
+                                    <!-- Badge de vendedores -->
+                                    <span th:if="${producto.totalVendedores != null and producto.totalVendedores > 0}"
+                                          style="position:absolute;top:10px;right:10px;background:#27ae60;color:#fff;font-size:0.72rem;padding:4px 10px;border-radius:20px;font-weight:600;">
+                                        <i class="fas fa-store"></i>
+                                        <span th:text="${producto.totalVendedores}">0</span> vendedor(es)
+                                    </span>
                                 </div>
                                 <div class="producto-info">
                                     <h3 th:text="${producto.nombre}">Nombre del Producto</h3>
@@ -263,23 +203,30 @@
                                         Categoría</p>
                                     <div class="producto-precio">
                                         <span class="precio-actual"
-                                            th:text="'$' + ${#numbers.formatDecimal(producto.precio, 0, 'COMMA', 0, 'POINT')}">
-                                            $0
+                                            th:if="${producto.precioMinimo != null}"
+                                            th:text="'Desde $' + ${#numbers.formatDecimal(producto.precioMinimo, 0, 'COMMA', 0, 'POINT')} + ' / ' + ${producto.unidadMedida != null ? producto.unidadMedida : 'unid'}">
+                                            Desde $0 / unid
+                                        </span>
+                                        <span class="precio-actual"
+                                            th:if="${producto.precioMinimo == null}"
+                                            style="color:#999;">
+                                            Sin ofertas
                                         </span>
                                     </div>
                                 </div>
                             </a>
-                            <form th:action="@{/carrito/agregar}" method="post" style="padding: 0 20px 20px;">
-                                <input type="hidden" name="productoId" th:value="${producto.id}">
-                                <button type="submit" class="btn-agregar">
-                                    <i class="fas fa-cart-plus"></i> Agregar al Carrito
-                                </button>
-                            </form>
+                            <!-- Botón para ver vendedores -->
+                            <div style="padding: 0 20px 20px;">
+                                <a th:href="@{/producto/{id}(id=${producto.id})}" class="btn-agregar"
+                                   style="text-decoration:none; text-align:center; display:block;">
+                                    <i class="fas fa-eye"></i> Ver vendedores
+                                </a>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Si NO hay productos -->
-                    <div th:if="${productos == null or productos.isEmpty()}" class="mensaje-productos">
+                    <div th:if="${catalogo == null or catalogo.isEmpty()}" class="mensaje-productos">
                         <i class="fas fa-box-open"></i>
                         <h3>No se encontraron productos</h3>
                         <p>Intenta con otros filtros o categorías</p>

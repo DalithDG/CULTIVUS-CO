@@ -1,8 +1,10 @@
 package com.example.demo.Controller;
 
-import com.example.demo.Model.Producto;
+import com.example.demo.Model.Categoria;
+import com.example.demo.Model.ProductoCatalogo;
 import com.example.demo.Model.Usuario;
-import com.example.demo.repository.ProductoRepository;
+import com.example.demo.repository.CategoriaRepository;
+import com.example.demo.services.CatalogoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -15,17 +17,21 @@ import java.util.stream.Collectors;
 public class RoutesController {
 
     @Autowired
-    private ProductoRepository productoRepository;
+    private CatalogoService catalogoService;
+
+    @Autowired
+    private CategoriaRepository categoriaRepository;
 
     @GetMapping("/")
     public String index(Model model) {
-        // Obtener los últimos 8 productos disponibles
-        List<Producto> productos = productoRepository.findByDisponibleTrue()
+        // Obtener los productos aprobados del catálogo (limitados a 8 para el inicio)
+        List<ProductoCatalogo> productos = catalogoService.listarCatalogo()
                 .stream()
                 .limit(8)
                 .collect(Collectors.toList());
 
         model.addAttribute("productos", productos);
+        model.addAttribute("categorias", categoriaRepository.findAll());
         return "inicio-publico";
     }
 
@@ -51,73 +57,45 @@ public class RoutesController {
     }
 
     @GetMapping("/frutas")
-    public String verFrutas(Model model) {
-        List<Producto> productos = productoRepository.findByDisponibleTrue()
-                .stream()
-                .filter(p -> p.getCategoria() != null &&
-                        "Frutas".equalsIgnoreCase(p.getCategoria().getNombre()))
-                .collect(Collectors.toList());
-        model.addAttribute("productos", productos);
-        return "frutas";
+    public String verFrutas() {
+        return categoriaRepository.findByNombre("Frutas")
+                .map(cat -> "redirect:/category?categoria=" + cat.getId())
+                .orElse("redirect:/category");
     }
 
     @GetMapping("/verduras")
-    public String verVerduras(Model model) {
-        List<Producto> productos = productoRepository.findByDisponibleTrue()
-                .stream()
-                .filter(p -> p.getCategoria() != null &&
-                        "Verduras".equalsIgnoreCase(p.getCategoria().getNombre()))
-                .collect(Collectors.toList());
-        model.addAttribute("productos", productos);
-        return "verduras";
+    public String verVerduras() {
+        return categoriaRepository.findByNombre("Verduras")
+                .map(cat -> "redirect:/category?categoria=" + cat.getId())
+                .orElse("redirect:/category");
     }
 
     @GetMapping("/lacteos")
-    public String verLacteos(Model model) {
-        List<Producto> productos = productoRepository.findByDisponibleTrue()
-                .stream()
-                .filter(p -> p.getCategoria() != null &&
-                        ("Lácteos".equalsIgnoreCase(p.getCategoria().getNombre()) ||
-                         "Lacteos".equalsIgnoreCase(p.getCategoria().getNombre())))
-                .collect(Collectors.toList());
-        model.addAttribute("productos", productos);
-        return "lacteos";
+    public String verLacteos() {
+        return categoriaRepository.findByNombre("Lácteos")
+                .map(cat -> "redirect:/category?categoria=" + cat.getId())
+                .orElse("redirect:/category");
     }
 
     @GetMapping("/cafe")
-    public String verCafe(Model model) {
-        List<Producto> productos = productoRepository.findByDisponibleTrue()
-                .stream()
-                .filter(p -> p.getCategoria() != null &&
-                        ("Café y Cacao".equalsIgnoreCase(p.getCategoria().getNombre()) ||
-                         "Cafe".equalsIgnoreCase(p.getCategoria().getNombre()) ||
-                         "Cacao".equalsIgnoreCase(p.getCategoria().getNombre())))
-                .collect(Collectors.toList());
-        model.addAttribute("productos", productos);
-        return "cafeYcacao";
+    public String verCafe() {
+        return categoriaRepository.findByNombre("Café y Cacao")
+                .map(cat -> "redirect:/category?categoria=" + cat.getId())
+                .orElse("redirect:/category");
     }
 
     @GetMapping("/granos")
-    public String verGranos(Model model) {
-        List<Producto> productos = productoRepository.findByDisponibleTrue()
-                .stream()
-                .filter(p -> p.getCategoria() != null &&
-                        ("Granos y Cereales".equalsIgnoreCase(p.getCategoria().getNombre()) ||
-                                "Granos".equalsIgnoreCase(p.getCategoria().getNombre())))
-                .collect(Collectors.toList());
-        model.addAttribute("productos", productos);
-        return "granos"; // nombre del HTML
+    public String verGranos() {
+        return categoriaRepository.findByNombre("Granos y Cereales")
+                .map(cat -> "redirect:/category?categoria=" + cat.getId())
+                .orElse("redirect:/category");
     }
 
     @GetMapping("/miel")
-    public String verMiel(Model model) {
-        List<Producto> productos = productoRepository.findByDisponibleTrue()
-                .stream()
-                .filter(p -> p.getCategoria() != null &&
-                        "Miel".equalsIgnoreCase(p.getCategoria().getNombre()))
-                .collect(Collectors.toList());
-        model.addAttribute("productos", productos);
-        return "miel";
+    public String verMiel() {
+        return categoriaRepository.findByNombre("Miel")
+                .map(cat -> "redirect:/category?categoria=" + cat.getId())
+                .orElse("redirect:/category");
     }
 
     @GetMapping("/registro-vendedor")

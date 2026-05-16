@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Perfil de Vendedor | Cultivus</title>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- CSS Propios -->
+    <link rel="stylesheet" th:href="@{/header.css}">
+    <link rel="stylesheet" th:href="@{/registro-vendedor.css}">
+    
+    <style>
+        .edit-container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        
+        .card-header {
+            margin-bottom: 25px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+        }
+        
+        .card-header h2 {
+            color: #2e7d32;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .form-section-title {
+            margin: 30px 0 15px;
+            font-weight: 700;
+            color: #555;
+            font-size: 1.1rem;
+            border-left: 4px solid #2e7d32;
+            padding-left: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header Vendedor -->
+    <header th:replace="~{fragments/header-vendedor :: siteHeader}"></header>
+
+    <main class="edit-container">
+        <div class="register-card" style="width: 100%; max-width: 100%;">
+            <div class="card-header">
+                <h2><i class="fas fa-store-edit"></i> Editar Perfil de Vendedor</h2>
+                <p>Actualiza la información de tu negocio y datos de pago.</p>
+            </div>
+
+            <!-- Alertas -->
+            <div th:if="${error}" class="alert alert-error" style="margin-bottom: 20px; background: #ffebee; color: #c62828; padding: 12px; border-radius: 8px;">
+                <i class="fas fa-exclamation-circle"></i>
+                <span th:text="${error}">Error</span>
+            </div>
+
+            <form th:action="@{/vendedor/actualizar}" method="POST" class="modern-form">
+                <div class="form-grid">
+                    <!-- Razón Social -->
+                    <div class="form-group full-width">
+                        <label for="razonSocial">Razón Social o Nombre del Negocio <span style="color: red;">*</span></label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-store"></i>
+                            <input type="text" id="razonSocial" name="razonSocial" th:value="${perfilVendedor.razonSocial}" required>
+                        </div>
+                    </div>
+
+                    <!-- Teléfono -->
+                    <div class="form-group">
+                        <label for="telefonoContacto">Teléfono de Contacto <span style="color: red;">*</span></label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-phone"></i>
+                            <input type="tel" id="telefonoContacto" name="telefonoContacto" th:value="${perfilVendedor.telefonoContacto}" required>
+                        </div>
+                    </div>
+
+                    <!-- Dirección -->
+                    <div class="form-group">
+                        <label for="direccionNegocio">Dirección del Negocio <span style="color: red;">*</span></label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <input type="text" id="direccionNegocio" name="direccionNegocio" th:value="${perfilVendedor.direccionNegocio}" required>
+                        </div>
+                    </div>
+
+                    <!-- Tipo de Productos -->
+                    <div class="form-group full-width">
+                        <label for="tipoProductos">¿Qué tipo de productos vendes? <span style="color: red;">*</span></label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-leaf"></i>
+                            <input type="text" id="tipoProductos" name="tipoProductos" th:value="${perfilVendedor.tipoProductos}" required>
+                        </div>
+                    </div>
+
+                    <!-- Descripción -->
+                    <div class="form-group full-width">
+                        <label for="descripcionNegocio">Descripción de tu Negocio</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-file-alt"></i>
+                            <textarea id="descripcionNegocio" name="descripcionNegocio" rows="4" th:text="${perfilVendedor.descripcionNegocio}"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-section-title full-width">Información Bancaria</div>
+
+                    <!-- Banco -->
+                    <div class="form-group">
+                        <label for="banco">Banco</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-university"></i>
+                            <input type="text" id="banco" name="banco" th:value="${perfilVendedor.banco}">
+                        </div>
+                    </div>
+
+                    <!-- Número de Cuenta -->
+                    <div class="form-group">
+                        <label for="cuentaBancaria">Número de Cuenta</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-credit-card"></i>
+                            <input type="text" id="cuentaBancaria" name="cuentaBancaria" th:value="${perfilVendedor.cuentaBancaria}">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions" style="margin-top: 30px; display: flex; gap: 15px;">
+                    <button type="submit" class="btn-submit" style="flex: 2; padding: 15px;">
+                        <i class="fas fa-save"></i>
+                        <span>Guardar Cambios</span>
+                    </button>
+                    <a th:href="@{/usuario/perfil}" class="btn-back" style="flex: 1; text-align: center; border: 1px solid #ccc; padding: 15px; border-radius: 8px; text-decoration: none; color: #666;">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script th:src="@{/js/header.js}"></script>
+</body>
+
+</html>

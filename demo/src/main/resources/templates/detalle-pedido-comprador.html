@@ -141,24 +141,28 @@
 
         <div class="pedido-card">
             <div class="pedido-header">
-                <div class="pedido-id">Factura #<span th:text="${#strings.length(pedido.id) > 8 ? #strings.substring(pedido.id, #strings.length(pedido.id) - 8) : pedido.id}" style="text-transform: uppercase;"></span></div>
+                <div class="pedido-id" th:text="${pedido.numeroFactura}">Factura #CLT-XXXXXX</div>
                 <div class="pedido-info">
                     <div class="info-item">
-                        <strong><i class="fa-solid fa-calendar"></i> Fecha:</strong>
+                        <strong><i class="fa-solid fa-calendar"></i> Fecha del Pedido:</strong>
                         <span th:text="${#temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm')}"></span>
                     </div>
                     <div class="info-item">
-                        <strong><i class="fa-solid fa-store"></i> Tienda Local:</strong>
-                        <span th:text="${#strings.length(pedido.vendedorId) > 8 ? '...' + #strings.substring(pedido.vendedorId, #strings.length(pedido.vendedorId) - 8) : pedido.vendedorId}"></span>
+                        <strong><i class="fa-solid fa-store"></i> Establecimiento:</strong>
+                        <span th:text="${pedido.vendedor != null ? pedido.vendedor.nombreNegocio : 'Productor Local'}"></span>
                     </div>
                     <div class="info-item">
-                        <strong><i class="fa-solid fa-truck"></i> Estado:</strong>
+                        <strong><i class="fa-solid fa-user"></i> Vendedor:</strong>
+                        <span th:text="${pedido.vendedor != null ? pedido.vendedor.nombreVendedor : 'Usuario Cultivus'}"></span>
+                    </div>
+                    <div class="info-item">
+                        <strong><i class="fa-solid fa-truck"></i> Estado del Envío:</strong>
                         <span class="estado-badge" 
                               th:classappend="${pedido.estado == 'PENDIENTE' ? 'estado-pendiente' : 
                                              (pedido.estado == 'EN_PROCESO' || pedido.estado == 'PROCESANDO' ? 'estado-proceso' : 
                                              'estado-completado')}"
-                              th:text="${pedido.estado == 'EN_PROCESO' || pedido.estado == 'PROCESANDO' ? 'En proceso de preparación' : 
-                                       (pedido.estado == 'PENDIENTE' ? 'Pendiente de confirmación' : 'Pedido Completado')}">
+                              th:text="${pedido.estado == 'EN_PROCESO' || pedido.estado == 'PROCESANDO' ? 'En preparación' : 
+                                       (pedido.estado == 'PENDIENTE' ? 'Pendiente' : 'Entregado')}">
                         </span>
                     </div>
                 </div>

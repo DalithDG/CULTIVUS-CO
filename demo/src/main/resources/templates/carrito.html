@@ -242,27 +242,31 @@
                     <div class="producto-info">
                         <!-- ✅ Antes: detalle.producto.nombre -->
                         <div class="producto-nombre" th:text="${detalle.nombre}"></div>
+                        <div th:if="${detalle.vendedorNombre != null and !detalle.vendedorNombre.isEmpty()}"
+                             style="font-size:0.82rem;color:#888;margin-bottom:4px;">
+                            <i class="fa-solid fa-store" style="color:#27ae60;"></i>
+                            Vendedor: <span th:text="${detalle.vendedorNombre}"></span>
+                        </div>
 
                         <div class="producto-precio">
                             $<span th:text="${#numbers.formatDecimal(
                                 detalle.precioUnitario, 0, 'COMMA', 0, 'POINT')}">0</span>
-                            x <span th:text="${detalle.cantidad} + ' ' + ${detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : ''}">1</span>
+                            x <span th:text="${(detalle.cantidad % 1 == 0 ? #numbers.formatDecimal(detalle.cantidad, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(detalle.cantidad, 1, 'POINT', 2, 'COMMA'))} + ' ' + ${detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : ''}">1</span>
                         </div>
                         
                         <!-- Nota de compra mínima (Informativo) -->
                         <div class="compra-minima-nota" style="font-size: 0.8rem; color: #888; margin-top: 5px;">
                             <i class="fa-solid fa-circle-info"></i> Mínimo requerido: 
-                            <span th:text="${detalle.cantidad}">1</span> / 
-                            <span th:text="${detalle.compraMinima != null ? detalle.compraMinima : '1'}">1</span> 
+                            <span th:text="${(detalle.cantidad % 1 == 0 ? #numbers.formatDecimal(detalle.cantidad, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(detalle.cantidad, 1, 'POINT', 2, 'COMMA'))}">1</span> / 
+                            <span th:text="${(detalle.compraMinima != null ? (detalle.compraMinima % 1 == 0 ? #numbers.formatDecimal(detalle.compraMinima, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(detalle.compraMinima, 1, 'POINT', 2, 'COMMA')) : '1')}">1</span> 
                             <span th:text="${detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : ''}">unid</span>
                         </div>
 
                         <div class="cantidad-control">
                             <form th:action="@{/carrito/actualizar}" method="post"
                                 style="display: flex; align-items: center; gap: 10px;">
-                                <!-- ✅ Antes: detalle.producto.id -->
-                                <input type="hidden" name="productoId"
-                                    th:value="${detalle.productoId}">
+                                <input type="hidden" name="ofertaId"
+                                    th:value="${detalle.ofertaId != null ? detalle.ofertaId : detalle.productoId}">
                                 <!-- Bug #3 corregido: se eliminó readonly + onchange muerto.
                                      Los botones +/- controlan el valor y hacen submit directamente. -->
                                 <button type="button" class="btn-cantidad"
@@ -282,9 +286,8 @@
 
                             <form th:action="@{/carrito/eliminar}" method="post"
                                 style="margin-left: auto;">
-                                <!-- ✅ Antes: detalle.producto.id -->
-                                <input type="hidden" name="productoId"
-                                    th:value="${detalle.productoId}">
+                                <input type="hidden" name="ofertaId"
+                                    th:value="${detalle.ofertaId != null ? detalle.ofertaId : detalle.productoId}">
                                 <button type="submit" class="btn-eliminar">
                                     <i class="fa-solid fa-trash"></i> Eliminar
                                 </button>

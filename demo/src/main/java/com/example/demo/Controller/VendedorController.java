@@ -24,6 +24,9 @@ public class VendedorController {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private com.example.demo.services.OfertaService ofertaService;
+
     /**
      * Muestra el formulario para convertirse en vendedor
      */
@@ -58,6 +61,7 @@ public class VendedorController {
             @RequestParam(value = "descripcionNegocio", required = false) String descripcionNegocio,
             @RequestParam(value = "cuentaBancaria", required = false) String cuentaBancaria,
             @RequestParam(value = "banco", required = false) String banco,
+            @RequestParam("tipoProductos") String tipoProductos,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
         try {
@@ -103,7 +107,8 @@ public class VendedorController {
                     direccionNegocio,
                     descripcionNegocio,
                     cuentaBancaria,
-                    banco);
+                    banco,
+                    tipoProductos);
 
             // Actualizar sesión con usuario que ya tiene el perfil embebido
             session.setAttribute("usuarioLogueado", usuarioActualizado);
@@ -159,10 +164,13 @@ public class VendedorController {
             return "redirect:/vendedor/registro";
         }
 
-        // El perfil ya viene embebido en el usuario
+        // Cargar ofertas del vendedor para el dashboard
+        List<com.example.demo.Model.OfertaVendedor> ofertas = ofertaService.listarOfertasVendedor(usuario.getId());
+        model.addAttribute("ofertas", ofertas);
+        
         model.addAttribute("perfilVendedor", usuario.getPerfilVendedor());
         model.addAttribute("usuario", usuario);
-        return "Miproductos";
+        return "mis-productos";
     }
 
     /**
@@ -186,7 +194,7 @@ public class VendedorController {
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("perfilVendedor", perfil);
-        return "perfil-vendedor";
+        return "perfil";
     }
 
     /**
@@ -224,6 +232,7 @@ public class VendedorController {
             @RequestParam(value = "descripcionNegocio", required = false) String descripcionNegocio,
             @RequestParam(value = "cuentaBancaria", required = false) String cuentaBancaria,
             @RequestParam(value = "banco", required = false) String banco,
+            @RequestParam(value = "tipoProductos", required = false) String tipoProductos,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
         try {
@@ -241,7 +250,8 @@ public class VendedorController {
                     direccionNegocio,
                     descripcionNegocio,
                     cuentaBancaria,
-                    banco);
+                    banco,
+                    tipoProductos);
 
             session.setAttribute("usuarioLogueado", usuarioActualizado);
 

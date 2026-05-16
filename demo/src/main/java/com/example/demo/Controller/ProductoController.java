@@ -1,14 +1,16 @@
 package com.example.demo.Controller;
 
 import com.example.demo.Model.Categoria;
-import com.example.demo.Model.Producto;
+import com.example.demo.Model.OfertaVendedor;
+import com.example.demo.Model.ProductoCatalogo;
 import com.example.demo.Model.Usuario;
 import com.example.demo.Model.embebidos.CategoriaProducto;
 import com.example.demo.Model.embebidos.DatosVendedor;
 import com.example.demo.Model.embebidos.UnidadMedida;
 import com.example.demo.repository.CategoriaRepository;
-import com.example.demo.repository.ProductoRepository;
-import com.example.demo.services.ProductoService;
+import com.example.demo.repository.OfertaRepository;
+import com.example.demo.services.CatalogoService;
+import com.example.demo.services.OfertaService;
 import com.example.demo.services.VendedorService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,33 +27,39 @@ import java.util.List;
 public class ProductoController {
 
     @Autowired
-    private ProductoService productoService;
+    private CatalogoService catalogoService;
+
+    @Autowired
+    private OfertaService ofertaService;
+
+    @Autowired
+    private OfertaRepository ofertaRepository;
 
     @Autowired
     private CategoriaRepository categoriaRepository;
-
-    @Autowired
-    private ProductoRepository productoRepository;
 
     @Autowired
     private VendedorService vendedorService;
 
     // Unidades de medida fijas — ya no tienen colección propia
     private static final List<UnidadMedida> UNIDADES_MEDIDA = Arrays.asList(
-            new UnidadMedida("Kilogramos", "kg", "kg"),
-            new UnidadMedida("Gramos", "g", "kg"),
-            new UnidadMedida("Libras", "lb", "lb"),
-            new UnidadMedida("Litros", "L", "L"),
-            new UnidadMedida("Mililitros", "ml", "L"),
-            new UnidadMedida("Unidades", "un", "unidad"),
-            new UnidadMedida("Docena", "doc", "paquete")
+            new UnidadMedida("Kilogramos", "kg", "Peso"),
+            new UnidadMedida("Gramos", "g", "Peso"),
+            new UnidadMedida("Libras", "lb", "Peso"),
+            new UnidadMedida("Litros", "L", "Volumen"),
+            new UnidadMedida("Mililitros", "ml", "Volumen"),
+            new UnidadMedida("Unidades", "un", "Unidad"),
+            new UnidadMedida("Docena", "doc", "Unidad"),
+            new UnidadMedida("Manojo", "manojo", "Unidad"),
+            new UnidadMedida("Bandeja", "bandeja", "Unidad")
     );
 
     /**
-     * Muestra el formulario para agregar un nuevo producto
+     * Muestra el formulario para crear una nueva oferta.
+     * El vendedor selecciona un producto del catálogo y define su precio/stock.
      */
     @GetMapping("/productos/nuevo")
-    public String mostrarFormularioProducto(HttpSession session, Model model,
+    public String mostrarFormularioOferta(HttpSession session, Model model,
             RedirectAttributes redirectAttributes) {
 
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
@@ -64,7 +72,10 @@ public class ProductoController {
             return "redirect:/vendedor/registro";
         }
 
-        // Cargar categorías y crearlas si no existen
+        // Cargar productos del catálogo aprobados (para el dropdown)
+        List<ProductoCatalogo> catalogoAprobado = catalogoService.listarAprobados();
+
+        // Cargar categorías (para sugerir nuevo producto)
         List<Categoria> categorias = categoriaRepository.findAll();
         if (categorias.isEmpty()) {
             crearCategoriasPorDefecto();
@@ -72,25 +83,25 @@ public class ProductoController {
         }
 
         model.addAttribute("usuario", usuario);
+        model.addAttribute("catalogoProductos", catalogoAprobado);
         model.addAttribute("categorias", categorias);
         model.addAttribute("unidadesMedida", UNIDADES_MEDIDA);
-        model.addAttribute("producto", new Producto());
         return "agregar-producto";
     }
 
     /**
-     * Procesa el formulario de creación de producto
+     * Procesa la creación de una oferta para un producto existente del catálogo.
      */
     @PostMapping("/productos/guardar")
-    public String guardarProducto(
-            @RequestParam("nombre") String nombre,
+    public String guardarOferta(
+            @RequestParam("productoCatalogoId") String productoCatalogoId,
             @RequestParam("precio") Double precio,
             @RequestParam("stock") Double stock,
-            @RequestParam("descripcion") String descripcion,
-            @RequestParam("imagenUrl") String imagenUrl,
-            @RequestParam("peso") Double peso,
-            @RequestParam("categoriaId") String categoriaId,
-            @RequestParam("unidadMedidaId") String unidadMedidaAbreviatura,
+            @RequestParam(value = "peso", required = false) Double peso,
+            @RequestParam(value = "pesoPromedioUnidad", required = false) Double pesoPromedioUnidad,
+            @RequestParam(value = "descripcionPaquete", required = false) String descripcionPaquete,
+            @RequestParam(value = "imagenUrl", required = false) String imagenUrl,
+            @RequestParam(value = "descripcionVendedor", required = false) String descripcionVendedor,
             @RequestParam(value = "compraMinima", defaultValue = "1") Double compraMinima,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
@@ -105,17 +116,16 @@ public class ProductoController {
                 return "redirect:/vendedor/registro";
             }
 
-            // Obtener categoría y crear objeto embebido
-            Categoria categoria = categoriaRepository.findById(categoriaId)
-                    .orElseThrow(() -> new IllegalArgumentException("Categoría no encontrada"));
-            CategoriaProducto categoriaEmbebida = new CategoriaProducto(
-                    categoria.getId(), categoria.getNombre());
+            // Obtener producto del catálogo
+            ProductoCatalogo catalogo = catalogoService.obtenerPorId(productoCatalogoId);
+            if (catalogo == null) {
+                throw new IllegalArgumentException("Producto del catálogo no encontrado");
+            }
 
-            // Obtener unidad de medida de la lista fija
-            UnidadMedida unidadMedida = UNIDADES_MEDIDA.stream()
-                    .filter(u -> u.getAbreviatura().equals(unidadMedidaAbreviatura))
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("Unidad de medida no encontrada"));
+            // Si no se proporcionó imagen, usar la del catálogo
+            if (imagenUrl == null || imagenUrl.trim().isEmpty()) {
+                imagenUrl = catalogo.getImagenUrl();
+            }
 
             // Crear datos del vendedor embebidos (snapshot enriquecido)
             DatosVendedor datosVendedor = new DatosVendedor(
@@ -128,22 +138,35 @@ public class ProductoController {
                     usuario.getPerfilVendedor() != null ? usuario.getPerfilVendedor().getDescripcionNegocio() : null
             );
 
-            // Crear el producto
-            Producto producto = new Producto();
-            producto.setNombre(nombre);
-            producto.setPrecio(precio);
-            producto.setStock(stock);
-            producto.setDescripcion(descripcion);
-            producto.setImagenUrl(imagenUrl);
-            producto.setPeso(peso);
-            producto.setCompraMinima(compraMinima > 0 ? compraMinima : 1.0);
-            producto.setCategoria(categoriaEmbebida);
-            producto.setUnidadMedida(unidadMedida);
-            producto.setVendedor(datosVendedor);
+            // Si el peso es null (no viene en el form de oferta simple), calculamos un default
+            if (peso == null || peso <= 0) {
+                if ("PESO".equalsIgnoreCase(catalogo.getTipoVenta())) {
+                    peso = 1.0; // 1 unidad de stock = 1 kg/lb/etc
+                } else {
+                    // Si es por unidad, usamos el peso promedio si existe, sino 1.0
+                    peso = (pesoPromedioUnidad != null && pesoPromedioUnidad > 0) ? pesoPromedioUnidad : 1.0;
+                }
+            }
 
-            productoService.crearProducto(producto);
+            // Crear la oferta
+            OfertaVendedor oferta = new OfertaVendedor(
+                    productoCatalogoId,
+                    datosVendedor,
+                    precio,
+                    stock,
+                    peso,
+                    pesoPromedioUnidad,
+                    descripcionPaquete,
+                    compraMinima > 0 ? compraMinima : 1.0,
+                    imagenUrl,
+                    descripcionVendedor,
+                    catalogo.getNombre()
+            );
 
-            redirectAttributes.addFlashAttribute("mensaje", "Producto creado exitosamente");
+            ofertaService.crearOferta(oferta);
+
+            redirectAttributes.addFlashAttribute("mensaje",
+                    "¡Felicidades! Tu oferta para '" + catalogo.getNombre() + "' ha sido publicada exitosamente.");
             return "redirect:/vendedor/Miproductos";
 
         } catch (IllegalArgumentException e) {
@@ -151,16 +174,67 @@ public class ProductoController {
             return "redirect:/vendedor/productos/nuevo";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error",
-                    "Error al crear el producto: " + e.getMessage());
+                    "Error al crear la oferta: " + e.getMessage());
             return "redirect:/vendedor/productos/nuevo";
         }
     }
 
     /**
-     * Muestra todos los productos del vendedor
+     * Sugiere un nuevo producto para el catálogo (pendiente de aprobación del admin).
+     */
+    @PostMapping("/productos/sugerir")
+    public String sugerirProducto(
+            @RequestParam("nombre") String nombre,
+            @RequestParam("descripcion") String descripcion,
+            @RequestParam("imagenUrl") String imagenUrl,
+            @RequestParam("categoriaId") String categoriaId,
+            @RequestParam("tipoVenta") String tipoVenta,
+            @RequestParam("unidadMedida") String unidadMedida,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+        try {
+            Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+            if (usuario == null) {
+                redirectAttributes.addFlashAttribute("error", "Debe iniciar sesión primero");
+                return "redirect:/usuario/login";
+            }
+            if (!vendedorService.esVendedor(usuario.getId())) {
+                redirectAttributes.addFlashAttribute("error", "Debe registrarse como vendedor primero");
+                return "redirect:/vendedor/registro";
+            }
+
+            // Obtener categoría
+            Categoria categoria = categoriaRepository.findById(categoriaId)
+                    .orElseThrow(() -> new IllegalArgumentException("Categoría no encontrada"));
+            CategoriaProducto categoriaEmbebida = new CategoriaProducto(
+                    categoria.getId(), categoria.getNombre());
+
+            // Crear producto del catálogo (pendiente de aprobación)
+            ProductoCatalogo producto = new ProductoCatalogo(nombre, descripcion, imagenUrl,
+                    categoriaEmbebida, tipoVenta, unidadMedida);
+
+            catalogoService.sugerirProducto(producto, usuario.getId());
+
+            redirectAttributes.addFlashAttribute("mensaje",
+                    "Tu sugerencia de producto '" + nombre + "' ha sido enviada. " +
+                    "Un administrador la revisará pronto. Una vez aprobada, podrás crear tu oferta.");
+            return "redirect:/vendedor/productos/nuevo";
+
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/vendedor/productos/nuevo";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error",
+                    "Error al sugerir el producto: " + e.getMessage());
+            return "redirect:/vendedor/productos/nuevo";
+        }
+    }
+
+    /**
+     * Muestra todas las ofertas del vendedor (antes era "Mis Productos")
      */
     @GetMapping("/Miproductos")
-    public String mostrarMisProductos(HttpSession session, Model model,
+    public String mostrarMisOfertas(HttpSession session, Model model,
             RedirectAttributes redirectAttributes) {
 
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
@@ -173,16 +247,16 @@ public class ProductoController {
             return "redirect:/vendedor/registro";
         }
 
-        // Obtener productos del vendedor usando el repositorio directamente o el servicio
-        List<Producto> productos = productoRepository.findByVendedor_Id(usuario.getId());
+        // Obtener ofertas del vendedor
+        List<OfertaVendedor> ofertas = ofertaService.listarOfertasVendedor(usuario.getId());
 
         model.addAttribute("usuario", usuario);
-        model.addAttribute("productos", productos);
+        model.addAttribute("ofertas", ofertas);
         return "mis-productos";
     }
 
     /**
-     * Muestra el formulario para editar un producto
+     * Muestra el formulario para editar una oferta
      */
     @GetMapping("/productos/editar/{id}")
     public String mostrarFormularioEdicion(@PathVariable String id,
@@ -195,49 +269,43 @@ public class ProductoController {
             return "redirect:/usuario/login";
         }
         if (!vendedorService.esVendedor(usuario.getId())) {
-            redirectAttributes.addFlashAttribute("error", "Debe ser vendedor para editar productos");
+            redirectAttributes.addFlashAttribute("error", "Debe ser vendedor para editar ofertas");
             return "redirect:/vendedor/registro";
         }
 
-        Producto producto = productoRepository.findById(id).orElse(null);
-        if (producto == null) {
-            redirectAttributes.addFlashAttribute("error", "Producto no encontrado");
+        OfertaVendedor oferta = ofertaService.buscarPorId(id);
+        if (oferta == null) {
+            redirectAttributes.addFlashAttribute("error", "Oferta no encontrada");
             return "redirect:/vendedor/Miproductos";
         }
 
-        // Verificar que el producto pertenece al vendedor
-        if (!producto.getVendedor().getId().equals(usuario.getId())) {
+        // Verificar que la oferta pertenece al vendedor
+        if (!oferta.getVendedor().getId().equals(usuario.getId())) {
             redirectAttributes.addFlashAttribute("error",
-                    "No tienes permiso para editar este producto");
+                    "No tienes permiso para editar esta oferta");
             return "redirect:/vendedor/Miproductos";
         }
 
-        List<Categoria> categorias = categoriaRepository.findAll();
-        if (categorias.isEmpty()) {
-            crearCategoriasPorDefecto();
-            categorias = categoriaRepository.findAll();
-        }
+        ProductoCatalogo productoCatalogo = catalogoService.obtenerPorId(oferta.getProductoCatalogoId());
 
-        model.addAttribute("producto", producto);
-        model.addAttribute("categorias", categorias);
-        model.addAttribute("unidadesMedida", UNIDADES_MEDIDA);
+        model.addAttribute("oferta", oferta);
+        model.addAttribute("productoCatalogo", productoCatalogo);
         model.addAttribute("usuario", usuario);
         return "editar-producto";
     }
 
     /**
-     * Procesa la actualización de un producto
+     * Procesa la actualización de una oferta
      */
     @PostMapping("/productos/actualizar/{id}")
-    public String actualizarProducto(@PathVariable String id,
-            @RequestParam("nombre") String nombre,
+    public String actualizarOferta(@PathVariable String id,
             @RequestParam("precio") Double precio,
             @RequestParam("stock") Double stock,
-            @RequestParam("descripcion") String descripcion,
-            @RequestParam("peso") Double peso,
-            @RequestParam("imagenUrl") String imagenUrl,
-            @RequestParam("categoriaId") String categoriaId,
-            @RequestParam("unidadMedidaId") String unidadMedidaAbreviatura,
+            @RequestParam(value = "peso", required = false) Double peso,
+            @RequestParam(value = "pesoPromedioUnidad", required = false) Double pesoPromedioUnidad,
+            @RequestParam(value = "descripcionPaquete", required = false) String descripcionPaquete,
+            @RequestParam(value = "imagenUrl", required = false) String imagenUrl,
+            @RequestParam(value = "descripcionVendedor", required = false) String descripcionVendedor,
             @RequestParam(value = "compraMinima", defaultValue = "1") Double compraMinima,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
@@ -248,54 +316,64 @@ public class ProductoController {
             return "redirect:/usuario/login";
         }
 
-        Producto producto = productoRepository.findById(id).orElse(null);
-        if (producto == null) {
-            redirectAttributes.addFlashAttribute("error", "Producto no encontrado");
+        OfertaVendedor oferta = ofertaService.buscarPorId(id);
+        if (oferta == null) {
+            redirectAttributes.addFlashAttribute("error", "Oferta no encontrada");
             return "redirect:/vendedor/Miproductos";
         }
-        if (!producto.getVendedor().getId().equals(usuario.getId())) {
+        if (!oferta.getVendedor().getId().equals(usuario.getId())) {
             redirectAttributes.addFlashAttribute("error",
-                    "No tienes permiso para editar este producto");
+                    "No tienes permiso para editar esta oferta");
             return "redirect:/vendedor/Miproductos";
         }
 
         try {
-            producto.setNombre(nombre);
-            producto.setPrecio(precio);
-            producto.setStock(stock);
-            producto.setDescripcion(descripcion);
-            producto.setPeso(peso);
-            producto.setImagenUrl(imagenUrl);
-            producto.setCompraMinima(compraMinima > 0 ? compraMinima : 1.0);
+            oferta.setPrecio(precio);
+            oferta.setStock(stock);
+            
+            // Manejo de peso en actualización
+            if (peso == null || peso <= 0) {
+                ProductoCatalogo catalogo = catalogoService.obtenerPorId(oferta.getProductoCatalogoId());
+                if (catalogo != null) {
+                    if ("PESO".equalsIgnoreCase(catalogo.getTipoVenta())) {
+                        peso = 1.0;
+                    } else {
+                        peso = (pesoPromedioUnidad != null && pesoPromedioUnidad > 0) ? pesoPromedioUnidad : 1.0;
+                    }
+                } else {
+                    peso = 1.0;
+                }
+            }
+            
+            oferta.setPeso(peso);
+            oferta.setPesoPromedioUnidad(pesoPromedioUnidad);
+            oferta.setDescripcionPaquete(descripcionPaquete);
+            oferta.setCompraMinima(compraMinima > 0 ? compraMinima : 1.0);
 
-            // Actualizar categoría embebida
-            categoriaRepository.findById(categoriaId).ifPresent(cat ->
-                    producto.setCategoria(new CategoriaProducto(cat.getId(), cat.getNombre()))
-            );
+            if (imagenUrl != null && !imagenUrl.trim().isEmpty()) {
+                oferta.setImagenUrl(imagenUrl);
+            }
+            if (descripcionVendedor != null) {
+                oferta.setDescripcionVendedor(descripcionVendedor);
+            }
 
-            // Actualizar unidad de medida embebida
-            UNIDADES_MEDIDA.stream()
-                    .filter(u -> u.getAbreviatura().equals(unidadMedidaAbreviatura))
-                    .findFirst()
-                    .ifPresent(producto::setUnidadMedida);
+            ofertaService.actualizarOferta(oferta);
 
-            productoService.actualizarProducto(producto);
-
-            redirectAttributes.addFlashAttribute("mensaje", "Producto actualizado exitosamente");
+            redirectAttributes.addFlashAttribute("mensaje", "Oferta actualizada exitosamente");
             return "redirect:/vendedor/Miproductos";
 
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error",
-                    "Error al actualizar el producto: " + e.getMessage());
+                    "Error al actualizar la oferta: " + e.getMessage());
             return "redirect:/vendedor/productos/editar/" + id;
         }
     }
 
     /**
-     * Elimina un producto
+     * Elimina una oferta
      */
     @PostMapping("/productos/eliminar/{id}")
-    public String eliminarProducto(@PathVariable String id,
+    public String eliminarOferta(@PathVariable String id,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
         try {
@@ -305,21 +383,23 @@ public class ProductoController {
                 return "redirect:/usuario/login";
             }
 
-            Producto producto = productoRepository.findById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado"));
+            OfertaVendedor oferta = ofertaService.buscarPorId(id);
+            if (oferta == null) {
+                throw new IllegalArgumentException("Oferta no encontrada");
+            }
 
-            // Verificar que el producto pertenece al vendedor
-            if (!producto.getVendedor().getId().equals(usuario.getId())) {
+            // Verificar que la oferta pertenece al vendedor
+            if (!oferta.getVendedor().getId().equals(usuario.getId())) {
                 redirectAttributes.addFlashAttribute("error",
-                        "No tiene permiso para eliminar este producto");
+                        "No tiene permiso para eliminar esta oferta");
                 return "redirect:/vendedor/Miproductos";
             }
 
-            productoRepository.delete(producto);
-            redirectAttributes.addFlashAttribute("mensaje", "Producto eliminado exitosamente");
+            ofertaService.eliminarOferta(id);
+            redirectAttributes.addFlashAttribute("mensaje", "Oferta eliminada exitosamente");
 
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error al eliminar el producto");
+            redirectAttributes.addFlashAttribute("error", "Error al eliminar la oferta");
         }
         return "redirect:/vendedor/Miproductos";
     }

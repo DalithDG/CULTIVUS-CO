@@ -5,57 +5,323 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mis Productos - Cultivus</title>
-    <link rel="stylesheet" th:href="@{/mis-productos.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/header.css}">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f4f7f4;
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 2.5rem auto;
+            padding: 0 1.5rem;
+            animation: fadeIn 0.6s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2.5rem;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header-title h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #1a1a1a;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-title p {
+            color: #666;
+            margin-top: 5px;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary-premium {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 28px;
+            background: linear-gradient(135deg, #2e7d32, #43a047);
+            color: white;
+            text-decoration: none;
+            font-weight: 700;
+            border-radius: 14px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(46, 125, 50, 0.2);
+        }
+
+        .btn-primary-premium:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(46, 125, 50, 0.3);
+            filter: brightness(1.1);
+        }
+
+        .alert {
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+            border: 1px solid transparent;
+        }
+
+        .alert-success { background: #e8f5e9; color: #2e7d32; border-color: #a5d6a7; }
+        .alert-error { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid #f0f0f0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .product-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+            border-color: #e0e0e0;
+        }
+
+        .card-image-wrapper {
+            position: relative;
+            height: 220px;
+            overflow: hidden;
+        }
+
+        .card-image-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.6s ease;
+        }
+
+        .product-card:hover .card-image-wrapper img {
+            transform: scale(1.1);
+        }
+
+        .status-overlay {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            z-index: 10;
+        }
+
+        .badge-premium {
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .badge-active { background: rgba(232, 245, 233, 0.9); color: #2e7d32; border: 1px solid #a5d6a7; }
+        .badge-inactive { background: rgba(255, 243, 224, 0.9); color: #e65100; border: 1px solid #ffcc80; }
+
+        .card-body {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-body h3 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .card-body p {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.5;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .card-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: #fafafa;
+            padding: 12px;
+            border-radius: 16px;
+        }
+
+        .stat-box {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .stat-label { font-size: 0.7rem; color: #999; font-weight: 600; text-transform: uppercase; }
+        .stat-value { font-size: 1rem; color: #333; font-weight: 700; }
+        .stat-value.price { color: #2e7d32; }
+
+        .card-footer {
+            display: flex;
+            gap: 12px;
+            margin-top: auto;
+        }
+
+        .btn-action {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-edit { background: #e3f2fd; color: #1565c0; }
+        .btn-edit:hover { background: #bbdefb; }
+
+        .btn-delete { background: #ffebee; color: #c62828; }
+        .btn-delete:hover { background: #ffcdd2; }
+
+        .empty-state {
+            text-align: center;
+            padding: 5rem 2rem;
+            background: white;
+            border-radius: 32px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+            border: 2px dashed #eee;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: #ddd;
+            margin-bottom: 1.5rem;
+        }
+
+        .empty-state h3 { font-size: 1.5rem; color: #333; margin-bottom: 10px; }
+        .empty-state p { color: #888; margin-bottom: 2rem; }
+
+        @media (max-width: 600px) {
+            .dashboard-header { flex-direction: column; align-items: flex-start; }
+            .btn-primary-premium { width: 100%; justify-content: center; }
+        }
+    </style>
 </head>
 
 <body>
     <header th:replace="fragments/header-vendedor :: siteHeader"></header>
 
-    <div class="container">
-        <div class="header-section">
-            <h1><i class="fa-solid fa-box"></i> Mis Productos</h1>
-            <a th:href="@{/vendedor/productos/nuevo}" class="btn-add">
-                <i class="fa-solid fa-plus"></i> Agregar Producto
+    <div class="dashboard-container">
+        <div class="dashboard-header">
+            <div class="header-title">
+                <h1><i class="fas fa-boxes-stacked"></i> Mi Inventario</h1>
+                <p>Gestiona tus ofertas activas y el stock disponible</p>
+            </div>
+            <a th:href="@{/vendedor/productos/nuevo}" class="btn-primary-premium">
+                <i class="fas fa-plus"></i> Nueva Oferta
             </a>
         </div>
 
-        <div th:if="${mensaje}" class="alert alert-success" th:text="${mensaje}"></div>
-        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+        <div th:if="${mensaje}" class="alert alert-success">
+            <i class="fas fa-check-circle"></i>
+            <span th:text="${mensaje}"></span>
+        </div>
+        <div th:if="${error}" class="alert alert-error">
+            <i class="fas fa-exclamation-circle"></i>
+            <span th:text="${error}"></span>
+        </div>
 
-        <div th:if="${productos == null || productos.isEmpty()}" class="empty-state">
-            <i class="fa-solid fa-inbox"></i>
-            <h3>No tienes productos aún</h3>
-            <p>Comienza agregando tu primer producto</p>
-            <a th:href="@{/vendedor/productos/nuevo}" class="btn-add" style="display: inline-block; margin-top: 20px;">
-                <i class="fa-solid fa-plus"></i> Agregar Producto
+        <!-- Empty State -->
+        <div th:if="${ofertas == null || ofertas.isEmpty()}" class="empty-state">
+            <i class="fas fa-box-open"></i>
+            <h3>¡Aún no tienes productos publicados!</h3>
+            <p>Empieza a vender tus productos del campo en nuestra red.</p>
+            <a th:href="@{/vendedor/productos/nuevo}" class="btn-primary-premium">
+                Publicar mi primer producto
             </a>
         </div>
 
-        <div th:if="${productos != null && !productos.isEmpty()}" class="productos-grid">
-            <div th:each="producto : ${productos}" class="producto-card">
-                <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}" class="producto-imagen"
-                    onerror="this.src='/images/placeholder.jpg'">
-                <div class="producto-info">
-                    <div class="producto-nombre" th:text="${producto.nombre}"></div>
-                    <div class="producto-descripcion" th:text="${producto.descripcion}"></div>
-                    <div class="producto-precio">
-                        $<span th:text="${#numbers.formatDecimal(producto.precio, 0, 'COMMA', 0, 'POINT')}">0</span>
+        <!-- Grid de Productos -->
+        <div th:if="${ofertas != null && !ofertas.isEmpty()}" class="products-grid">
+            <div th:each="producto : ${ofertas}" class="product-card">
+                <div class="card-image-wrapper">
+                    <img th:src="${producto.imagenUrl}" th:alt="${producto.nombreProducto}"
+                        onerror="this.src='/images/placeholder.jpg'">
+                    <div class="status-overlay">
+                        <span th:if="${producto.disponible}" class="badge-premium badge-active">
+                            <i class="fas fa-check-circle"></i> Activo
+                        </span>
+                        <span th:unless="${producto.disponible}" class="badge-premium badge-inactive">
+                            <i class="fas fa-pause-circle"></i> Pausado
+                        </span>
                     </div>
-                    <div class="producto-stock">
-                        <i class="fa-solid fa-box"></i> Stock: <span th:text="${producto.stock}">0</span>
+                </div>
+
+                <div class="card-body">
+                    <h3 th:text="${producto.nombreProducto}">Producto</h3>
+                    <p th:text="${producto.descripcionVendedor}">Descripción corta...</p>
+                    
+                    <div class="card-stats">
+                        <div class="stat-box">
+                            <span class="stat-label">Precio</span>
+                            <span class="stat-value price" th:text="${'$' + #numbers.formatDecimal(producto.precio, 0, 'COMMA', 0, 'POINT')}">$0</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-label">Stock</span>
+                            <span class="stat-value" th:text="${(producto.stock % 1 == 0 ? #numbers.formatDecimal(producto.stock, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(producto.stock, 1, 'POINT', 1, 'COMMA'))}">0</span>
+                        </div>
                     </div>
-                    <div class="producto-stock">
-                        <i class="fa-solid fa-tag"></i> <span th:text="${producto.categoria.nombre}"></span>
-                    </div>
-                    <div class="producto-acciones">
-                        <a th:href="@{/vendedor/productos/editar/{id}(id=${producto.id})}" class="btn-editar">
-                            <i class="fa-solid fa-pen"></i> Editar
+
+                    <div class="card-footer">
+                        <a th:href="@{/vendedor/productos/editar/{id}(id=${producto.id})}" class="btn-action btn-edit">
+                            <i class="fas fa-pen"></i> Editar
                         </a>
                         <form th:action="@{/vendedor/productos/eliminar/{id}(id=${producto.id})}" method="post"
-                            style="flex: 1;" onsubmit="return confirm('¿Está seguro de eliminar este producto?');">
-                            <button type="submit" class="btn-eliminar">
-                                <i class="fa-solid fa-trash"></i> Eliminar
+                            style="flex: 1;" onsubmit="return confirm('¿Está seguro de eliminar esta oferta permanentemente?');">
+                            <button type="submit" class="btn-action btn-delete">
+                                <i class="fas fa-trash-alt"></i> Borrar
                             </button>
                         </form>
                     </div>
@@ -64,5 +330,4 @@
         </div>
     </div>
 </body>
-
-</html>
+</html>

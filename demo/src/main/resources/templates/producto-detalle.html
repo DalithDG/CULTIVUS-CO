@@ -51,11 +51,16 @@
             color: #2c3e50;
             font-size: 2.2rem;
         }
-        .detalle-precio {
-            font-size: 2rem;
+        .detalle-precio-rango {
+            font-size: 1.6rem;
             font-weight: bold;
             color: #27ae60;
-            margin: 10px 0 20px;
+            margin: 10px 0 5px;
+        }
+        .detalle-vendedores-count {
+            font-size: 0.95rem;
+            color: #777;
+            margin-bottom: 20px;
         }
         .detalle-meta {
             display: grid;
@@ -75,49 +80,167 @@
             color: #54606b;
             margin-bottom: 25px;
         }
-        .detalle-acciones {
+
+        /* ── Sección de Vendedores ── */
+        .vendedores-section {
+            margin-top: 40px;
+        }
+        .vendedores-title {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
             display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .vendedor-card {
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+            padding: 20px 24px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
             flex-wrap: wrap;
-            gap: 15px;
+        }
+        .vendedor-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+        .vendedor-avatar {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: #2e7d32;
+            flex-shrink: 0;
+        }
+        .vendedor-info {
+            flex: 1;
+            min-width: 200px;
+        }
+        .vendedor-nombre {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .badge-verificado {
+            background: #27ae60;
+            color: #fff;
+            font-size: 0.68rem;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        .vendedor-razon {
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: 2px;
+        }
+        .vendedor-desc {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 4px;
+        }
+        .vendedor-telefono {
+            font-size: 0.85rem;
+            color: #555;
+            margin-top: 4px;
+        }
+        .vendedor-precio-stock {
+            text-align: right;
+            min-width: 160px;
+        }
+        .vendedor-precio {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #27ae60;
+        }
+        .vendedor-stock {
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: 4px;
+        }
+        .vendedor-compra-minima {
+            font-size: 0.8rem;
+            color: #e67e22;
+            margin-top: 2px;
+        }
+        .vendedor-acciones {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 180px;
+        }
+        .vendedor-acciones form {
+            display: flex;
+            gap: 8px;
             align-items: center;
         }
-        .detalle-acciones input[type="number"] {
-            width: 120px;
-            padding: 10px;
+        .vendedor-acciones input[type="number"] {
+            width: 80px;
+            padding: 8px;
             border: 1px solid #dfe6e9;
             border-radius: 8px;
-            font-size: 1rem;
+            font-size: 0.9rem;
         }
         .btn-add-cart {
             background: #27ae60;
             color: #fff;
             border: none;
             border-radius: 10px;
-            padding: 12px 24px;
-            font-size: 1rem;
+            padding: 10px 18px;
+            font-size: 0.9rem;
             font-weight: 600;
             cursor: pointer;
             display: inline-flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             transition: background 0.3s ease;
+            white-space: nowrap;
         }
         .btn-add-cart:hover {
             background: #1f8a4e;
         }
-        .detalle-vendedor {
-            margin-top: 30px;
-            padding: 18px;
-            border-radius: 12px;
-            background: #eef8f2;
-            color: #1f562f;
+        .sin-ofertas {
+            text-align: center;
+            padding: 40px;
+            color: #888;
         }
-        .detalle-vendedor h4 {
-            margin: 0 0 8px;
+        .sin-ofertas i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #ccc;
         }
         @media (max-width: 768px) {
             .detalle-card {
                 padding: 20px;
+            }
+            .vendedor-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .vendedor-precio-stock {
+                text-align: left;
+            }
+            .vendedor-acciones {
+                width: 100%;
+            }
+            .vendedor-acciones form {
+                width: 100%;
+            }
+            .btn-add-cart {
+                flex: 1;
+                justify-content: center;
             }
         }
     </style>
@@ -126,10 +249,11 @@
     <header th:replace="~{fragments/header :: siteHeader}"></header>
 
     <div class="detalle-container" th:if="${producto != null}">
-        <a class="volver-link" th:href="@{/productos}">
+        <a class="volver-link" th:href="@{/category}">
             <i class="fa-solid fa-arrow-left"></i> Volver al catálogo
         </a>
 
+        <!-- Información del producto del catálogo -->
         <div class="detalle-card">
             <div class="detalle-imagen">
                 <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}"
@@ -138,10 +262,21 @@
 
             <div class="detalle-info">
                 <h1 th:text="${producto.nombre}">Nombre del producto</h1>
-                <div class="detalle-precio"
-                     th:text="'$' + ${#numbers.formatDecimal(producto.precio, 0, 'COMMA', 0, 'POINT')}">
-                    $0
+
+                <div class="detalle-precio-rango"
+                     th:if="${producto.precioMinimo != null}"
+                     th:text="'Desde $' + ${#numbers.formatDecimal(producto.precioMinimo, 0, 'COMMA', 0, 'POINT')} + ' / ' + ${producto.unidadMedida != null ? producto.unidadMedida : 'unid'}">
+                    Desde $0 / unid
                 </div>
+                <div class="detalle-precio-rango" th:if="${producto.precioMinimo == null}" style="color:#999;">
+                    Sin ofertas disponibles
+                </div>
+
+                <p class="detalle-vendedores-count"
+                   th:if="${producto.totalVendedores != null and producto.totalVendedores > 0}">
+                    <i class="fas fa-store"></i>
+                    <span th:text="${producto.totalVendedores}">0</span> vendedor(es) ofrecen este producto
+                </p>
 
                 <div class="detalle-meta">
                     <div class="meta-item">
@@ -149,63 +284,86 @@
                         <span th:text="${producto.categoria != null ? producto.categoria.nombre : 'Sin categoría'}">Categoría</span>
                     </div>
                     <div class="meta-item">
-                        <strong>Stock disponible:</strong><br>
-                        <span th:text="${producto.stock} + ' ' + ${producto.unidadMedida != null ? producto.unidadMedida.abreviatura : 'unidades'}">0 unidades</span>
+                        <strong>Unidad de medida:</strong><br>
+                        <span th:text="${producto.unidadMedida != null ? producto.unidadMedida : 'No especificada'}">Unidad</span>
+                        <span th:if="${producto.tipoVenta != null}" th:text="'(' + (${producto.tipoVenta == 'PESO' ? 'Por Peso' : 'Por Paquete/Unidad'}) + ')'" style="font-size:0.8rem;color:#888;"></span>
                     </div>
-                    <div class="meta-item">
-                        <strong>Peso:</strong><br>
-                        <span th:text="${producto.peso} + ' ' + ${producto.unidadMedida != null ? producto.unidadMedida.abreviatura : ''}">0 kg</span>
-                    </div>
-                    <div class="meta-item" th:if="${producto.compraMinima != null}">
-                        <strong>🛒 Compra mínima:</strong><br>
-                        <span th:text="${producto.compraMinima} + ' ' + ${producto.unidadMedida != null ? producto.unidadMedida.abreviatura : 'unidades'}">1 unidades</span>
+                    <div class="meta-item" th:if="${producto.stockTotal != null}">
+                        <strong>Stock total disponible:</strong><br>
+                        <span th:text="${(producto.stockTotal % 1 == 0 ? #numbers.formatDecimal(producto.stockTotal, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(producto.stockTotal, 1, 'POINT', 1, 'COMMA'))} + ' ' + ${producto.unidadMedida != null ? producto.unidadMedida : 'unidades'}">0 unidades</span>
                     </div>
                 </div>
 
                 <p class="detalle-descripcion" th:text="${producto.descripcion}">
                     Descripción del producto.
                 </p>
+            </div>
+        </div>
 
-                <div class="detalle-acciones">
-                    <form th:action="@{/carrito/agregar}" method="post" style="display:flex; gap:15px; align-items:center;">
-                        <input type="hidden" name="productoId" th:value="${producto.id}">
-                        <label style="display:flex; flex-direction:column; font-size:0.9rem; color:#555;">
-                            <span th:text="'Cantidad (' + ${producto.unidadMedida != null ? producto.unidadMedida.abreviatura : 'unidades'} + ')'">Cantidad</span>
-                            <input type="number" name="cantidad" step="any"
-                                   min="0.01" th:attr="max=${producto.stock}"
-                                   th:value="1">
-                        </label>
-                        <button type="submit" class="btn-add-cart">
-                            <i class="fa-solid fa-cart-plus"></i> Agregar al carrito
-                        </button>
-                    </form>
-                </div>
+        <!-- ══════════════════════════════════════════════ -->
+        <!-- Lista de Vendedores que ofrecen este producto -->
+        <!-- ══════════════════════════════════════════════ -->
+        <div class="vendedores-section">
+            <h2 class="vendedores-title">
+                <i class="fas fa-store"></i> Vendedores disponibles
+            </h2>
 
-                <!-- Tarjeta del vendedor -->
-                <div class="detalle-vendedor" th:if="${producto.vendedor != null}">
-                    <h4>
-                        <i class="fa-solid fa-store"></i> Vendedor
-                        <span th:if="${producto.vendedor.verificado}"
-                              style="background:#27ae60;color:#fff;font-size:0.72rem;padding:2px 8px;border-radius:20px;margin-left:8px;font-weight:600;">
-                            ✓ Verificado
-                        </span>
-                    </h4>
-                    <p style="margin:6px 0 0;">
-                        <strong th:text="${producto.vendedor.razonSocial != null ? producto.vendedor.razonSocial : producto.vendedor.nombre}">Nombre negocio</strong>
-                    </p>
-                    <p style="margin:2px 0 0; font-size:0.85rem; color:#666;"
-                       th:if="${producto.vendedor.nombre != null}"
-                       th:text="'Vendedor: ' + ${producto.vendedor.nombre}">
-                    </p>
-                    <p style="margin:4px 0; color:#3a7a50; font-size:0.9rem;"
-                       th:if="${producto.vendedor.descripcionNegocio != null}"
-                       th:text="${producto.vendedor.descripcionNegocio}">
-                    </p>
-                    <p style="margin:8px 0 0; font-size:0.88rem;" th:if="${producto.vendedor.telefonoContacto != null}">
-                        <i class="fa-solid fa-phone" style="color:#27ae60;"></i>
-                        <span th:text="${producto.vendedor.telefonoContacto}">Telefóno</span>
-                    </p>
+            <!-- Si HAY ofertas -->
+            <div th:if="${ofertas != null and !ofertas.isEmpty()}">
+                <div th:each="oferta : ${ofertas}" class="vendedor-card">
+
+                    <!-- Avatar -->
+                    <div class="vendedor-avatar">
+                        <i class="fas fa-user-tie"></i>
+                    </div>
+
+                    <!-- Info del vendedor (Simplificada) -->
+                    <div class="vendedor-info">
+                        <div class="vendedor-nombre">
+                            <span th:text="${oferta.vendedor.razonSocial != null ? oferta.vendedor.razonSocial : oferta.vendedor.nombre}">Nombre</span>
+                            <span th:if="${oferta.vendedor.verificado}" class="badge-verificado">
+                                ✓ Verificado
+                            </span>
+                        </div>
+                        <div class="vendedor-stock" style="margin-top:5px; color:#666; font-size:0.9rem;">
+                            <i class="fas fa-box"></i> Stock: <span th:text="${(oferta.stock % 1 == 0 ? #numbers.formatDecimal(oferta.stock, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(oferta.stock, 1, 'POINT', 1, 'COMMA'))} + ' ' + ${producto.unidadMedida}">0</span>
+                        </div>
+                    </div>
+
+                    <!-- Precio -->
+                    <div class="vendedor-precio-stock">
+                        <div class="vendedor-precio"
+                             th:text="'$' + ${#numbers.formatDecimal(oferta.precio, 0, 'COMMA', 0, 'POINT')}">
+                            $0
+                        </div>
+                        <div class="vendedor-compra-minima" th:if="${oferta.compraMinima != null and oferta.compraMinima > 1}" style="font-size:0.75rem; color:#e67e22;">
+                            Mín: <span th:text="${(oferta.compraMinima % 1 == 0 ? #numbers.formatDecimal(oferta.compraMinima, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(oferta.compraMinima, 1, 'POINT', 1, 'COMMA'))}">1</span> <span th:text="${producto.unidadMedida}">unid</span>
+                        </div>
+                    </div>
+
+                    <!-- Acciones: ver más y agregar rápido -->
+                    <div class="vendedor-acciones">
+                        <a th:href="@{/oferta/{id}(id=${oferta.id})}" class="btn-view-detail" 
+                           style="text-decoration:none; text-align:center; background:#f0f7f2; padding:8px; border-radius:8px; color:#27ae60; font-size:0.85rem; font-weight:700; margin-bottom:5px; display:block;">
+                           <i class="fas fa-eye"></i> Ver detalles de oferta
+                        </a>
+                        <form th:action="@{/carrito/agregar}" method="post">
+                            <input type="hidden" name="ofertaId" th:value="${oferta.id}">
+                            <input type="hidden" name="cantidad" th:value="${oferta.compraMinima != null ? oferta.compraMinima : 1}">
+                            <button type="submit" class="btn-add-cart" style="width:100%; justify-content:center; padding:8px;">
+                                <i class="fa-solid fa-cart-plus"></i> Agregar
+                            </button>
+                        </form>
+                    </div>
+
                 </div>
+            </div>
+
+            <!-- Si NO hay ofertas -->
+            <div th:if="${ofertas == null or ofertas.isEmpty()}" class="sin-ofertas">
+                <i class="fas fa-store-slash"></i>
+                <h3>No hay vendedores disponibles</h3>
+                <p>Actualmente ningún vendedor ofrece este producto. ¡Vuelve pronto!</p>
             </div>
         </div>
     </div>
@@ -215,7 +373,7 @@
             <i class="fa-solid fa-face-frown"></i>
             <h3>Producto no disponible</h3>
             <p>Lo sentimos, este producto no existe o fue retirado.</p>
-            <a class="volver-link" th:href="@{/productos}">
+            <a class="volver-link" th:href="@{/category}">
                 Volver al catálogo
             </a>
         </div>
@@ -224,4 +382,3 @@
     <footer th:replace="fragments/footer :: siteFooter"></footer>
 </body>
 </html>
-

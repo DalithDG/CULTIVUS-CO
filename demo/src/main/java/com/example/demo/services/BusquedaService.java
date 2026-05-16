@@ -1,7 +1,7 @@
 package com.example.demo.services;
 
-import com.example.demo.Model.Producto;
-import com.example.demo.repository.ProductoRepository;
+import com.example.demo.Model.ProductoCatalogo;
+import com.example.demo.repository.ProductoCatalogoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,55 +12,54 @@ import java.util.stream.Collectors;
 public class BusquedaService {
 
     @Autowired
-    private ProductoRepository productoRepository;
+    private ProductoCatalogoRepository catalogoRepository;
 
-    // Buscar productos por query (nombre o descripción)
-    public List<Producto> buscarProductos(String query) {
+    /**
+     * Buscar productos del catálogo por query (nombre).
+     * Retorna ProductoCatalogo (1 por tipo de producto).
+     */
+    public List<ProductoCatalogo> buscarProductos(String query) {
         if (query == null || query.trim().isEmpty()) {
-            return productoRepository.findByDisponibleTrue();
+            return catalogoRepository.findByAprobadoTrueAndActivoTrue();
         }
 
-        String queryLimpio = query.trim();
-        return productoRepository
-                .findByNombreContainingIgnoreCaseOrDescripcionContainingIgnoreCase(
-                        queryLimpio, queryLimpio)
-                .stream()
-                .filter(Producto::isDisponible)
+        String queryLimpio = query.trim().toLowerCase();
+        List<ProductoCatalogo> todos = catalogoRepository.findByAprobadoTrueAndActivoTrue();
+
+        // Filtrado flexible: el nombre debe contener todas las palabras de la query
+        String[] palabras = queryLimpio.split("\\s+");
+        
+        return todos.stream()
+                .filter(p -> {
+                    String nombre = p.getNombre().toLowerCase();
+                    for (String palabra : palabras) {
+                        if (nombre.contains(palabra)) return true;
+                    }
+                    return false;
+                })
                 .collect(Collectors.toList());
     }
 
-    // Buscar productos por categoría
-    public List<Producto> buscarPorCategoria(String categoriaId) {
-        return productoRepository.findByCategoriaIdAndDisponibleTrue(categoriaId);
+    /**
+     * Buscar productos del catálogo por categoría.
+     */
+    public List<ProductoCatalogo> buscarPorCategoria(String categoriaId) {
+        return catalogoRepository.findByCategoriaIdAndAprobadoTrueAndActivoTrue(categoriaId);
     }
 
-    // Buscar productos por rango de precio
-    public List<Producto> buscarPorRangoPrecio(Double precioMin, Double precioMax) {
-        return productoRepository.findByPrecioBetween(precioMin, precioMax)
-                .stream()
-                .filter(Producto::isDisponible)
-                .collect(Collectors.toList());
+    /**
+     * Buscar productos del catálogo.
+     */
+    public List<ProductoCatalogo> buscarConStock() {
+        return catalogoRepository.findByAprobadoTrueAndActivoTrue();
     }
 
-    // Buscar productos con stock disponible
-    public List<Producto> buscarConStock() {
-        return productoRepository.findByStockGreaterThan(0);
-    }
-
-    // Ordenar productos por precio ascendente
-    public List<Producto> ordenarPorPrecioAsc() {
-        return productoRepository.findAllByOrderByPrecioAsc();
-    }
-
-    // Ordenar productos por precio descendente
-    public List<Producto> ordenarPorPrecioDesc() {
-        return productoRepository.findAllByOrderByPrecioDesc();
-    }
-
-    // Búsqueda avanzada con filtros
-    public List<Producto> busquedaAvanzada(String query, String categoriaId,
-                                            Double precioMin, Double precioMax) {
-        List<Producto> resultados = buscarProductos(query);
+    /**
+     * Búsqueda avanzada con filtros sobre el catálogo.
+     */
+    public List<ProductoCatalogo> busquedaAvanzada(String query, String categoriaId,
+                                                    Double precioMin, Double precioMax) {
+        List<ProductoCatalogo> resultados = buscarProductos(query);
 
         // Filtrar por categoría si se especifica
         if (categoriaId != null && !categoriaId.isEmpty()) {
@@ -70,25 +69,21 @@ public class BusquedaService {
                     .collect(Collectors.toList());
         }
 
-        // Filtrar por rango de precio si se especifica
+        // Filtrar por rango de precio (usando precioMinimo del catálogo)
         if (precioMin != null && precioMax != null) {
             resultados = resultados.stream()
-                    .filter(p -> p.getPrecio() >= precioMin && p.getPrecio() <= precioMax)
+                    .filter(p -> p.getPrecioMinimo() != null &&
+                            p.getPrecioMinimo() >= precioMin && p.getPrecioMinimo() <= precioMax)
                     .collect(Collectors.toList());
         } else if (precioMin != null) {
             resultados = resultados.stream()
-                    .filter(p -> p.getPrecio() >= precioMin)
+                    .filter(p -> p.getPrecioMinimo() != null && p.getPrecioMinimo() >= precioMin)
                     .collect(Collectors.toList());
         } else if (precioMax != null) {
             resultados = resultados.stream()
-                    .filter(p -> p.getPrecio() <= precioMax)
+                    .filter(p -> p.getPrecioMinimo() != null && p.getPrecioMinimo() <= precioMax)
                     .collect(Collectors.toList());
         }
-
-        // Filtrar solo productos con stock
-        resultados = resultados.stream()
-                .filter(p -> p.getStock() > 0)
-                .collect(Collectors.toList());
 
         return resultados;
     }

@@ -2,7 +2,10 @@ package com.example.demo.Model.embebidos;
 
 public class ProductoCarrito {
 
-    private String productoId;
+    private String productoId;          // Ahora es el productoCatalogoId
+    private String ofertaId;            // ID de la OfertaVendedor específica
+    private String vendedorId;          // ID del vendedor (para agrupar pedidos)
+    private String vendedorNombre;      // Nombre del vendedor (display)
     private String nombre;
     private String imagenUrl;
     private Double precioUnitario;
@@ -14,9 +17,17 @@ public class ProductoCarrito {
     public ProductoCarrito() {
     }
 
-    public ProductoCarrito(String productoId, String nombre, String imagenUrl,
-                           Double precioUnitario, Double cantidad, String unidadAbreviatura, Double compraMinima) {
+    /**
+     * Constructor actualizado para el nuevo modelo con ofertas.
+     */
+    public ProductoCarrito(String productoId, String ofertaId, String vendedorId,
+                           String vendedorNombre, String nombre, String imagenUrl,
+                           Double precioUnitario, Double cantidad, String unidadAbreviatura,
+                           Double compraMinima) {
         this.productoId = productoId;
+        this.ofertaId = ofertaId;
+        this.vendedorId = vendedorId;
+        this.vendedorNombre = vendedorNombre;
         this.nombre = nombre;
         this.imagenUrl = imagenUrl;
         this.precioUnitario = precioUnitario;
@@ -29,6 +40,15 @@ public class ProductoCarrito {
     // Getters y Setters
     public String getProductoId() { return productoId; }
     public void setProductoId(String productoId) { this.productoId = productoId; }
+
+    public String getOfertaId() { return ofertaId; }
+    public void setOfertaId(String ofertaId) { this.ofertaId = ofertaId; }
+
+    public String getVendedorId() { return vendedorId; }
+    public void setVendedorId(String vendedorId) { this.vendedorId = vendedorId; }
+
+    public String getVendedorNombre() { return vendedorNombre; }
+    public void setVendedorNombre(String vendedorNombre) { this.vendedorNombre = vendedorNombre; }
 
     public String getNombre() { return nombre; }
     public void setNombre(String nombre) { this.nombre = nombre; }
@@ -56,4 +76,4 @@ public class ProductoCarrito {
 
     public Double getCompraMinima() { return compraMinima; }
     public void setCompraMinima(Double compraMinima) { this.compraMinima = compraMinima; }
-}
+}

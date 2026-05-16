@@ -4,93 +4,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resultados de Búsqueda - Cultivis</title>
+    <title>Resultados de Búsqueda | Cultivus</title>
+    <link rel="stylesheet" th:href="@{/style.css}">
     <link rel="stylesheet" th:href="@{/busqueda.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 
 <body>
-    <header th:replace="fragments/header-comprador :: siteHeader"></header>
+    <!-- Header -->
+    <header th:replace="~{fragments/header :: siteHeader}"></header>
 
     <div class="busqueda-container">
+        <!-- Banner de Resultados -->
         <div class="busqueda-header">
             <h1>Resultados de Búsqueda</h1>
             <p th:if="${query}" class="query-text">
-                Buscando: "<span th:text="${query}"></span>"
+                <i class="fas fa-search"></i> Explorando: "<span th:text="${query}"></span>"
             </p>
-            <p class="total-resultados">
-                <span th:text="${totalResultados}">0</span> productos encontrados
-            </p>
+            <div class="total-resultados">
+                <span th:text="${totalResultados}">0</span> 
+                <span th:text="${totalResultados == 1 ? 'producto encontrado' : 'productos encontrados'}">productos encontrados</span>
+            </div>
         </div>
 
         <div class="busqueda-content">
-            <!-- Filtros laterales -->
+            <!-- Sidebar de Filtros -->
             <aside class="filtros">
-                <h3>Filtros</h3>
+                <h3><i class="fas fa-sliders-h"></i> Refinar Búsqueda</h3>
 
-                <form th:action="@{/buscar}" method="get">
+                <form th:action="@{/buscar}" method="get" id="filterForm">
                     <input type="hidden" name="q" th:value="${query}">
 
                     <div class="filtro-grupo">
-                        <label>Categoría</label>
-                        <select name="categoria">
-                            <option value="">Todas</option>
-                            <option th:each="cat : ${categorias}" th:value="${cat.idCategoria}" th:text="${cat.nombre}"
-                                th:selected="${cat.idCategoria == categoriaSeleccionada}">
+                        <label><i class="fas fa-tag"></i> Categoría</label>
+                        <select name="categoria" onchange="this.form.submit()">
+                            <option value="">Todas las categorías</option>
+                            <option th:each="cat : ${categorias}" th:value="${cat.id}" th:text="${cat.nombre}"
+                                th:selected="${cat.id == categoriaSeleccionada}">
                             </option>
                         </select>
                     </div>
 
                     <div class="filtro-grupo">
-                        <label>Precio Mínimo</label>
-                        <input type="number" name="precioMin" th:value="${precioMin}" placeholder="$0" min="0"
-                            step="100">
+                        <label><i class="fas fa-dollar-sign"></i> Rango de Precio</label>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <input type="number" name="precioMin" th:value="${precioMin}" placeholder="Mín" min="0">
+                            <span>-</span>
+                            <input type="number" name="precioMax" th:value="${precioMax}" placeholder="Máx" min="0">
+                        </div>
                     </div>
 
                     <div class="filtro-grupo">
-                        <label>Precio Máximo</label>
-                        <input type="number" name="precioMax" th:value="${precioMax}" placeholder="$10000" min="0"
-                            step="100">
-                    </div>
-
-                    <div class="filtro-grupo">
-                        <label>Ordenar por</label>
-                        <select name="orden">
+                        <label><i class="fas fa-sort-amount-down"></i> Ordenar</label>
+                        <select name="orden" onchange="this.form.submit()">
                             <option value="recientes" th:selected="${orden == 'recientes'}">Más recientes</option>
-                            <option value="precio-asc" th:selected="${orden == 'precio-asc'}">Precio: Menor a Mayor
-                            </option>
-                            <option value="precio-desc" th:selected="${orden == 'precio-desc'}">Precio: Mayor a Menor
-                            </option>
+                            <option value="precio-asc" th:selected="${orden == 'precio-asc'}">Precio: Menor a Mayor</option>
+                            <option value="precio-desc" th:selected="${orden == 'precio-desc'}">Precio: Mayor a Menor</option>
+                            <option value="nombre" th:selected="${orden == 'nombre'}">Nombre A-Z</option>
                         </select>
                     </div>
 
                     <button type="submit" class="btn-filtrar">
-                        <i class="fa-solid fa-filter"></i> Aplicar Filtros
+                        <i class="fas fa-filter"></i> Aplicar Filtros
                     </button>
+                    
+                    <a th:href="@{/buscar(q=${query})}" class="btn-limpiar" style="display: block; text-align: center; margin-top: 15px; color: var(--text-secondary); text-decoration: none; font-size: 14px;">
+                        Limpiar filtros
+                    </a>
                 </form>
             </aside>
 
-            <!-- Resultados -->
+            <!-- Grid de Resultados -->
             <div class="resultados">
                 <div th:if="${productos.empty}" class="no-resultados">
-                    <i class="fa-solid fa-search"></i>
-                    <p>No se encontraron productos</p>
+                    <i class="fas fa-search-minus"></i>
+                    <p>No encontramos coincidencias para tu búsqueda.</p>
+                    <a th:href="@{/category}" class="btn-view-all" style="margin-top: 20px;">Ver todo el catálogo</a>
                 </div>
 
                 <div class="productos-grid">
                     <div th:each="producto : ${productos}" class="producto-card">
-                        <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}">
-                        <h3 th:text="${producto.nombre}"></h3>
-                        <p class="precio" th:text="'$' + ${producto.precio}"></p>
-                        <p class="stock" th:text="'Stock: ' + ${producto.stock}"></p>
+                        <div class="card-img-wrapper" style="position: relative; overflow: hidden; height: 240px;">
+                            <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}" 
+                                 onerror="this.src='/images/placeholder.jpg'"
+                                 style="width: 100%; height: 100%; object-fit: cover; transition: var(--transition);">
+                            <span class="product-badge" th:if="${producto.totalVendedores > 0}" th:text="${producto.totalVendedores + ' Oferta(s)'}"></span>
+                        </div>
+                        
+                        <div class="card-body" style="padding: 24px;">
+                            <h3 th:text="${producto.nombre}">Nombre</h3>
+                            
+                            <div class="precio-container" style="margin-bottom: 15px;">
+                                <p class="precio" th:if="${producto.precioMinimo != null}" 
+                                   th:text="'$' + ${#numbers.formatDecimal(producto.precioMinimo, 0, 'COMMA', 0, 'POINT')}">
+                                </p>
+                                <p class="precio" th:if="${producto.precioMinimo == null}" style="color: var(--gray-400); font-size: 18px;">
+                                    Próximamente
+                                </p>
+                            </div>
+                            
+                            <p class="stock" th:if="${producto.stockTotal != null}">
+                                <i class="fas fa-boxes"></i> 
+                                <span th:text="${producto.stockTotal + ' ' + (producto.unidadMedida ?: 'unid') + ' disponibles'}"></span>
+                            </p>
+                        </div>
+
                         <a th:href="@{/producto/{id}(id=${producto.id})}" class="btn-ver">
-                            Ver Detalles
+                            <i class="fas fa-eye"></i> Ver Detalles
                         </a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Footer -->
+    <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
 </body>
 
 </html>

@@ -1,7 +1,7 @@
 package com.example.demo.Controller;
 
 import com.example.demo.Model.Categoria;
-import com.example.demo.Model.Producto;
+import com.example.demo.Model.ProductoCatalogo;
 import com.example.demo.repository.CategoriaRepository;
 import com.example.demo.services.BusquedaService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +32,7 @@ public class BusquedaController {
             @RequestParam(value = "orden", required = false, defaultValue = "relevancia") String orden,
             Model model) {
 
-        List<Producto> productos;
+        List<ProductoCatalogo> productos;
 
         // Búsqueda con filtros
         if (categoriaId != null || precioMin != null || precioMax != null) {
@@ -43,22 +43,23 @@ public class BusquedaController {
             productos = busquedaService.buscarConStock();
         }
 
-        // Aplicar ordenamiento
+        // Aplicar ordenamiento (usa precioMinimo del catálogo)
         if (productos != null && !productos.isEmpty()) {
             switch (orden) {
                 case "precio-asc":
                     productos = productos.stream()
-                            .sorted(Comparator.comparingDouble(Producto::getPrecio))
+                            .sorted(Comparator.comparingDouble(p ->
+                                    p.getPrecioMinimo() != null ? p.getPrecioMinimo() : Double.MAX_VALUE))
                             .collect(Collectors.toList());
                     break;
                 case "precio-desc":
                     productos = productos.stream()
-                            .sorted(Comparator.comparingDouble(Producto::getPrecio).reversed())
+                            .sorted(Comparator.comparingDouble((ProductoCatalogo p) ->
+                                    p.getPrecioMinimo() != null ? p.getPrecioMinimo() : 0.0).reversed())
                             .collect(Collectors.toList());
                     break;
                 default:
-                    // Sin ordenamiento adicional — MongoDB ya devuelve
-                    // los resultados en orden de inserción
+                    // Sin ordenamiento adicional
                     break;
             }
         }

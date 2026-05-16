@@ -1,11 +1,13 @@
 package com.example.demo.Controller;
 
 import com.example.demo.Model.Carrito;
-import com.example.demo.Model.Producto;
+import com.example.demo.Model.OfertaVendedor;
+import com.example.demo.Model.ProductoCatalogo;
 import com.example.demo.Model.Usuario;
 import com.example.demo.Model.embebidos.ProductoCarrito;
 import com.example.demo.repository.CarritoRepository;
-import com.example.demo.repository.ProductoRepository;
+import com.example.demo.repository.OfertaRepository;
+import com.example.demo.repository.ProductoCatalogoRepository;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +29,10 @@ public class CarritoController {
     private CarritoRepository carritoRepository;
 
     @Autowired
-    private ProductoRepository productoRepository;
+    private OfertaRepository ofertaRepository;
+
+    @Autowired
+    private ProductoCatalogoRepository catalogoRepository;
 
     /**
      * Muestra el carrito del usuario
@@ -59,11 +64,11 @@ public class CarritoController {
     }
 
     /**
-     * Agrega un producto al carrito
+     * Agrega una oferta al carrito (nuevo flujo: recibe ofertaId en vez de productoId)
      */
     @PostMapping("/agregar")
     public String agregarAlCarrito(
-            @RequestParam("productoId") String productoId,
+            @RequestParam("ofertaId") String ofertaId,
             @RequestParam(value = "cantidad", defaultValue = "1") Double cantidad,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
@@ -75,33 +80,23 @@ public class CarritoController {
                 return "redirect:/usuario/login";
             }
 
-            Producto producto = productoRepository.findById(productoId)
-                    .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado"));
+            OfertaVendedor oferta = ofertaRepository.findById(ofertaId)
+                    .orElseThrow(() -> new IllegalArgumentException("Oferta no encontrada"));
 
             // Verificar stock
-            if (producto.getStock() < cantidad) {
+            if (oferta.getStock() < cantidad) {
                 redirectAttributes.addFlashAttribute("error",
                         "No hay suficiente stock disponible");
-                return "redirect:/";
+                return "redirect:/producto/" + oferta.getProductoCatalogoId();
             }
-
-            // Verificar compra mínima (POSTERGADO AL PAGO según requerimiento)
-            /*
-            if (cantidad < producto.getCompraMinima()) {
-                String unidad = producto.getUnidadMedida() != null ? producto.getUnidadMedida().getAbreviatura() : "unidades";
-                redirectAttributes.addFlashAttribute("error",
-                        "La compra mínima para este producto es " + producto.getCompraMinima() + " " + unidad);
-                return "redirect:/productos/" + productoId;
-            }
-            */
 
             // Obtener o crear carrito
             Carrito carrito = carritoRepository.findByUsuarioId(usuario.getId())
                     .orElseGet(() -> new Carrito(usuario.getId()));
 
-            // Verificar si el producto ya está en el carrito
+            // Verificar si la oferta ya está en el carrito (por ofertaId)
             Optional<ProductoCarrito> itemExistente = carrito.getItems().stream()
-                    .filter(i -> i.getProductoId().equals(productoId))
+                    .filter(i -> ofertaId.equals(i.getOfertaId()))
                     .findFirst();
 
             if (itemExistente.isPresent()) {
@@ -109,26 +104,32 @@ public class CarritoController {
                 ProductoCarrito item = itemExistente.get();
                 Double nuevaCantidad = item.getCantidad() + cantidad;
 
-                if (producto.getStock() < nuevaCantidad) {
+                if (oferta.getStock() < nuevaCantidad) {
                     redirectAttributes.addFlashAttribute("error",
                             "No hay suficiente stock disponible");
-                    // Bug #2 corregido: era redirect:/ (inicio), debe ser redirect:/carrito
                     return "redirect:/carrito";
                 }
 
                 item.setCantidad(nuevaCantidad);
             } else {
                 // Agregar nuevo item al carrito
-                String unidadAb = producto.getUnidadMedida() != null && producto.getUnidadMedida().getAbreviatura() != null 
-                        ? producto.getUnidadMedida().getAbreviatura() : "unid";
+                ProductoCatalogo catalogo = catalogoRepository.findById(oferta.getProductoCatalogoId())
+                        .orElse(null);
+                String unidadAb = catalogo != null && catalogo.getUnidadMedida() != null
+                        ? catalogo.getUnidadMedida() : "unid";
+                String vendedorNombre = oferta.getVendedor() != null ? oferta.getVendedor().getNombre() : "";
+
                 ProductoCarrito nuevoItem = new ProductoCarrito(
-                        producto.getId(),
-                        producto.getNombre(),
-                        producto.getImagenUrl(),
-                        producto.getPrecio(),
+                        oferta.getProductoCatalogoId(),
+                        oferta.getId(),
+                        oferta.getVendedor().getId(),
+                        vendedorNombre,
+                        oferta.getNombreProducto(),
+                        oferta.getImagenUrl(),
+                        oferta.getPrecio(),
                         cantidad,
                         unidadAb,
-                        producto.getCompraMinima()
+                        oferta.getCompraMinima()
                 );
                 carrito.getItems().add(nuevoItem);
             }
@@ -153,12 +154,11 @@ public class CarritoController {
     /**
      * Endpoint AJAX para agregar al carrito sin recargar la página.
      * Devuelve JSON con {success, mensaje/error, totalItems}.
-     * Es llamado por carrito-ajax.js desde cualquier página.
      */
     @PostMapping("/agregar-ajax")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> agregarAlCarritoAjax(
-            @RequestParam("productoId") String productoId,
+            @RequestParam("ofertaId") String ofertaId,
             @RequestParam(value = "cantidad", defaultValue = "1") Double cantidad,
             HttpSession session) {
 
@@ -173,52 +173,49 @@ public class CarritoController {
                 return ResponseEntity.ok(response);
             }
 
-            Producto producto = productoRepository.findById(productoId)
-                    .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado"));
+            OfertaVendedor oferta = ofertaRepository.findById(ofertaId)
+                    .orElseThrow(() -> new IllegalArgumentException("Oferta no encontrada"));
 
-            if (producto.getStock() < cantidad) {
+            if (oferta.getStock() < cantidad) {
                 response.put("success", false);
                 response.put("error", "No hay suficiente stock disponible");
                 return ResponseEntity.ok(response);
             }
 
-            // Verificar compra mínima (POSTERGADO AL PAGO según requerimiento)
-            /*
-            if (cantidad < producto.getCompraMinima()) {
-                String unidad = producto.getUnidadMedida() != null ? producto.getUnidadMedida().getAbreviatura() : "unidades";
-                response.put("success", false);
-                response.put("error", "La compra mínima es " + producto.getCompraMinima() + " " + unidad);
-                return ResponseEntity.ok(response);
-            }
-            */
-
             Carrito carrito = carritoRepository.findByUsuarioId(usuario.getId())
                     .orElseGet(() -> new Carrito(usuario.getId()));
 
             Optional<ProductoCarrito> itemExistente = carrito.getItems().stream()
-                    .filter(i -> i.getProductoId().equals(productoId))
+                    .filter(i -> ofertaId.equals(i.getOfertaId()))
                     .findFirst();
 
             if (itemExistente.isPresent()) {
                 ProductoCarrito item = itemExistente.get();
                 Double nuevaCantidad = item.getCantidad() + cantidad;
-                if (producto.getStock() < nuevaCantidad) {
+                if (oferta.getStock() < nuevaCantidad) {
                     response.put("success", false);
-                    response.put("error", "Solo quedan " + producto.getStock() + " unidades disponibles");
+                    response.put("error", "Solo quedan " + oferta.getStock() + " unidades disponibles");
                     return ResponseEntity.ok(response);
                 }
                 item.setCantidad(nuevaCantidad);
             } else {
-                String unidadAb = producto.getUnidadMedida() != null && producto.getUnidadMedida().getAbreviatura() != null 
-                        ? producto.getUnidadMedida().getAbreviatura() : "unid";
+                ProductoCatalogo catalogo = catalogoRepository.findById(oferta.getProductoCatalogoId())
+                        .orElse(null);
+                String unidadAb = catalogo != null && catalogo.getUnidadMedida() != null
+                        ? catalogo.getUnidadMedida() : "unid";
+                String vendedorNombre = oferta.getVendedor() != null ? oferta.getVendedor().getNombre() : "";
+
                 ProductoCarrito nuevoItem = new ProductoCarrito(
-                        producto.getId(),
-                        producto.getNombre(),
-                        producto.getImagenUrl(),
-                        producto.getPrecio(),
+                        oferta.getProductoCatalogoId(),
+                        oferta.getId(),
+                        oferta.getVendedor().getId(),
+                        vendedorNombre,
+                        oferta.getNombreProducto(),
+                        oferta.getImagenUrl(),
+                        oferta.getPrecio(),
                         cantidad,
                         unidadAb,
-                        producto.getCompraMinima()
+                        oferta.getCompraMinima()
                 );
                 carrito.getItems().add(nuevoItem);
             }
@@ -228,7 +225,7 @@ public class CarritoController {
             carritoRepository.save(carrito);
 
             response.put("success", true);
-            response.put("mensaje", "¡" + producto.getNombre() + " agregado al carrito!");
+            response.put("mensaje", "¡" + oferta.getNombreProducto() + " agregado al carrito!");
             response.put("totalItems", carrito.getTotalArticulos());
             response.put("totalEstimado", carrito.getTotalEstimado());
 
@@ -248,7 +245,7 @@ public class CarritoController {
      */
     @PostMapping("/actualizar")
     public String actualizarCantidad(
-            @RequestParam("productoId") String productoId,
+            @RequestParam("ofertaId") String ofertaId,
             @RequestParam("cantidad") Double cantidad,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
@@ -263,15 +260,15 @@ public class CarritoController {
 
             if (cantidad <= 0) {
                 // Eliminar item si la cantidad es 0 o menor
-                carrito.getItems().removeIf(i -> i.getProductoId().equals(productoId));
+                carrito.getItems().removeIf(i -> ofertaId.equals(i.getOfertaId()));
                 redirectAttributes.addFlashAttribute("mensaje",
                         "Producto eliminado del carrito");
             } else {
                 // Verificar stock
-                Producto producto = productoRepository.findById(productoId)
-                        .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado"));
+                OfertaVendedor oferta = ofertaRepository.findById(ofertaId)
+                        .orElseThrow(() -> new IllegalArgumentException("Oferta no encontrada"));
 
-                if (producto.getStock() < cantidad) {
+                if (oferta.getStock() < cantidad) {
                     redirectAttributes.addFlashAttribute("error",
                             "No hay suficiente stock disponible");
                     return "redirect:/carrito";
@@ -279,7 +276,7 @@ public class CarritoController {
 
                 // Actualizar cantidad del item
                 carrito.getItems().stream()
-                        .filter(i -> i.getProductoId().equals(productoId))
+                        .filter(i -> ofertaId.equals(i.getOfertaId()))
                         .findFirst()
                         .ifPresent(i -> i.setCantidad(cantidad));
 
@@ -302,7 +299,7 @@ public class CarritoController {
      */
     @PostMapping("/eliminar")
     public String eliminarDelCarrito(
-            @RequestParam("productoId") String productoId,
+            @RequestParam("ofertaId") String ofertaId,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
         try {
@@ -314,7 +311,7 @@ public class CarritoController {
             Carrito carrito = carritoRepository.findByUsuarioId(usuario.getId())
                     .orElseThrow(() -> new IllegalArgumentException("Carrito no encontrado"));
 
-            carrito.getItems().removeIf(i -> i.getProductoId().equals(productoId));
+            carrito.getItems().removeIf(i -> ofertaId.equals(i.getOfertaId()));
             carrito.recalcularTotal();
             carrito.setUpdatedAt(LocalDateTime.now());
             carritoRepository.save(carrito);

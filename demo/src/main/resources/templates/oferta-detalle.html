@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${oferta.nombreProducto} + ' | Oferta de ' + ${oferta.vendedor.nombre} + ' | Cultivus'">Detalle Oferta</title>
+    
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <link rel="stylesheet" th:href="@{/header.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary: #27ae60;
+            --primary-dark: #1e8449;
+            --secondary: #e67e22;
+            --text: #2c3e50;
+            --light-bg: #f8f9fa;
+            --white: #ffffff;
+            --shadow: 0 10px 30px rgba(0,0,0,0.08);
+            --border: #edf2f7;
+        }
+
+        body {
+            background-color: #f4f7f6;
+            color: var(--text);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Layout */
+        .offer-main-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 30px;
+            margin-top: 30px;
+            margin-bottom: 50px;
+        }
+
+        .card-panel {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: var(--shadow);
+            margin-bottom: 30px;
+        }
+
+        /* Image Gallery Style */
+        .image-container {
+            width: 100%;
+            height: 450px;
+            border-radius: 18px;
+            overflow: hidden;
+            background: #eee;
+            margin-bottom: 25px;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Header Info */
+        .product-header {
+            margin-bottom: 30px;
+        }
+
+        .badge-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .badge {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .badge-primary { background: #e8f5e9; color: var(--primary); }
+        .badge-secondary { background: #fff3e0; color: var(--secondary); }
+
+        .title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin: 0 0 10px;
+            color: #1a1a1a;
+        }
+
+        .price-tag {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--primary);
+            display: flex;
+            align-items: baseline;
+            gap: 5px;
+        }
+
+        .price-unit {
+            font-size: 1rem;
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+
+        /* Specs Grid */
+        .specs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .spec-item {
+            padding: 15px;
+            background: var(--light-bg);
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .spec-item i {
+            font-size: 1.2rem;
+            color: var(--primary);
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .spec-label { font-size: 0.75rem; color: #888; font-weight: 600; text-transform: uppercase; }
+        .spec-value { font-size: 1rem; color: var(--text); font-weight: 700; display: block; margin-top: 4px; }
+
+        /* Sidebar Sections */
+        .sidebar-section {
+            padding: 25px;
+        }
+
+        .section-subtitle {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #95a5a6;
+            margin-bottom: 20px;
+            display: block;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        /* Seller Profile */
+        .seller-profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .seller-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #27ae6022;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+
+        .seller-details h4 { margin: 0; font-size: 1.1rem; }
+        .seller-details .verified { color: var(--primary); font-size: 0.85rem; font-weight: 600; }
+
+        .seller-bio {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .seller-info-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 25px;
+        }
+
+        .seller-info-list li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .seller-info-list i { width: 20px; color: var(--primary); text-align: center; }
+
+        /* Contact Buttons */
+        .btn-contact {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 700;
+            margin-bottom: 10px;
+            transition: opacity 0.2s;
+        }
+
+        .btn-whatsapp { background: #25d366; color: white; }
+        .btn-email { background: #34495e; color: white; }
+
+        /* Purchase Card */
+        .purchase-card {
+            position: sticky;
+            top: 100px;
+        }
+
+        .qty-control {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f1f3f5;
+            border-radius: 12px;
+            padding: 8px;
+            margin-bottom: 20px;
+        }
+
+        .qty-btn {
+            width: 45px;
+            height: 45px;
+            border: none;
+            background: white;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .qty-input {
+            width: 80px;
+            border: none;
+            background: transparent;
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: 800;
+        }
+
+        .btn-main-add {
+            width: 100%;
+            padding: 18px;
+            border-radius: 14px;
+            border: none;
+            background: var(--primary);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .btn-main-add:hover { background: var(--primary-dark); }
+
+        .trust-box {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+            padding: 15px;
+            background: #fffbe6;
+            border-radius: 12px;
+            border: 1px solid #ffe58f;
+        }
+
+        .trust-box i { color: #faad14; font-size: 1.2rem; }
+        .trust-box p { font-size: 0.8rem; margin: 0; color: #856404; }
+
+        @media (max-width: 850px) {
+            .offer-main-grid { grid-template-columns: 1fr; }
+            .purchase-card { position: static; }
+        }
+    </style>
+</head>
+<body>
+    <header th:replace="~{fragments/header :: siteHeader}"></header>
+
+    <div class="container" th:if="${oferta != null}">
+        
+        <div style="margin: 30px 0;">
+            <a th:href="@{/producto/{id}(id=${oferta.productoCatalogoId})}" style="color: var(--primary); text-decoration: none; font-weight: 600;">
+                <i class="fas fa-arrow-left"></i> Volver al Catálogo Central
+            </a>
+        </div>
+
+        <div class="offer-main-grid">
+            
+            <!-- Left Side: Product Info -->
+            <div class="main-content">
+                <div class="card-panel">
+                    <div class="image-container">
+                        <img th:src="${oferta.imagenUrl != null ? oferta.imagenUrl : producto.imagenUrl}" 
+                             th:alt="${oferta.nombreProducto}"
+                             onerror="this.src='/images/placeholder.jpg'">
+                    </div>
+
+                    <div class="product-header">
+                        <div class="badge-row">
+                            <span class="badge badge-primary"><i class="fas fa-leaf"></i> Producto de Origen</span>
+                            <span class="badge badge-secondary" th:if="${oferta.vendedor.verificado}"><i class="fas fa-certificate"></i> Productor Verificado</span>
+                        </div>
+                        <h1 class="title" th:text="${oferta.nombreProducto}">Nombre Producto</h1>
+                        <div class="price-tag">
+                            $<span th:text="${#numbers.formatDecimal(oferta.precio, 0, 'COMMA', 0, 'POINT')}">0</span>
+                            <span class="price-unit" th:text="' / ' + ${producto.unidadMedida}">/ kg</span>
+                        </div>
+                    </div>
+
+                    <span class="section-subtitle">Ficha Técnica</span>
+                    <div class="specs-grid">
+                        <div class="spec-item">
+                            <i class="fas fa-box-open"></i>
+                            <span class="spec-label">Presentación</span>
+                            <span class="spec-value" th:text="${oferta.descripcionPaquete != null and !oferta.descripcionPaquete.isEmpty() ? oferta.descripcionPaquete : 'Estándar'}">Paquete</span>
+                        </div>
+                        <div class="spec-item">
+                            <i class="fas fa-balance-scale"></i>
+                            <span class="spec-label">Peso Est.</span>
+                            <span class="spec-value" th:text="${oferta.pesoPromedioUnidad != null ? (oferta.pesoPromedioUnidad % 1 == 0 ? #numbers.formatDecimal(oferta.pesoPromedioUnidad, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(oferta.pesoPromedioUnidad, 1, 'POINT', 2, 'COMMA')) + ' ' + producto.unidadMedida : 'N/A'}">1 kg</span>
+                        </div>
+                        <div class="spec-item">
+                            <i class="fas fa-warehouse"></i>
+                            <span class="spec-label">Stock</span>
+                            <span class="spec-value" th:text="${(oferta.stock % 1 == 0 ? #numbers.formatDecimal(oferta.stock, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(oferta.stock, 1, 'POINT', 1, 'COMMA'))} + ' ' + ${producto.unidadMedida}">100</span>
+                        </div>
+                        <div class="spec-item">
+                            <i class="fas fa-shopping-basket"></i>
+                            <span class="spec-label">Venta por</span>
+                            <span class="spec-value" th:text="${producto.tipoVenta == 'PESO' ? 'Peso' : 'Unidad'}">Peso</span>
+                        </div>
+                    </div>
+
+                    <span class="section-subtitle">Descripción de la Cosecha</span>
+                    <div style="line-height: 1.8; color: #555; margin-bottom: 30px;">
+                        <p th:text="${oferta.descripcionVendedor != null and !oferta.descripcionVendedor.isEmpty() ? oferta.descripcionVendedor : 'Este productor no ha proporcionado notas adicionales, pero garantiza la calidad estándar de Cultivus.'}">
+                            Notas del vendedor...
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Seller Info -->
+                <div class="card-panel">
+                    <span class="section-subtitle">Sobre el Productor</span>
+                    <div class="seller-profile">
+                        <div class="seller-avatar">
+                            <i class="fas fa-tractor"></i>
+                        </div>
+                        <div class="seller-details">
+                            <h4 th:text="${oferta.vendedor.perfilVendedor != null ? oferta.vendedor.perfilVendedor.razonSocial : oferta.vendedor.nombre}">Razón Social</h4>
+                            <span class="verified" th:if="${oferta.vendedor.verificado}"><i class="fas fa-check-circle"></i> Productor de Confianza</span>
+                        </div>
+                    </div>
+                    
+                    <div class="seller-bio">
+                        <p th:text="${oferta.vendedor.perfilVendedor != null and oferta.vendedor.perfilVendedor.descripcionNegocio != null ? oferta.vendedor.perfilVendedor.descripcionNegocio : 'Un productor local comprometido con llevar lo mejor del campo a tu hogar.'}">
+                            Biografía...
+                        </p>
+                    </div>
+
+                    <ul class="seller-info-list">
+                        <li><i class="fas fa-map-marker-alt"></i> <span th:text="${oferta.vendedor.perfilVendedor != null ? oferta.vendedor.perfilVendedor.ubicacionNegocio : 'Ubicación no especificada'}">Ubicación</span></li>
+                        <li th:if="${oferta.vendedor.email}"><i class="fas fa-envelope"></i> <span th:text="${oferta.vendedor.email}">email</span></li>
+                        <li th:if="${oferta.vendedor.perfilVendedor != null and oferta.vendedor.perfilVendedor.telefonoContacto != null}">
+                            <i class="fas fa-phone"></i> <span th:text="${oferta.vendedor.perfilVendedor.telefonoContacto}">tel</span>
+                        </li>
+                    </ul>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <a th:if="${oferta.vendedor.perfilVendedor != null and oferta.vendedor.perfilVendedor.telefonoContacto != null}"
+                           th:href="'https://wa.me/' + ${oferta.vendedor.perfilVendedor.telefonoContacto}" 
+                           class="btn-contact btn-whatsapp" target="_blank">
+                           <i class="fab fa-whatsapp"></i> WhatsApp
+                        </a>
+                        <a th:href="'mailto:' + ${oferta.vendedor.email}" class="btn-contact btn-email">
+                            <i class="fas fa-envelope"></i> Email
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Purchase Sidebar -->
+            <div class="sidebar">
+                <div class="card-panel purchase-card">
+                    <span class="section-subtitle">Tu Compra</span>
+                    
+                    <div style="margin-bottom: 25px;">
+                        <div style="display:flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span style="color:#888;">Precio Final</span>
+                            <strong style="color:var(--primary); font-size: 1.2rem;" id="totalDisplay">$0</strong>
+                        </div>
+                    </div>
+
+                    <form th:action="@{/carrito/agregar}" method="post">
+                        <input type="hidden" name="ofertaId" th:value="${oferta.id}">
+                        
+                        <div class="qty-control">
+                            <button type="button" class="qty-btn" onclick="updateOfferQty(-1)"><i class="fas fa-minus"></i></button>
+                            <input type="number" name="cantidad" id="offerQty" 
+                                   th:value="${oferta.compraMinima != null ? oferta.compraMinima : 1}" 
+                                   th:min="${oferta.compraMinima != null ? oferta.compraMinima : 0.01}" 
+                                   th:max="${oferta.stock}" 
+                                   step="any" class="qty-input"
+                                   th:oninput="calculateTotal([[${oferta.precio}]])">
+                            <button type="button" class="qty-btn" onclick="updateOfferQty(1)"><i class="fas fa-plus"></i></button>
+                        </div>
+
+                        <button type="submit" class="btn-main-add">
+                            <i class="fas fa-cart-plus"></i> Añadir al Carrito
+                        </button>
+                    </form>
+
+                    <p th:if="${oferta.compraMinima > 1}" style="font-size: 0.8rem; color: var(--secondary); margin-top: 15px; text-align: center; font-weight: 600;">
+                        <i class="fas fa-info-circle"></i> Compra mínima: <span th:text="${(oferta.compraMinima % 1 == 0 ? #numbers.formatDecimal(oferta.compraMinima, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(oferta.compraMinima, 1, 'POINT', 1, 'COMMA'))} + ' ' + ${producto.unidadMedida}"></span>
+                    </p>
+
+                    <div class="trust-box">
+                        <i class="fas fa-shield-check"></i>
+                        <p>Compra protegida por Cultivus. Pago seguro y garantía de frescura del campo.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        const unitPrice = [[${oferta.precio}]];
+
+        function calculateTotal(price) {
+            const qty = parseFloat(document.getElementById('offerQty').value) || 0;
+            const total = qty * price;
+            document.getElementById('totalDisplay').innerText = '$' + total.toLocaleString();
+        }
+
+        function updateOfferQty(delta) {
+            const input = document.getElementById('offerQty');
+            const min = parseFloat(input.getAttribute('min')) || 0.01;
+            const max = parseFloat(input.getAttribute('max')) || 9999;
+            let current = parseFloat(input.value) || min;
+            let newVal = current + delta;
+            
+            if (newVal < min) newVal = min;
+            if (newVal > max) newVal = max;
+            
+            input.value = Number.isInteger(newVal) ? newVal : newVal.toFixed(2);
+            calculateTotal(unitPrice);
+        }
+
+        // Initialize total
+        document.addEventListener('DOMContentLoaded', () => calculateTotal(unitPrice));
+    </script>
+
+    <footer th:replace="fragments/footer :: siteFooter"></footer>
+</body>
+</html>

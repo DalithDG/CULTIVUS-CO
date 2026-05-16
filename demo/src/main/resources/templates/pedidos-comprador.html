@@ -142,35 +142,51 @@
                 <a th:href="@{/}" class="btn-ver-detalle">Ir a la Tienda</a>
             </div>
 
-            <div th:each="pedido : ${pedidos}" class="pedido-item">
-                <div class="pedido-header">
-                    <div class="pedido-info">
-                        <div class="pedido-id">Factura #<span th:text="${#strings.length(pedido.id) > 8 ? #strings.substring(pedido.id, #strings.length(pedido.id) - 8) : pedido.id}" style="text-transform: uppercase;"></span></div>
-                        <div class="pedido-fecha">
-                            <i class="fa-solid fa-calendar"></i>
-                            <span th:text="${#temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm')}"></span>
+            <div th:each="pedido : ${pedidos}" class="pedido-item" style="display: block; width: 100%; border: 1px solid #eee; margin-bottom: 25px; padding: 0; overflow: hidden; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+                <div class="pedido-header" style="background: #f8f9fa; padding: 15px 25px; border-bottom: 1px solid #eee; margin-bottom: 0;">
+                    <div class="pedido-info" style="display: flex; align-items: center; gap: 15px; width: 100%; justify-content: space-between;">
+                        <div class="pedido-id" style="color: #27ae60; font-weight: 700; font-size: 1.1rem;">
+                            <i class="fas fa-file-invoice"></i> <span th:text="${pedido.numeroFactura}">CLT-XXXXXX</span>
                         </div>
-                        <div class="pedido-vendedor">
-                            <i class="fa-solid fa-store"></i>
-                            Tienda: <span th:text="${#strings.length(pedido.vendedorId) > 8 ? '...' + #strings.substring(pedido.vendedorId, #strings.length(pedido.vendedorId) - 8) : pedido.vendedorId}"></span>
-                        </div>
-                    </div>
-                    <div>
                         <span class="pedido-estado" 
                               th:classappend="${pedido.estado == 'PENDIENTE' ? 'estado-pendiente' : 
                                              (pedido.estado == 'EN_PROCESO' || pedido.estado == 'PROCESANDO' ? 'estado-proceso' : 
                                              'estado-completado')}"
                               th:text="${pedido.estado == 'EN_PROCESO' || pedido.estado == 'PROCESANDO' ? 'En proceso' : 
-                                       (pedido.estado == 'PENDIENTE' ? 'Pendiente' : 'Completado')}">
+                                       (pedido.estado == 'PENDIENTE' ? 'Pendiente' : 'Completado')}"
+                              style="margin-left: auto;">
                         </span>
                     </div>
                 </div>
 
-                <div style="margin-top: 15px;">
-                    <a th:href="@{/usuario/pedidos/{id}(id=${pedido.id})}" 
-                       class="btn-ver-detalle">
-                        <i class="fa-solid fa-eye"></i> Ver Detalles de Factura
-                    </a>
+                <div style="padding: 25px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+                    <div class="col">
+                        <div class="pedido-fecha" style="font-size: 15px; margin-bottom: 8px; color: #666;">
+                            <i class="fa-solid fa-calendar-alt"></i> <strong>Fecha:</strong>
+                            <span th:text="${#temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm')}"></span>
+                        </div>
+                        <div class="pedido-vendedor" style="font-size: 15px; color: #333;">
+                            <i class="fa-solid fa-store"></i> <strong>Tienda:</strong>
+                            <span th:text="${pedido.vendedor != null and pedido.vendedor.nombreNegocio != null ? pedido.vendedor.nombreNegocio : 'Productor Local'}"></span>
+                        </div>
+                    </div>
+
+                    <div class="col" style="border-left: 1px solid #eee; padding-left: 20px;">
+                        <div style="font-size: 14px; color: #888; margin-bottom: 5px;">Resumen del Pedido</div>
+                        <div style="font-size: 16px; font-weight: 600; color: #2c3e50;">
+                            <i class="fas fa-boxes"></i> <span th:text="${pedido.items != null ? pedido.items.size() : 0}">0</span> productos
+                        </div>
+                        <div style="font-size: 20px; font-weight: 800; color: #27ae60; margin-top: 5px;">
+                            Total: $<span th:text="${pedido.total != null ? #numbers.formatDecimal(pedido.total, 0, 'COMMA', 0, 'POINT') : '0'}">0</span>
+                        </div>
+                    </div>
+
+                    <div class="col" style="display: flex; align-items: center; justify-content: flex-end;">
+                        <a th:href="@{/usuario/pedidos/{id}(id=${pedido.id})}" 
+                           class="btn-ver-detalle" style="display: flex; align-items: center; gap: 10px; border-radius: 8px; padding: 12px 25px;">
+                            <i class="fa-solid fa-eye"></i> Ver Factura Completa
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

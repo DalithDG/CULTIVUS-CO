@@ -1,8 +1,8 @@
 package com.example.demo.Controller;
 
 import com.example.demo.Model.Carrito;
+import com.example.demo.Model.OfertaVendedor;
 import com.example.demo.Model.Pedido;
-import com.example.demo.Model.Producto;
 import com.example.demo.Model.Usuario;
 import com.example.demo.Model.embebidos.DatosComprador;
 import com.example.demo.Model.embebidos.DatosPago;
@@ -11,9 +11,10 @@ import com.example.demo.Model.embebidos.DireccionPedido;
 import com.example.demo.Model.embebidos.ProductoCarrito;
 import com.example.demo.Model.embebidos.ProductoPedido;
 import com.example.demo.repository.CarritoRepository;
+import com.example.demo.repository.OfertaRepository;
 import com.example.demo.repository.PedidoRepository;
-import com.example.demo.repository.ProductoRepository;
 import com.example.demo.services.AppConfigService;
+import com.example.demo.services.CatalogoService;
 import com.example.demo.services.NotificacionService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,13 +37,16 @@ public class PagoController {
     private PedidoRepository pedidoRepository;
 
     @Autowired
-    private ProductoRepository productoRepository;
+    private OfertaRepository ofertaRepository;
 
     @Autowired
     private NotificacionService notificacionService;
 
     @Autowired
     private AppConfigService configService;
+
+    @Autowired
+    private CatalogoService catalogoService;
 
     /**
      * Muestra el formulario de pago
@@ -75,15 +79,17 @@ public class PagoController {
             return "redirect:/carrito";
         }
 
-        // 2. Validar compra mínima por PRODUCTO (Vendedor)
+        // 2. Validar compra mínima por OFERTA (Vendedor)
         for (ProductoCarrito item : carrito.getItems()) {
-            Producto producto = productoRepository.findById(item.getProductoId()).orElse(null);
-            if (producto != null && item.getCantidad() < producto.getCompraMinima()) {
-                String unidad = producto.getUnidadMedida() != null ? producto.getUnidadMedida().getAbreviatura() : "unid";
-                redirectAttributes.addFlashAttribute("error",
-                        "El producto '" + item.getNombre() + "' requiere una compra mínima de " + 
-                        producto.getCompraMinima() + " " + unidad + ". Tienes " + item.getCantidad());
-                return "redirect:/carrito";
+            if (item.getOfertaId() != null) {
+                OfertaVendedor oferta = ofertaRepository.findById(item.getOfertaId()).orElse(null);
+                if (oferta != null && item.getCantidad() < oferta.getCompraMinima()) {
+                    String unidad = item.getUnidadAbreviatura() != null ? item.getUnidadAbreviatura() : "unid";
+                    redirectAttributes.addFlashAttribute("error",
+                            "El producto '" + item.getNombre() + "' requiere una compra mínima de " +
+                            oferta.getCompraMinima() + " " + unidad + ". Tienes " + item.getCantidad());
+                    return "redirect:/carrito";
+                }
             }
         }
 
@@ -146,39 +152,54 @@ public class PagoController {
                 return "redirect:/pago";
             }
 
-            // Verificar stock y COMPRA MÍNIMA de todos los productos antes de procesar
+            // Verificar stock y COMPRA MÍNIMA de todas las ofertas antes de procesar
             for (ProductoCarrito item : carrito.getItems()) {
-                Producto producto = productoRepository.findById(item.getProductoId())
-                        .orElseThrow(() -> new IllegalArgumentException(
-                                "Producto no encontrado: " + item.getNombre()));
-                
-                // Validar Stock
-                if (producto.getStock() < item.getCantidad()) {
-                    redirectAttributes.addFlashAttribute("error",
-                            "El producto " + item.getNombre() + " no tiene suficiente stock");
-                    return "redirect:/carrito";
-                }
+                if (item.getOfertaId() != null) {
+                    OfertaVendedor oferta = ofertaRepository.findById(item.getOfertaId())
+                            .orElseThrow(() -> new IllegalArgumentException(
+                                    "Oferta no encontrada para: " + item.getNombre()));
 
-                // Validar Compra Mínima
-                if (item.getCantidad() < producto.getCompraMinima()) {
-                    String unidad = producto.getUnidadMedida() != null ? producto.getUnidadMedida().getAbreviatura() : "unid";
-                    redirectAttributes.addFlashAttribute("error",
-                            "No cumples con la compra mínima de " + producto.getCompraMinima() + " " + unidad + " para el producto: " + item.getNombre());
-                    return "redirect:/carrito";
+                    // Validar Stock
+                    if (oferta.getStock() < item.getCantidad()) {
+                        redirectAttributes.addFlashAttribute("error",
+                                "El producto " + item.getNombre() + " no tiene suficiente stock");
+                        return "redirect:/carrito";
+                    }
+
+                    // Validar Compra Mínima
+                    if (item.getCantidad() < oferta.getCompraMinima()) {
+                        String unidad = item.getUnidadAbreviatura() != null ? item.getUnidadAbreviatura() : "unid";
+                        redirectAttributes.addFlashAttribute("error",
+                                "No cumples con la compra mínima de " + oferta.getCompraMinima() + " " + unidad
+                                        + " para el producto: " + item.getNombre());
+                        return "redirect:/carrito";
+                    }
                 }
             }
 
             // Agrupar items por vendedor para crear subórdenes (Modelo Amazon)
+            // Ahora usamos vendedorId del ProductoCarrito directamente
             java.util.Map<String, java.util.List<ProductoPedido>> itemsPorVendedor = new java.util.HashMap<>();
+            java.util.Map<String, DatosVendedor> snapshotsVendedores = new java.util.HashMap<>();
 
             for (ProductoCarrito item : carrito.getItems()) {
-                Producto producto = productoRepository.findById(item.getProductoId())
-                        .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado"));
-                String vendedorIdLocal = producto.getVendedor().getId();
+                String vendedorIdLocal = item.getVendedorId();
+
+                // Si vendedorId es null (carritos antiguos pre-migración), intentar obtenerlo de la oferta
+                if (vendedorIdLocal == null && item.getOfertaId() != null) {
+                    OfertaVendedor oferta = ofertaRepository.findById(item.getOfertaId()).orElse(null);
+                    if (oferta != null && oferta.getVendedor() != null) {
+                        vendedorIdLocal = oferta.getVendedor().getId();
+                    }
+                }
+
+                if (vendedorIdLocal == null) {
+                    throw new IllegalArgumentException("No se pudo identificar al vendedor del producto: " + item.getNombre());
+                }
 
                 String unidadAb = item.getUnidadAbreviatura() != null ? item.getUnidadAbreviatura() : "unid";
                 ProductoPedido itemPedido = new ProductoPedido(
-                        item.getProductoId(),
+                        item.getOfertaId() != null ? item.getOfertaId() : item.getProductoId(),
                         item.getNombre(),
                         item.getImagenUrl(),
                         item.getPrecioUnitario(),
@@ -186,14 +207,15 @@ public class PagoController {
                         unidadAb);
 
                 itemsPorVendedor.computeIfAbsent(vendedorIdLocal, k -> new java.util.ArrayList<>()).add(itemPedido);
-            }
 
-            // Obtener snapshots de vendedores para los pedidos
-            java.util.Map<String, DatosVendedor> snapshotsVendedores = new java.util.HashMap<>();
-            for (ProductoCarrito item : carrito.getItems()) {
-                Producto producto = productoRepository.findById(item.getProductoId()).orElse(null);
-                if (producto != null && !snapshotsVendedores.containsKey(producto.getVendedor().getId())) {
-                    snapshotsVendedores.put(producto.getVendedor().getId(), producto.getVendedor());
+                // Obtener snapshot del vendedor
+                if (!snapshotsVendedores.containsKey(vendedorIdLocal)) {
+                    if (item.getOfertaId() != null) {
+                        OfertaVendedor oferta = ofertaRepository.findById(item.getOfertaId()).orElse(null);
+                        if (oferta != null && oferta.getVendedor() != null) {
+                            snapshotsVendedores.put(vendedorIdLocal, oferta.getVendedor());
+                        }
+                    }
                 }
             }
 
@@ -239,16 +261,21 @@ public class PagoController {
                     "Tu compra ha sido procesada con éxito. Pedidos generados: " + pedidosGenerados.size(),
                     "SUCCESS");
 
-            // Actualizar stock de cada producto
+            // Actualizar stock de cada oferta
             for (ProductoCarrito item : carrito.getItems()) {
-                productoRepository.findById(item.getProductoId()).ifPresent(producto -> {
-                    producto.setStock(producto.getStock() - item.getCantidad());
-                    // Marcar como no disponible si se agotó el stock
-                    if (producto.getStock() == 0) {
-                        producto.setDisponible(false);
-                    }
-                    productoRepository.save(producto);
-                });
+                if (item.getOfertaId() != null) {
+                    ofertaRepository.findById(item.getOfertaId()).ifPresent(oferta -> {
+                        oferta.setStock(oferta.getStock() - item.getCantidad());
+                        // Marcar como no disponible si se agotó el stock
+                        if (oferta.getStock() <= 0) {
+                            oferta.setDisponible(false);
+                        }
+                        ofertaRepository.save(oferta);
+
+                        // Recalcular estadísticas del catálogo
+                        catalogoService.actualizarEstadisticas(oferta.getProductoCatalogoId());
+                    });
+                }
             }
 
             // Limpiar carrito después del pago

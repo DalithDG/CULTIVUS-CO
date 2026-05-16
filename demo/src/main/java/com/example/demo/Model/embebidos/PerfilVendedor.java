@@ -8,6 +8,7 @@ public class PerfilVendedor {
     private String descripcionNegocio;
     private String banco;
     private String cuentaBancaria;
+    private String tipoProductos;
     private boolean verificado = false;
 
     public PerfilVendedor() {
@@ -15,13 +16,14 @@ public class PerfilVendedor {
 
     public PerfilVendedor(String razonSocial, String telefonoContacto,
                           String direccionNegocio, String descripcionNegocio,
-                          String banco, String cuentaBancaria) {
+                          String banco, String cuentaBancaria, String tipoProductos) {
         this.razonSocial = razonSocial;
         this.telefonoContacto = telefonoContacto;
         this.direccionNegocio = direccionNegocio;
         this.descripcionNegocio = descripcionNegocio;
         this.banco = banco;
         this.cuentaBancaria = cuentaBancaria;
+        this.tipoProductos = tipoProductos;
         this.verificado = false;
     }
 
@@ -42,6 +44,9 @@ public class PerfilVendedor {
 
     public String getCuentaBancaria() { return cuentaBancaria; }
     public void setCuentaBancaria(String cuentaBancaria) { this.cuentaBancaria = cuentaBancaria; }
+
+    public String getTipoProductos() { return tipoProductos; }
+    public void setTipoProductos(String tipoProductos) { this.tipoProductos = tipoProductos; }
 
     public boolean isVerificado() { return verificado; }
     public void setVerificado(boolean verificado) { this.verificado = verificado; }

@@ -30,7 +30,7 @@ public class VendedorService {
     public Usuario crearPerfilVendedor(String usuarioId, String razonSocial,
             String telefonoContacto, String direccionNegocio,
             String descripcionNegocio, String cuentaBancaria,
-            String banco) {
+            String banco, String tipoProductos) {
 
         // Validar que el usuario existe
         Usuario usuario = usuarioRepository.findById(usuarioId)
@@ -54,6 +54,7 @@ public class VendedorService {
         perfil.setDescripcionNegocio(descripcionNegocio);
         perfil.setCuentaBancaria(cuentaBancaria);
         perfil.setBanco(banco);
+        perfil.setTipoProductos(tipoProductos);
         perfil.setVerificado(false);
 
         // Embeber el perfil y agregar el rol VENDEDOR (manteniendo otros roles como COMPRADOR)
@@ -86,7 +87,7 @@ public class VendedorService {
     public Usuario actualizarPerfil(String usuarioId, String razonSocial,
             String telefonoContacto, String direccionNegocio,
             String descripcionNegocio, String cuentaBancaria,
-            String banco) {
+            String banco, String tipoProductos) {
 
         Usuario usuario = usuarioRepository.findById(usuarioId)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
@@ -108,6 +109,8 @@ public class VendedorService {
             perfil.setCuentaBancaria(cuentaBancaria);
         if (banco != null)
             perfil.setBanco(banco);
+        if (tipoProductos != null)
+            perfil.setTipoProductos(tipoProductos);
 
         usuario.setPerfilVendedor(perfil);
         return usuarioRepository.save(usuario);

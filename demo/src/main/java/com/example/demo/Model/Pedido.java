@@ -82,6 +82,16 @@ public class Pedido {
                 .sum();
     }
 
+    /**
+     * Retorna un número de factura legible basado en el ID.
+     * Ejemplo: CLT-1A2B3C
+     */
+    public String getNumeroFactura() {
+        if (id == null) return "PENDIENTE";
+        String suffix = id.length() > 6 ? id.substring(id.length() - 6) : id;
+        return "CLT-" + suffix.toUpperCase();
+    }
+
     // Getters y Setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
@@ -110,9 +120,12 @@ public class Pedido {
     public DireccionPedido getDireccionEntrega() { return direccionEntrega; }
     public void setDireccionEntrega(DireccionPedido direccionEntrega) { this.direccionEntrega = direccionEntrega; }
 
-    public List<ProductoPedido> getItems() { return items; }
+    public List<ProductoPedido> getItems() {
+        if (items == null) items = new ArrayList<>();
+        return items;
+    }
     public void setItems(List<ProductoPedido> items) {
-        this.items = items;
+        this.items = items != null ? items : new ArrayList<>();
         this.total = calcularTotal();
     }
 
