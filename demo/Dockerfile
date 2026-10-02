@@ -1,47 +1,15 @@
-# ====================================================================
-# ETAPA 1: CONSTRUCCIÓN (Build Stage)
-# ====================================================================
-FROM maven:3.9.9-eclipse-temurin-17 AS builder
-
-WORKDIR /build
-
-# Copiar solo pom.xml primero para caché de capas
-COPY pom.xml .
-
-# Descargar dependencias en paralelo
-RUN mvn dependency:go-offline -B -q
-
-# Copiar código fuente completo
-COPY src ./src
-
-# Compilar sin ejecutar tests
-RUN mvn clean package -q -DskipTests
-
-# ====================================================================
-# ETAPA 2: EJECUCIÓN (Runtime Stage) - Imagen final optimizada
-# ====================================================================
-FROM eclipse-temurin:17-jre-jammy
-
-# Metadatos
-LABEL maintainer="Cultivus Team"
-LABEL description="Cultivus Spring Boot Application with MongoDB and OAuth2"
-
-# Variables de entorno para optimización
-ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:InitialRAMPercentage=50.0 -Dfile.encoding=UTF-8"
-ENV SPRING_PROFILES_ACTIVE=prod
-ENV PORT=8080
+FROM maven:3.9-eclipse-temurin-17 AS build
 
 WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+RUN mvn -B -DskipTests package
 
-# Copiar JAR desde etapa de construcción (incluye resources/static con CSS)
-COPY --from=builder /build/target/demo-0.0.1-SNAPSHOT.jar app.jar
+FROM eclipse-temurin:17-jre
 
-# Health check - verifica que la app está disponible
-HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:8080/ || exit 1
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
+USER 10001
 
-# Exponer puerto
 EXPOSE 8080
-
-# Iniciar aplicación con variables de entorno
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
