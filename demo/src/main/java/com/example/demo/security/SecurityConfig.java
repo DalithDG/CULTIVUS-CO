@@ -7,6 +7,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -19,15 +20,15 @@ public class SecurityConfig {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Autowired
+    @Autowired(required = false)
     private OAuth2UsuarioService oAuth2UsuarioService;
 
-    @Autowired
+    @Autowired(required = false)
     private OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
-    /**
-     * Proveedor de autenticación para login con email/contraseña (BCrypt).
-     */
+    @Autowired(required = false)
+    private ClientRegistrationRepository clientRegistrationRepository;
+
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
@@ -39,27 +40,51 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // CSRF deshabilitado — reactivar en Fase 2
-            .csrf(csrf -> csrf.disable())
-
-            // Por ahora permite todo — se restringirá en Fase 2
-            .authorizeHttpRequests(authz -> authz
-                .anyRequest().permitAll()
+            .csrf(csrf -> csrf
+                .ignoringRequestMatchers("/api/**")
             )
-
-            // ✅ OAuth2 Login con Google
-            .oauth2Login(oauth2 -> oauth2
-                // Página de login personalizada (en lugar de la de Spring Security)
+            .authorizeHttpRequests(authz -> authz
+                .requestMatchers(
+                    "/",
+                    "/usuario/login",
+                    "/usuario/registro",
+                    "/catalogo/**",
+                    "/productos/**",
+                    "/css/**",
+                    "/js/**",
+                    "/images/**",
+                    "/webjars/**",
+                    "/favicon.ico"
+                ).permitAll()
+                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/vendedor/**").hasAnyRole("VENDEDOR", "ADMIN")
+                .anyRequest().authenticated()
+            )
+            .formLogin(form -> form
                 .loginPage("/usuario/login")
-                // Servicio que busca/crea el usuario en MongoDB tras autenticar con Google
+                .loginProcessingUrl("/usuario/login")
+                .defaultSuccessUrl("/", false)
+                .failureUrl("/usuario/login?error=true")
+                .permitAll()
+            )
+            .logout(logout -> logout
+                .logoutUrl("/usuario/logout")
+                .logoutSuccessUrl("/usuario/login?logout=true")
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID")
+                .permitAll()
+            );
+
+        if (clientRegistrationRepository != null && oAuth2UsuarioService != null && oAuth2LoginSuccessHandler != null) {
+            http.oauth2Login(oauth2 -> oauth2
+                .loginPage("/usuario/login")
                 .userInfoEndpoint(userInfo -> userInfo
                     .userService(oAuth2UsuarioService)
                 )
-                // Handler que pone al usuario en sesión y redirige según su rol
                 .successHandler(oAuth2LoginSuccessHandler)
-                // Si falla el login con Google, redirige al login con error
                 .failureUrl("/usuario/login?error=oauth_failed")
             );
+        }
 
         return http.build();
     }

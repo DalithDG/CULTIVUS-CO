@@ -1,17 +1,24 @@
-server.port=8080
-spring.application.name=demo
+# =======================================================
+# SERVIDOR & PUERTO
+# =======================================================
+server.port=${PORT:8080}
+server.forward-headers-strategy=framework
+spring.application.name=cultivus
 
-# Thymeleaf
-spring.thymeleaf.cache=false
-
-# MongoDB
-spring.data.mongodb.uri=${MONGODB_URI:mongodb://localhost:27017/cultivus}
+# =======================================================
+# MONGODB ATLAS
+# =======================================================
+spring.data.mongodb.uri=${MONGODB_URI}
 spring.data.mongodb.database=cultivus
 
-server.error.include-message=always
-server.error.include-stacktrace=always
+# =======================================================
+# THYMELEAF & ASSETS
+# =======================================================
+spring.thymeleaf.cache=true
 
-# Google OAuth2
+# =======================================================
+# GOOGLE OAUTH2 (Opcional)
+# =======================================================
 spring.security.oauth2.client.registration.google.client-id=${GOOGLE_CLIENT_ID:}
 spring.security.oauth2.client.registration.google.client-secret=${GOOGLE_CLIENT_SECRET:}
 spring.security.oauth2.client.registration.google.scope=openid,email,profile
