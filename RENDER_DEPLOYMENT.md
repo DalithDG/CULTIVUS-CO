@@ -77,7 +77,7 @@ Render necesita conocer las credenciales para conectar la base de datos y Google
 
 | Key | Value | Descripción |
 | :--- | :--- | :--- |
-| `MONGODB_URI` | `mongodb+srv://cultivus_user:TU_PASSWORD@cluster0.xxxx.mongodb.net/cultivus?retryWrites=true&w=majority` | La URI completa de MongoDB Atlas (asegúrate de incluir el nombre de la base de datos al final, ej. `/cultivus`). |
+| `SPRING_DATA_MONGODB_URI` | `mongodb+srv://cultivus_user:TU_PASSWORD@cluster0.xxxx.mongodb.net/cultivus?retryWrites=true&w=majority` | La URI completa de MongoDB Atlas (asegúrate de incluir el nombre de la base de datos al final, ej. `/cultivus`). |
 | `GOOGLE_CLIENT_ID` | `TU_GOOGLE_CLIENT_ID` | Tu ID de cliente de Google Cloud Console. |
 | `GOOGLE_CLIENT_SECRET` | `TU_GOOGLE_CLIENT_SECRET` | Tu Secreto de cliente de Google Cloud Console. |
 
