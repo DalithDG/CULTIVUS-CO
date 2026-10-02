@@ -35,3 +35,4 @@ build/
 ### Local Configuration (Secrets) ###
 src/main/resources/application-local.properties
 src/main/resources/application-local.properties.example
+src/main/resources/application.properties

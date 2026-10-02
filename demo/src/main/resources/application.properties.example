@@ -1,28 +1,17 @@
-server.port=${PORT:8080}
+server.port=8080
 spring.application.name=demo
 
 # Thymeleaf
 spring.thymeleaf.cache=false
 
-# Opcional: credenciales locales (no se sube a git)
-spring.config.import=optional:classpath:application-local.properties
-
-# ============================================================
-# MONGODB
-# Local: mongodb://localhost:27017/cultivus
-# Atlas: mongodb+srv://<usuario>:<password>@cluster0.xxxxx.mongodb.net/cultivus
-# ============================================================
+# MongoDB
 spring.data.mongodb.uri=${MONGODB_URI:mongodb://localhost:27017/cultivus}
 spring.data.mongodb.database=cultivus
 
 server.error.include-message=always
 server.error.include-stacktrace=always
 
-# ============================================================
-# GOOGLE OAUTH2
-# Local: usa application-local.properties (ver application-local.properties.example)
-# Render: variables GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET
-# ============================================================
+# Google OAuth2
 spring.security.oauth2.client.registration.google.client-id=${GOOGLE_CLIENT_ID:}
 spring.security.oauth2.client.registration.google.client-secret=${GOOGLE_CLIENT_SECRET:}
 spring.security.oauth2.client.registration.google.scope=openid,email,profile
