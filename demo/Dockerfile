@@ -2,7 +2,7 @@
 FROM maven:3.9.9-eclipse-temurin-17 AS build
 WORKDIR /app
 
-# Copiar el archivo pom.xml y descargar dependencias (aprovechando la caché de Docker)
+# Copiar el archivo pom.xml y descargar dependencias
 COPY pom.xml .
 RUN mvn dependency:go-offline -B
 
@@ -17,8 +17,8 @@ WORKDIR /app
 # Copiar el JAR generado en la etapa anterior
 COPY --from=build /app/target/demo-0.0.1-SNAPSHOT.jar app.jar
 
-# Exponer el puerto estándar (Render lo detectará automáticamente)
+# Exponer el puerto estándar
 EXPOSE 8080
 
-# Iniciar la aplicación con soporte para límites de memoria del contenedor
+# Iniciar la aplicación
 ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-jar", "app.jar"]
