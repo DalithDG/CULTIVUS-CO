@@ -138,28 +138,9 @@ public class UsuarioController {
             }
 
             // Validaciones de contraseña
-            if (contrasena.length() < 8) {
-                model.addAttribute("error", "La contraseña debe tener al menos 8 caracteres");
-                preservarDatosFormulario(model, nombre, email, nombreDepartamento, nombreCiudad);
-                return "registro";
-            }
-            if (!contrasena.matches(".*[A-Z].*")) {
-                model.addAttribute("error", "La contraseña debe contener al menos una mayúscula");
-                preservarDatosFormulario(model, nombre, email, nombreDepartamento, nombreCiudad);
-                return "registro";
-            }
-            if (!contrasena.matches(".*[a-z].*")) {
-                model.addAttribute("error", "La contraseña debe contener al menos una minúscula");
-                preservarDatosFormulario(model, nombre, email, nombreDepartamento, nombreCiudad);
-                return "registro";
-            }
-            if (!contrasena.matches(".*[0-9].*")) {
-                model.addAttribute("error", "La contraseña debe contener al menos un número");
-                preservarDatosFormulario(model, nombre, email, nombreDepartamento, nombreCiudad);
-                return "registro";
-            }
-            if (!contrasena.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?].*")) {
-                model.addAttribute("error", "La contraseña debe contener al menos un carácter especial");
+            String validacionContrasena = validarContrasena(contrasena);
+            if (validacionContrasena != null) {
+                model.addAttribute("error", validacionContrasena);
                 preservarDatosFormulario(model, nombre, email, nombreDepartamento, nombreCiudad);
                 return "registro";
             }
@@ -349,6 +330,12 @@ public class UsuarioController {
 
             // Actualizar contraseña solo si se proporcionó
             if (contrasena != null && !contrasena.trim().isEmpty()) {
+                // Validar fortaleza de la nueva contraseña
+                String validacionContrasena = validarContrasena(contrasena);
+                if (validacionContrasena != null) {
+                    redirectAttributes.addFlashAttribute("error", validacionContrasena);
+                    return "redirect:/usuario/perfil";
+                }
                 // Encriptar la nueva contraseña con BCrypt
                 usuarioActualizado.setContrasena(passwordEncoder.encode(contrasena));
             }
@@ -418,6 +405,29 @@ public class UsuarioController {
         model.addAttribute("detalles", pedido.getItems());
 
         return "detalle-pedido-comprador";
+    }
+
+    /**
+     * Valida la fortaleza de una contraseña según los requisitos de seguridad.
+     * Retorna null si la contraseña es válida, o un mensaje de error en caso contrario.
+     */
+    private String validarContrasena(String contrasena) {
+        if (contrasena.length() < 8) {
+            return "La contraseña debe tener al menos 8 caracteres";
+        }
+        if (!contrasena.matches(".*[A-Z].*")) {
+            return "La contraseña debe contener al menos una mayúscula";
+        }
+        if (!contrasena.matches(".*[a-z].*")) {
+            return "La contraseña debe contener al menos una minúscula";
+        }
+        if (!contrasena.matches(".*[0-9].*")) {
+            return "La contraseña debe contener al menos un número";
+        }
+        if (!contrasena.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?].*")) {
+            return "La contraseña debe contener al menos un carácter especial";
+        }
+        return null;
     }
 
     private void preservarDatosFormulario(Model model, String nombre, String email,
