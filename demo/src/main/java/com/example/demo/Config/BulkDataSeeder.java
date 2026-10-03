@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +18,7 @@ import java.util.*;
 
 @Component
 @Order(2)
+@Profile("dev")
 public class BulkDataSeeder implements CommandLineRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(BulkDataSeeder.class);

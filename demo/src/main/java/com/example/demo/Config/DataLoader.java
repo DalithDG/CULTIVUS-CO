@@ -7,7 +7,6 @@ import com.example.demo.repository.UsuarioRepository;
 import com.example.demo.services.AppConfigService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.core.annotation.Order;
@@ -19,14 +18,16 @@ public class DataLoader implements CommandLineRunner {
 
     private static final Logger logger = LoggerFactory.getLogger(DataLoader.class);
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    private final UsuarioRepository usuarioRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final AppConfigService configService;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private AppConfigService configService;
+    public DataLoader(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder,
+            AppConfigService configService) {
+        this.usuarioRepository = usuarioRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.configService = configService;
+    }
 
     private static final String ADMIN_EMAIL = "admin1@demo.com";
     private static final String ADMIN_PASSWORD = "Admin1234!";
@@ -63,10 +64,9 @@ public class DataLoader implements CommandLineRunner {
 
         if (!yaEstaHasheada) {
             logger.warn("⚠️  Admin encontrado con contraseña en texto plano. Migrando a BCrypt...");
-            admin.setContrasena(passwordEncoder.encode(ADMIN_PASSWORD));
+            admin.setContrasena(passwordEncoder.encode(contrasenaActual));
             usuarioRepository.save(admin);
             logger.info("✅ Contraseña del admin migrada a BCrypt correctamente");
-            System.out.println("✅ Admin migrado. Nueva contraseña: " + ADMIN_PASSWORD);
         } else {
             logger.info("ℹ️  Usuario ADMIN ya existe con contraseña hasheada. Sin cambios.");
         }
