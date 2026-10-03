@@ -187,14 +187,47 @@
         }
 
         // =============================================
-        // API Colombia — Departamentos y Ciudades
+        // =============================================
+        // API Colombia — Departamentos y Ciudades (con Fallback)
         // =============================================
         const deptSelect = document.getElementById('departamento');
         const ciudadSelect = document.getElementById('ciudad');
 
+        const fallbackData = [
+            { id: 1, name: "Antioquia", cities: ["Medellín", "Bello", "Itagüí", "Envigado", "Rionegro"] },
+            { id: 2, name: "Bogotá D.C.", cities: ["Bogotá D.C."] },
+            { id: 3, name: "Cundinamarca", cities: ["Soacha", "Chía", "Zipaquirá", "Facatativá", "Fusagasugá"] },
+            { id: 4, name: "Valle del Cauca", cities: ["Cali", "Palmira", "Buenaventura", "Tuluá", "Buga"] },
+            { id: 5, name: "Santander", cities: ["Bucaramanga", "Floridablanca", "Girón", "Piedecuesta", "Barrancabermeja"] },
+            { id: 6, name: "Boyacá", cities: ["Tunja", "Duitama", "Sogamoso", "Chiquinquirá", "Villa de Leyva"] },
+            { id: 7, name: "Tolima", cities: ["Ibagué", "Espinal", "Melgar", "Mariquita"] },
+            { id: 8, name: "Caldas", cities: ["Manizales", "Villamaría", "Chinchiná", "La Dorada"] },
+            { id: 9, name: "Risaralda", cities: ["Pereira", "Dosquebradas", "Santa Rosa de Cabal"] },
+            { id: 10, name: "Quindío", cities: ["Armenia", "Calarcá", "Circasia", "Montenegro"] },
+            { id: 11, name: "Huila", cities: ["Neiva", "Pitalito", "Garzón", "La Plata"] },
+            { id: 12, name: "Nariño", cities: ["Pasto", "Ipiales", "Tumaco"] },
+            { id: 13, name: "Atlántico", cities: ["Barranquilla", "Soledad", "Malambo", "Sabanalarga"] },
+            { id: 14, name: "Bolívar", cities: ["Cartagena", "Magangué", "Turbaco"] }
+        ];
+
+        function cargarDepartamentosFallback() {
+            deptSelect.innerHTML = '<option value="">Selecciona un departamento</option>';
+            fallbackData.forEach(dept => {
+                const opt = document.createElement('option');
+                opt.value = dept.name;
+                opt.dataset.id = dept.id;
+                opt.dataset.fallback = "true";
+                opt.textContent = dept.name;
+                deptSelect.appendChild(opt);
+            });
+        }
+
         // Cargar departamentos al iniciar la página
-        fetch('https://api-colombia.com/api/v1/Department')
-            .then(res => res.json())
+        fetch('https://api-colombia.com/api/v1/Department', { signal: AbortSignal.timeout(5000) })
+            .then(res => {
+                if (!res.ok) throw new Error("Error en respuesta");
+                return res.json();
+            })
             .then(data => {
                 const sorted = data.sort((a, b) => a.name.localeCompare(b.name));
                 deptSelect.innerHTML = '<option value="">Selecciona un departamento</option>';
@@ -207,13 +240,14 @@
                 });
             })
             .catch(() => {
-                deptSelect.innerHTML = '<option value="">Error al cargar departamentos</option>';
+                cargarDepartamentosFallback();
             });
 
         // Cargar ciudades al cambiar el departamento
         deptSelect.addEventListener('change', function () {
             const selectedOpt = this.options[this.selectedIndex];
-            const deptId = selectedOpt.dataset.id;
+            const deptId = selectedOpt ? selectedOpt.dataset.id : null;
+            const isFallback = selectedOpt && selectedOpt.dataset.fallback === "true";
 
             ciudadSelect.innerHTML = '<option value="">Cargando ciudades...</option>';
             ciudadSelect.disabled = true;
@@ -223,8 +257,26 @@
                 return;
             }
 
-            fetch(`https://api-colombia.com/api/v1/Department/${deptId}/Cities`)
-                .then(res => res.json())
+            if (isFallback) {
+                const found = fallbackData.find(d => d.id == deptId);
+                ciudadSelect.innerHTML = '<option value="">Selecciona una ciudad</option>';
+                if (found && found.cities) {
+                    found.cities.forEach(city => {
+                        const opt = document.createElement('option');
+                        opt.value = city;
+                        opt.textContent = city;
+                        ciudadSelect.appendChild(opt);
+                    });
+                }
+                ciudadSelect.disabled = false;
+                return;
+            }
+
+            fetch(`https://api-colombia.com/api/v1/Department/${deptId}/Cities`, { signal: AbortSignal.timeout(5000) })
+                .then(res => {
+                    if (!res.ok) throw new Error("Error en respuesta");
+                    return res.json();
+                })
                 .then(cities => {
                     const sorted = cities.sort((a, b) => a.name.localeCompare(b.name));
                     ciudadSelect.innerHTML = '<option value="">Selecciona una ciudad</option>';
@@ -237,7 +289,21 @@
                     ciudadSelect.disabled = false;
                 })
                 .catch(() => {
-                    ciudadSelect.innerHTML = '<option value="">Error al cargar ciudades</option>';
+                    const found = fallbackData.find(d => d.name.toLowerCase() === selectedOpt.value.toLowerCase());
+                    ciudadSelect.innerHTML = '<option value="">Selecciona una ciudad</option>';
+                    if (found && found.cities) {
+                        found.cities.forEach(city => {
+                            const opt = document.createElement('option');
+                            opt.value = city;
+                            opt.textContent = city;
+                            ciudadSelect.appendChild(opt);
+                        });
+                    } else {
+                        const opt = document.createElement('option');
+                        opt.value = selectedOpt.value;
+                        opt.textContent = selectedOpt.value;
+                        ciudadSelect.appendChild(opt);
+                    }
                     ciudadSelect.disabled = false;
                 });
         });

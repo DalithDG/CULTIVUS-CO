@@ -20,6 +20,9 @@ public class SecurityConfig {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler;
+
     @Autowired(required = false)
     private OAuth2UsuarioService oAuth2UsuarioService;
 
@@ -46,10 +49,29 @@ public class SecurityConfig {
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers(
                     "/",
+                    "/login",
+                    "/registro",
+                    "/register",
+                    "/newregister",
+                    "/loginnew",
                     "/usuario/login",
                     "/usuario/registro",
+                    "/usuario/guardar",
+                    "/usuario/logout",
+                    "/logout",
+                    "/category/**",
                     "/catalogo/**",
                     "/productos/**",
+                    "/producto/**",
+                    "/oferta/**",
+                    "/buscar/**",
+                    "/frutas",
+                    "/verduras",
+                    "/lacteos",
+                    "/cafe",
+                    "/granos",
+                    "/miel",
+                    "/api/**",
                     "/*.css",
                     "/css/**",
                     "/*.js",
@@ -67,7 +89,7 @@ public class SecurityConfig {
                 .loginProcessingUrl("/usuario/login")
                 .usernameParameter("email")
                 .passwordParameter("contrasena")
-                .defaultSuccessUrl("/", false)
+                .successHandler(customAuthenticationSuccessHandler)
                 .failureUrl("/usuario/login?error=true")
                 .permitAll()
             )

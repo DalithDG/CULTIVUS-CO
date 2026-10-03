@@ -68,11 +68,12 @@ public class UsuarioController {
     }
 
     @PostMapping("/guardar")
-    public String guardarUsuario(@RequestParam("nombre") String nombre,
-            @RequestParam("email") String email,
-            @RequestParam("contrasena") String contrasena,
-            @RequestParam("departamento") String nombreDepartamento,
-            @RequestParam("ciudad") String nombreCiudad,
+    public String guardarUsuario(
+            @RequestParam(value = "nombre", required = false) String nombre,
+            @RequestParam(value = "email", required = false) String email,
+            @RequestParam(value = "contrasena", required = false) String contrasena,
+            @RequestParam(value = "departamento", required = false) String nombreDepartamento,
+            @RequestParam(value = "ciudad", required = false) String nombreCiudad,
             Model model,
             RedirectAttributes redirectAttributes) {
         try {

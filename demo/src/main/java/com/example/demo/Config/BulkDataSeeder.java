@@ -49,8 +49,8 @@ public class BulkDataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        if (ofertaRepository.count() > 10000) {
-            logger.info("ℹ️ La base de datos ya contiene un volumen alto de datos. Se omite BulkDataSeeder.");
+        if (categoriaRepository.count() > 0 || ofertaRepository.count() > 0) {
+            logger.info("ℹ️ La base de datos ya contiene datos iniciales. Se omite BulkDataSeeder.");
             return;
         }
 
@@ -76,21 +76,15 @@ public class BulkDataSeeder implements CommandLineRunner {
     }
 
     private void limpiarBaseDeDatos() {
-        logger.info("🧹 Limpiando base de datos (Categorias, Productos, Ofertas, Pedidos, Reseñas)...");
+        logger.info("🧹 Limpiando datos transaccionales para inicialización...");
         categoriaRepository.deleteAll();
         productoCatalogoRepository.deleteAll();
         productoRepository.deleteAll();
         ofertaRepository.deleteAll();
         pedidoRepository.deleteAll();
         resenaRepository.deleteAll();
-        
-        List<Usuario> usuarios = usuarioRepository.findAll();
-        for (Usuario u : usuarios) {
-            if (!u.hasRole(Role.ADMIN)) {
-                usuarioRepository.delete(u);
-            }
-        }
-        logger.info("✅ Limpieza completada.");
+        // Preservamos todos los usuarios existentes (admin y usuarios registrados)
+        logger.info("✅ Limpieza completada sin eliminar usuarios registrados.");
     }
 
     private List<Categoria> inyectarCategorias() {
