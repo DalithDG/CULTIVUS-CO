@@ -9,7 +9,6 @@ FROM eclipse-temurin:17-jre
 
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
-USER 10001
 
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ENTRYPOINT ["sh", "-c", "echo '--- ARCHIVOS ---'; ls -la /app; java -version; echo '--- ARRANQUE ---'; exec java -jar /app/app.jar"]
