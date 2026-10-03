@@ -67,7 +67,7 @@
                     <span th:text="${error}"></span>
                 </div>
 
-                <form action="/usuario/guardar" method="post" class="registro-form">
+                <form th:action="@{/usuario/guardar}" method="post" class="registro-form">
                     <div class="form-row">
                         <div class="form-group">
                             <label for="nombre">
