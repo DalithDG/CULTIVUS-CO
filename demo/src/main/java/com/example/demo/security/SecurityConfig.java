@@ -65,6 +65,8 @@ public class SecurityConfig {
             .formLogin(form -> form
                 .loginPage("/usuario/login")
                 .loginProcessingUrl("/usuario/login")
+                .usernameParameter("email")
+                .passwordParameter("contrasena")
                 .defaultSuccessUrl("/", false)
                 .failureUrl("/usuario/login?error=true")
                 .permitAll()
