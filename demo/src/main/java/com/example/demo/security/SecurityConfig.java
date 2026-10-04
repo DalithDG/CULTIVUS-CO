@@ -15,14 +15,13 @@ import org.springframework.util.StringUtils;
 /**
  * Configuración de Spring Security.
  *
- * IMPORTANTE: La dependencia spring-boot-starter-oauth2-client está en el
- * classpath. Si las variables GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET NO están
- * definidas en el entorno, Spring Boot fallará al construir el
- * ClientRegistrationRepository y Spring Security caerá en su comportamiento
- * por defecto (proteger TODAS las rutas, incluyendo "/").
+ * OAuth2 con Google es OPCIONAL: solo se activa si las credenciales
+ * (client-id y client-secret) están presentes y no vacías. Si no lo están,
+ * la app funciona con el login por formulario.
  *
- * Solución: leemos las credenciales con @Value y solo activamos OAuth2 si
- * ambas están presentes y no vacías.
+ * IMPORTANTE: "/error" debe ser público. Si no lo es, cualquier excepción
+ * en un controlador (por ejemplo, un fallo al conectar con MongoDB) termina
+ * redirigiendo al login y oculta el error real.
  */
 @Configuration
 @EnableWebSecurity
@@ -46,8 +45,8 @@ public class SecurityConfig {
     @Autowired(required = false)
     private ClientRegistrationRepository clientRegistrationRepository;
 
-    // Leemos las credenciales de Google desde el entorno.
-    // Si no están definidas, el valor será null o vacío.
+    // Credenciales de Google leídas desde las propiedades de Spring
+    // (que a su vez vienen de las variables de entorno en Render).
     @Value("${spring.security.oauth2.client.registration.google.client-id:}")
     private String googleClientId;
 
@@ -94,6 +93,8 @@ public class SecurityConfig {
                     "/granos",
                     "/miel",
                     "/api/**",
+                    // Página de error de Spring (necesaria para ver el error real)
+                    "/error",
                     // Recursos estáticos
                     "/*.css",
                     "/css/**",
@@ -102,7 +103,7 @@ public class SecurityConfig {
                     "/images/**",
                     "/webjars/**",
                     "/favicon.ico",
-                    // OAuth2 (solo si está activo)
+                    // OAuth2 (solo se usan si está activo)
                     "/oauth2/**",
                     "/login/oauth2/**"
                 ).permitAll()
@@ -127,9 +128,8 @@ public class SecurityConfig {
                 .permitAll()
             );
 
-        // OAuth2 solo se activa si las credenciales de Google están presentes.
-        // Esto evita que Spring Security bloquee todas las rutas cuando las
-        // variables de entorno no están definidas en Render.
+        // OAuth2 solo se activa si las credenciales de Google están presentes
+        // y los beans necesarios existen.
         boolean oauthHabilitado = StringUtils.hasText(googleClientId)
                 && StringUtils.hasText(googleClientSecret)
                 && clientRegistrationRepository != null
