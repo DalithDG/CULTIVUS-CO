@@ -108,6 +108,7 @@ public class SecurityConfig {
                     "/login/oauth2/**"
                 ).permitAll()
                 .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/vendedor/registro", "/vendedor/guardar").authenticated()
                 .requestMatchers("/vendedor/**").hasAnyRole("VENDEDOR", "ADMIN")
                 .anyRequest().authenticated()
             )
