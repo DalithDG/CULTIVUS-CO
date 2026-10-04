@@ -35,5 +35,6 @@ build/
 ### Local Configuration (Secrets) ###
 # application-local.properties es para secretos SOLO en tu máquina (nunca subir)
 src/main/resources/application-local.properties
+.env
 # application.properties YA NO se ignora: ahora no tiene credenciales hardcodeadas.
 # Las credenciales van en variables de entorno de Render.
