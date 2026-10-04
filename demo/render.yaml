@@ -4,6 +4,10 @@ services:
     runtime: docker
     region: ohio
     plan: starter
+    # rootDir indica la carpeta dentro del repositorio donde está el Dockerfile
+    rootDir: demo
+    # autoDeploy: true hace que Render despliegue automáticamente al hacer push
+    autoDeploy: true
     healthCheckPath: /
     dockerfilePath: Dockerfile
     envVars:
