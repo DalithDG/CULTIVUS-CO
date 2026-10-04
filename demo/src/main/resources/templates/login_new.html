@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Inicia sesion en Cultivus - La plataforma que conecta el campo con tu mesa">
+    <title>Iniciar Sesion - Cultivus</title>
+    <link rel="stylesheet" th:href="@{/login_new.css}" href="../static/login_new.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+
+    <div id="container">
+
+        <!-- ===== PANEL IZQUIERDO: imagen con logo esquina superior izquierda ===== -->
+        <div class="panel-left">
+            <div class="brand-top">
+                <div class="brand-logo-box">
+                    <img th:src="@{/images/LogoCultivus.png}" src="/images/LogoCultivus.png" alt="Logo Cultivus"
+                        class="brand-logo-img">
+                </div>
+                <div class="brand-text-group">
+                    <span class="brand-name">Cultivus</span>
+                    <span class="brand-tagline">Tu Mercado Agricola en Linea</span>
+                </div>
+            </div>
+            <a th:href="@{/}" href="/" class="btn-home" id="btnHome">
+                <i class="fas fa-arrow-left"></i>
+                <span>Ir al Inicio</span>
+            </a>
+        </div>
+
+        <!-- ===== TOASTS FLOTANTES: no afectan el layout ===== -->
+        <div class="toast-zone" id="toastZone">
+
+            <div th:if="${mensaje}" class="toast toast-success" role="alert" id="toastSuccess">
+                <i class="fas fa-check-circle"></i>
+                <span th:text="${mensaje}"></span>
+                <button type="button" class="toast-close" onclick="closeToast('toastSuccess')" aria-label="Cerrar">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div th:if="${error}" class="toast toast-error" role="alert" id="toastError">
+                <i class="fas fa-exclamation-circle"></i>
+                <span th:text="${error}"></span>
+                <button type="button" class="toast-close" onclick="closeToast('toastError')" aria-label="Cerrar">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div th:if="${param.error}" class="toast toast-error" role="alert" id="toastOAuth">
+                <i class="fas fa-exclamation-circle"></i>
+                <span th:switch="${param.error[0]}">
+                    <span th:case="'oauth_failed'">Error al iniciar sesion con Google. Intenta de nuevo.</span>
+                    <span th:case="'oauth_email'">Google no proporciono un correo valido.</span>
+                    <span th:case="*">Error de autenticacion. Intenta de nuevo.</span>
+                </span>
+                <button type="button" class="toast-close" onclick="closeToast('toastOAuth')" aria-label="Cerrar">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+        </div>
+
+        <!-- ===== PANEL DERECHO: formulario de login ===== -->
+        <div class="panel-right">
+            <div class="form-container">
+
+                <!-- Encabezado -->
+                <div class="form-header">
+                    <h1 class="form-title">Iniciar Sesion</h1>
+                    <p class="form-subtitle">Bienvenido a Cultivus</p>
+                </div>
+
+                <!-- ===== BOTONES SOCIALES ===== -->
+                <div class="social-stack">
+
+
+                    <!-- Google -->
+                    <a th:href="@{/oauth2/authorization/google}" href="#" class="social-row google" id="btnGoogle">
+                        <span class="social-icon-wrap">
+                            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"
+                                    fill="#4285F4" />
+                                <path
+                                    d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"
+                                    fill="#34A853" />
+                                <path
+                                    d="M3.964 10.706A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.706V4.962H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.038l3.007-2.332z"
+                                    fill="#FBBC05" />
+                                <path
+                                    d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.962L3.964 7.294C4.672 5.163 6.656 3.58 9 3.58z"
+                                    fill="#EA4335" />
+                            </svg>
+                        </span>
+                        <span class="social-label">Continuar con Google</span>
+                    </a>
+
+                    <!-- Facebook -->
+                    <button type="button" class="social-row facebook" id="btnFacebook" disabled>
+                        <span class="social-icon-wrap">
+                            <i class="fab fa-facebook-f"></i>
+                        </span>
+                        <span class="social-label">Continuar con Facebook</span>
+                    </button>
+
+                    <!-- X / Twitter -->
+                    <button type="button" class="social-row twitter" id="btnTwitter" disabled>
+                        <span class="social-icon-wrap">
+                            <svg width="15" height="15" viewBox="0 0 1200 1227" fill="white"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M714.163 519.284L1160.89 0H1055.03L667.137 450.887L357.328 0H0L468.492 681.821L0 1226.37H105.866L515.491 750.218L842.672 1226.37H1200L714.137 519.284H714.163ZM569.165 687.828L521.697 619.934L144.011 79.6944H306.615L611.412 515.685L658.88 583.579L1055.08 1150.3H892.476L569.165 687.854V687.828Z" />
+                            </svg>
+                        </span>
+                        <span class="social-label">Continuar con X</span>
+                    </button>
+
+                </div>
+
+                <!-- ===== DIVISOR ===== -->
+                <div class="divider">
+                    <span>O con tu correo</span>
+                </div>
+
+                <!-- ===== FORMULARIO ===== -->
+                <form class="login-form" th:action="@{/usuario/login}" method="post" id="loginForm">
+
+                    <!-- Email -->
+                    <div class="input-field-wrap">
+                        <span class="input-icon"><i class="fas fa-envelope"></i></span>
+                        <input type="email" id="email" name="email" class="field-input"
+                            placeholder="Tu correo electronico" required autocomplete="email">
+                    </div>
+
+                    <!-- Contrasena -->
+                    <div class="input-field-wrap">
+                        <span class="input-icon"><i class="fas fa-lock"></i></span>
+                        <input type="password" id="password" name="contrasena" class="field-input"
+                            placeholder="Contrasena" required autocomplete="current-password">
+                        <button type="button" class="toggle-pwd" id="togglePwd" onclick="togglePassword()"
+                            aria-label="Mostrar contrasena">
+                            <i class="fas fa-eye" id="togglePwdIcon"></i>
+                        </button>
+                    </div>
+
+                    <!-- Recuperar contrasena -->
+                    <div class="forgot-row">
+                        <a href="#" class="forgot-link">Recuperar contrasena?</a>
+                    </div>
+
+                    <!-- Boton Iniciar Sesion -->
+                    <button type="submit" class="btn-submit" id="submitBtn">
+                        Iniciar Sesion
+                    </button>
+
+                </form>
+
+                <!-- Registro -->
+                <p class="register-text">
+                    ¿No tienes cuenta?
+                    <a th:href="@{/usuario/registro}" href="registro_new.html" class="register-link">Regístrate aquí</a>
+                </p>
+
+                <!-- Volver al Inicio -->
+                <a th:href="@{/}" href="/" class="back-home-link" id="backHomeLogin">
+                    <i class="fas fa-home"></i> Volver a la página principal
+                </a>
+
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function togglePassword() {
+            const input = document.getElementById('password');
+            const icon = document.getElementById('togglePwdIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        }
+
+        function closeToast(id) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.add('toast-hiding');
+                setTimeout(() => el.remove(), 350);
+            }
+        }
+
+        // Auto-dismiss: cierra todos los toasts despues de 5 segundos
+        document.addEventListener('DOMContentLoaded', function () {
+            const toasts = document.querySelectorAll('.toast');
+            toasts.forEach(function (toast) {
+                // Entrada con animacion
+                setTimeout(function () {
+                    toast.classList.add('toast-hiding');
+                    setTimeout(function () { toast.remove(); }, 350);
+                }, 5000);
+            });
+        });
+    </script>
+
+</body>
+
+</html>

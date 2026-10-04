@@ -1,0 +1,703 @@
+/* ================================================================
+   CULTIVUS - LOGIN NEW CSS
+   Diseno basado en screenshot de referencia (AgroMarket style)
+   Layout: panel izquierdo 58% imagen+logo | panel derecho 42% form
+   ================================================================ */
+
+:root {
+    --cv-primary:    #2d6a1f;
+    --cv-hover:      #235218;
+    --cv-light:      #3a8228;
+
+    --white:         #ffffff;
+    --gray-50:       #f9fafb;
+    --gray-100:      #f3f4f6;
+    --gray-200:      #e5e7eb;
+    --gray-300:      #d1d5db;
+    --gray-400:      #9ca3af;
+    --gray-500:      #6b7280;
+    --gray-700:      #374151;
+    --gray-900:      #111827;
+
+    --radius-input:  8px;
+    --radius-btn:    10px;
+    --radius-social: 10px;
+
+    --transition:    all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+*, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    background: var(--white);
+    color: var(--gray-900);
+}
+
+/* ================================================================
+   LAYOUT PRINCIPAL
+   ================================================================ */
+#container {
+    display: flex;
+    width: 100%;
+    height: 100vh;
+}
+
+/* ================================================================
+   PANEL IZQUIERDO - Imagen de campo con logo arriba izquierda
+   ================================================================ */
+.panel-left {
+    position: relative;
+    width: 58%;
+    background:
+        url('https://images.unsplash.com/photo-1500937386664-56d1dfef3854?auto=format&fit=crop&w=1400&q=85')
+        center center / cover no-repeat;
+    overflow: hidden;
+}
+
+/* Degradado suave en la parte superior para legibilidad del logo */
+.panel-left::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to bottom,
+        rgba(0, 0, 0, 0.45) 0%,
+        rgba(0, 0, 0, 0.12) 35%,
+        rgba(0, 0, 0, 0.06) 100%
+    );
+    z-index: 1;
+}
+
+/* Logo + texto en esquina superior izquierda */
+.brand-top {
+    position: absolute;
+    top: 26px;
+    left: 28px;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.brand-logo-box {
+    width: 46px;
+    height: 46px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.18);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.brand-logo-img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+.brand-text-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.brand-name {
+    font-size: 20px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.3px;
+    line-height: 1.15;
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+}
+
+.brand-tagline {
+    font-size: 11px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.80);
+    letter-spacing: 0.1px;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+}
+
+/* ================================================================
+   PANEL DERECHO - Formulario
+   ================================================================ */
+.panel-right {
+    width: 42%;
+    background: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 48px;
+    overflow-y: auto;
+}
+
+.form-container {
+    width: 100%;
+    max-width: 360px;
+}
+
+/* --- Encabezado --- */
+.form-header {
+    text-align: center;
+    margin-bottom: 26px;
+}
+
+.form-title {
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--gray-900);
+    letter-spacing: -0.8px;
+    margin-bottom: 5px;
+}
+
+.form-subtitle {
+    font-size: 14px;
+    color: var(--gray-500);
+    font-weight: 400;
+}
+
+/* --- Alertas --- */
+.alert {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 14px;
+    border-radius: var(--radius-input);
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 14px;
+}
+
+.alert-success {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.alert-error {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+/* ================================================================
+   BOTONES SOCIALES - apilados verticalmente
+   ================================================================ */
+.social-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+/* Base comun para todos los botones sociales */
+.social-row {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 13px 18px;
+    border-radius: var(--radius-social);
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    text-decoration: none;
+    border: none;
+    transition: var(--transition);
+    position: relative;
+}
+
+.social-icon-wrap {
+    width: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    flex-shrink: 0;
+}
+
+.social-icon-wrap i {
+    font-size: 17px;
+}
+
+.social-label {
+    flex: 1;
+    text-align: center;
+    /* Compensamos el ancho del icono para centrado optico */
+    padding-right: 36px;
+}
+
+/* Google: fondo blanco con borde gris */
+.social-row.google {
+    background: var(--white);
+    border: 1.5px solid var(--gray-300);
+    color: var(--gray-700);
+}
+
+.social-row.google:hover {
+    border-color: var(--gray-400);
+    background: var(--gray-50);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
+}
+
+/* Facebook: azul de marca */
+.social-row.facebook {
+    background: #1877f2;
+    color: #ffffff;
+    border: 1.5px solid transparent;
+}
+
+.social-row.facebook:hover:not(:disabled) {
+    background: #1565d8;
+    box-shadow: 0 4px 14px rgba(24, 119, 242, 0.40);
+    transform: translateY(-1px);
+}
+
+/* Twitter/X: negro */
+.social-row.twitter {
+    background: #000000;
+    color: #ffffff;
+    border: 1.5px solid transparent;
+}
+
+.social-row.twitter:hover:not(:disabled) {
+    background: #111111;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+    transform: translateY(-1px);
+}
+
+.social-row:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* ================================================================
+   DIVISOR
+   ================================================================ */
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 4px 0 16px;
+    color: var(--gray-400);
+    font-size: 13px;
+    font-weight: 400;
+}
+
+.divider::before,
+.divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--gray-200);
+}
+
+/* ================================================================
+   FORMULARIO - campos con icono integrado dentro
+   ================================================================ */
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.input-field-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-icon {
+    position: absolute;
+    left: 14px;
+    color: var(--gray-400);
+    font-size: 14px;
+    pointer-events: none;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+}
+
+.field-input {
+    width: 100%;
+    padding: 13px 14px 13px 42px;
+    font-size: 14px;
+    font-family: inherit;
+    color: var(--gray-900);
+    background: var(--white);
+    border: 1.5px solid var(--gray-300);
+    border-radius: var(--radius-input);
+    outline: none;
+    transition: var(--transition);
+}
+
+.field-input::placeholder {
+    color: var(--gray-400);
+}
+
+.field-input:focus {
+    border-color: var(--cv-primary);
+    box-shadow: 0 0 0 3px rgba(45, 106, 31, 0.10);
+}
+
+/* Toggle mostrar/ocultar contrasena */
+.toggle-pwd {
+    position: absolute;
+    right: 12px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--gray-400);
+    padding: 6px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    transition: color 0.15s;
+    font-size: 14px;
+}
+
+.toggle-pwd:hover {
+    color: var(--cv-primary);
+}
+
+/* ================================================================
+   RECUPERAR CONTRASENA
+   ================================================================ */
+.forgot-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: -2px;
+}
+
+.forgot-link {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--cv-primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: color 0.15s;
+}
+
+.forgot-link:hover {
+    color: var(--cv-hover);
+}
+
+/* ================================================================
+   BOTON INICIAR SESION
+   ================================================================ */
+.btn-submit {
+    width: 100%;
+    padding: 14px;
+    background: var(--cv-primary);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-btn);
+    font-size: 16px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-top: 4px;
+    letter-spacing: 0.2px;
+}
+
+.btn-submit:hover {
+    background: var(--cv-hover);
+    box-shadow: 0 6px 18px rgba(45, 106, 31, 0.35);
+    transform: translateY(-1px);
+}
+
+.btn-submit:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+/* ================================================================
+   TEXTO REGISTRO
+   ================================================================ */
+.register-text {
+    text-align: center;
+    margin-top: 22px;
+    font-size: 14px;
+    color: var(--gray-500);
+}
+
+.register-link {
+    color: var(--cv-primary);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    transition: color 0.15s;
+}
+
+.register-link:hover {
+    color: var(--cv-hover);
+}
+
+/* ================================================================
+   RESPONSIVE
+   ================================================================ */
+@media (max-width: 900px) {
+    .panel-left { width: 50%; }
+    .panel-right { width: 50%; padding: 32px 30px; }
+}
+
+@media (max-width: 768px) {
+    html, body { overflow: auto; }
+    #container {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+    }
+    .panel-left {
+        width: 100%;
+        height: 200px;
+    }
+    .panel-right {
+        width: 100%;
+        padding: 32px 24px;
+        align-items: flex-start;
+    }
+    .form-container {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 420px) {
+    .panel-right { padding: 24px 18px; }
+}
+
+/* Accesibilidad */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Seleccion de texto */
+::selection {
+    background: var(--cv-primary);
+    color: var(--white);
+}
+
+/* ================================================================
+   TOASTS FLOTANTES
+   Posicionados fuera del flujo del documento: nunca causan scroll
+   ================================================================ */
+
+/* Contenedor de toasts: posicion fija, no ocupa espacio en layout */
+.toast-zone {
+    position: fixed;
+    top: 20px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    pointer-events: none; /* Solo los toasts individuales capturan eventos */
+    max-width: 360px;
+    width: calc(100% - 48px);
+}
+
+/* Toast base */
+.toast {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    font-size: 13.5px;
+    font-weight: 500;
+    font-family: inherit;
+    line-height: 1.4;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+    pointer-events: all;
+    /* Animacion de entrada: aparece deslizandose desde la derecha */
+    animation: toastIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes toastIn {
+    from {
+        opacity: 0;
+        transform: translateX(30px) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+}
+
+/* Animacion de salida al cerrar */
+.toast.toast-hiding {
+    animation: toastOut 0.32s ease forwards;
+}
+
+@keyframes toastOut {
+    from {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(30px) scale(0.94);
+    }
+}
+
+/* Icono del toast */
+.toast > i:first-child {
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+/* Texto del toast (ocupa el espacio disponible) */
+.toast > span {
+    flex: 1;
+}
+
+/* Boton de cierre */
+.toast-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+    opacity: 0.55;
+    transition: opacity 0.15s, background 0.15s;
+}
+
+.toast-close:hover {
+    opacity: 1;
+}
+
+/* Variante exito */
+.toast.toast-success {
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+}
+
+.toast.toast-success .toast-close {
+    color: #065f46;
+}
+
+.toast.toast-success .toast-close:hover {
+    background: rgba(6, 95, 70, 0.08);
+}
+
+/* Variante error */
+.toast.toast-error {
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.toast.toast-error .toast-close {
+    color: #991b1b;
+}
+
+.toast.toast-error .toast-close:hover {
+    background: rgba(153, 27, 27, 0.08);
+}
+
+/* Responsive: toasts a pantalla completa en movil */
+@media (max-width: 480px) {
+    .toast-zone {
+        top: 12px;
+        right: 12px;
+        left: 12px;
+        width: auto;
+        max-width: none;
+    }
+}
+
+/* ================================================================
+   BOTON IR AL INICIO - Panel izquierdo
+   ================================================================ */
+.btn-home {
+    position: absolute;
+    bottom: 32px;
+    left: 28px;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 50px;
+    color: #ffffff;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    letter-spacing: 0.2px;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.btn-home:hover {
+    background: rgba(255, 255, 255, 0.28);
+    border-color: rgba(255, 255, 255, 0.55);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+.btn-home i {
+    font-size: 12px;
+    transition: transform 0.2s ease;
+}
+
+.btn-home:hover i {
+    transform: translateX(-3px);
+}
+
+/* ================================================================
+   LINK VOLVER AL INICIO - Panel derecho (bajo el form)
+   ================================================================ */
+.back-home-link {
+    display: block;
+    text-align: center;
+    margin-top: 14px;
+    font-size: 13px;
+    color: var(--gray-400);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.back-home-link i {
+    margin-right: 5px;
+    font-size: 12px;
+}
+
+.back-home-link:hover {
+    color: var(--cv-primary);
+}
