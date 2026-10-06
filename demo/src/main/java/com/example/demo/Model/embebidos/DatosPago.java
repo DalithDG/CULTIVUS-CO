@@ -8,7 +8,7 @@ public class DatosPago {
     private String metodo;
     private Double monto;
     // PENDIENTE, COMPLETADO, FALLIDO, REEMBOLSADO
-    private String estado = "COMPLETADO";
+    private String estado = "PENDIENTE";
     private LocalDateTime fechaPago;
     // Referencia única enviada a Wompi (CUL-...) y id de la transacción devuelto por Wompi
     private String referencia;
@@ -16,13 +16,13 @@ public class DatosPago {
 
     public DatosPago() {
         this.fechaPago = LocalDateTime.now();
-        this.estado = "COMPLETADO";
+        this.estado = "PENDIENTE";
     }
 
     public DatosPago(String metodo, Double monto) {
         this.metodo = metodo;
         this.monto = monto;
-        this.estado = "COMPLETADO";
+        this.estado = "PENDIENTE";
         this.fechaPago = LocalDateTime.now();
     }
 
