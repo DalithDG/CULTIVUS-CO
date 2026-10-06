@@ -47,7 +47,7 @@ public class VendedorController {
         }
 
         model.addAttribute("usuario", usuario);
-        return "registro-vendedor";
+        return "vendedor/registro-vendedor";
     }
 
     /**
@@ -144,7 +144,7 @@ public class VendedorController {
         }
 
         model.addAttribute("usuario", usuario);
-        return "inicio-vendedor";
+        return "vendedor/inicio-vendedor";
     }
 
     /**
@@ -170,7 +170,7 @@ public class VendedorController {
         
         model.addAttribute("perfilVendedor", usuario.getPerfilVendedor());
         model.addAttribute("usuario", usuario);
-        return "mis-productos";
+        return "vendedor/mis-productos";
     }
 
     /**
@@ -194,7 +194,7 @@ public class VendedorController {
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("perfilVendedor", perfil);
-        return "perfil";
+        return "vendedor/perfil";
     }
 
     /**
@@ -218,7 +218,7 @@ public class VendedorController {
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("perfilVendedor", perfil);
-        return "editar-perfil-vendedor";
+        return "vendedor/editar-perfil-vendedor";
     }
 
     /**
@@ -298,7 +298,7 @@ public class VendedorController {
         model.addAttribute("enProceso", enProceso);
         model.addAttribute("completados", completados);
 
-        return "ventas-vendedor";
+        return "vendedor/ventas-vendedor";
     }
 
     /**
@@ -334,7 +334,7 @@ public class VendedorController {
         model.addAttribute("usuario", usuario);
         model.addAttribute("pedido", pedido);
         model.addAttribute("detalles", pedido.getItems());
-        return "detalle-pedido-vendedor";
+        return "vendedor/detalle-pedido-vendedor";
     }
 
     /**

@@ -32,7 +32,7 @@ public class RoutesController {
 
         model.addAttribute("productos", productos);
         model.addAttribute("categorias", categoriaRepository.findAll());
-        return "inicio-publico";
+        return "public/inicio-publico";
     }
 
     @GetMapping("/product-detall")
@@ -43,12 +43,12 @@ public class RoutesController {
     @GetMapping("/login")
     public String login(Model model) {
         model.addAttribute("usuario", new Usuario());
-        return "login";
+        return "auth/login";
     }
 
     @GetMapping("/registro")
     public String registro() {
-        return "registro";
+        return "auth/registro";
     }
 
     @GetMapping("/register")
@@ -58,14 +58,14 @@ public class RoutesController {
 
     @GetMapping("/frutas")
     public String verFrutas() {
-        return categoriaRepository.findByNombre("Frutas")
+        return categoriaRepository.findByNombre("public/frutas")
                 .map(cat -> "redirect:/category?categoria=" + cat.getId())
                 .orElse("redirect:/category");
     }
 
     @GetMapping("/verduras")
     public String verVerduras() {
-        return categoriaRepository.findByNombre("Verduras")
+        return categoriaRepository.findByNombre("public/verduras")
                 .map(cat -> "redirect:/category?categoria=" + cat.getId())
                 .orElse("redirect:/category");
     }
@@ -93,7 +93,7 @@ public class RoutesController {
 
     @GetMapping("/miel")
     public String verMiel() {
-        return categoriaRepository.findByNombre("Miel")
+        return categoriaRepository.findByNombre("public/miel")
                 .map(cat -> "redirect:/category?categoria=" + cat.getId())
                 .orElse("redirect:/category");
     }
