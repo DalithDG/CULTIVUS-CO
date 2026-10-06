@@ -64,7 +64,7 @@ public class UsuarioController {
     public String mostrarFormularioRegistro(Model model) {
         model.addAttribute("usuario", new Usuario());
         model.addAttribute("departamentos", ubicacionService.obtenerTodos());
-        return "registro";
+        return "auth/registro";
     }
 
     @PostMapping("/guardar")
@@ -81,27 +81,27 @@ public class UsuarioController {
             if (nombre == null || nombre.trim().isEmpty()) {
                 model.addAttribute("error", "El nombre es requerido");
                 preservarDatosFormulario(model, nombre, email, nombreDepartamento, nombreCiudad);
-                return "registro";
+                return "auth/registro";
             }
             if (email == null || email.trim().isEmpty()) {
                 model.addAttribute("error", "El correo electrónico es requerido");
                 preservarDatosFormulario(model, nombre, email, nombreDepartamento, nombreCiudad);
-                return "registro";
+                return "auth/registro";
             }
             if (contrasena == null || contrasena.trim().isEmpty()) {
                 model.addAttribute("error", "La contraseña es requerida");
                 preservarDatosFormulario(model, nombre, email, nombreDepartamento, nombreCiudad);
-                return "registro";
+                return "auth/registro";
             }
             if (nombreDepartamento == null || nombreDepartamento.trim().isEmpty()) {
                 model.addAttribute("error", "El departamento es requerido");
                 preservarDatosFormulario(model, nombre, email, nombreDepartamento, nombreCiudad);
-                return "registro";
+                return "auth/registro";
             }
             if (nombreCiudad == null || nombreCiudad.trim().isEmpty()) {
                 model.addAttribute("error", "La ciudad es requerida");
                 preservarDatosFormulario(model, nombre, email, nombreDepartamento, nombreCiudad);
-                return "registro";
+                return "auth/registro";
             }
 
             String nombreLimpio = nombre.trim();
@@ -110,17 +110,17 @@ public class UsuarioController {
             if (nombreLimpio.length() < 3) {
                 model.addAttribute("error", "El nombre debe tener al menos 3 caracteres");
                 preservarDatosFormulario(model, nombre, email, nombreDepartamento, nombreCiudad);
-                return "registro";
+                return "auth/registro";
             }
             if (nombreLimpio.length() > 50) {
                 model.addAttribute("error", "El nombre no puede exceder 50 caracteres");
                 preservarDatosFormulario(model, nombre, email, nombreDepartamento, nombreCiudad);
-                return "registro";
+                return "auth/registro";
             }
             if (!nombreLimpio.matches("^[a-zA-ZáéíóúÁÉÍÓÚñÑ\\s]+$")) {
                 model.addAttribute("error", "El nombre solo puede contener letras y espacios");
                 preservarDatosFormulario(model, nombre, email, nombreDepartamento, nombreCiudad);
-                return "registro";
+                return "auth/registro";
             }
 
             String emailLimpio = email.trim().toLowerCase();
@@ -130,12 +130,12 @@ public class UsuarioController {
             if (!emailLimpio.matches(emailRegex)) {
                 model.addAttribute("error", "El formato del correo electrónico no es válido");
                 preservarDatosFormulario(model, nombre, email, nombreDepartamento, nombreCiudad);
-                return "registro";
+                return "auth/registro";
             }
             if (usuarioService.existeEmail(emailLimpio)) {
                 model.addAttribute("error", "Este correo ya está registrado");
                 preservarDatosFormulario(model, nombre, email, nombreDepartamento, nombreCiudad);
-                return "registro";
+                return "auth/registro";
             }
 
             // Validaciones de contraseña
@@ -143,7 +143,7 @@ public class UsuarioController {
             if (validacionContrasena != null) {
                 model.addAttribute("error", validacionContrasena);
                 preservarDatosFormulario(model, nombre, email, nombreDepartamento, nombreCiudad);
-                return "registro";
+                return "auth/registro";
             }
 
             // ── Crear ubicación embebida ──────────────────────────────
@@ -167,13 +167,13 @@ public class UsuarioController {
 
         } catch (Exception e) {
             model.addAttribute("error", "Error al registrar: " + e.getMessage());
-            return "registro";
+            return "auth/registro";
         }
     }
 
     @GetMapping("/login")
     public String mostrarLogin() {
-        return "login";
+        return "auth/login";
     }
 
     @PostMapping("/login")
@@ -188,7 +188,7 @@ public class UsuarioController {
         if (email == null || email.trim().isEmpty() ||
                 contrasena == null || contrasena.trim().isEmpty()) {
             model.addAttribute("error", "El correo y la contraseña son requeridos");
-            return "login";
+            return "auth/login";
         }
 
         // Normalizar email (igual que cuando se registró)
@@ -199,7 +199,7 @@ public class UsuarioController {
 
         if (usuario == null) {
             model.addAttribute("error", "Correo o contraseña incorrectos");
-            return "login";
+            return "auth/login";
         }
 
         // Guardar el usuario en sesión
@@ -256,14 +256,14 @@ public class UsuarioController {
         // Redirigir según rol (priorizar vendedor para su inicio especial, pero ambos pueden comprar)
         // Si se solicita explícitamente modo comprador, mostrar inicio-comprador
         if ("comprador".equals(modo)) {
-            return "inicio-comprador";
+            return "comprador/inicio-comprador";
         }
         
         if (usuario.hasRole(Role.VENDEDOR)) {
             return "inicio-vendedor";
         }
 
-        return "inicio-comprador";
+        return "comprador/inicio-comprador";
     }
 
     @GetMapping("/perfil")
@@ -284,7 +284,7 @@ public class UsuarioController {
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("departamentos", ubicacionService.obtenerTodos());
-        return "perfil";
+        return "comprador/perfil";
     }
 
     @PostMapping("/perfil/actualizar")
@@ -479,3 +479,4 @@ public class UsuarioController {
         return "notificaciones";
     }
 }
+

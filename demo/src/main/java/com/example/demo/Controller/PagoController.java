@@ -124,7 +124,7 @@ public class PagoController {
         model.addAttribute("detalles", carrito.getItems());
         model.addAttribute("total", totalConEnvio);
 
-        return "pago";
+        return "comprador/pago";
     }
 
     /**
@@ -353,7 +353,7 @@ public class PagoController {
         model.addAttribute("detalles", pedido.getItems());
         model.addAttribute("pago", pedido.getPago());
 
-        return "confirmacion-pago";
+        return "comprador/confirmacion-pago";
     }
 
     /**

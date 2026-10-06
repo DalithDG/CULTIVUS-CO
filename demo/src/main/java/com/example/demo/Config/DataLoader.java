@@ -68,7 +68,14 @@ public class DataLoader implements CommandLineRunner {
             usuarioRepository.save(admin);
             logger.info("✅ Contraseña del admin migrada a BCrypt correctamente");
         } else {
-            logger.info("ℹ️  Usuario ADMIN ya existe con contraseña hasheada. Sin cambios.");
+            if (!passwordEncoder.matches(ADMIN_PASSWORD, contrasenaActual)) {
+                logger.info("⚠️  La contraseña en BD no coincide con ADMIN_PASSWORD. Actualizando...");
+                admin.setContrasena(passwordEncoder.encode(ADMIN_PASSWORD));
+                usuarioRepository.save(admin);
+                logger.info("✅ Contraseña del admin actualizada a la definida en código.");
+            } else {
+                logger.info("ℹ️  Usuario ADMIN ya existe con contraseña hasheada y es correcta. Sin cambios.");
+            }
         }
     }
 
