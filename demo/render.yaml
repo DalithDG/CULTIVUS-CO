@@ -17,7 +17,7 @@ services:
         value: prod
       - key: SPRING_DATA_MONGODB_URI
         sync: false
-      - key: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID
-        sync: false
-      - key: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET
-        sync: false
+      #- key: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID
+      #  sync: false
+      #- key: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET
+      #  sync: false

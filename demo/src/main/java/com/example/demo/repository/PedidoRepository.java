@@ -24,4 +24,7 @@ public interface PedidoRepository extends MongoRepository<Pedido, String> {
 
     // Buscar pedidos de un vendedor por estado
     List<Pedido> findByVendedor_IdAndEstado(String vendedorId, String estado);
+
+    // Buscar pedidos por referencia de pago (Wompi)
+    List<Pedido> findByPago_Referencia(String referencia);
 }

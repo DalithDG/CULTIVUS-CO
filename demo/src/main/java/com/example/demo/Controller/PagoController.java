@@ -48,6 +48,9 @@ public class PagoController {
     @Autowired
     private CatalogoService catalogoService;
 
+    @Autowired
+    private com.example.demo.services.WompiService wompiService;
+
     /**
      * Muestra el formulario de pago
      */
@@ -93,10 +96,33 @@ public class PagoController {
             }
         }
 
+        // Cálculo seguro de Wompi en el servidor
+        double subtotal = carrito.getTotalEstimado();
+        double costoEnvio = wompiService.obtenerCostoEnvioProvisional();
+        double totalConEnvio = subtotal + costoEnvio;
+        long amountInCents = wompiService.convertirACentavos(totalConEnvio);
+        String reference = wompiService.generarReferenciaUnica();
+        String currency = wompiService.getCurrency();
+        String signatureIntegrity = "";
+        try {
+            signatureIntegrity = wompiService.generarFirmaIntegridad(reference, amountInCents, currency);
+        } catch (IllegalStateException ex) {
+            // Wompi sin configurar: la pasarela simulada sigue disponible
+            model.addAttribute("wompiError", "Wompi no está configurado en el servidor");
+        }
+
+        model.addAttribute("amountInCents", amountInCents);
+        model.addAttribute("reference", reference);
+        model.addAttribute("signatureIntegrity", signatureIntegrity);
+        model.addAttribute("wompiPublicKey", wompiService.getPublicKey());
+        model.addAttribute("currency", currency);
+        model.addAttribute("subtotal", subtotal);
+        model.addAttribute("costoEnvio", costoEnvio);
+
         model.addAttribute("usuario", usuario);
         model.addAttribute("carrito", carrito);
         model.addAttribute("detalles", carrito.getItems());
-        model.addAttribute("total", carrito.getTotalEstimado());
+        model.addAttribute("total", totalConEnvio);
 
         return "pago";
     }
@@ -328,5 +354,211 @@ public class PagoController {
         model.addAttribute("pago", pedido.getPago());
 
         return "confirmacion-pago";
+    }
+
+    /**
+     * API: Pre-registra el pedido en estado PENDIENTE y devuelve datos firmados para el Widget de Wompi.
+     * Se crea un pedido por vendedor, todos con la misma referencia de pago.
+     */
+    @PostMapping("/iniciar-wompi")
+    @ResponseBody
+    public org.springframework.http.ResponseEntity<?> iniciarPagoWompi(
+            @RequestBody(required = false) java.util.Map<String, String> payload,
+            HttpSession session) {
+        try {
+            Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+            if (usuario == null) {
+                return org.springframework.http.ResponseEntity.status(401).body(
+                        java.util.Map.of("ok", false, "error", "Debe iniciar sesión para realizar el pago"));
+            }
+
+            Carrito carrito = carritoRepository.findByUsuarioId(usuario.getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Carrito no encontrado"));
+
+            if (carrito.getItems().isEmpty()) {
+                return org.springframework.http.ResponseEntity.badRequest().body(
+                        java.util.Map.of("ok", false, "error", "Su carrito está vacío"));
+            }
+
+            double limiteMaximo = configService.obtenerValorDouble("LIMITE_COMPRA_MAX", 5000000.0);
+            if (carrito.getTotalEstimado() > limiteMaximo) {
+                return org.springframework.http.ResponseEntity.badRequest().body(java.util.Map.of("ok", false,
+                        "error", "El total de su compra excede el límite permitido de $"
+                                + String.format("%,.0f", limiteMaximo)));
+            }
+
+            // Verificar stock antes de registrar el pedido
+            for (ProductoCarrito item : carrito.getItems()) {
+                if (item.getOfertaId() != null) {
+                    OfertaVendedor oferta = ofertaRepository.findById(item.getOfertaId())
+                            .orElseThrow(() -> new IllegalArgumentException(
+                                    "Oferta no encontrada para: " + item.getNombre()));
+                    if (oferta.getStock() < item.getCantidad()) {
+                        return org.springframework.http.ResponseEntity.badRequest().body(java.util.Map.of("ok", false,
+                                "error", "El producto " + item.getNombre() + " no tiene suficiente stock"));
+                    }
+                }
+            }
+
+            // Cálculo seguro del total en centavos
+            double subtotal = carrito.getTotalEstimado();
+            double costoEnvio = wompiService.obtenerCostoEnvioProvisional();
+            double totalConEnvio = subtotal + costoEnvio;
+            long amountInCents = wompiService.convertirACentavos(totalConEnvio);
+
+            // Reutilizar referencia del frontend o generar una nueva
+            String reference = (payload != null
+                    && payload.containsKey("reference")
+                    && payload.get("reference") != null
+                    && !payload.get("reference").trim().isEmpty())
+                            ? payload.get("reference").trim()
+                            : wompiService.generarReferenciaUnica();
+
+            // Si la referencia ya existe y es de otro comprador, no se reutiliza
+            List<Pedido> existentes = pedidoRepository.findByPago_Referencia(reference);
+            boolean pedidosPropios = !existentes.isEmpty() && existentes.stream().allMatch(
+                    p -> p.getComprador() != null && usuario.getId().equals(p.getComprador().getId()));
+            if (!existentes.isEmpty() && !pedidosPropios) {
+                reference = wompiService.generarReferenciaUnica();
+                existentes = new ArrayList<>();
+            }
+
+            String currency = wompiService.getCurrency();
+            String signatureIntegrity = wompiService.generarFirmaIntegridad(reference, amountInCents, currency);
+            String direccionEnvio = (payload != null && payload.get("direccionEnvio") != null)
+                    ? payload.get("direccionEnvio") : "";
+
+            // Crear pedidos PENDIENTE (uno por vendedor) solo si aún no existen para esta referencia
+            if (existentes.isEmpty()) {
+                java.util.Map<String, List<ProductoPedido>> itemsPorVendedor = new java.util.HashMap<>();
+                java.util.Map<String, DatosVendedor> snapshotsVendedores = new java.util.HashMap<>();
+
+                for (ProductoCarrito item : carrito.getItems()) {
+                    String vendedorIdLocal = item.getVendedorId();
+                    OfertaVendedor oferta = item.getOfertaId() != null
+                            ? ofertaRepository.findById(item.getOfertaId()).orElse(null)
+                            : null;
+                    if (vendedorIdLocal == null && oferta != null && oferta.getVendedor() != null) {
+                        vendedorIdLocal = oferta.getVendedor().getId();
+                    }
+                    if (vendedorIdLocal == null) {
+                        throw new IllegalArgumentException(
+                                "No se pudo identificar al vendedor del producto: " + item.getNombre());
+                    }
+
+                    String unidadAb = item.getUnidadAbreviatura() != null ? item.getUnidadAbreviatura() : "unid";
+                    ProductoPedido itemPedido = new ProductoPedido(
+                            item.getOfertaId() != null ? item.getOfertaId() : item.getProductoId(),
+                            item.getNombre(),
+                            item.getImagenUrl(),
+                            item.getPrecioUnitario(),
+                            item.getCantidad(),
+                            unidadAb);
+                    itemsPorVendedor.computeIfAbsent(vendedorIdLocal, k -> new ArrayList<>()).add(itemPedido);
+
+                    if (!snapshotsVendedores.containsKey(vendedorIdLocal) && oferta != null
+                            && oferta.getVendedor() != null) {
+                        snapshotsVendedores.put(vendedorIdLocal, oferta.getVendedor());
+                    }
+                }
+
+                DatosComprador comprador = new DatosComprador(usuario.getId(), usuario.getNombre());
+                DireccionPedido direccion = new DireccionPedido(
+                        direccionEnvio,
+                        usuario.getUbicacion() != null ? usuario.getUbicacion().getCiudad() : "",
+                        usuario.getUbicacion() != null ? usuario.getUbicacion().getDepartamento() : "");
+
+                for (java.util.Map.Entry<String, List<ProductoPedido>> entry : itemsPorVendedor.entrySet()) {
+                    double subtotalVendedor = entry.getValue().stream().mapToDouble(ProductoPedido::getSubtotal).sum();
+                    DatosPago datosPago = new DatosPago("WOMPI", subtotalVendedor);
+                    datosPago.setEstado("PENDIENTE");
+                    datosPago.setReferencia(reference);
+
+                    Pedido pedido = new Pedido(comprador, snapshotsVendedores.get(entry.getKey()), direccion,
+                            entry.getValue(), datosPago);
+                    pedido.setEstado("PENDIENTE");
+                    pedidoRepository.save(pedido);
+                }
+            }
+
+            return org.springframework.http.ResponseEntity.ok(java.util.Map.of(
+                    "ok", true,
+                    "reference", reference,
+                    "amountInCents", amountInCents,
+                    "currency", currency,
+                    "signatureIntegrity", signatureIntegrity,
+                    "publicKey", wompiService.getPublicKey()));
+
+        } catch (Exception e) {
+            return org.springframework.http.ResponseEntity.badRequest().body(
+                    java.util.Map.of("ok", false, "error", "Error al iniciar pago: " + e.getMessage()));
+        }
+    }
+
+    /**
+     * Retorno tras interacción con el Widget de Wompi.
+     */
+    @GetMapping("/resultado")
+    public String resultadoPago(
+            @RequestParam(value = "reference", required = false) String reference,
+            @RequestParam(value = "id", required = false) String transactionId,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuario == null) {
+            return "redirect:/usuario/login";
+        }
+
+        List<Pedido> pedidos = (reference != null && !reference.trim().isEmpty())
+                ? pedidoRepository.findByPago_Referencia(reference.trim())
+                : java.util.Collections.emptyList();
+
+        // Solo pedidos que pertenezcan al usuario autenticado
+        pedidos = pedidos.stream()
+                .filter(p -> p.getComprador() != null && usuario.getId().equals(p.getComprador().getId()))
+                .collect(java.util.stream.Collectors.toList());
+
+        if (pedidos.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error",
+                    "No se encontró el pedido correspondiente a la transacción.");
+            return "redirect:/";
+        }
+
+        if (transactionId != null && !transactionId.trim().isEmpty()) {
+            for (Pedido p : pedidos) {
+                if (p.getPago() != null) {
+                    p.getPago().setTransaccionId(transactionId);
+                    pedidoRepository.save(p);
+                }
+            }
+        }
+
+        // Limpiar carrito tras confirmar retorno de Wompi
+        carritoRepository.findByUsuarioId(usuario.getId()).ifPresent(carritoRepository::delete);
+
+        redirectAttributes.addFlashAttribute("mensaje",
+                "Transacción registrada. Pedido #" + pedidos.get(0).getId());
+        return "redirect:/pago/confirmacion/" + pedidos.get(0).getId();
+    }
+
+    /**
+     * Página de prueba mínima del widget de Wompi.
+     */
+    @GetMapping("/test-wompi")
+    public String mostrarTestWompi(Model model) {
+        double montoCop = 10000.0;
+        long amountInCents = wompiService.convertirACentavos(montoCop);
+        String reference = wompiService.generarReferenciaUnica();
+        String currency = wompiService.getCurrency();
+        String signatureIntegrity = wompiService.generarFirmaIntegridad(reference, amountInCents, currency);
+
+        model.addAttribute("publicKey", wompiService.getPublicKey());
+        model.addAttribute("reference", reference);
+        model.addAttribute("montoCop", montoCop);
+        model.addAttribute("amountInCents", amountInCents);
+        model.addAttribute("currency", currency);
+        model.addAttribute("signatureIntegrity", signatureIntegrity);
+        return "test-wompi";
     }
 }

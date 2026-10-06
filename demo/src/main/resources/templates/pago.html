@@ -147,10 +147,27 @@
             <div class="form-section">
                 <h2 style="margin-bottom: 20px; color: #333;">Información de Pago</h2>
 
-                <form th:action="@{/pago/procesar}" method="post">
+                <form id="formPago" th:action="@{/pago/procesar}" method="post">
 
-                    <!-- ✅ Radio buttons de método de pago -->
+                    <div th:if="${wompiError}" class="alert alert-error" th:text="${wompiError}"></div>
+
+                    <!-- Selección de pasarela -->
                     <div class="form-group">
+                        <label>Pasarela de Pago *</label>
+                        <div class="metodo-pago">
+                            <label class="metodo-option pasarela-opt selected" onclick="selectPasarela('WOMPI', this)">
+                                <input type="radio" name="tipoPasarela" value="WOMPI" checked>
+                                <i class="fa-solid fa-lock"></i> Wompi (Bancolombia)
+                            </label>
+                            <label class="metodo-option pasarela-opt" onclick="selectPasarela('SIMULADA', this)">
+                                <input type="radio" name="tipoPasarela" value="SIMULADA">
+                                <i class="fa-solid fa-flask"></i> Pago simulado
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- ✅ Radio buttons de método de pago (solo pasarela simulada) -->
+                    <div class="form-group" id="seccion-metodos-simulados" style="display: none;">
                         <label>Método de Pago *</label>
                         <div class="metodo-pago">
                             <label class="metodo-option" onclick="selectMetodo(this)">
@@ -190,8 +207,8 @@
                         </p>
                     </div>
 
-                    <button type="submit" class="btn-pagar">
-                        <i class="fa-solid fa-lock"></i> Confirmar y Pagar
+                    <button type="submit" id="btnPagar" class="btn-pagar">
+                        <i class="fa-solid fa-lock"></i> Pagar con Wompi
                     </button>
                 </form>
             </div>
@@ -221,11 +238,12 @@
                 <div class="resumen-item">
                     <span>Subtotal:</span>
                     <span>$<span th:text="${#numbers.formatDecimal(
-                        total, 0, 'COMMA', 0, 'POINT')}">0</span></span>
+                        subtotal, 0, 'COMMA', 0, 'POINT')}">0</span></span>
                 </div>
                 <div class="resumen-item">
-                    <span>Envío:</span>
-                    <span>Gratis</span>
+                    <span>Envío (provisional):</span>
+                    <span>$<span th:text="${#numbers.formatDecimal(
+                        costoEnvio, 0, 'COMMA', 0, 'POINT')}">0</span></span>
                 </div>
                 <div class="resumen-total">
                     <span>Total:</span>
@@ -236,23 +254,147 @@
         </div>
     </div>
 
-    <script>
+    <script type="text/javascript" src="https://checkout.wompi.co/widget.js"></script>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        let pasarelaSeleccionada = 'WOMPI';
+
+        // Valores pre-renderizados por el servidor (usados como fallback para referencia inicial)
+        const serverPublicKey          = /*[[${wompiPublicKey}]]*/ '';
+        const serverCurrency           = /*[[${currency}]]*/ 'COP';
+        const serverAmountInCents      = parseInt(/*[[${amountInCents}]]*/ 0, 10);
+        const serverReference          = /*[[${reference}]]*/ '';
+        const serverSignatureIntegrity = /*[[${signatureIntegrity}]]*/ '';
+
         function selectMetodo(element) {
-            document.querySelectorAll('.metodo-option').forEach(opt => {
+            document.querySelectorAll('#seccion-metodos-simulados .metodo-option').forEach(opt => {
                 opt.classList.remove('selected');
             });
             element.classList.add('selected');
             element.querySelector('input[type="radio"]').checked = true;
         }
 
-        // ✅ Validar método de pago antes de enviar el formulario
-        document.querySelector('form').addEventListener('submit', function (e) {
-            const metodoPago = document.querySelector('input[name="metodoPago"]:checked');
-            if (!metodoPago) {
-                e.preventDefault();
-                alert('Por favor seleccione un método de pago');
+        function selectPasarela(tipo, element) {
+            pasarelaSeleccionada = tipo;
+            document.querySelectorAll('.pasarela-opt').forEach(opt => opt.classList.remove('selected'));
+            element.classList.add('selected');
+            element.querySelector('input[name="tipoPasarela"]').checked = true;
+
+            const btnPagar = document.getElementById('btnPagar');
+            const seccionSimulada = document.getElementById('seccion-metodos-simulados');
+            if (tipo === 'WOMPI') {
+                if (seccionSimulada) seccionSimulada.style.display = 'none';
+                btnPagar.innerHTML = '<i class="fa-solid fa-lock"></i> Pagar con Wompi';
+            } else {
+                if (seccionSimulada) seccionSimulada.style.display = 'block';
+                btnPagar.innerHTML = '<i class="fa-solid fa-check"></i> Confirmar Pago Simulado';
+            }
+        }
+
+        document.getElementById('formPago').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            // ── Plan B: pasarela simulada ──
+            if (pasarelaSeleccionada === 'SIMULADA') {
+                const metodoPago = document.querySelector('input[name="metodoPago"]:checked');
+                if (!metodoPago) {
+                    alert('Por favor seleccione un método de pago simulado.');
+                    return;
+                }
+                this.submit();
+                return;
+            }
+
+            // ── Flujo Wompi Widget ──
+            if (typeof WidgetCheckout === 'undefined') {
+                alert('El script de Wompi no se pudo cargar. Revisa tu conexión o bloqueadores de publicidad.');
+                return;
+            }
+
+            const btn = document.getElementById('btnPagar');
+            const direccionEnvio = document.getElementById('direccionEnvio')
+                ? document.getElementById('direccionEnvio').value : '';
+
+            // Token CSRF (Thymeleaf lo inyecta como input oculto en el formulario)
+            const csrfInput = document.querySelector('#formPago input[name="_csrf"]');
+            const headers = { 'Content-Type': 'application/json' };
+            if (csrfInput) headers['X-CSRF-TOKEN'] = csrfInput.value;
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando...';
+
+            try {
+                // PASO A: Registrar pedido en el servidor y obtener datos firmados
+                console.log('[Wompi] Iniciando registro del pedido. Referencia previa:', serverReference);
+
+                const resp = await fetch('/pago/iniciar-wompi', {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify({ reference: serverReference, direccionEnvio: direccionEnvio })
+                });
+
+                if (!resp.ok) {
+                    const errText = await resp.text();
+                    throw new Error('Error del servidor (' + resp.status + '): ' + errText);
+                }
+
+                const data = await resp.json();
+                console.log('[Wompi] Respuesta del servidor:', data);
+
+                if (!data.ok) {
+                    throw new Error(data.error || 'El servidor rechazó la solicitud de pago.');
+                }
+
+                // PASO B: Construir redirectUrl con el dominio real (HTTPS en producción)
+                const redirectUrl = window.location.origin + '/pago/resultado?reference='
+                    + encodeURIComponent(data.reference);
+
+                console.log('[Wompi] Abriendo widget con parámetros del servidor:', {
+                    reference:      data.reference,
+                    amountInCents:  data.amountInCents,
+                    currency:       data.currency,
+                    redirectUrl:    redirectUrl
+                });
+
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Abriendo Wompi...';
+
+                // PASO C: Abrir el Widget con datos del servidor (no del HTML pre-renderizado)
+                const checkout = new WidgetCheckout({
+                    currency:      data.currency,
+                    amountInCents: data.amountInCents,
+                    reference:     data.reference,
+                    publicKey:     data.publicKey,
+                    signature: {
+                        integrity: data.signatureIntegrity
+                    },
+                    redirectUrl: redirectUrl
+                });
+
+                checkout.open(function (result) {
+                    const transaction = result.transaction;
+                    console.log('[Wompi] Resultado del widget:', transaction);
+
+                    if (transaction && transaction.id) {
+                        // Transacción procesada → ir a página de resultado
+                        window.location.href = '/pago/resultado?reference='
+                            + encodeURIComponent(data.reference)
+                            + '&id=' + encodeURIComponent(transaction.id);
+                    } else {
+                        // Usuario canceló o cerró el widget
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fa-solid fa-lock"></i> Pagar con Wompi';
+                    }
+                });
+
+            } catch (err) {
+                console.error('[Wompi] Error al iniciar el pago:', err);
+                alert('No se pudo iniciar el pago: ' + err.message);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-lock"></i> Pagar con Wompi';
             }
         });
+        /*]]>*/
     </script>
 </body>
 </html>

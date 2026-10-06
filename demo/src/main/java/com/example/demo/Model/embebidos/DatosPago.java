@@ -10,6 +10,9 @@ public class DatosPago {
     // PENDIENTE, COMPLETADO, FALLIDO, REEMBOLSADO
     private String estado = "COMPLETADO";
     private LocalDateTime fechaPago;
+    // Referencia única enviada a Wompi (CUL-...) y id de la transacción devuelto por Wompi
+    private String referencia;
+    private String transaccionId;
 
     public DatosPago() {
         this.fechaPago = LocalDateTime.now();
@@ -34,4 +37,10 @@ public class DatosPago {
 
     public LocalDateTime getFechaPago() { return fechaPago; }
     public void setFechaPago(LocalDateTime fechaPago) { this.fechaPago = fechaPago; }
+
+    public String getReferencia() { return referencia; }
+    public void setReferencia(String referencia) { this.referencia = referencia; }
+
+    public String getTransaccionId() { return transaccionId; }
+    public void setTransaccionId(String transaccionId) { this.transaccionId = transaccionId; }
 }

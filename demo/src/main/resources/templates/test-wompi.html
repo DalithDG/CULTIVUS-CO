@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba Widget Wompi - Cultivus</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f6f9; padding: 40px; }
+        .box { max-width: 650px; margin: auto; background: white; padding: 30px;
+               border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { padding: 10px; border: 1px solid #ddd; text-align: left; font-size: 14px; }
+        th { background: #f8f9fa; width: 35%; }
+        .btn { background: #27ae60; color: white; padding: 12px 24px; font-size: 16px;
+               font-weight: 600; border-radius: 8px; border: none; cursor: pointer; margin-top: 15px; }
+        .result { margin-top: 20px; padding: 15px; background: #eef2ff;
+                  border-left: 4px solid #4f46e5; display: none; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2 style="color:#27ae60;">🧪 Prueba Mínima Widget Wompi (Sandbox)</h2>
+        <p style="color:#666; font-size:14px;">
+            Valida que las claves y la firma SHA-256 estén correctas. Al presionar el botón se abre el Widget oficial.
+        </p>
+        <table>
+            <tr><th>Llave Pública</th><td th:text="${publicKey}"></td></tr>
+            <tr><th>Referencia</th><td th:text="${reference}"></td></tr>
+            <tr><th>Monto (COP)</th><td th:text="'$' + ${#numbers.formatDecimal(montoCop, 0, 'COMMA', 0, 'POINT')}"></td></tr>
+            <tr><th>Monto (centavos)</th><td th:text="${amountInCents}"></td></tr>
+            <tr><th>Moneda</th><td th:text="${currency}"></td></tr>
+            <tr><th>Firma SHA-256</th><td style="word-break:break-all;" th:text="${signatureIntegrity}"></td></tr>
+        </table>
+        <button id="btnTest" class="btn">💳 Abrir Widget de Wompi</button>
+        <div id="resultado" class="result">
+            <h4>Resultado:</h4>
+            <pre id="resultadoTexto" style="font-size:13px; margin:0;"></pre>
+        </div>
+    </div>
+
+    <script type="text/javascript" src="https://checkout.wompi.co/widget.js"></script>
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        const publicKey         = /*[[${publicKey}]]*/ '';
+        const currency          = /*[[${currency}]]*/ 'COP';
+        const amountInCents     = /*[[${amountInCents}]]*/ 1000000;
+        const reference         = /*[[${reference}]]*/ '';
+        const signatureIntegrity = /*[[${signatureIntegrity}]]*/ '';
+
+        document.getElementById('btnTest').addEventListener('click', function () {
+            if (typeof WidgetCheckout === 'undefined') {
+                alert('Error: No se pudo cargar el script del widget de Wompi. Revisa tu conexión.');
+                return;
+            }
+            console.log('[TEST] Parámetros del widget:', { publicKey, currency, amountInCents, reference, signatureIntegrity });
+
+            const checkout = new WidgetCheckout({
+                currency,
+                amountInCents,
+                reference,
+                publicKey,
+                signature: { integrity: signatureIntegrity }
+                // Sin redirectUrl en la prueba mínima
+            });
+
+            checkout.open(function (result) {
+                const t = result.transaction;
+                document.getElementById('resultado').style.display = 'block';
+                document.getElementById('resultadoTexto').textContent = JSON.stringify(t, null, 2);
+                if (t && t.status === 'APPROVED') alert('✅ Pago APROBADO: ' + t.id);
+                else if (t && t.status === 'DECLINED') alert('❌ Pago DECLINADO');
+            });
+        });
+        /*]]>*/
+    </script>
+</body>
+</html>
