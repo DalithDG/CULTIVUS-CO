@@ -194,7 +194,7 @@ public class VendedorController {
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("perfilVendedor", perfil);
-        return "vendedor/perfil";
+        return "vendedor/editar-perfil-vendedor";
     }
 
     /**

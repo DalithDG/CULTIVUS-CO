@@ -112,7 +112,7 @@ public class CatalogoController {
         model.addAttribute("categoriaSeleccionada", categoriaIds);
         model.addAttribute("ordenSeleccionado", orden);
 
-        return "category";
+        return "public/category";
     }
 
     /**
@@ -146,7 +146,7 @@ public class CatalogoController {
             model.addAttribute("promedioCalificacion", promedioCalificacion);
             model.addAttribute("totalResenas", totalResenas);
 
-            return "producto-detalle";
+            return "public/producto-detalle";
 
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -179,7 +179,7 @@ public class CatalogoController {
             model.addAttribute("usuario", usuario);
             model.addAttribute("resenas", resenas);
 
-            return "oferta-detalle";
+            return "public/oferta-detalle";
 
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());

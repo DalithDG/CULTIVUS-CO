@@ -86,7 +86,7 @@ public class ProductoController {
         model.addAttribute("catalogoProductos", catalogoAprobado);
         model.addAttribute("categorias", categorias);
         model.addAttribute("unidadesMedida", UNIDADES_MEDIDA);
-        return "agregar-producto";
+        return "vendedor/agregar-producto";
     }
 
     /**
@@ -252,7 +252,7 @@ public class ProductoController {
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("ofertas", ofertas);
-        return "mis-productos";
+        return "vendedor/mis-productos";
     }
 
     /**
@@ -291,7 +291,7 @@ public class ProductoController {
         model.addAttribute("oferta", oferta);
         model.addAttribute("productoCatalogo", productoCatalogo);
         model.addAttribute("usuario", usuario);
-        return "editar-producto";
+        return "vendedor/editar-producto";
     }
 
     /**

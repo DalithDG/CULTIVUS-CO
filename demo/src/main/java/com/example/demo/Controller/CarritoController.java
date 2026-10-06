@@ -60,7 +60,7 @@ public class CarritoController {
         model.addAttribute("detalles", carrito.getItems());
         model.addAttribute("total", carrito.getTotalEstimado());
 
-        return "carrito";
+        return "comprador/carrito";
     }
 
     /**

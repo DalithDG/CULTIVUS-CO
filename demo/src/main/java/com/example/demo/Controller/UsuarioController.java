@@ -260,7 +260,7 @@ public class UsuarioController {
         }
         
         if (usuario.hasRole(Role.VENDEDOR)) {
-            return "inicio-vendedor";
+            return "redirect:/vendedor/inicio";
         }
 
         return "comprador/inicio-comprador";
@@ -381,7 +381,7 @@ public class UsuarioController {
         model.addAttribute("usuario", usuario);
         model.addAttribute("pedidos", misPedidos);
 
-        return "pedidos-comprador";
+        return "comprador/pedidos-comprador";
     }
 
     @GetMapping("/pedidos/{id}")
@@ -405,7 +405,7 @@ public class UsuarioController {
         model.addAttribute("pedido", pedido);
         model.addAttribute("detalles", pedido.getItems());
 
-        return "detalle-pedido-comprador";
+        return "comprador/detalle-pedido-comprador";
     }
 
     /**
@@ -476,7 +476,7 @@ public class UsuarioController {
         
         session.setAttribute("notificacionesCount", 0);
 
-        return "notificaciones";
+        return "public/notificaciones";
     }
 }
 

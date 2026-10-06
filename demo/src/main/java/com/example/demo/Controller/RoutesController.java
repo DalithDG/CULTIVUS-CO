@@ -37,7 +37,7 @@ public class RoutesController {
 
     @GetMapping("/product-detall")
     public String productoDetall() {
-        return "product-detall";
+        return "redirect:/category";
     }
 
     @GetMapping("/login")
@@ -58,14 +58,14 @@ public class RoutesController {
 
     @GetMapping("/frutas")
     public String verFrutas() {
-        return categoriaRepository.findByNombre("public/frutas")
+        return categoriaRepository.findByNombre("Frutas")
                 .map(cat -> "redirect:/category?categoria=" + cat.getId())
                 .orElse("redirect:/category");
     }
 
     @GetMapping("/verduras")
     public String verVerduras() {
-        return categoriaRepository.findByNombre("public/verduras")
+        return categoriaRepository.findByNombre("Verduras")
                 .map(cat -> "redirect:/category?categoria=" + cat.getId())
                 .orElse("redirect:/category");
     }
@@ -93,7 +93,7 @@ public class RoutesController {
 
     @GetMapping("/miel")
     public String verMiel() {
-        return categoriaRepository.findByNombre("public/miel")
+        return categoriaRepository.findByNombre("Miel")
                 .map(cat -> "redirect:/category?categoria=" + cat.getId())
                 .orElse("redirect:/category");
     }

@@ -123,7 +123,7 @@ public class AdminController {
         cargarDatosDashboard(model, admin, "dashboard", 0, null, null);
         model.addAttribute("activePage", "dashboard");
 
-        return "admin-dashboard";
+        return "admin/admin-dashboard";
     }
 
     // ==================== ANALÍTICAS POWER BI ====================
@@ -140,7 +140,7 @@ public class AdminController {
         cargarDatosDashboard(model, admin, "powerbi", 0, null, null);
         model.addAttribute("activePage", "powerbi");
 
-        return "admin-dashboard";
+        return "admin/admin-dashboard";
     }
 
     // ==================== GESTIÓN DE USUARIOS ====================
@@ -162,7 +162,7 @@ public class AdminController {
         model.addAttribute("activePage", "usuarios");
         model.addAttribute("rolFilter", rol);
 
-        return "admin-dashboard";
+        return "admin/admin-dashboard";
     }
 
     @PostMapping("/usuarios/{id}/cambiar-rol")
@@ -225,7 +225,7 @@ public class AdminController {
         model.addAttribute("activePage", "catalogo");
         model.addAttribute("categoriaFilter", categoriaId);
 
-        return "admin-dashboard";
+        return "admin/admin-dashboard";
     }
 
     @PostMapping("/productos/{id}/eliminar")
@@ -264,7 +264,7 @@ public class AdminController {
         cargarDatosDashboard(model, admin, "resenas", page, null, null);
         model.addAttribute("activePage", "actividad");
 
-        return "admin-dashboard";
+        return "admin/admin-dashboard";
     }
 
     // ==================== GESTIÓN DE OFERTAS ====================
@@ -281,7 +281,7 @@ public class AdminController {
         model.addAttribute("ofertas", ofertas);
         model.addAttribute("activePage", "ofertas");
 
-        return "admin-dashboard";
+        return "admin/admin-dashboard";
     }
 
     @PostMapping("/resenas/{id}/eliminar")
@@ -320,7 +320,7 @@ public class AdminController {
         cargarDatosDashboard(model, admin, "pedidos", page, null, null);
         model.addAttribute("activePage", "ordenes");
 
-        return "admin-dashboard";
+        return "admin/admin-dashboard";
     }
 
     // ==================== VERIFICACIÓN DE TIENDAS ====================
@@ -341,7 +341,7 @@ public class AdminController {
         model.addAttribute("activePage", "verificacion-tiendas");
         model.addAttribute("estadoFilter", estado);
 
-        return "admin-dashboard";
+        return "admin/admin-dashboard";
     }
 
     @PostMapping("/tiendas/{id}/aprobar")
@@ -398,7 +398,7 @@ public class AdminController {
         cargarDatosDashboard(model, admin, "sesiones", page, null, null);
         model.addAttribute("activePage", "sesiones");
 
-        return "admin-dashboard";
+        return "admin/admin-dashboard";
     }
 
     // ==================== NOTIFICACIONES ====================
@@ -417,7 +417,7 @@ public class AdminController {
         cargarDatosDashboard(model, admin, "notificaciones", page, null, null);
         model.addAttribute("activePage", "notificaciones");
 
-        return "admin-dashboard";
+        return "admin/admin-dashboard";
     }
 
     @PostMapping("/notificaciones/enviar")
@@ -474,7 +474,7 @@ public class AdminController {
         cargarDatosDashboard(model, admin, "mensajes", page, null, null);
         model.addAttribute("activePage", "mensajes");
 
-        return "admin-dashboard";
+        return "admin/admin-dashboard";
     }
 
     @PostMapping("/mensajes/{id}/eliminar")
@@ -501,7 +501,7 @@ public class AdminController {
         cargarDatosDashboard(model, admin, "configuracion", 0, null, null);
         model.addAttribute("activePage", "configuracion");
 
-        return "admin-dashboard";
+        return "admin/admin-dashboard";
     }
 
     @PostMapping("/configuracion/actualizar")
@@ -536,7 +536,7 @@ public class AdminController {
         cargarDatosDashboard(model, admin, "moderacion", page, null, null);
         model.addAttribute("activePage", "moderacion");
 
-        return "admin-dashboard";
+        return "admin/admin-dashboard";
     }
 
 

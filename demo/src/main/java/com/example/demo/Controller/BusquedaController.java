@@ -75,6 +75,6 @@ public class BusquedaController {
         model.addAttribute("orden", orden);
         model.addAttribute("totalResultados", productos != null ? productos.size() : 0);
 
-        return "busqueda-resultados";
+        return "public/busqueda-resultados";
     }
 }
