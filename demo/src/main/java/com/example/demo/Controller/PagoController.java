@@ -16,6 +16,7 @@ import com.example.demo.repository.PedidoRepository;
 import com.example.demo.services.AppConfigService;
 import com.example.demo.services.CatalogoService;
 import com.example.demo.services.NotificacionService;
+import com.example.demo.services.PagoConfirmacionService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -473,11 +474,21 @@ public class PagoController {
                     DatosPago datosPago = new DatosPago("WOMPI", subtotalVendedor);
                     datosPago.setEstado("PENDIENTE");
                     datosPago.setReferencia(reference);
+                    datosPago.setMontoCentavosFirmado(amountInCents);
 
                     Pedido pedido = new Pedido(comprador, snapshotsVendedores.get(entry.getKey()), direccion,
                             entry.getValue(), datosPago);
                     pedido.setEstado("PENDIENTE");
                     pedidoRepository.save(pedido);
+                }
+            } else {
+                // Referencia reutilizada: el monto firmado vigente es el de esta solicitud
+                for (Pedido existente : existentes) {
+                    DatosPago pagoExistente = existente.getPago();
+                    if (pagoExistente != null && !PagoConfirmacionService.esFinal(pagoExistente.getEstado())) {
+                        pagoExistente.setMontoCentavosFirmado(amountInCents);
+                        pedidoRepository.save(existente);
+                    }
                 }
             }
 
