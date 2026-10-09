@@ -3,6 +3,7 @@ package com.example.demo.services;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Component;
@@ -35,6 +36,7 @@ public class WompiApiClient {
     private final RestClient restClient;
     private final String privateKey;
 
+    @Autowired
     public WompiApiClient(
             @Value("${wompi.api-base-url:https://sandbox.wompi.co/v1}") String baseUrl,
             @Value("${wompi.private-key:}") String privateKey,
