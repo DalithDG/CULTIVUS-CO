@@ -110,7 +110,7 @@ public class PagoController {
         double subtotal = carrito.getTotalEstimado();
         double costoEnvio = wompiService.obtenerCostoEnvioProvisional();
         double totalConEnvio = subtotal + costoEnvio;
-        long amountInCents = wompiService.convertirACentavos(totalConEnvio);
+        long amountInCents = wompiService.calcularTotalCentavos(subtotal, costoEnvio);
         String reference = wompiService.generarReferenciaUnica();
         String currency = wompiService.getCurrency();
         String signatureIntegrity = "";
@@ -414,7 +414,7 @@ public class PagoController {
             double subtotal = carrito.getTotalEstimado();
             double costoEnvio = wompiService.obtenerCostoEnvioProvisional();
             double totalConEnvio = subtotal + costoEnvio;
-            long amountInCents = wompiService.convertirACentavos(totalConEnvio);
+            long amountInCents = wompiService.calcularTotalCentavos(subtotal, costoEnvio);
 
             // Reutilizar referencia del frontend o generar una nueva
             String reference = (payload != null
