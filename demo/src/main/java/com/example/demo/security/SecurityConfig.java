@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -65,9 +66,15 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf
+                // NO QUITAR: el webhook de Wompi (server-to-server) no envia sesion ni token CSRF.
+                // Se deja explicito (y no solo bajo "/api/**") para que siga exento cuando se active
+                // CSRF global en el Sprint 5. Su autenticidad se valida con el checksum del evento.
+                .ignoringRequestMatchers("/api/wompi/webhook")
                 .ignoringRequestMatchers("/api/**")
             )
             .authorizeHttpRequests(authz -> authz
+                // NO QUITAR: webhook de Wompi, publico a proposito (ver comentario en csrf).
+                .requestMatchers(HttpMethod.POST, "/api/wompi/webhook").permitAll()
                 .requestMatchers(
                     "/",
                     "/login",

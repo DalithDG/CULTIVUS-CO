@@ -16,6 +16,8 @@ import com.example.demo.repository.PedidoRepository;
 import com.example.demo.services.AppConfigService;
 import com.example.demo.services.CatalogoService;
 import com.example.demo.services.NotificacionService;
+import com.example.demo.services.PagoConfirmacionService;
+import com.example.demo.services.WompiApiClient;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -50,6 +52,14 @@ public class PagoController {
 
     @Autowired
     private com.example.demo.services.WompiService wompiService;
+
+    @Autowired
+    private WompiApiClient wompiApiClient;
+
+    @Autowired
+    private PagoConfirmacionService pagoConfirmacionService;
+
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(PagoController.class);
 
     /**
      * Muestra el formulario de pago
@@ -100,7 +110,7 @@ public class PagoController {
         double subtotal = carrito.getTotalEstimado();
         double costoEnvio = wompiService.obtenerCostoEnvioProvisional();
         double totalConEnvio = subtotal + costoEnvio;
-        long amountInCents = wompiService.convertirACentavos(totalConEnvio);
+        long amountInCents = wompiService.calcularTotalCentavos(subtotal, costoEnvio);
         String reference = wompiService.generarReferenciaUnica();
         String currency = wompiService.getCurrency();
         String signatureIntegrity = "";
@@ -404,7 +414,7 @@ public class PagoController {
             double subtotal = carrito.getTotalEstimado();
             double costoEnvio = wompiService.obtenerCostoEnvioProvisional();
             double totalConEnvio = subtotal + costoEnvio;
-            long amountInCents = wompiService.convertirACentavos(totalConEnvio);
+            long amountInCents = wompiService.calcularTotalCentavos(subtotal, costoEnvio);
 
             // Reutilizar referencia del frontend o generar una nueva
             String reference = (payload != null
@@ -473,11 +483,21 @@ public class PagoController {
                     DatosPago datosPago = new DatosPago("WOMPI", subtotalVendedor);
                     datosPago.setEstado("PENDIENTE");
                     datosPago.setReferencia(reference);
+                    datosPago.setMontoCentavosFirmado(amountInCents);
 
                     Pedido pedido = new Pedido(comprador, snapshotsVendedores.get(entry.getKey()), direccion,
                             entry.getValue(), datosPago);
                     pedido.setEstado("PENDIENTE");
                     pedidoRepository.save(pedido);
+                }
+            } else {
+                // Referencia reutilizada: el monto firmado vigente es el de esta solicitud
+                for (Pedido existente : existentes) {
+                    DatosPago pagoExistente = existente.getPago();
+                    if (pagoExistente != null && !PagoConfirmacionService.esFinal(pagoExistente.getEstado())) {
+                        pagoExistente.setMontoCentavosFirmado(amountInCents);
+                        pedidoRepository.save(existente);
+                    }
                 }
             }
 
@@ -525,21 +545,61 @@ public class PagoController {
             return "redirect:/";
         }
 
-        if (transactionId != null && !transactionId.trim().isEmpty()) {
-            for (Pedido p : pedidos) {
-                if (p.getPago() != null) {
-                    p.getPago().setTransaccionId(transactionId);
-                    pedidoRepository.save(p);
-                }
+        String referenciaPago = reference.trim();
+
+        // Respaldo del webhook: NUNCA se confia en el id de la URL. Solo se usa para consultar
+        // la transaccion a Wompi, y se exige que la reference de la respuesta coincida.
+        java.util.Optional<WompiApiClient.TransaccionWompi> transaccion = java.util.Optional.empty();
+        if (WompiApiClient.esIdValido(transactionId)) {
+            transaccion = wompiApiClient.consultarTransaccion(transactionId.trim());
+        }
+        if (transaccion.isPresent()) {
+            WompiApiClient.TransaccionWompi tx = transaccion.get();
+            if (referenciaPago.equals(tx.reference())) {
+                pagoConfirmacionService.aplicarResultado(
+                        referenciaPago, tx.id(), tx.status(), tx.amountInCents());
+            } else {
+                log.warn("La reference de la transaccion consultada no coincide con la del retorno");
+                transaccion = java.util.Optional.empty();
             }
         }
 
-        // Limpiar carrito tras confirmar retorno de Wompi
-        carritoRepository.findByUsuarioId(usuario.getId()).ifPresent(carritoRepository::delete);
+        // Se relee el estado real (puede haberlo actualizado ya el webhook)
+        pedidos = pedidoRepository.findByPago_Referencia(referenciaPago).stream()
+                .filter(p -> p.getComprador() != null && usuario.getId().equals(p.getComprador().getId()))
+                .collect(java.util.stream.Collectors.toList());
+        if (pedidos.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error",
+                    "No se encontró el pedido correspondiente a la transacción.");
+            return "redirect:/";
+        }
 
-        redirectAttributes.addFlashAttribute("mensaje",
-                "Transacción registrada. Pedido #" + pedidos.get(0).getId());
-        return "redirect:/pago/confirmacion/" + pedidos.get(0).getId();
+        boolean todosCompletados = pedidos.stream().allMatch(
+                p -> p.getPago() != null && PagoConfirmacionService.COMPLETADO.equals(p.getPago().getEstado()));
+        boolean todosFallidos = pedidos.stream().allMatch(
+                p -> p.getPago() != null && PagoConfirmacionService.FALLIDO.equals(p.getPago().getEstado()));
+
+        if (todosCompletados) {
+            // Pago aprobado: solo ahora se limpia el carrito
+            carritoRepository.findByUsuarioId(usuario.getId()).ifPresent(carritoRepository::delete);
+            redirectAttributes.addFlashAttribute("mensaje",
+                    "Pago aprobado. Pedido #" + pedidos.get(0).getId());
+            return "redirect:/pago/confirmacion/" + pedidos.get(0).getId();
+        }
+
+        // Pendiente, rechazado o sin verificar: el carrito se conserva
+        if (todosFallidos) {
+            redirectAttributes.addFlashAttribute("error",
+                    "Tu pago fue rechazado. Conservamos tu carrito para que puedas intentarlo de nuevo.");
+        } else if (transaccion.isPresent() && "PENDING".equalsIgnoreCase(transaccion.get().status())) {
+            redirectAttributes.addFlashAttribute("mensaje",
+                    "Tu pago está pendiente de confirmación. Conservamos tu carrito; te avisaremos cuando se confirme.");
+        } else {
+            redirectAttributes.addFlashAttribute("mensaje",
+                    "Pago en verificación: aún no pudimos confirmar el estado con Wompi. "
+                            + "Conservamos tu carrito; revisa tus pedidos en unos minutos.");
+        }
+        return "redirect:/carrito";
     }
 
     /**
