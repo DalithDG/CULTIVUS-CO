@@ -346,30 +346,28 @@
                     throw new Error(data.error || 'El servidor rechazó la solicitud de pago.');
                 }
 
-                // PASO B: Construir redirectUrl con el dominio real (HTTPS en producción)
-                const redirectUrl = window.location.origin + '/pago/resultado?reference='
-                    + encodeURIComponent(data.reference);
-
-                console.log('[Wompi] Abriendo widget con parámetros del servidor:', {
-                    reference:      data.reference,
-                    amountInCents:  data.amountInCents,
-                    currency:       data.currency,
-                    redirectUrl:    redirectUrl
-                });
-
-                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Abriendo Wompi...';
-
-                // PASO C: Abrir el Widget con datos del servidor (no del HTML pre-renderizado)
-                const checkout = new WidgetCheckout({
+                // PASO B: Construir redirectUrl solo si estamos en HTTPS (Wompi rechaza URLs con HTTP devolviendo 403)
+                const configWidget = {
                     currency:      data.currency,
                     amountInCents: data.amountInCents,
                     reference:     data.reference,
                     publicKey:     data.publicKey,
                     signature: {
                         integrity: data.signatureIntegrity
-                    },
-                    redirectUrl: redirectUrl
-                });
+                    }
+                };
+
+                if (window.location.protocol === 'https:') {
+                    configWidget.redirectUrl = window.location.origin + '/pago/resultado?reference='
+                        + encodeURIComponent(data.reference);
+                }
+
+                console.log('[Wompi] Abriendo widget con parámetros del servidor:', configWidget);
+
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Abriendo Wompi...';
+
+                // PASO C: Abrir el Widget con datos del servidor
+                const checkout = new WidgetCheckout(configWidget);
 
                 checkout.open(function (result) {
                     const transaction = result.transaction;
