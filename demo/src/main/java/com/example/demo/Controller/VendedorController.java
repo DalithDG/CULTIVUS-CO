@@ -291,7 +291,9 @@ public class VendedorController {
         long pendientes = pedidos.stream()
                 .filter(p -> "PENDIENTE".equalsIgnoreCase(p.getEstado())).count();
         long enProceso = pedidos.stream()
-                .filter(p -> "ENVIADO".equalsIgnoreCase(p.getEstado())).count();
+                .filter(p -> "CONFIRMADO".equalsIgnoreCase(p.getEstado())
+                          || "EN_PROCESO".equalsIgnoreCase(p.getEstado())
+                          || "ENVIADO".equalsIgnoreCase(p.getEstado())).count();
         long completados = pedidos.stream()
                 .filter(p -> "ENTREGADO".equalsIgnoreCase(p.getEstado())).count();
 

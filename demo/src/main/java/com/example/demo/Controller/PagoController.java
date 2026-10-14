@@ -276,9 +276,12 @@ public class PagoController {
 
                 double subtotalVendedor = itemsVendedor.stream().mapToDouble(ProductoPedido::getSubtotal).sum();
                 DatosPago datosPagoVendedor = new DatosPago(metodoPago, subtotalVendedor);
+                datosPagoVendedor.setEstado(PagoConfirmacionService.COMPLETADO);
+                datosPagoVendedor.setFechaPago(java.time.LocalDateTime.now());
 
                 Pedido pedidoVendedor = new Pedido(comprador, snapshotVendedor, direccionEntrega, itemsVendedor,
                         datosPagoVendedor);
+                pedidoVendedor.setEstado("CONFIRMADO");
                 pedidoVendedor = pedidoRepository.save(pedidoVendedor);
                 pedidosGenerados.add(pedidoVendedor.getId());
 
@@ -358,10 +361,22 @@ public class PagoController {
             return "redirect:/";
         }
 
+        double subtotalProductos = pedido.getTotal() != null ? pedido.getTotal() : 0.0;
+        double totalCobrado = subtotalProductos;
+        if (pedido.getPago() != null && pedido.getPago().getMontoCentavosFirmado() != null && pedido.getPago().getMontoCentavosFirmado() > 0) {
+            totalCobrado = pedido.getPago().getMontoCentavosFirmado() / 100.0;
+        } else if (pedido.getPago() != null && pedido.getPago().getMonto() != null) {
+            totalCobrado = pedido.getPago().getMonto();
+        }
+        double costoEnvio = Math.max(0.0, totalCobrado - subtotalProductos);
+
         model.addAttribute("usuario", usuario);
         model.addAttribute("pedido", pedido);
         model.addAttribute("detalles", pedido.getItems());
         model.addAttribute("pago", pedido.getPago());
+        model.addAttribute("subtotalProductos", subtotalProductos);
+        model.addAttribute("costoEnvio", costoEnvio);
+        model.addAttribute("totalCobrado", totalCobrado);
 
         return "comprador/confirmacion-pago";
     }
@@ -435,8 +450,37 @@ public class PagoController {
 
             String currency = wompiService.getCurrency();
             String signatureIntegrity = wompiService.generarFirmaIntegridad(reference, amountInCents, currency);
-            String direccionEnvio = (payload != null && payload.get("direccionEnvio") != null)
-                    ? payload.get("direccionEnvio") : "";
+            String receptor = payload != null ? payload.getOrDefault("receptor", "").trim() : "";
+            String direccionTexto = payload != null ? payload.getOrDefault("direccion", "").trim() : "";
+            String ciudad = payload != null ? payload.getOrDefault("ciudad", "").trim() : "";
+            String departamento = payload != null ? payload.getOrDefault("departamento", "Bolívar").trim() : "Bolívar";
+            String telefono = payload != null ? payload.getOrDefault("telefono", "").trim() : "";
+            String notas = payload != null ? payload.getOrDefault("notas", "").trim() : "";
+            String codigoPostal = payload != null ? payload.getOrDefault("codigoPostal", "").trim() : "";
+
+            if (direccionTexto.isEmpty() && payload != null && payload.get("direccionEnvio") != null) {
+                direccionTexto = payload.get("direccionEnvio").trim();
+            }
+
+            StringBuilder dirBuilder = new StringBuilder();
+            if (!direccionTexto.isEmpty()) {
+                dirBuilder.append(direccionTexto);
+            }
+            if (!receptor.isEmpty()) {
+                dirBuilder.append(" | Recibe: ").append(receptor);
+            }
+            if (!telefono.isEmpty()) {
+                dirBuilder.append(" (Tel: ").append(telefono).append(")");
+            }
+            if (!codigoPostal.isEmpty()) {
+                dirBuilder.append(" | CP: ").append(codigoPostal);
+            }
+            if (!notas.isEmpty()) {
+                dirBuilder.append(" | Indicaciones: ").append(notas);
+            }
+            String direccionFinal = dirBuilder.length() > 0 ? dirBuilder.toString() : "Entrega en domicilio";
+            String ciudadFinal = !ciudad.isEmpty() ? ciudad : (usuario.getUbicacion() != null && usuario.getUbicacion().getCiudad() != null ? usuario.getUbicacion().getCiudad() : "Cartagena");
+            String deptoFinal = !departamento.isEmpty() ? departamento : "Bolívar";
 
             // Crear pedidos PENDIENTE (uno por vendedor) solo si aún no existen para esta referencia
             if (existentes.isEmpty()) {
@@ -474,9 +518,9 @@ public class PagoController {
 
                 DatosComprador comprador = new DatosComprador(usuario.getId(), usuario.getNombre());
                 DireccionPedido direccion = new DireccionPedido(
-                        direccionEnvio,
-                        usuario.getUbicacion() != null ? usuario.getUbicacion().getCiudad() : "",
-                        usuario.getUbicacion() != null ? usuario.getUbicacion().getDepartamento() : "");
+                        direccionFinal,
+                        ciudadFinal,
+                        deptoFinal);
 
                 for (java.util.Map.Entry<String, List<ProductoPedido>> entry : itemsPorVendedor.entrySet()) {
                     double subtotalVendedor = entry.getValue().stream().mapToDouble(ProductoPedido::getSubtotal).sum();

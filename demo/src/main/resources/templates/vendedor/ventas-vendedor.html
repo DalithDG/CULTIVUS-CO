@@ -114,6 +114,11 @@
             color: #155724;
         }
 
+        .estado-cancelado {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
         .pedido-cliente {
             margin-top: 10px;
             color: #333;
@@ -212,8 +217,9 @@
                     <div>
                         <span class="pedido-estado" 
                               th:classappend="${pedido.estado == 'PENDIENTE' ? 'estado-pendiente' : 
-                                             (pedido.estado == 'EN_PROCESO' || pedido.estado == 'PROCESANDO' ? 'estado-proceso' : 
-                                             'estado-completado')}"
+                                             (pedido.estado == 'CANCELADO' ? 'estado-cancelado' : 
+                                             (pedido.estado == 'CONFIRMADO' || pedido.estado == 'EN_PROCESO' || pedido.estado == 'PROCESANDO' || pedido.estado == 'ENVIADO' ? 'estado-proceso' : 
+                                             'estado-completado'))}"
                               th:text="${pedido.estado}">
                         </span>
                     </div>

@@ -3,226 +3,466 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Confirmación de Pago - Cultivus</title>
+    <title>Comprobante de Pago - Cultivus</title>
     <link rel="stylesheet" th:href="@{/style.css}">
+    <link rel="stylesheet" th:href="@{/header.css}">
+    <link rel="stylesheet" th:href="@{/footer.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
+        :root {
+            --primary: #27ae60;
+            --primary-dark: #1e8449;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --bg-page: #f8fafc;
+            --card-bg: #ffffff;
+            --radius: 12px;
+            --shadow-md: 0 4px 14px -2px rgba(0,0,0,0.08);
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f6f8;
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             margin: 0;
             padding: 0;
         }
-        .container {
-            max-width: 800px;
-            margin: 40px auto;
+
+        .confirmacion-container {
+            max-width: 860px;
+            margin: 35px auto 60px;
             padding: 0 20px;
         }
-        .success-card {
-            background: white;
-            border-radius: 12px;
-            padding: 40px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+        .recibo-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        /* ── Header de Éxito ── */
+        .recibo-header {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border-bottom: 1px solid #bbf7d0;
+            padding: 35px 30px;
             text-align: center;
         }
-        .success-icon {
-            width: 100px;
-            height: 100px;
-            background: #d4edda;
+
+        .icon-circulo {
+            width: 72px;
+            height: 72px;
+            background: var(--primary);
+            color: #ffffff;
             border-radius: 50%;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 30px;
+            font-size: 34px;
+            box-shadow: 0 4px 14px rgba(39, 174, 96, 0.35);
+            margin-bottom: 16px;
         }
-        .success-icon i {
-            font-size: 50px;
-            color: #27ae60;
+
+        .recibo-titulo {
+            font-size: 26px;
+            font-weight: 700;
+            color: #14532d;
+            margin: 0 0 6px 0;
         }
-        .success-title {
-            font-size: 28px;
-            font-weight: bold;
-            color: #27ae60;
-            margin-bottom: 15px;
+
+        .recibo-subtitulo {
+            font-size: 15px;
+            color: #166534;
+            max-width: 540px;
+            margin: 0 auto;
         }
-        .success-message {
-            font-size: 16px;
-            color: #666;
-            margin-bottom: 30px;
+
+        /* ── Cuerpo del Recibo ── */
+        .recibo-body {
+            padding: 30px;
         }
-        .pedido-info {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 25px;
-            margin: 30px 0;
-            text-align: left;
+
+        /* ── Grid de Metadatos de la Orden ── */
+        .meta-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 18px 20px;
+            margin-bottom: 28px;
         }
-        .info-row {
+
+        .meta-item {
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #e0e0e0;
+            flex-direction: column;
+            gap: 4px;
         }
-        .info-row:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
-        .info-label {
+
+        .meta-label {
+            font-size: 11px;
             font-weight: 600;
-            color: #333;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
         }
-        .info-value {
-            color: #666;
-        }
-        .productos-list {
-            margin-top: 20px;
-        }
-        .producto-item {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        .producto-item:last-child {
-            border-bottom: none;
-        }
-        .producto-item img {
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-            border-radius: 6px;
-        }
-        .producto-item-info {
-            flex: 1;
-        }
-        .producto-item-nombre {
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-        .producto-item-details {
+
+        .meta-value {
             font-size: 14px;
-            color: #666;
+            font-weight: 700;
+            color: var(--text-main);
         }
-        .total-section {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 2px solid #27ae60;
+
+        .badge-estado {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            width: fit-content;
+        }
+
+        .badge-confirmado {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        /* ── Bloque de Entrega ── */
+        .seccion-bloque {
+            margin-bottom: 26px;
+        }
+
+        .seccion-titulo {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 0 0 12px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .seccion-titulo i {
+            color: var(--primary);
+        }
+
+        .entrega-box {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 14px 18px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #334155;
+        }
+
+        /* ── Tabla de Productos ── */
+        .tabla-productos {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .tabla-productos th {
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            padding: 10px 14px;
+            border-bottom: 1.5px solid var(--border-color);
+        }
+
+        .tabla-productos td {
+            padding: 14px;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 14px;
+            vertical-align: middle;
+        }
+
+        .producto-celda {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .producto-thumb {
+            width: 48px;
+            height: 48px;
+            border-radius: 6px;
+            object-fit: cover;
+            border: 1px solid var(--border-color);
+        }
+
+        .producto-nombre {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        /* ── Totales y Desglose Financiero ── */
+        .totales-box {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 15px;
+            margin-left: auto;
+            max-width: 360px;
+        }
+
+        .fila-desglose {
             display: flex;
             justify-content: space-between;
-            font-size: 20px;
-            font-weight: bold;
-            color: #27ae60;
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
         }
-        .btn-group {
+
+        .fila-desglose.total-destacado {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+            border-top: 1.5px dashed var(--border-color);
+            padding-top: 12px;
+            margin-top: 12px;
+            margin-bottom: 0;
+        }
+
+        /* ── Botones de Acción ── */
+        .acciones-recibo {
             display: flex;
-            gap: 15px;
+            gap: 14px;
             margin-top: 30px;
+            padding-top: 25px;
+            border-top: 1px solid var(--border-color);
         }
-        .btn {
+
+        .btn-accion {
             flex: 1;
-            padding: 14px;
-            border: none;
+            padding: 13px 18px;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
             text-align: center;
-            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
         }
-        .btn-primary {
-            background: #27ae60;
-            color: white;
+
+        .btn-primario {
+            background: var(--primary);
+            color: #ffffff;
         }
-        .btn-primary:hover {
-            background: #1ef378;
+
+        .btn-primario:hover {
+            background: var(--primary-dark);
         }
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
+
+        .btn-secundario {
+            background: #ffffff;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
         }
-        .btn-secondary:hover {
-            background: #5a6268;
+
+        .btn-secundario:hover {
+            background: #f1f5f9;
+        }
+
+        @media (max-width: 768px) {
+            .meta-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .totales-box {
+                max-width: 100%;
+            }
+            .acciones-recibo {
+                flex-direction: column;
+            }
+        }
+
+        @media print {
+            header, footer, .acciones-recibo, .btn-volver {
+                display: none !important;
+            }
+            .confirmacion-container {
+                margin: 0;
+                padding: 0;
+                max-width: 100%;
+            }
+            .recibo-card {
+                box-shadow: none;
+                border: none;
+            }
         }
     </style>
-    <link rel="stylesheet" th:href="@{/header.css}">
 </head>
 <body>
     <header th:replace="~{fragments/header :: siteHeader}"></header>
 
-    <div class="container">
-        <div class="success-card">
-            <div class="success-icon">
-                <i class="fa-solid fa-check"></i>
-            </div>
-            <div class="success-title">¡Pago Exitoso!</div>
-            <div class="success-message">
-                Gracias por tu compra. Tu pedido ha sido procesado correctamente.
+    <div class="confirmacion-container">
+
+        <div class="recibo-card">
+            <!-- Header con Icono de Éxito -->
+            <div class="recibo-header">
+                <div class="icon-circulo">
+                    <i class="fa-solid fa-check"></i>
+                </div>
+                <h1 class="recibo-titulo">¡Pago Confirmado con Éxito!</h1>
+                <p class="recibo-subtitulo">
+                    Tu pago ha sido procesado a través de <strong>Wompi (Bancolombia)</strong>. Tu orden fue confirmada y el agricultor ya está preparando tu pedido.
+                </p>
             </div>
 
-            <div class="pedido-info">
-                <div class="info-row">
-                    <span class="info-label">Número de Pedido:</span>
-                    <!-- ✅ Antes: pedido.idPedido -->
-                    <span class="info-value" style="font-weight: bold; color: #27ae60;"
-                        th:text="'#' + ${pedido.id}">#0000</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Fecha:</span>
-                    <span class="info-value"
-                        th:text="${#temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm')}"></span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Estado:</span>
-                    <span class="info-value" th:text="${pedido.estado}"></span>
-                </div>
-                <!-- ✅ Antes: pago era objeto separado, ahora está embebido en pedido -->
-                <div th:if="${pago != null}" class="info-row">
-                    <span class="info-label">Método de Pago:</span>
-                    <!-- ✅ Antes: pago.metodoPago -->
-                    <span class="info-value" th:text="${pago.metodo}"></span>
+            <div class="recibo-body">
+
+                <!-- Metadatos Clave -->
+                <div class="meta-grid">
+                    <div class="meta-item">
+                        <span class="meta-label">Número de Pedido</span>
+                        <span class="meta-value" style="color: var(--primary);" th:text="${pedido.numeroFactura != null ? pedido.numeroFactura : '#' + pedido.id}">#000000</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Fecha y Hora</span>
+                        <span class="meta-value" th:text="${#temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm')}">14/10/2026</span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Estado de la Orden</span>
+                        <span class="badge-estado badge-confirmado">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <span th:text="${pedido.estado}">CONFIRMADO</span>
+                        </span>
+                    </div>
+                    <div class="meta-item">
+                        <span class="meta-label">Pasarela / Pago</span>
+                        <span class="meta-value">
+                            <i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i>
+                            <span th:text="${pago != null && pago.metodo != null ? pago.metodo : 'WOMPI'}">WOMPI</span>
+                        </span>
+                    </div>
                 </div>
 
-                <div class="productos-list">
-                    <div style="font-weight: 600; margin-bottom: 15px; color: #333;">Productos:</div>
-                    <div th:each="detalle : ${detalles}" class="producto-item">
-                        <!-- ✅ Antes: detalle.producto.imagenUrl -->
-                        <img th:src="${detalle.imagenSnapshot}"
-                             th:alt="${detalle.nombreSnapshot}"
-                             onerror="this.src='/images/placeholder.jpg'">
-                        <div class="producto-item-info">
-                            <!-- ✅ Antes: detalle.producto.nombre -->
-                            <div class="producto-item-nombre"
-                                th:text="${detalle.nombreSnapshot}"></div>
-                            <div class="producto-item-details">
-                                Cantidad: <span th:text="${detalle.cantidad}">1</span> |
-                                Precio: $<span th:text="${#numbers.formatDecimal(
-                                    detalle.precioUnitario, 0, 'COMMA', 0, 'POINT')}">0</span>
-                            </div>
+                <!-- Detalle de la Transacción Wompi si existe -->
+                <div th:if="${pago != null && pago.referencia != null}" class="seccion-bloque">
+                    <h3 class="seccion-titulo">
+                        <i class="fa-solid fa-receipt"></i> Detalle de la Transacción Bancaria
+                    </h3>
+                    <div class="entrega-box" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: space-between;">
+                        <div>
+                            <strong>Referencia Wompi:</strong> <span th:text="${pago.referencia}">CUL-000</span>
+                        </div>
+                        <div th:if="${pago.transaccionId != null}">
+                            <strong>ID Transacción:</strong> <span th:text="${pago.transaccionId}">00000-00</span>
+                        </div>
+                        <div>
+                            <strong>Estado del Pago:</strong> <span style="color: #15803d; font-weight: 700;" th:text="${pago.estado}">COMPLETADO</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="total-section">
-                    <span>Total Pagado:</span>
-                    <span>$<span th:text="${#numbers.formatDecimal(
-                        pago != null ? pago.monto : 0, 0, 'COMMA', 0, 'POINT')}">0</span></span>
+                <!-- Información de Entrega -->
+                <div class="seccion-bloque">
+                    <h3 class="seccion-titulo">
+                        <i class="fa-solid fa-location-dot"></i> Destino de Entrega
+                    </h3>
+                    <div class="entrega-box">
+                        <div>
+                            <strong>Comprador:</strong> <span th:text="${pedido.comprador != null ? pedido.comprador.nombre : usuario.nombre}">Nombre</span>
+                        </div>
+                        <div th:if="${pedido.direccionEntrega != null}">
+                            <strong>Dirección:</strong> <span th:text="${pedido.direccionEntrega.direccion}">Dirección de entrega</span><br>
+                            <strong>Ubicación:</strong> <span th:text="${pedido.direccionEntrega.ciudad}">Cartagena</span>, <span th:text="${pedido.direccionEntrega.departamento}">Bolívar</span>
+                        </div>
+                        <div th:if="${pedido.vendedor != null}" style="margin-top: 6px; color: #166534; font-size: 13px;">
+                            <i class="fa-solid fa-store"></i> <strong>Productor / Finca:</strong> <span th:text="${pedido.vendedor.nombre}">Finca</span>
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="btn-group">
-                <a th:href="@{/}" class="btn btn-secondary">
-                    <i class="fa-solid fa-home"></i> Volver al Inicio
-                </a>
-                <a th:href="@{/usuario/inicio}" class="btn btn-primary">
-                    <i class="fa-solid fa-user"></i> Ver Mis Pedidos
-                </a>
+                <!-- Tabla de Productos -->
+                <div class="seccion-bloque">
+                    <h3 class="seccion-titulo">
+                        <i class="fa-solid fa-basket-shopping"></i> Productos en la Orden
+                    </h3>
+                    <table class="tabla-productos">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th style="text-align: center;">Cantidad</th>
+                                <th style="text-align: right;">Precio Unitario</th>
+                                <th style="text-align: right;">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="detalle : ${detalles}">
+                                <td>
+                                    <div class="producto-celda">
+                                        <img th:src="${detalle.imagenSnapshot}"
+                                             th:alt="${detalle.nombreSnapshot}"
+                                             class="producto-thumb"
+                                             onerror="this.src='/images/placeholder.jpg'">
+                                        <div class="producto-nombre" th:text="${detalle.nombreSnapshot}">Nombre Producto</div>
+                                    </div>
+                                </td>
+                                <td style="text-align: center;">
+                                    <span th:text="${detalle.cantidad}">1</span>
+                                    <span th:text="${detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : 'unid'}"></span>
+                                </td>
+                                <td style="text-align: right;">
+                                    $<span th:text="${#numbers.formatDecimal(detalle.precioUnitario, 0, 'COMMA', 0, 'POINT')}">0</span>
+                                </td>
+                                <td style="text-align: right; font-weight: 600;">
+                                    $<span th:text="${#numbers.formatDecimal(detalle.subtotal, 0, 'COMMA', 0, 'POINT')}">0</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Caja de Totales con desglose exacto (Productos + Envío = Total Pagado) -->
+                    <div class="totales-box">
+                        <div class="fila-desglose">
+                            <span>Subtotal productos:</span>
+                            <span>$<span th:text="${#numbers.formatDecimal(subtotalProductos, 0, 'COMMA', 0, 'POINT')}">0</span></span>
+                        </div>
+                        <div class="fila-desglose">
+                            <span>Costo de envío a domicilio:</span>
+                            <span>$<span th:text="${#numbers.formatDecimal(costoEnvio, 0, 'COMMA', 0, 'POINT')}">0</span></span>
+                        </div>
+                        <div class="fila-desglose total-destacado">
+                            <span>Total Pagado en Wompi:</span>
+                            <span>$<span th:text="${#numbers.formatDecimal(totalCobrado, 0, 'COMMA', 0, 'POINT')}">0</span> COP</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="acciones-recibo">
+                    <button onclick="window.print()" class="btn-accion btn-secundario">
+                        <i class="fa-solid fa-print"></i> Imprimir Comprobante
+                    </button>
+                    <a th:href="@{/}" class="btn-accion btn-secundario">
+                        <i class="fa-solid fa-store"></i> Seguir Comprando
+                    </a>
+                    <a th:href="@{/usuario/inicio}" class="btn-accion btn-primario">
+                        <i class="fa-solid fa-boxes-packing"></i> Ver Mis Pedidos
+                    </a>
+                </div>
+
             </div>
         </div>
+
     </div>
+
+    <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
 </body>
 </html>
-

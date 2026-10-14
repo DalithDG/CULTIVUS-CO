@@ -1,7 +1,11 @@
 package com.example.demo.services;
 
+import com.example.demo.Model.OfertaVendedor;
 import com.example.demo.Model.Pedido;
 import com.example.demo.Model.embebidos.DatosPago;
+import com.example.demo.Model.embebidos.ProductoPedido;
+import com.example.demo.repository.CarritoRepository;
+import com.example.demo.repository.OfertaRepository;
 import com.example.demo.repository.PedidoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,14 +17,11 @@ import java.util.List;
 
 /**
  * Pieza compartida por el webhook de Wompi y por el retorno del comprador
- * (/pago/resultado): aplica el resultado de una transacción a los pagos.
+ * (/pago/resultado): aplica el resultado de una transacción a los pagos y pedidos.
  *
- * APPROVED                  -> COMPLETADO (solo si el monto coincide con el firmado)
- * DECLINED / ERROR / VOIDED -> FALLIDO
+ * APPROVED                  -> COMPLETADO (pago), CONFIRMADO (pedido), descuenta stock, notifica y limpia carrito
+ * DECLINED / ERROR / VOIDED -> FALLIDO (pago), CANCELADO (pedido), sin tocar stock ni carrito
  * PENDING                   -> sin cambios
- *
- * Solo modifica DatosPago (estado, transaccionId, fechaPago). Stock, Pedido.estado,
- * compras, billetera y notificaciones quedan fuera de alcance (Sprint 2).
  */
 @Service
 public class PagoConfirmacionService {
@@ -45,14 +46,39 @@ public class PagoConfirmacionService {
         ESTADO_DESCONOCIDO
     }
 
-    @Autowired
+    @Autowired(required = false)
     private PedidoRepository pedidoRepository;
+
+    @Autowired(required = false)
+    private OfertaRepository ofertaRepository;
+
+    @Autowired(required = false)
+    private CatalogoService catalogoService;
+
+    @Autowired(required = false)
+    private NotificacionService notificacionService;
+
+    @Autowired(required = false)
+    private CarritoRepository carritoRepository;
 
     public PagoConfirmacionService() {
     }
 
     public PagoConfirmacionService(PedidoRepository pedidoRepository) {
+        this(pedidoRepository, null, null, null, null);
+    }
+
+    @Autowired
+    public PagoConfirmacionService(PedidoRepository pedidoRepository,
+                                  OfertaRepository ofertaRepository,
+                                  CatalogoService catalogoService,
+                                  NotificacionService notificacionService,
+                                  CarritoRepository carritoRepository) {
         this.pedidoRepository = pedidoRepository;
+        this.ofertaRepository = ofertaRepository;
+        this.catalogoService = catalogoService;
+        this.notificacionService = notificacionService;
+        this.carritoRepository = carritoRepository;
     }
 
     public Resultado aplicarResultado(String referencia, String transaccionId, String estadoWompi,
@@ -104,9 +130,77 @@ public class PagoConfirmacionService {
                     continue;
                 }
             }
+
             pago.setEstado(destino);
             pago.setTransaccionId(transaccionId);
             pago.setFechaPago(LocalDateTime.now());
+            pedido.setUpdatedAt(LocalDateTime.now());
+
+            if (COMPLETADO.equals(destino)) {
+                // 1. Pasar pedido a CONFIRMADO
+                pedido.setEstado("CONFIRMADO");
+
+                // 2. Descontar stock de cada oferta solo ahora que el pago fue aprobado
+                if (ofertaRepository != null && pedido.getItems() != null) {
+                    for (ProductoPedido item : pedido.getItems()) {
+                        String idOferta = item.getProductoId();
+                        if (idOferta != null) {
+                            ofertaRepository.findById(idOferta).ifPresent(oferta -> {
+                                double cantidad = item.getCantidad() != null ? item.getCantidad() : 0.0;
+                                double stockActual = oferta.getStock() != null ? oferta.getStock() : 0.0;
+                                double nuevoStock = Math.max(0.0, stockActual - cantidad);
+                                oferta.setStock(nuevoStock);
+                                if (nuevoStock <= 0.0) {
+                                    oferta.setDisponible(false);
+                                }
+                                ofertaRepository.save(oferta);
+
+                                if (catalogoService != null && oferta.getProductoCatalogoId() != null) {
+                                    catalogoService.actualizarEstadisticas(oferta.getProductoCatalogoId());
+                                }
+                            });
+                        }
+                    }
+                }
+
+                // 3. Notificar al Vendedor
+                if (notificacionService != null && pedido.getVendedor() != null && pedido.getVendedor().getId() != null) {
+                    String nombreComprador = pedido.getComprador() != null ? pedido.getComprador().getNombre() : "un comprador";
+                    notificacionService.enviar(
+                            pedido.getVendedor().getId(),
+                            "¡Nueva Venta!",
+                            "Has recibido un nuevo pedido #" + pedido.getId() + " de " + nombreComprador,
+                            "SUCCESS");
+                }
+
+                // 4. Notificar al Comprador
+                if (notificacionService != null && pedido.getComprador() != null && pedido.getComprador().getId() != null) {
+                    notificacionService.enviar(
+                            pedido.getComprador().getId(),
+                            "Pedido Confirmado",
+                            "Tu compra ha sido aprobada con éxito. Pedido #" + pedido.getId(),
+                            "SUCCESS");
+                }
+
+                // 5. Limpiar carrito del comprador
+                if (carritoRepository != null && pedido.getComprador() != null && pedido.getComprador().getId() != null) {
+                    carritoRepository.findByUsuarioId(pedido.getComprador().getId()).ifPresent(carritoRepository::delete);
+                }
+
+            } else if (FALLIDO.equals(destino)) {
+                // Si el pago falló o fue rechazado, el pedido se cancela y NO se descuenta stock
+                pedido.setEstado("CANCELADO");
+
+                // Notificar al Comprador
+                if (notificacionService != null && pedido.getComprador() != null && pedido.getComprador().getId() != null) {
+                    notificacionService.enviar(
+                            pedido.getComprador().getId(),
+                            "Pago No Aprobado",
+                            "El pago de tu pedido #" + pedido.getId() + " no fue aprobado por la pasarela (" + estadoNuevo + "). Tu carrito se mantiene intacto.",
+                            "WARNING");
+                }
+            }
+
             pedidoRepository.save(pedido);
             aplicado = true;
         }
