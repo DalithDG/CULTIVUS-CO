@@ -1,77 +1,53 @@
-<header th:fragment="siteHeader">
-    <link rel="stylesheet" th:href="@{/header.css}">
+<header th:fragment="siteHeader" class="site-header">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
+
     <div class="header-premium" id="mainHeader">
         <div class="header-container">
-            <!-- Logo -->
+            <!-- Logo con Slogan -->
             <div class="header-logo">
                 <a th:href="@{/}">
                     <img th:src="@{/images/LogoCultivus.png}" alt="Cultivus">
-                    <span class="logo-text">Cultivus</span>
+                    <div class="logo-text-group">
+                        <span class="logo-text">Cultivus</span>
+                        <span class="logo-slogan">Del campo a tu mesa</span>
+                    </div>
                 </a>
             </div>
 
-            <!-- Navegación Principal -->
+            <!-- Navegación Principal (Público con Nosotros) -->
             <nav class="header-nav">
-                <a th:href="@{/}" class="nav-link">
-                    <i class="fas fa-home"></i>
-                    <span>Inicio</span>
-                </a>
-                <a th:href="@{/category}" class="nav-link">
-                    <i class="fas fa-th-large"></i>
-                    <span>Categorías</span>
-                </a>
-                <a th:href="@{/category}" class="nav-link">
-                    <i class="fas fa-shopping-basket"></i>
-                    <span>Productos</span>
-                </a>
+                <th:block th:replace="~{fragments/nav-publico :: enlacesPublico}"></th:block>
             </nav>
 
-            <!-- Buscador -->
-            <div class="header-search">
-                <button class="search-toggle" id="searchToggle">
-                    <i class="fas fa-search"></i>
-                </button>
-                <div class="search-dropdown" id="searchDropdown">
-                    <form th:action="@{/buscar}" method="get">
-                        <input type="search" name="q" placeholder="Buscar productos..." autocomplete="off">
-                        <button type="submit">
-                            <i class="fas fa-search"></i>
-                        </button>
-                    </form>
-                </div>
-            </div>
+            <!-- Buscador Amplio Adaptable -->
+            <div th:replace="~{fragments/nav-publico :: buscador}"></div>
 
-            <!-- CTAs -->
+            <!-- Acciones de Usuario (Iniciar sesión, Registrarse, Carrito) -->
             <div class="header-actions">
-                <!-- CTA Vender -->
-                <a th:href="@{/vendedor/registro}" class="btn-sell">
-                    <i class="fas fa-store"></i>
-                    <span>Vender</span>
-                </a>
-
-                <!-- Ingresar -->
+                <!-- Iniciar sesión -->
                 <a th:href="@{/usuario/login}" class="btn-login">
-                    <i class="fas fa-sign-in-alt"></i>
-                    <span>Ingresar</span>
+                    <i class="fas fa-user"></i>
+                    <span>Iniciar sesión</span>
                 </a>
 
-                <!-- Registrarse -->
+                <!-- Registrarse (Botón verde relleno) -->
                 <a th:href="@{/usuario/registro}" class="btn-register">
                     <i class="fas fa-user-plus"></i>
                     <span>Registrarse</span>
                 </a>
 
-                <!-- Carrito -->
-                <a th:href="@{/carrito}" class="btn-cart">
+                <!-- Carrito con Badge -->
+                <a th:href="@{/carrito}" class="btn-cart" title="Carrito de compras">
                     <i class="fas fa-shopping-cart"></i>
-                    <span class="cart-badge">0</span>
+                    <span class="cart-badge" th:text="${carritoCount != null ? carritoCount : 0}">0</span>
                 </a>
             </div>
 
             <!-- Mobile Menu Toggle -->
-            <button class="mobile-menu-toggle" id="mobileMenuToggle">
+            <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Abrir menú">
                 <span></span>
                 <span></span>
                 <span></span>
@@ -83,72 +59,67 @@
     <div class="mobile-menu" id="mobileMenu">
         <div class="mobile-menu-header">
             <span>Menú</span>
-            <button class="mobile-menu-close" id="mobileMenuClose">
+            <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Cerrar menú">
                 <i class="fas fa-times"></i>
             </button>
         </div>
         <nav class="mobile-nav">
-            <a th:href="@{/}"><i class="fas fa-home"></i> Inicio</a>
-            <a th:href="@{/category}"><i class="fas fa-th-large"></i> Categorías</a>
-            <a th:href="@{/category}"><i class="fas fa-shopping-basket"></i> Productos</a>
+            <th:block th:replace="~{fragments/nav-publico :: enlacesMovilPublico}"></th:block>
             <div class="mobile-divider"></div>
-            <a th:href="@{/vendedor/registro}" class="mobile-highlight"><i class="fas fa-store"></i> Vender en Cultivus</a>
-            <a th:href="@{/usuario/login}"><i class="fas fa-sign-in-alt"></i> Ingresar</a>
+            <a th:href="@{/vendedor/registro}" class="mobile-highlight"><i class="fas fa-store"></i> Vender en
+                Cultivus</a>
+            <a th:href="@{/usuario/login}"><i class="fas fa-sign-in-alt"></i> Iniciar sesión</a>
             <a th:href="@{/usuario/registro}"><i class="fas fa-user-plus"></i> Registrarse</a>
         </nav>
     </div>
 
+    <script th:src="@{/js/header.js}"></script>
     <script>
-        // Search Toggle
-        const searchToggle = document.getElementById('searchToggle');
-        const searchDropdown = document.getElementById('searchDropdown');
-        
-        if (searchToggle && searchDropdown) {
-            searchToggle.addEventListener('click', () => {
-                searchDropdown.classList.toggle('active');
-                if (searchDropdown.classList.contains('active')) {
-                    searchDropdown.querySelector('input').focus();
+        // Marcar enlace activo según la página actual
+        (function() {
+            try {
+                const path = window.location.pathname;
+                const hash = window.location.hash;
+                const links = document.querySelectorAll('.header-nav .nav-link');
+                let found = false;
+
+                // 1. Intentar coincidencia con hash si existe
+                if (hash) {
+                    links.forEach(l => {
+                        const href = l.getAttribute('href') || '';
+                        if (href.endsWith(hash) || href === path + hash) {
+                            links.forEach(x => x.classList.remove('active'));
+                            l.classList.add('active');
+                            found = true;
+                        }
+                    });
                 }
-            });
 
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('.header-search')) {
-                    searchDropdown.classList.remove('active');
+                // 2. Si no hubo coincidencia con hash, buscar por path
+                if (!found) {
+                    links.forEach(l => {
+                        const href = l.getAttribute('href') || '';
+                        const hrefPath = href.split('#')[0].split('?')[0];
+                        if (path === '/' && (hrefPath === '/' || hrefPath === '')) {
+                            links.forEach(x => x.classList.remove('active'));
+                            l.classList.add('active');
+                            found = true;
+                        } else if (path !== '/' && hrefPath !== '/' && hrefPath !== '' && (path === hrefPath || path.startsWith(hrefPath))) {
+                            links.forEach(x => x.classList.remove('active'));
+                            l.classList.add('active');
+                            found = true;
+                        }
+                    });
                 }
-            });
-        }
 
-        // Mobile Menu
-        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-        const mobileMenu = document.getElementById('mobileMenu');
-        const mobileMenuClose = document.getElementById('mobileMenuClose');
-
-        if (mobileMenuToggle && mobileMenu) {
-            mobileMenuToggle.addEventListener('click', () => {
-                mobileMenu.classList.add('active');
-                document.body.style.overflow = 'hidden';
-            });
-
-            mobileMenuClose.addEventListener('click', () => {
-                mobileMenu.classList.remove('active');
-                document.body.style.overflow = '';
-            });
-        }
-
-        // Sticky Header
-        let lastScroll = 0;
-        const header = document.getElementById('mainHeader');
-
-        window.addEventListener('scroll', () => {
-            const currentScroll = window.pageYOffset;
-            
-            if (currentScroll > 50) {
-                header.classList.add('scrolled');
-            } else {
-                header.classList.remove('scrolled');
+                // 3. Fallback: si nada coincidió y estamos en la raíz, activar Inicio
+                if (!found && path === '/') {
+                    const first = document.querySelector('.header-nav .nav-link');
+                    if (first) first.classList.add('active');
+                }
+            } catch (err) {
+                console.error(err);
             }
-
-            lastScroll = currentScroll;
-        });
+        })();
     </script>
 </header>

@@ -129,10 +129,12 @@
             background: #5a6268;
         }
     </style>
+    <link rel="stylesheet" th:href="@{/header.css}">
+    <link rel="stylesheet" th:href="@{/footer.css}">
 </head>
 
 <body>
-    <header th:replace="~{fragments/header-comprador :: siteHeader}"></header>
+    <header th:replace="~{fragments/header :: siteHeader}"></header>
 
     <div class="detalle-container">
         <a th:href="@{/usuario/pedidos}" class="btn-volver">

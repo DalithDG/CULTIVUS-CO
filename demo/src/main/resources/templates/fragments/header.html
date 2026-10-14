@@ -1,34 +1,24 @@
-<!-- Header dinámico que selecciona el header correcto según el rol del usuario -->
-<header th:fragment="siteHeader">
-    <!-- Si el usuario está logueado, mostrar header según su rol -->
-    <th:block th:if="${session.usuarioLogueado != null}">
-        <!-- Obtener el nombre del rol de forma segura -->
-        <th:block th:with="rolName=${session.usuarioLogueado.rol != null ? session.usuarioLogueado.rol.name() : 'GUEST'}">
-            
-            <!-- Header para Admin -->
-            <div th:if="${rolName == 'ADMIN'}">
-                <div th:replace="~{fragments/header-admin :: siteHeader}"></div>
-            </div>
-
-            <!-- Header para Vendedor -->
-            <div th:if="${rolName == 'VENDEDOR'}">
-                <div th:replace="~{fragments/header-vendedor :: siteHeader}"></div>
-            </div>
-
-            <!-- Header para Comprador -->
-            <div th:if="${rolName == 'COMPRADOR'}">
-                <div th:replace="~{fragments/header-comprador :: siteHeader}"></div>
-            </div>
-            
-            <!-- Fallback para roles desconocidos -->
-            <div th:if="${rolName == 'GUEST'}">
-                <div th:replace="~{fragments/header-publico :: siteHeader}"></div>
-            </div>
-        </th:block>
+<!-- Header dinámico: se elige según la ruta/contexto real, no solo el rol.
+     admin -> /admin/**, vendedor -> /vendedor/**, el resto -> comprador (logueado) o público. -->
+<th:block th:fragment="siteHeader">
+    <!-- Sin sesión: header público -->
+    <th:block th:if="${session.usuarioLogueado == null}">
+        <th:block th:replace="~{fragments/header-publico :: siteHeader}"></th:block>
     </th:block>
 
-    <!-- Si no está logueado, mostrar header público -->
-    <div th:if="${session.usuarioLogueado == null}">
-        <div th:replace="~{fragments/header-publico :: siteHeader}"></div>
-    </div>
-</header>
+    <!-- Usuario logueado: header según la ruta actual -->
+    <th:block th:if="${session.usuarioLogueado != null}">
+        <th:block th:if="${currentPath != null and #strings.startsWith(currentPath, '/admin') and session.usuarioLogueado != null and session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).ADMIN)}">
+            <th:block th:replace="~{fragments/header-admin :: siteHeader}"></th:block>
+        </th:block>
+
+        <th:block th:if="${currentPath != null and #strings.startsWith(currentPath, '/vendedor') and session.usuarioLogueado != null and session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).VENDEDOR)}">
+            <th:block th:replace="~{fragments/header-vendedor :: siteHeader}"></th:block>
+        </th:block>
+
+        <th:block th:if="${!((currentPath != null and #strings.startsWith(currentPath, '/admin') and session.usuarioLogueado != null and session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).ADMIN))
+                or (currentPath != null and #strings.startsWith(currentPath, '/vendedor') and session.usuarioLogueado != null and session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).VENDEDOR)))}">
+            <th:block th:replace="~{fragments/header-comprador :: siteHeader}"></th:block>
+        </th:block>
+    </th:block>
+</th:block>

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Conoce a Cultivus y a los productores que llevan el campo colombiano a tu mesa.">
+    <title>Nosotros y Productores - Cultivus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/header.css}">
+    <link rel="stylesheet" th:href="@{/paginas-publicas.css}">
+    <link rel="stylesheet" th:href="@{/footer.css}">
+</head>
+
+<body>
+    <header th:replace="~{fragments/header-publico :: siteHeader}"></header>
+
+    <main class="pub-page">
+        <section class="pub-hero">
+            <h1>Nosotros y nuestros Productores</h1>
+            <p>Conectamos el campo colombiano con tu mesa, sin intermediarios y con precios justos.</p>
+        </section>
+
+        <!-- Select para moverse entre secciones de la misma página -->
+        <div class="pub-selector">
+            <div class="pub-container">
+                <label for="seccionSelect"><i class="fas fa-compass"></i> Ir a:</label>
+                <select id="seccionSelect">
+                    <option value="sobre-nosotros">Sobre Nosotros</option>
+                    <option value="productores">Productores</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="pub-container">
+            <!-- ═══ SOBRE NOSOTROS ═══ -->
+            <section class="pub-section" id="sobre-nosotros">
+                <h2>Sobre Nosotros</h2>
+                <p class="pub-lead">Cultivus es un marketplace que une a productores locales con compradores que buscan
+                    productos frescos, de calidad y con origen conocido.</p>
+                <div class="pub-grid">
+                    <div class="pub-card">
+                        <div class="pub-card__icon"><i class="fas fa-leaf"></i></div>
+                        <h3>Productos frescos</h3>
+                        <p>Directo del campo a tu hogar, con la frescura que solo el productor puede garantizar.</p>
+                    </div>
+                    <div class="pub-card">
+                        <div class="pub-card__icon"><i class="fas fa-hand-holding-heart"></i></div>
+                        <h3>Apoyo al productor</h3>
+                        <p>Sin intermediarios: el campesino recibe un precio justo por su trabajo.</p>
+                    </div>
+                    <div class="pub-card">
+                        <div class="pub-card__icon"><i class="fas fa-shield-alt"></i></div>
+                        <h3>Compra segura</h3>
+                        <p>Pagos protegidos y seguimiento de tus pedidos en todo momento.</p>
+                    </div>
+                    <div class="pub-card">
+                        <div class="pub-card__icon"><i class="fas fa-truck"></i></div>
+                        <h3>Envíos a todo Colombia</h3>
+                        <p>Entregas rápidas y confiables para que recibas tu pedido donde estés.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══ PRODUCTORES ═══ -->
+            <section class="pub-section" id="productores">
+                <h2>Productores</h2>
+                <p class="pub-lead">Las personas y negocios que cultivan y venden en Cultivus.</p>
+                <div class="pub-grid">
+                    <div class="pub-card" th:each="p : ${productores}">
+                        <div class="pub-card__icon"><i class="fas fa-user-tie"></i></div>
+                        <h3>
+                            <span th:text="${p.nombre}">Productor</span>
+                            <i class="fas fa-check-circle" style="color:#6b7c2e;font-size:14px;" title="Verificado"
+                                th:if="${p.verificado}"></i>
+                        </h3>
+                        <p
+                            th:text="${p.descripcion != null and !p.descripcion.isBlank()} ? ${p.descripcion} : 'Productor local de Cultivus.'">
+                            Productor local de Cultivus.</p>
+                        <span class="pub-badge"><i class="fas fa-box"></i>
+                            <span th:text="${p.totalOfertas} + (${p.totalOfertas == 1} ? ' producto' : ' productos')">0
+                                productos</span></span>
+                    </div>
+                    <div class="pub-empty" th:if="${#lists.isEmpty(productores)}">
+                        <i class="fas fa-seedling"></i>
+                        <p>Pronto verás aquí a nuestros productores.</p>
+                    </div>
+                </div>
+
+                <!-- Paginación -->
+                <div class="pub-pagination" th:if="${totalPages != null and totalPages > 1}">
+                    <a class="pub-page-btn"
+                       th:classappend="${page <= 0 ? 'is-disabled' : ''}"
+                       th:href="@{/nosotros(page=${page - 1},size=${size})} + '#productores'">
+                        <i class="fas fa-chevron-left"></i> Anterior
+                    </a>
+
+                    <span class="pub-page-info">
+                        Página <strong th:text="${page + 1}">1</strong> de <strong th:text="${totalPages}">1</strong>
+                        · <span th:text="${totalItems}">0</span> productores
+                    </span>
+
+                    <a class="pub-page-btn"
+                       th:classappend="${page + 1 >= totalPages ? 'is-disabled' : ''}"
+                       th:href="@{/nosotros(page=${page + 1},size=${size})} + '#productores'">
+                        Siguiente <i class="fas fa-chevron-right"></i>
+                    </a>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
+
+    <script>
+        (function () {
+            var select = document.getElementById('seccionSelect');
+
+            function irA(id, actualizarHash) {
+                var destino = document.getElementById(id);
+                if (!destino) return;
+                destino.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                select.value = id;
+                if (actualizarHash) history.replaceState(null, '', '#' + id);
+            }
+
+            select.addEventListener('change', function () { irA(select.value, true); });
+
+            // Sincroniza el select cuando se llega desde el header (#productores / #sobre-nosotros)
+            var inicial = window.location.hash.replace('#', '');
+            if (inicial === 'productores' || inicial === 'sobre-nosotros') {
+                select.value = inicial;
+            }
+            window.addEventListener('hashchange', function () {
+                var h = window.location.hash.replace('#', '');
+                if (h === 'productores' || h === 'sobre-nosotros') select.value = h;
+            });
+
+            // Actualiza el select según la sección visible al hacer scroll
+            if ('IntersectionObserver' in window) {
+                var obs = new IntersectionObserver(function (entries) {
+                    entries.forEach(function (e) {
+                        if (e.isIntersecting) select.value = e.target.id;
+                    });
+                }, { rootMargin: '-40% 0px -50% 0px' });
+                document.querySelectorAll('.pub-section').forEach(function (s) { obs.observe(s); });
+            }
+        })();
+    </script>
+</body>
+
+</html>

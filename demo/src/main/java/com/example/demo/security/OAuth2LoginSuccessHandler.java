@@ -54,9 +54,13 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         HttpSession session = request.getSession();
         session.setAttribute("usuarioLogueado", usuario);
 
+        // Reconstruir la Authentication con las autoridades desde MongoDB no es necesario aquí:
+        // OAuth2UsuarioService ya devuelve un OAuth2User con los roles del usuario.
         // Redirigir según el rol
         if (usuario.hasRole(com.example.demo.Model.Role.ADMIN)) {
             getRedirectStrategy().sendRedirect(request, response, "/admin/dashboard");
+        } else if (usuario.hasRole(com.example.demo.Model.Role.VENDEDOR)) {
+            getRedirectStrategy().sendRedirect(request, response, "/vendedor/inicio");
         } else {
             getRedirectStrategy().sendRedirect(request, response, "/usuario/inicio");
         }

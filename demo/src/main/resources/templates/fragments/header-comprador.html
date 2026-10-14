@@ -1,94 +1,162 @@
-<header th:fragment="siteHeader">
-    <link rel="stylesheet" th:href="@{/header.css}">
+<header th:fragment="siteHeader" class="site-header">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
+
     <div class="header-premium" id="mainHeader">
         <div class="header-container">
-            <!-- Logo -->
+
+            <!-- Logo con slogan -->
             <div class="header-logo">
                 <a th:href="@{/}">
                     <img th:src="@{/images/LogoCultivus.png}" alt="Cultivus">
-                    <span class="logo-text">Cultivus</span>
+                    <div class="logo-text-group">
+                        <span class="logo-text">Cultivus</span>
+                        <span class="logo-slogan">Del campo a tu mesa</span>
+                    </div>
                 </a>
             </div>
 
-            <!-- Navegación Principal -->
+            <!-- Navegación principal: Inicio, Categorías, Productos -->
             <nav class="header-nav">
-                <a th:href="@{/}" class="nav-link">
+                <a th:href="@{/}" class="nav-link active">
                     <i class="fas fa-home"></i>
                     <span>Inicio</span>
                 </a>
-                <a th:href="@{/category}" class="nav-link">
-                    <i class="fas fa-th-large"></i>
-                    <span>Categorías</span>
-                </a>
-                <a th:href="@{/category}" class="nav-link">
-                    <i class="fas fa-shopping-basket"></i>
-                    <span>Productos</span>
-                </a>
+
+                <div class="nav-dropdown">
+                    <a th:href="@{/category}" class="nav-link nav-dropdown__toggle" aria-haspopup="true">
+                        <i class="fas fa-th-large"></i>
+                        <span>Categorías</span>
+                        <i class="fas fa-chevron-down nav-dropdown__caret"></i>
+                    </a>
+                    <div class="nav-dropdown__menu">
+                        <th:block th:if="${categorias != null}">
+                            <a th:each="cat : ${categorias}" th:href="@{/category(categoria=${cat.id})}">
+                                <i class="fas fa-tag"></i> <span th:text="${cat.nombre}">Categoría</span>
+                            </a>
+                        </th:block>
+                        <a th:href="@{/category}" class="nav-dropdown__all">Ver todas las categorías <i
+                                class="fas fa-arrow-right"></i></a>
+                    </div>
+                </div>
+
             </nav>
 
-            <!-- Buscador -->
-            <div class="header-search">
-                <button class="search-toggle" id="searchToggle">
-                    <i class="fas fa-search"></i>
-                </button>
-                <div class="search-dropdown" id="searchDropdown">
-                    <form th:action="@{/buscar}" method="get">
-                        <input type="search" name="q" placeholder="Buscar productos..." autocomplete="off">
-                        <button type="submit">
-                            <i class="fas fa-search"></i>
-                        </button>
-                    </form>
-                </div>
+            <!-- Buscador ancho tipo píldora -->
+            <div class="header-search header-search--wide">
+                <form th:action="@{/buscar}" method="get" role="search">
+                    <i class="fas fa-search header-search__icon"></i>
+                    <input type="search" name="q" placeholder="Buscar productos, productores o categorias..."
+                        autocomplete="off" aria-label="Buscar productos">
+                    <button type="submit" aria-label="Buscar" class="header-search__btn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
             </div>
 
-            <!-- CTAs -->
+            <!-- Acciones -->
             <div class="header-actions">
-                <!-- CTA Convertirse en Vendedor / Volver a Dashboard -->
+
+                <!-- Botón Vender / Modo vendedor -->
                 <th:block th:if="${session.usuarioLogueado != null and session.usuarioLogueado.rol != null}">
-                    <a th:if="${session.usuarioLogueado.rol.name() == 'VENDEDOR'}" th:href="@{/vendedor/inicio}" class="btn-sell highlight">
+                    <a th:if="${session.usuarioLogueado.rol.name() == 'VENDEDOR'}" th:href="@{/vendedor/inicio}"
+                        class="btn-sell highlight" title="Ir al panel de vendedor">
                         <i class="fas fa-store"></i>
-                        <span>Modo Vendedor</span>
+                        <span>Modo vendedor</span>
                     </a>
-                    <a th:if="${session.usuarioLogueado.rol.name() == 'COMPRADOR'}" th:href="@{/vendedor/registro}" class="btn-sell">
+                    <a th:if="${session.usuarioLogueado.rol.name() == 'COMPRADOR'}" th:href="@{/vendedor/registro}"
+                        class="btn-sell" title="Registrarse como vendedor">
+                        <i class="fas fa-store"></i>
+                        <span>Vender</span>
+                    </a>
+                </th:block>
+                <th:block th:if="${session.usuarioLogueado == null or session.usuarioLogueado.rol == null}">
+                    <a th:href="@{/vendedor/registro}" class="btn-sell" title="Vender en Cultivus">
                         <i class="fas fa-store"></i>
                         <span>Vender</span>
                     </a>
                 </th:block>
 
-                <div class="header-nav" style="display: flex; align-items: center; gap: 15px;">
-                    <a th:href="@{/usuario/pedidos}" class="btn-profile-link" title="Mis Compras" style="color: #666; transition: color 0.3s;">
-                        <i class="fas fa-box" style="font-size: 22px;"></i>
-                    </a>
+                <!-- Mi cuenta (Botón desplegable de perfil) -->
+                <div class="account-menu" id="accountMenu">
+                    <button class="btn-account" id="accountMenuBtn" type="button" aria-haspopup="true"
+                        aria-expanded="false" aria-controls="accountMenuPanel" aria-label="Menú de perfil de usuario">
+                        <div class="account-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="account-info">
+                            <span class="account-greeting">Hola,</span>
+                            <span class="account-name"
+                                th:text="${session.usuarioLogueado != null ? (session.usuarioLogueado.nombre != null ? session.usuarioLogueado.nombre : 'Usuario') : 'Usuario'}">Usuario</span>
+                        </div>
+                        <i class="fas fa-chevron-down account-caret" aria-hidden="true"></i>
+                    </button>
 
-                    <!-- Notificaciones -->
-                    <a th:href="@{/usuario/notificaciones}" class="btn-profile-link" title="Notificaciones" style="color: #666; transition: color 0.3s; position: relative;">
-                        <i class="fas fa-bell" style="font-size: 22px;"></i>
-                        <span class="badge-count" th:if="${notificacionesCount != null and notificacionesCount > 0}" th:text="${notificacionesCount}" 
-                              style="position: absolute; top: -5px; right: -5px; background: #ff4757; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 11px; display: flex; align-items: center; justify-content: center; border: 2px solid white;">0</span>
-                    </a>
+                    <!-- Menú desplegable con Mi perfil, Mis pedidos y Cerrar sesión -->
+                    <div class="account-menu__panel" id="accountMenuPanel" role="menu" aria-labelledby="accountMenuBtn">
+                        <!-- Cabecera de usuario autenticado -->
+                        <div class="account-panel__user" th:if="${session.usuarioLogueado != null}">
+                            <div class="account-panel__user-icon">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                            <div class="account-panel__user-meta">
+                                <span class="account-panel__user-name"
+                                    th:text="${session.usuarioLogueado.nombre}">Usuario</span>
+                                <span class="account-panel__user-email" th:if="${session.usuarioLogueado.email != null}"
+                                    th:text="${session.usuarioLogueado.email}">email@ejemplo.com</span>
+                            </div>
+                        </div>
 
-                    <!-- Mi Perfil -->
-                    <a th:href="@{/usuario/perfil}" class="btn-profile-link" title="Mi Perfil" style="color: #666; transition: color 0.3s;">
-                        <i class="fas fa-user-circle" style="font-size: 24px;"></i>  
-                    </a>
+                        <div class="account-panel__divider"></div>
 
-                    <!-- Cerrar Sesión -->
-                    <a th:href="@{/usuario/logout}" class="btn-logout" title="Cerrar Sesión" style="color: #666; transition: color 0.3s;">
-                        <i class="fas fa-sign-out-alt" style="font-size: 22px;"></i>
-                    </a>
+                        <!-- Opción 1: Mi perfil -->
+                        <a th:href="@{/usuario/perfil}" class="account-panel__link" role="menuitem">
+                            <span class="account-panel__icon-box"><i class="fas fa-user"></i></span>
+                            <span class="account-panel__text">Mi perfil</span>
+                        </a>
+
+                        <!-- Opción 2: Billetera -->
+                        <a th:href="@{/usuario/billetera}" class="account-panel__link" role="menuitem">
+                            <span class="account-panel__icon-box"><i class="fas fa-wallet"></i></span>
+                            <span class="account-panel__text">Billetera</span>
+                        </a>
+
+                        <!-- Opción 3: Mis pedidos -->
+                        <a th:href="@{/usuario/pedidos}" class="account-panel__link" role="menuitem">
+                            <span class="account-panel__icon-box"><i class="fas fa-box"></i></span>
+                            <span class="account-panel__text">Mis pedidos</span>
+                        </a>
+
+                        <div class="account-panel__divider"></div>
+
+                        <!-- Opción 3: Cerrar sesión -->
+                        <a th:href="@{/usuario/logout}" class="account-panel__link is-danger" role="menuitem">
+                            <span class="account-panel__icon-box"><i class="fas fa-sign-out-alt"></i></span>
+                            <span class="account-panel__text">Cerrar sesión</span>
+                        </a>
+                    </div>
                 </div>
 
-                <!-- Carrito -->
-                <a th:href="@{/carrito}" class="btn-cart">
+                <!-- Notificaciones con badge dinámico -->
+                <a th:href="@{/usuario/notificaciones}" class="btn-icon" title="Notificaciones"
+                    aria-label="Ver notificaciones">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge-count" th:if="${notificacionesCount != null and notificacionesCount > 0}"
+                        th:text="${notificacionesCount}">0</span>
+                </a>
+
+                <!-- Carrito de compras con badge dinámico -->
+                <a th:href="@{/carrito}" class="btn-icon btn-cart" title="Carrito de compras"
+                    aria-label="Ver carrito de compras">
                     <i class="fas fa-shopping-cart"></i>
-                    <span class="cart-badge">0</span>
+                    <span class="cart-badge" th:text="${carritoCount != null ? carritoCount : 0}">0</span>
                 </a>
             </div>
 
-            <!-- Mobile Menu Toggle -->
-            <button class="mobile-menu-toggle" id="mobileMenuToggle">
+            <!-- Botón menú móvil -->
+            <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Abrir menú de navegación móvil">
                 <span></span>
                 <span></span>
                 <span></span>
@@ -96,81 +164,101 @@
         </div>
     </div>
 
-    <!-- Mobile Menu -->
-    <div class="mobile-menu" id="mobileMenu">
+    <!-- Menú móvil accesible -->
+    <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
         <div class="mobile-menu-header">
             <span>Menú</span>
-            <button class="mobile-menu-close" id="mobileMenuClose">
+            <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Cerrar menú">
                 <i class="fas fa-times"></i>
             </button>
         </div>
         <nav class="mobile-nav">
+            <!-- Tarjeta de usuario en móvil -->
+            <div class="mobile-user-card" th:if="${session.usuarioLogueado != null}">
+                <div class="mobile-user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="mobile-user-info">
+                    <span class="mobile-user-name" th:text="${session.usuarioLogueado.nombre}">Usuario</span>
+                    <span class="mobile-user-email" th:if="${session.usuarioLogueado.email != null}"
+                        th:text="${session.usuarioLogueado.email}">email@ejemplo.com</span>
+                </div>
+            </div>
+
             <a th:href="@{/}"><i class="fas fa-home"></i> Inicio</a>
             <a th:href="@{/category}"><i class="fas fa-th-large"></i> Categorías</a>
-            <a th:href="@{/category}"><i class="fas fa-shopping-basket"></i> Productos</a>
             <div class="mobile-divider"></div>
-            <a th:href="@{/usuario/pedidos}"><i class="fas fa-box"></i> Mis Compras</a>
+
+            <a th:href="@{/usuario/perfil}"><i class="fas fa-user"></i> Mi perfil</a>
+            <a th:href="@{/usuario/pedidos}"><i class="fas fa-box"></i> Mis pedidos</a>
+
             <th:block th:if="${session.usuarioLogueado != null and session.usuarioLogueado.rol != null}">
-                <a th:if="${session.usuarioLogueado.rol.name() == 'VENDEDOR'}" th:href="@{/vendedor/inicio}" class="mobile-highlight"><i class="fas fa-store"></i> Modo Vendedor</a>
-                <a th:if="${session.usuarioLogueado.rol.name() == 'COMPRADOR'}" th:href="@{/vendedor/registro}" class="mobile-highlight"><i class="fas fa-store"></i> Convertirse en Vendedor</a>
+                <a th:if="${session.usuarioLogueado.rol.name() == 'VENDEDOR'}" th:href="@{/vendedor/inicio}"
+                    class="mobile-highlight"><i class="fas fa-store"></i> Modo vendedor</a>
+                <a th:if="${session.usuarioLogueado.rol.name() == 'COMPRADOR'}" th:href="@{/vendedor/registro}"
+                    class="mobile-highlight"><i class="fas fa-store"></i> Convertirse en vendedor</a>
             </th:block>
+
             <a th:href="@{/usuario/notificaciones}"><i class="fas fa-bell"></i> Notificaciones</a>
-            <a th:href="@{/usuario/perfil}"><i class="fas fa-user"></i> Mi Perfil</a>
-            <a th:href="@{/usuario/logout}"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a>
+            <a th:href="@{/carrito}"><i class="fas fa-shopping-cart"></i> Carrito</a>
+
+            <div class="mobile-divider"></div>
+
+            <a th:href="@{/usuario/logout}" class="mobile-logout"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
         </nav>
     </div>
 
+    <!-- Script de interactividad y accesibilidad del header -->
+    <script th:src="@{/js/header.js}"></script>
     <script>
-        // Search Toggle
-        const searchToggle = document.getElementById('searchToggle');
-        const searchDropdown = document.getElementById('searchDropdown');
-        
-        if (searchToggle && searchDropdown) {
-            searchToggle.addEventListener('click', () => {
-                searchDropdown.classList.toggle('active');
-                if (searchDropdown.classList.contains('active')) {
-                    searchDropdown.querySelector('input').focus();
+        (function () {
+            // ── Menú desplegable de cuenta (Clic, Hover, Escape y Teclado) ──
+            const accountMenu = document.getElementById('accountMenu');
+            const accountMenuBtn = document.getElementById('accountMenuBtn');
+            const accountMenuPanel = document.getElementById('accountMenuPanel');
+
+            if (accountMenu && accountMenuBtn && accountMenuPanel) {
+                function toggleMenu(open) {
+                    const isOpen = typeof open === 'boolean' ? open : !accountMenu.classList.contains('is-open');
+                    accountMenu.classList.toggle('is-open', isOpen);
+                    accountMenuBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
                 }
-            });
 
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('.header-search')) {
-                    searchDropdown.classList.remove('active');
-                }
-            });
-        }
+                // Clic en el botón
+                accountMenuBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    toggleMenu();
+                });
 
-        // Mobile Menu
-        const mobileMenuToggle = document.getElementById('mobileMenuToggle');
-        const mobileMenu = document.getElementById('mobileMenu');
-        const mobileMenuClose = document.getElementById('mobileMenuClose');
+                // Cerrar al hacer clic fuera
+                document.addEventListener('click', function (e) {
+                    if (!accountMenu.contains(e.target)) {
+                        toggleMenu(false);
+                    }
+                });
 
-        if (mobileMenuToggle && mobileMenu) {
-            mobileMenuToggle.addEventListener('click', () => {
-                mobileMenu.classList.add('active');
-                document.body.style.overflow = 'hidden';
-            });
-
-            mobileMenuClose.addEventListener('click', () => {
-                mobileMenu.classList.remove('active');
-                document.body.style.overflow = '';
-            });
-        }
-
-        // Sticky Header
-        let lastScroll = 0;
-        const header = document.getElementById('mainHeader');
-
-        window.addEventListener('scroll', () => {
-            const currentScroll = window.pageYOffset;
-            
-            if (currentScroll > 50) {
-                header.classList.add('scrolled');
-            } else {
-                header.classList.remove('scrolled');
+                // Cerrar con Escape y navegación con teclado
+                accountMenu.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape') {
+                        toggleMenu(false);
+                        accountMenuBtn.focus();
+                    } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        const links = Array.from(accountMenuPanel.querySelectorAll('.account-panel__link'));
+                        if (links.length > 0) {
+                            const currentIndex = links.indexOf(document.activeElement);
+                            let nextIndex = 0;
+                            if (e.key === 'ArrowDown') {
+                                nextIndex = currentIndex < links.length - 1 ? currentIndex + 1 : 0;
+                            } else {
+                                nextIndex = currentIndex > 0 ? currentIndex - 1 : links.length - 1;
+                            }
+                            links[nextIndex].focus();
+                        }
+                    }
+                });
             }
 
-            lastScroll = currentScroll;
-        });
+        })();
     </script>
 </header>

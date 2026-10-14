@@ -5,6 +5,7 @@ import com.example.demo.Model.Producto;
 import com.example.demo.Model.ProductoCatalogo;
 import com.example.demo.Model.Resena;
 import com.example.demo.Model.Usuario;
+import com.example.demo.security.SecurityContextRefreshService;
 import com.example.demo.services.AdminService;
 import com.example.demo.services.AppConfigService;
 import com.example.demo.services.CatalogoService;
@@ -34,6 +35,9 @@ public class AdminController {
 
     @Autowired
     private OfertaService ofertaService;
+
+    @Autowired
+    private SecurityContextRefreshService securityContextRefreshService;
 
     // Roles disponibles — ya no hay tabla de roles
     private static final List<String> ROLES = Arrays.asList(
@@ -177,6 +181,13 @@ public class AdminController {
 
         try {
             adminService.cambiarRolUsuario(id, nuevoRol);
+            // Si el administrador cambia su propio rol, refrescar su Authentication
+            com.example.demo.Model.Usuario objetivo = adminService.obtenerUsuarioPorId(id).orElse(null);
+            com.example.demo.Model.Usuario adminLogueado = (com.example.demo.Model.Usuario) session.getAttribute("usuarioLogueado");
+            if (objetivo != null && adminLogueado != null && id.equals(adminLogueado.getId())) {
+                securityContextRefreshService.refrescarAutenticacion(objetivo.getEmail());
+                session.setAttribute("usuarioLogueado", objetivo);
+            }
             redirectAttributes.addFlashAttribute("mensaje", "Rol actualizado exitosamente");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error",

@@ -1,0 +1,103 @@
+<!-- Piezas de navegación para header-publico y header-comprador -->
+
+<!-- Enlaces del Header Público: Inicio, Categorías, Productores, Ofertas, Nosotros -->
+<th:block th:fragment="enlacesPublico">
+    <a th:href="@{/}" class="nav-link">
+        <i class="fas fa-home"></i>
+        <span>Inicio</span>
+    </a>
+
+    <div class="nav-dropdown">
+        <a th:href="@{/category}" class="nav-link nav-dropdown__toggle" aria-haspopup="true">
+            <i class="fas fa-th-large"></i>
+            <span>Categorías</span>
+            <i class="fas fa-chevron-down nav-dropdown__caret"></i>
+        </a>
+        <div class="nav-dropdown__menu">
+            <th:block th:if="${categorias != null}">
+                <a th:each="cat : ${categorias}" th:href="@{/category(categoria=${cat.id})}">
+                    <i class="fas fa-tag"></i> <span th:text="${cat.nombre}">Categoría</span>
+                </a>
+            </th:block>
+            <a th:href="@{/category}" class="nav-dropdown__all">Ver todas las categorías <i class="fas fa-arrow-right"></i></a>
+        </div>
+    </div>
+
+    <a th:href="@{/nosotros#productores}" class="nav-link">
+        <i class="fas fa-users"></i>
+        <span>Productores</span>
+    </a>
+
+    <a th:href="@{/ofertas}" class="nav-link">
+        <i class="fas fa-tag"></i>
+        <span>Ofertas</span>
+    </a>
+
+    <a th:href="@{/nosotros#sobre-nosotros}" class="nav-link">
+        <i class="fas fa-info-circle"></i>
+        <span>Nosotros</span>
+    </a>
+</th:block>
+
+<!-- Enlaces del Header Comprador (SIN 'Nosotros', según especificación) -->
+<th:block th:fragment="enlacesComprador">
+    <a th:href="@{/}" class="nav-link">
+        <i class="fas fa-home"></i>
+        <span>Inicio</span>
+    </a>
+
+    <div class="nav-dropdown">
+        <a th:href="@{/category}" class="nav-link nav-dropdown__toggle" aria-haspopup="true">
+            <i class="fas fa-th-large"></i>
+            <span>Categorías</span>
+            <i class="fas fa-chevron-down nav-dropdown__caret"></i>
+        </a>
+        <div class="nav-dropdown__menu">
+            <th:block th:if="${categorias != null}">
+                <a th:each="cat : ${categorias}" th:href="@{/category(categoria=${cat.id})}">
+                    <i class="fas fa-tag"></i> <span th:text="${cat.nombre}">Categoría</span>
+                </a>
+            </th:block>
+            <a th:href="@{/category}" class="nav-dropdown__all">Ver todas las categorías <i class="fas fa-arrow-right"></i></a>
+        </div>
+    </div>
+
+    <a th:href="@{/nosotros#productores}" class="nav-link">
+        <i class="fas fa-users"></i>
+        <span>Productores</span>
+    </a>
+
+    <a th:href="@{/ofertas}" class="nav-link">
+        <i class="fas fa-tag"></i>
+        <span>Ofertas</span>
+    </a>
+</th:block>
+
+<!-- Barra de Búsqueda amplia adaptable con botón verde (GET /buscar?q=) -->
+<div class="header-search header-search--wide" th:fragment="buscador">
+    <form th:action="@{/buscar}" method="get" role="search">
+        <i class="fas fa-search header-search__icon"></i>
+        <input type="search" name="q" placeholder="Buscar productos, productores o categorías..." autocomplete="off"
+            aria-label="Buscar">
+        <button type="submit" aria-label="Buscar" class="header-search__btn">
+            <i class="fas fa-search"></i>
+        </button>
+    </form>
+</div>
+
+<!-- Menú móvil público -->
+<th:block th:fragment="enlacesMovilPublico">
+    <a th:href="@{/}"><i class="fas fa-home"></i> Inicio</a>
+    <a th:href="@{/category}"><i class="fas fa-th-large"></i> Categorías</a>
+    <a th:href="@{/nosotros#productores}"><i class="fas fa-users"></i> Productores</a>
+    <a th:href="@{/ofertas}"><i class="fas fa-tag"></i> Ofertas</a>
+    <a th:href="@{/nosotros#sobre-nosotros}"><i class="fas fa-info-circle"></i> Nosotros</a>
+</th:block>
+
+<!-- Menú móvil comprador (sin nosotros) -->
+<th:block th:fragment="enlacesMovilComprador">
+    <a th:href="@{/}"><i class="fas fa-home"></i> Inicio</a>
+    <a th:href="@{/category}"><i class="fas fa-th-large"></i> Categorías</a>
+    <a th:href="@{/nosotros#productores}"><i class="fas fa-users"></i> Productores</a>
+    <a th:href="@{/ofertas}"><i class="fas fa-tag"></i> Ofertas</a>
+</th:block>

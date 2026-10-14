@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Ofertas disponibles de productores locales en Cultivus.">
+    <title>Ofertas - Cultivus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/header.css}">
+    <link rel="stylesheet" th:href="@{/paginas-publicas.css}">
+    <link rel="stylesheet" th:href="@{/footer.css}">
+</head>
+
+<body>
+    <header th:replace="~{fragments/header :: siteHeader}"></header>
+
+    <main class="pub-page">
+        <section class="pub-hero">
+            <h1>Ofertas</h1>
+            <p>Lo más reciente de nuestros productores, directo del campo.</p>
+        </section>
+
+        <div class="pub-container">
+            <section class="pub-section" style="padding-top:40px;">
+                <div class="pub-grid">
+                    <a class="oferta-card" th:each="o : ${ofertas}" th:href="@{/oferta/{id}(id=${o.id})}">
+                        <img th:src="${o.imagenUrl != null and !o.imagenUrl.isBlank()} ? ${o.imagenUrl} : '/images/frutas.webp'"
+                            th:alt="${o.nombreProducto}" onerror="this.src='/images/frutas.webp'">
+                        <div class="oferta-card__body">
+                            <p class="oferta-card__name" th:text="${o.nombreProducto}">Producto</p>
+                            <p class="oferta-card__seller">
+                                <i class="fas fa-store"></i>
+                                <span th:text="${o.vendedor != null ? o.vendedor.nombre : ''}">Vendedor</span>
+                            </p>
+                            <span class="oferta-card__price"
+                                th:text="'$' + ${#numbers.formatDecimal(o.precio, 0, 'COMMA', 0, 'POINT')}">$0</span>
+                            <span class="oferta-card__stock" th:if="${o.stock != null}"
+                                th:text="'Stock: ' + ${#numbers.formatDecimal(o.stock, 0, 0)}">Stock</span>
+                        </div>
+                    </a>
+                    <div class="pub-empty" th:if="${#lists.isEmpty(ofertas)}">
+                        <i class="fas fa-tag"></i>
+                        <p>Aún no hay ofertas disponibles. ¡Vuelve pronto!</p>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
+</body>
+
+</html>

@@ -45,6 +45,7 @@
             padding-left: 12px;
         }
     </style>
+    <link rel="stylesheet" th:href="@{/footer.css}">
 </head>
 
 <body>
@@ -146,6 +147,7 @@
     </main>
 
     <script th:src="@{/js/header.js}"></script>
+<footer th:replace="~{fragments/footer :: siteFooter}"></footer>
 </body>
 
 </html>

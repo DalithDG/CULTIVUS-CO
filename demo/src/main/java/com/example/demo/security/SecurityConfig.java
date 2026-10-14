@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.util.StringUtils;
 
 /**
@@ -73,19 +74,20 @@ public class SecurityConfig {
                     "/login",
                     "/registro",
                     "/register",
-                    "/newregister",
-                    "/loginnew",
                     "/usuario/login",
                     "/usuario/registro",
                     "/usuario/guardar",
                     "/usuario/logout",
                     "/logout",
                     "/category/**",
-                    "/catalogo/**",
+                    "/categoria/**",
+                    "/categoria",
                     "/productos/**",
                     "/producto/**",
                     "/oferta/**",
                     "/buscar/**",
+                    "/nosotros",
+                    "/ofertas",
                     "/frutas",
                     "/verduras",
                     "/lacteos",
@@ -122,9 +124,10 @@ public class SecurityConfig {
                 .permitAll()
             )
             .logout(logout -> logout
-                .logoutUrl("/usuario/logout")
-                .logoutSuccessUrl("/usuario/login?logout=true")
+                .logoutRequestMatcher(new AntPathRequestMatcher("/usuario/logout"))
+                .logoutSuccessUrl("/")
                 .invalidateHttpSession(true)
+                .clearAuthentication(true)
                 .deleteCookies("JSESSIONID")
                 .permitAll()
             );

@@ -4,227 +4,239 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Cultivus - Productos agrícolas frescos directamente de productores locales a tu hogar">
+    <meta name="description"
+        content="Cultivus - Productos agrícolas frescos directamente de productores locales a tu hogar. Calidad garantizada, precios justos.">
     <title>Cultivus - Conectamos el Campo con Tu Mesa</title>
 
-    <link rel="stylesheet" th:href="@{/style.css}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-        integrity="sha512-RXf+QSDCUQs6Q0p2U2uD2OeR5xw8n5T6vCJ7/3zvK3YyEdSpYohhjFExz04szsP1CZq0w0C+YyXWZP8y+e2xUg=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/header.css}">
+    <link rel="stylesheet" th:href="@{/inicio-publico.css}">
+    <link rel="stylesheet" th:href="@{/footer.css}">
 </head>
 
-<body>
+<body class="ip-page">
 
-    <!-- Header -->
-    <header th:replace="~{fragments/header :: siteHeader}"></header>
+    <!-- 1. HEADER (se elige según el rol: público / comprador / vendedor / admin) -->
+    <th:block th:replace="~{fragments/header :: siteHeader}"></th:block>
 
-    <!-- Hero Section Premium -->
-    <section class="hero-premium">
-        <div class="hero-background"></div>
-        <div class="hero-overlay"></div>
-        <div class="hero-content-wrapper">
-            <div class="container">
-                <div class="hero-content">
-                    <div class="hero-badge">
-                        <i class="fas fa-leaf"></i>
-                        <span>100% Productos Frescos</span>
-                    </div>
-                    <h1 class="hero-title">Conectamos el Campo con Tu Mesa</h1>
-                    <p class="hero-subtitle">Productos agrícolas frescos directamente de productores locales a tu hogar. Calidad garantizada, precios justos.</p>
-                    
-                    <div class="hero-ctas">
-                        <a th:href="@{/category}" class="btn-hero btn-primary">
-                            <i class="fas fa-shopping-basket"></i>
+    <main>
+        <!-- 2. HERO -->
+        <section class="ip-hero" aria-label="Bienvenida">
+            <div class="ip-hero__bg"></div>
+            <div class="ip-hero__overlay"></div>
+
+            <div class="ip-hero__inner">
+                <div class="ip-hero__left">
+                    <span class="ip-hero__badge">
+                        <i class="fas fa-leaf"></i> 100% Productos Frescos
+                    </span>
+
+                    <h1 class="ip-hero__title">
+                        Conectamos el Campo<br>
+                        <span class="ip-hero__title--accent">con Tu Mesa</span>
+                    </h1>
+
+                    <p class="ip-hero__subtitle">
+                        Productos agrícolas frescos directamente de productores locales a tu hogar.
+                        Calidad garantizada, precios justos.
+                    </p>
+
+                    <div class="ip-hero__ctas">
+                        <a th:href="@{/category}" class="ip-btn ip-btn--primary" id="heroExplorarBtn">
+                            <i class="fas fa-shopping-cart"></i>
                             <span>Explorar Productos</span>
+                            <i class="fas fa-arrow-right"></i>
                         </a>
-                        <a th:href="@{/registro-vendedor}" class="btn-hero btn-secondary">
-                            <i class="fas fa-store"></i>
+                        <a th:href="@{/vendedor/registro}" class="ip-btn ip-btn--outline" id="heroVenderBtn">
+                            <i class="fas fa-hat-cowboy"></i>
                             <span>Vender en Cultivus</span>
                         </a>
                     </div>
+                </div>
 
-                    <!-- Buscador Integrado -->
-                    <div class="hero-search">
-                        <form th:action="@{/buscar}" method="get">
-                            <div class="search-wrapper">
-                                <i class="fas fa-search"></i>
-                                <input type="search" name="q" placeholder="Buscar productos frescos..." autocomplete="off">
-                                <button type="submit" class="search-btn">Buscar</button>
+                <div class="ip-hero__quote" aria-hidden="true">
+                    <span>Apoyas al<br>campesino, apoyas<br>el futuro <span class="ip-hero__heart">&#9829;</span></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. BARRA DE BENEFICIOS -->
+        <section class="ip-trust-bar" aria-label="Beneficios">
+            <div class="ip-trust-bar__inner">
+                <div class="ip-trust-item">
+                    <i class="fas fa-leaf ip-trust-item__icon"></i>
+                    <div><strong>Productos frescos</strong><span>Directo del campo</span></div>
+                </div>
+                <div class="ip-trust-item">
+                    <i class="fas fa-shield-alt ip-trust-item__icon"></i>
+                    <div><strong>Compra segura</strong><span>Pagos protegidos</span></div>
+                </div>
+                <div class="ip-trust-item">
+                    <i class="fas fa-truck ip-trust-item__icon"></i>
+                    <div><strong>Envíos a todo Colombia</strong><span>Rápido y confiable</span></div>
+                </div>
+                <div class="ip-trust-item">
+                    <i class="fas fa-hat-cowboy ip-trust-item__icon"></i>
+                    <div><strong>Apoya al productor</strong><span>Sin intermediarios</span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. CATEGORÍAS (máx. 8 tarjetas) -->
+        <section class="ip-cats" id="categorias">
+            <div class="ip-cats__header">
+                <div>
+                    <h2 class="ip-cats__title"><i class="fas fa-leaf ip-cats__leaf"></i> Categorías</h2>
+                    <p class="ip-cats__sub">Encuentra lo que necesitas, directo del campo.</p>
+                </div>
+                <a th:href="@{/category}" class="ip-cats__link" id="verTodasCatsLink">
+                    Ver todas las categorías <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="ip-cats__grid">
+                <!-- Dinámicas desde BD. Categoria solo tiene id/nombre/descripcion: la imagen se deduce del nombre -->
+                <th:block th:if="${categorias != null and !categorias.isEmpty()}">
+                    <a th:each="cat, it : ${categorias}" th:if="${it.index < 8}"
+                       th:with="n=${cat.nombre != null ? #strings.toLowerCase(cat.nombre) : ''}"
+                       th:href="@{/category(categoria=${cat.id})}"
+                       class="ip-cat-card" th:id="'cat-' + ${cat.id}">
+                        <div class="ip-cat-card__img-wrap">
+                            <img th:src="${n.contains('fruta') ? '/images/frutas.webp' :
+                                          n.contains('verdura') ? '/images/Verduras.jpg' :
+                                          (n.contains('lácteo') or n.contains('lacteo')) ? '/images/lacteos.jpg' :
+                                          n.contains('carne') ? '/images/carnes y aves.png' :
+                                          n.contains('grano') ? '/images/granos y cereales.png' :
+                                          n.contains('bebida') ? '/images/bebidas.webp' :
+                                          n.contains('condimento') ? '/images/condimentos.png' :
+                                          n.contains('pan') ? '/images/panaderia.png' :
+                                          '/images/hero-background.jpg'}"
+                                 th:alt="${cat.nombre}" loading="lazy">
+                        </div>
+                        <div class="ip-cat-card__label">
+                            <i th:class="${n.contains('fruta') ? 'fas fa-apple-alt' :
+                                          n.contains('verdura') ? 'fas fa-carrot' :
+                                          (n.contains('lácteo') or n.contains('lacteo')) ? 'fas fa-cheese' :
+                                          n.contains('carne') ? 'fas fa-drumstick-bite' :
+                                          n.contains('grano') ? 'fas fa-seedling' :
+                                          n.contains('bebida') ? 'fas fa-wine-bottle' :
+                                          n.contains('condimento') ? 'fas fa-mortar-pestle' :
+                                          'fas fa-box'}"></i>
+                            <span th:text="${cat.nombre}">Categoría</span>
+                            <i class="fas fa-arrow-right ip-cat-card__arrow"></i>
+                        </div>
+                    </a>
+                </th:block>
+
+                <!-- Respaldo estático (si la BD no tiene categorías) -->
+                <th:block th:if="${categorias == null or categorias.isEmpty()}">
+                    <a th:href="@{/frutas}" class="ip-cat-card">
+                        <div class="ip-cat-card__img-wrap"><img th:src="@{/images/frutas.webp}" alt="Frutas"></div>
+                        <div class="ip-cat-card__label"><i class="fas fa-apple-alt"></i><span>Frutas</span><i class="fas fa-arrow-right ip-cat-card__arrow"></i></div>
+                    </a>
+                    <a th:href="@{/verduras}" class="ip-cat-card">
+                        <div class="ip-cat-card__img-wrap"><img th:src="@{/images/Verduras.jpg}" alt="Verduras"></div>
+                        <div class="ip-cat-card__label"><i class="fas fa-carrot"></i><span>Verduras</span><i class="fas fa-arrow-right ip-cat-card__arrow"></i></div>
+                    </a>
+                    <a th:href="@{/lacteos}" class="ip-cat-card">
+                        <div class="ip-cat-card__img-wrap"><img th:src="@{/images/lacteos.jpg}" alt="Lácteos"></div>
+                        <div class="ip-cat-card__label"><i class="fas fa-cheese"></i><span>Lácteos</span><i class="fas fa-arrow-right ip-cat-card__arrow"></i></div>
+                    </a>
+                    <a th:href="@{/category}" class="ip-cat-card">
+                        <div class="ip-cat-card__img-wrap"><img th:src="@{'/images/carnes y aves.png'}" alt="Carnes"></div>
+                        <div class="ip-cat-card__label"><i class="fas fa-drumstick-bite"></i><span>Carnes</span><i class="fas fa-arrow-right ip-cat-card__arrow"></i></div>
+                    </a>
+                    <a th:href="@{/granos}" class="ip-cat-card">
+                        <div class="ip-cat-card__img-wrap"><img th:src="@{'/images/granos y cereales.png'}" alt="Granos"></div>
+                        <div class="ip-cat-card__label"><i class="fas fa-seedling"></i><span>Granos</span><i class="fas fa-arrow-right ip-cat-card__arrow"></i></div>
+                    </a>
+                    <a th:href="@{/category}" class="ip-cat-card">
+                        <div class="ip-cat-card__img-wrap"><img th:src="@{/images/bebidas.webp}" alt="Bebidas"></div>
+                        <div class="ip-cat-card__label"><i class="fas fa-wine-bottle"></i><span>Bebidas</span><i class="fas fa-arrow-right ip-cat-card__arrow"></i></div>
+                    </a>
+                    <a th:href="@{/category}" class="ip-cat-card">
+                        <div class="ip-cat-card__img-wrap"><img th:src="@{/images/condimentos.png}" alt="Condimentos"></div>
+                        <div class="ip-cat-card__label"><i class="fas fa-mortar-pestle"></i><span>Condimentos</span><i class="fas fa-arrow-right ip-cat-card__arrow"></i></div>
+                    </a>
+                    <a th:href="@{/category}" class="ip-cat-card">
+                        <div class="ip-cat-card__img-wrap"><img th:src="@{/images/hero-background.jpg}" alt="Otros"></div>
+                        <div class="ip-cat-card__label"><i class="fas fa-box"></i><span>Otros</span><i class="fas fa-arrow-right ip-cat-card__arrow"></i></div>
+                    </a>
+                </th:block>
+            </div>
+        </section>
+
+        <!-- 5. PRODUCTOS DESTACADOS (panel claro redondeado como en el mockup) -->
+        <section class="ip-products" id="productosDestacados">
+                <div class="ip-products__header">
+                    <div>
+                        <h2 class="ip-products__title">
+                            <i class="fas fa-fire-flame-curved ip-products__icon"></i> Productos destacados
+                        </h2>
+                        <p class="ip-products__sub">Los favoritos de nuestra comunidad</p>
+                    </div>
+                    <a th:href="@{/category}" class="ip-cats__link" id="verTodosProductosLink">
+                        Ver todos los productos <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+
+                <div th:if="${productos != null and !productos.isEmpty()}" class="ip-products__grid">
+                    <article th:each="producto : ${productos}" class="ip-prod-card">
+                        <a th:href="@{/producto/{id}(id=${producto.id})}" class="ip-prod-card__img-wrap">
+                            <img th:src="${producto.imagenUrl != null ? producto.imagenUrl : '/images/frutas.webp'}"
+                                 th:alt="${producto.nombre}" loading="lazy"
+                                 onerror="this.onerror=null;this.src='/images/frutas.webp'">
+                            <span class="ip-prod-card__badge">Fresco</span>
+                        </a>
+                        <div class="ip-prod-card__body">
+                            <h3 th:text="${producto.nombre}">Nombre del producto</h3>
+                            <div class="ip-prod-card__price">
+                                <span th:if="${producto.precioMinimo != null}"
+                                      th:text="'Desde $' + ${#numbers.formatInteger(producto.precioMinimo, 1, 'POINT')}">Desde $0</span>
+                                <span th:unless="${producto.precioMinimo != null}">Próximamente</span>
                             </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Productos Destacados -->
-    <section class="products-section">
-        <div class="container">
-            <div class="section-header">
-                <h2>Productos Destacados</h2>
-                <p>Lo más fresco que tenemos para ti</p>
-            </div>
-
-            <!-- Si hay productos -->
-            <div th:if="${productos != null and !productos.isEmpty()}" class="products-grid">
-                <div th:each="producto : ${productos}" class="product-card">
-                    <div class="product-image">
-                        <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}"
-                            onerror="this.src='/images/placeholder.jpg'">
-                        <div class="product-badge">Fresco</div>
-                    </div>
-                    <div class="product-info">
-                        <h3 th:text="${producto.nombre}">Nombre del Producto</h3>
-                        <div class="product-price">
-                            <span class="price" th:if="${producto.precioMinimo != null}"
-                                th:text="'Desde $' + ${#numbers.formatDecimal(producto.precioMinimo, 0, 'COMMA', 0, 'POINT')}">Desde $0</span>
-                            <span class="price" th:unless="${producto.precioMinimo != null}">Próximamente</span>
+                            <div class="ip-prod-card__actions">
+                                <a th:href="@{/producto/{id}(id=${producto.id})}" class="ip-prod-card__view">
+                                    <i class="fas fa-eye"></i> Ver detalle
+                                </a>
+                                <form th:action="@{/carrito/agregar}" method="post">
+                                    <input type="hidden" name="productoId" th:value="${producto.id}">
+                                    <button type="submit" class="ip-prod-card__add" aria-label="Agregar al carrito">
+                                        <i class="fas fa-cart-plus"></i>
+                                    </button>
+                                </form>
+                            </div>
                         </div>
-                        <div class="product-actions">
-                            <a th:href="@{/producto/{id}(id=${producto.id})}" class="btn-view">
-                                <i class="fas fa-eye"></i>
-                                Ver detalle
-                            </a>
-                            <form th:action="@{/carrito/agregar}" method="post" style="flex: 1;">
-                                <input type="hidden" name="productoId" th:value="${producto.id}">
-                                <button type="submit" class="btn-add-cart">
-                                    <i class="fas fa-cart-plus"></i>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
+                    </article>
                 </div>
-            </div>
 
-            <!-- Si NO hay productos -->
-            <div th:if="${productos == null or productos.isEmpty()}" class="no-products">
-                <div class="no-products-icon">
+                <div th:if="${productos == null or productos.isEmpty()}" class="ip-products__empty">
                     <i class="fas fa-box-open"></i>
+                    <h3>Próximamente productos frescos</h3>
+                    <p>Estamos trabajando para traerte los mejores productos del campo muy pronto.</p>
                 </div>
-                <h3>Próximamente productos frescos</h3>
-                <p>Estamos trabajando para traerte los mejores productos del campo muy pronto.</p>
-            </div>
+        </section>
 
-            <!-- Botón ver todos -->
-            <div th:if="${productos != null and !productos.isEmpty()}" class="section-cta">
-                <a th:href="@{/category}" class="btn-view-all">
-                    Ver todos los productos
-                    <i class="fas fa-arrow-right"></i>
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Categorías Destacadas -->
-    <section class="categories-section">
-        <div class="container">
-            <div class="section-header">
-                <h2>Explora Nuestras Categorías</h2>
-                <p>Encuentra productos frescos y de calidad en cada categoría</p>
-            </div>
-
-            <div class="categories-grid">
-                <a th:each="cat : ${categorias}" th:href="@{/category(categoria=${cat.id})}" class="category-card">
-                    <div class="category-icon">
-                        <i th:class="${#strings.toLowerCase(cat.nombre).contains('fruta') ? 'fas fa-apple-alt' : 
-                                      #strings.toLowerCase(cat.nombre).contains('verdura') ? 'fas fa-carrot' : 
-                                      #strings.toLowerCase(cat.nombre).contains('lácteo') ? 'fas fa-cheese' : 
-                                      #strings.toLowerCase(cat.nombre).contains('carne') ? 'fas fa-drumstick-bite' : 
-                                      #strings.toLowerCase(cat.nombre).contains('café') ? 'fas fa-mug-hot' : 
-                                      #strings.toLowerCase(cat.nombre).contains('grano') ? 'fas fa-seedling' : 
-                                      #strings.toLowerCase(cat.nombre).contains('miel') ? 'fas fa-honey-pot' : 
-                                      'fas fa-leaf'}"></i>
-                    </div>
-                    <h3 th:text="${cat.nombre}">Categoría</h3>
-                    <p th:text="${cat.descripcion}">Descripción</p>
-                    <div class="category-arrow">
-                        <i class="fas fa-arrow-right"></i>
-                    </div>
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- Por Qué Cultivus -->
-    <section class="benefits-section">
-        <div class="container">
-            <div class="section-header">
-                <h2>¿Por Qué Elegir Cultivus?</h2>
-                <p>Más que una tienda, somos tu aliado en alimentación saludable</p>
-            </div>
-
-            <div class="benefits-grid">
-                <div class="benefit-card">
-                    <div class="benefit-icon">
-                        <i class="fas fa-truck-fast"></i>
-                    </div>
-                    <h3>Entrega Rápida</h3>
-                    <p>Recibe tus productos frescos en tiempo récord. Cobertura en toda Colombia.</p>
-                </div>
-
-                <div class="benefit-card">
-                    <div class="benefit-icon">
-                        <i class="fas fa-leaf"></i>
-                    </div>
-                    <h3>100% Frescos</h3>
-                    <p>Conectamos directamente con productores locales para garantizar la máxima frescura.</p>
-                </div>
-
-                <div class="benefit-card">
-                    <div class="benefit-icon">
-                        <i class="fas fa-hand-holding-heart"></i>
-                    </div>
-                    <h3>Apoyo al Campo</h3>
-                    <p>Cada compra impulsa el trabajo de agricultores colombianos y fortalece la economía local.</p>
-                </div>
-
-                <div class="benefit-card">
-                    <div class="benefit-icon">
-                        <i class="fas fa-shield-halved"></i>
-                    </div>
-                    <h3>Calidad Garantizada</h3>
-                    <p>Rigurosos estándares de calidad en cada producto. Tu satisfacción es nuestra prioridad.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- CTA Vendedores -->
-    <section class="cta-vendors">
-        <div class="cta-background"></div>
-        <div class="cta-overlay"></div>
-        <div class="container">
-            <div class="cta-content">
-                <div class="cta-icon">
-                    <i class="fas fa-tractor"></i>
-                </div>
+        <!-- 6. CTA VENDEDORES -->
+        <section class="ip-cta-vendor">
+            <div class="ip-cta-vendor__bg"></div>
+            <div class="ip-cta-vendor__overlay"></div>
+            <div class="ip-cta-vendor__inner">
+                <div class="ip-cta-vendor__icon"><i class="fas fa-tractor"></i></div>
                 <h2>¿Eres Productor Agrícola?</h2>
                 <p>Únete a Cultivus y lleva tus productos a miles de hogares en toda Colombia. Sin intermediarios, mejores precios, mayor alcance.</p>
-                <a th:href="@{/registro-vendedor}" class="btn-cta-vendor">
-                    <span>Comenzar a Vender</span>
-                    <i class="fas fa-arrow-right"></i>
+                <a th:href="@{/vendedor/registro}" class="ip-cta-vendor__btn" id="ctaVendedorBtn">
+                    Comenzar a Vender <i class="fas fa-arrow-right"></i>
                 </a>
-                <div class="cta-stats">
-                    <div class="stat-item">
-                        <span class="stat-number">50+</span>
-                        <span class="stat-label">Municipios</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number">100+</span>
-                        <span class="stat-label">Productores</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-number">1000+</span>
-                        <span class="stat-label">Clientes</span>
-                    </div>
-                </div>
             </div>
-        </div>
-    </section>
+        </section>
+    </main>
 
-    <!-- Footer -->
-    <footer th:replace="fragments/footer :: siteFooter"></footer>
+    <!-- FOOTER -->
+    <th:block th:replace="~{fragments/footer :: siteFooter}"></th:block>
 
 </body>
 

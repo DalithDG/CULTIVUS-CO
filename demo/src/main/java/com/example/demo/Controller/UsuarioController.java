@@ -20,7 +20,12 @@ import com.example.demo.repository.CategoriaRepository;
 import com.example.demo.Model.Pedido;
 import com.example.demo.Model.Notificacion;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
@@ -176,50 +181,6 @@ public class UsuarioController {
         return "auth/login";
     }
 
-    @PostMapping("/login")
-    public String procesarLogin(
-            @RequestParam("email") String email,
-            @RequestParam("contrasena") String contrasena,
-            HttpSession session,
-            Model model,
-            RedirectAttributes redirectAttributes) {
-
-        // Validar que los campos no estén vacíos
-        if (email == null || email.trim().isEmpty() ||
-                contrasena == null || contrasena.trim().isEmpty()) {
-            model.addAttribute("error", "El correo y la contraseña son requeridos");
-            return "auth/login";
-        }
-
-        // Normalizar email (igual que cuando se registró)
-        String emailLimpio = email.trim().toLowerCase();
-
-        // Autenticar con el servicio
-        Usuario usuario = usuarioService.iniciarSesion(emailLimpio, contrasena);
-
-        if (usuario == null) {
-            model.addAttribute("error", "Correo o contraseña incorrectos");
-            return "auth/login";
-        }
-
-        // Guardar el usuario en sesión
-        usuario.setUltimaConexion(java.time.LocalDateTime.now());
-        usuarioService.save(usuario);
-        session.setAttribute("usuarioLogueado", usuario);
-
-        // Contar notificaciones no leídas
-        long notificacionesCount = notificacionRepository.findByUsuarioIdOrderByFechaDesc(usuario.getId())
-                .stream().filter(n -> !n.isLeida()).count();
-        session.setAttribute("notificacionesCount", notificacionesCount);
-
-        // Redirigir según el rol del usuario
-        if (usuario.hasRole(Role.ADMIN)) {
-            return "redirect:/admin/dashboard";
-        } else {
-            // COMPRADOR y VENDEDOR van al mismo inicio (que luego ramifica)
-            return "redirect:/usuario/inicio";
-        }
-    }
 
     @GetMapping("/inicio")
     public String mostrarInicio(@RequestParam(value = "modo", required = false) String modo,
@@ -360,11 +321,6 @@ public class UsuarioController {
         }
     }
 
-    @GetMapping("/logout")
-    public String cerrarSesion(HttpSession session) {
-        session.invalidate();
-        return "redirect:/";
-    }
 
     // --- SECCIÓN DE PEDIDOS DEL COMPRADOR ---
 

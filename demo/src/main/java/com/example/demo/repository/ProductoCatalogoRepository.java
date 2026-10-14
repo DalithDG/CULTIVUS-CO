@@ -1,7 +1,10 @@
 package com.example.demo.repository;
 
 import com.example.demo.Model.ProductoCatalogo;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -18,15 +21,27 @@ public interface ProductoCatalogoRepository extends MongoRepository<ProductoCata
     /** Catálogo público: solo productos aprobados y activos */
     List<ProductoCatalogo> findByAprobadoTrueAndActivoTrue();
 
+    /** Catálogo público paginado */
+    @Query(value = "{ 'aprobado': true, 'activo': true }", collation = "{ 'locale': 'es', 'strength': 2 }")
+    Page<ProductoCatalogo> findPublico(Pageable pageable);
+
+    /** Catálogo por categoría(es) paginado */
+    @Query(value = "{ 'aprobado': true, 'activo': true, 'categoria.id': { $in: ?0 } }", collation = "{ 'locale': 'es', 'strength': 2 }")
+    Page<ProductoCatalogo> findPublicoByCategorias(List<String> categoriaIds, Pageable pageable);
+
+    /** Catálogo con precio máximo paginado */
+    @Query(value = "{ 'aprobado': true, 'activo': true, 'precioMinimo': { $lte: ?0 } }", collation = "{ 'locale': 'es', 'strength': 2 }")
+    Page<ProductoCatalogo> findPublicoByPrecioMax(Double precioMax, Pageable pageable);
+
+    /** Catálogo por categoría(es) y precio máximo paginado */
+    @Query(value = "{ 'aprobado': true, 'activo': true, 'categoria.id': { $in: ?0 }, 'precioMinimo': { $lte: ?1 } }", collation = "{ 'locale': 'es', 'strength': 2 }")
+    Page<ProductoCatalogo> findPublicoByCategoriasAndPrecioMax(List<String> categoriaIds, Double precioMax, Pageable pageable);
+
     /** Catálogo por categoría */
     List<ProductoCatalogo> findByCategoriaIdAndAprobadoTrueAndActivoTrue(String categoriaId);
 
     /** Búsqueda por nombre parcial (catálogo público) */
     List<ProductoCatalogo> findByNombreContainingIgnoreCaseAndAprobadoTrueAndActivoTrue(String nombre);
-
-    /** Búsqueda por nombre o descripción (catálogo público) */
-    List<ProductoCatalogo> findByAprobadoTrueAndActivoTrueAndNombreContainingIgnoreCaseOrAprobadoTrueAndActivoTrueAndDescripcionContainingIgnoreCase(
-            String nombre, String descripcion);
 
     /** Admin: productos pendientes de aprobación */
     List<ProductoCatalogo> findByAprobadoFalseAndActivoTrue();

@@ -41,78 +41,38 @@ public class CatalogoController {
      * Muestra el catálogo centralizado (1 card por tipo de producto).
      * Cada card muestra el precioMinimo y totalVendedores.
      */
-    @GetMapping("/category")
+    @GetMapping({"/category", "/categoria"})
     public String listarCatalogo(
             @RequestParam(value = "categoria", required = false) List<String> categoriaIds,
             @RequestParam(value = "orden", required = false, defaultValue = "relevancia") String orden,
+            @RequestParam(value = "precioMax", required = false) Double precioMax,
             @RequestParam(value = "page", defaultValue = "0") int page,
             @RequestParam(value = "size", defaultValue = "12") int size,
             Model model, HttpSession session) {
 
-        // Obtener productos del catálogo (aprobados y activos)
-        List<ProductoCatalogo> catalogo = catalogoService.listarCatalogo();
+        // Validar parámetros de paginación
+        if (size < 1) size = 1;
+        if (size > 48) size = 48;
+        if (page < 0) page = 0;
 
-        // Filtrar por categorías si se especifican
-        if (categoriaIds != null && !categoriaIds.isEmpty()) {
-            catalogo = catalogo.stream()
-                    .filter(p -> p.getCategoria() != null &&
-                            categoriaIds.contains(p.getCategoria().getId()))
-                    .collect(Collectors.toList());
-        }
-
-        // Aplicar ordenamiento
-        if (catalogo != null && !catalogo.isEmpty()) {
-            switch (orden) {
-                case "precio-menor":
-                    catalogo = catalogo.stream()
-                            .sorted(Comparator.comparingDouble(p ->
-                                    p.getPrecioMinimo() != null ? p.getPrecioMinimo() : Double.MAX_VALUE))
-                            .collect(Collectors.toList());
-                    break;
-                case "precio-mayor":
-                    catalogo = catalogo.stream()
-                            .sorted(Comparator.comparingDouble((ProductoCatalogo p) ->
-                                    p.getPrecioMinimo() != null ? p.getPrecioMinimo() : 0.0).reversed())
-                            .collect(Collectors.toList());
-                    break;
-                case "nombre":
-                    catalogo = catalogo.stream()
-                            .sorted(Comparator.comparing(p -> p.getNombre() != null ? p.getNombre() : ""))
-                            .collect(Collectors.toList());
-                    break;
-                case "recientes":
-                    catalogo = catalogo.stream()
-                            .sorted(Comparator.comparing((ProductoCatalogo p) -> 
-                                    p.getCreatedAt() != null ? p.getCreatedAt() : java.time.LocalDateTime.MIN).reversed())
-                            .collect(Collectors.toList());
-                    break;
-            }
-        }
-
-        // Lógica de paginación manual
-        int totalItems = catalogo != null ? catalogo.size() : 0;
-        int totalPages = (int) Math.ceil((double) totalItems / size);
-        
-        List<ProductoCatalogo> paginaCatalogo = new ArrayList<>();
-        if (catalogo != null && !catalogo.isEmpty()) {
-            int start = Math.min(page * size, totalItems);
-            int end = Math.min(start + size, totalItems);
-            paginaCatalogo = catalogo.subList(start, end);
-        }
+        org.springframework.data.domain.Page<ProductoCatalogo> pagina =
+                catalogoService.listarCatalogo(page, size, categoriaIds, orden, precioMax);
 
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
 
-        model.addAttribute("catalogo", paginaCatalogo);
-        model.addAttribute("currentPage", page);
-        model.addAttribute("totalPages", totalPages > 0 ? totalPages : 1);
-        model.addAttribute("totalItems", totalItems);
-        
+        model.addAttribute("catalogo", pagina.getContent());
+        model.addAttribute("currentPage", pagina.getNumber());
+        model.addAttribute("totalPages", pagina.getTotalPages() > 0 ? pagina.getTotalPages() : 1);
+        model.addAttribute("totalItems", pagina.getTotalElements());
+
         model.addAttribute("usuario", usuario);
         model.addAttribute("categorias", categoriaRepository.findAll());
         model.addAttribute("categoriaSeleccionada", categoriaIds);
         model.addAttribute("ordenSeleccionado", orden);
+        model.addAttribute("precioMax", precioMax);
+        model.addAttribute("size", size);
 
-        return "public/category";
+        return "public/categoria";
     }
 
     /**

@@ -340,6 +340,7 @@
             }
         }
     </style>
+    <link rel="stylesheet" th:href="@{/footer.css}">
 </head>
 
 <body>
@@ -477,7 +478,7 @@
 
                     <!-- Footer Actions -->
                     <div class="form-footer">
-                        <a th:href="@{/vendedor/Miproductos}" class="btn-back">
+                        <a th:href="@{/vendedor/mis-productos}" class="btn-back">
                             <i class="fas fa-arrow-left"></i> Volver
                         </a>
                         <button type="submit" class="btn-publish">
@@ -543,7 +544,7 @@
                     </div>
 
                     <div class="form-footer">
-                        <a th:href="@{/vendedor/Miproductos}" class="btn-back">
+                        <a th:href="@{/vendedor/mis-productos}" class="btn-back">
                             <i class="fas fa-arrow-left"></i> Volver
                         </a>
                         <button type="submit" class="btn-publish" style="background: linear-gradient(135deg, #1565c0, #1976d2);">
@@ -626,6 +627,7 @@
             }
         }
     </script>
+<footer th:replace="~{fragments/footer :: siteFooter}"></footer>
 </body>
 
 </html>

@@ -248,6 +248,7 @@
             .btn-primary-premium { width: 100%; justify-content: center; }
         }
     </style>
+    <link rel="stylesheet" th:href="@{/footer.css}">
 </head>
 
 <body>
@@ -329,5 +330,6 @@
             </div>
         </div>
     </div>
+<footer th:replace="~{fragments/footer :: siteFooter}"></footer>
 </body>
 </html>

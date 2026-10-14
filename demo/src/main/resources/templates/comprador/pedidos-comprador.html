@@ -4,202 +4,949 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cultivus - Mis Compras</title>
+    <title>Cultivus - Mis Pedidos</title>
+    <meta name="description" content="Consulta el historial completo de tus compras en Cultivus.">
 
     <link rel="stylesheet" th:href="@{/style.css}">
+    <link rel="stylesheet" th:href="@{/header.css}">
+    <link rel="stylesheet" th:href="@{/footer.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
         integrity="sha512-RXf+QSDCUQs6Q0p2U2uD2OeR5xw8n5T6vCJ7/3zvK3YyEdSpYohhjFExz04szsP1CZq0w0C+YyXWZP8y+e2xUg=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
     <style>
-        .ventas-container {
-            max-width: 1200px;
-            margin: 40px auto;
-            padding: 0 20px;
+        /* ─── Reset & base ─── */
+        *, *::before, *::after { box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #f4f6f9; color: #1a1d23; }
+
+        /* ─── Page wrapper ─── */
+        .mp-page { max-width: 1100px; margin: 0 auto; padding: 36px 20px 60px; }
+
+        /* ─── Page heading ─── */
+        .mp-heading { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+        .mp-heading h1 { font-size: 1.75rem; font-weight: 800; color: #1a1d23; margin: 0; }
+        .mp-heading-icon {
+            width: 44px; height: 44px;
+            background: linear-gradient(135deg, #27ae60, #1a8f4e);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 1.1rem;
+            box-shadow: 0 4px 12px rgba(39,174,96,.3);
         }
 
-        .pedidos-section {
-            background: white;
-            border-radius: 10px;
-            padding: 30px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        /* ─── Toolbar ─── */
+        .mp-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 24px; flex-wrap: wrap; }
+        .mp-tabs { display: flex; gap: 4px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 5px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+        .mp-tab {
+            padding: 8px 18px; border-radius: 9px; border: none; background: transparent;
+            font-size: 0.87rem; font-weight: 600; color: #64748b; cursor: pointer; transition: all .2s; white-space: nowrap;
+            font-family: 'Inter', sans-serif;
+        }
+        .mp-tab:hover { color: #27ae60; background: #f0faf4; }
+        .mp-tab.active { background: linear-gradient(135deg, #27ae60, #1a8f4e); color: #fff; box-shadow: 0 3px 10px rgba(39,174,96,.35); }
+
+        .mp-filter-btn {
+            display: flex; align-items: center; gap: 8px;
+            padding: 9px 18px; border: 1px solid #e2e8f0; border-radius: 10px;
+            background: #fff; font-size: 0.87rem; font-weight: 600; color: #475569;
+            cursor: pointer; transition: all .2s; box-shadow: 0 1px 4px rgba(0,0,0,.06);
+            font-family: 'Inter', sans-serif;
+        }
+        .mp-filter-btn:hover { border-color: #27ae60; color: #27ae60; }
+
+        /* ─── Count ─── */
+        .mp-count { font-size: 0.84rem; color: #64748b; margin-bottom: 16px; padding-left: 2px; }
+        .mp-count strong { color: #1a1d23; }
+
+        /* ─── Order list ─── */
+        .mp-list { display: flex; flex-direction: column; gap: 16px; }
+
+        /* ─── Order card ─── */
+        .mp-card { background: #fff; border: 1px solid #e8edf3; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.05); transition: box-shadow .25s, transform .25s; }
+        .mp-card:hover { box-shadow: 0 8px 28px rgba(0,0,0,.10); transform: translateY(-2px); }
+
+        /* Card top bar */
+        .mp-card__top { display: flex; align-items: center; justify-content: space-between; padding: 14px 22px; border-bottom: 1px solid #f0f4f8; background: #fafbfc; }
+        .mp-card__order-id { display: flex; align-items: center; gap: 9px; font-size: 0.95rem; font-weight: 700; color: #1a1d23; }
+        .id-icon { width: 32px; height: 32px; background: linear-gradient(135deg, #27ae60, #1a8f4e); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.82rem; flex-shrink: 0; }
+        .mp-card__date { font-size: 0.8rem; color: #94a3b8; margin-top: 1px; }
+        .mp-card__calendar { color: #94a3b8; font-size: 1.1rem; }
+
+        /* Status badge */
+        .mp-badge { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 700; letter-spacing: .3px; white-space: nowrap; }
+        .mp-badge::before { content: ''; width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+        .mp-badge--pendiente { background: #fff7ed; color: #c2410c; }
+        .mp-badge--pendiente::before { background: #f97316; }
+        .mp-badge--proceso { background: #eff6ff; color: #1d4ed8; }
+        .mp-badge--proceso::before { background: #3b82f6; }
+        .mp-badge--completado { background: #f0fdf4; color: #15803d; }
+        .mp-badge--completado::before { background: #22c55e; }
+        .mp-badge--cancelado { background: #fff1f2; color: #be123c; }
+        .mp-badge--cancelado::before { background: #f43f5e; }
+
+        /* Card body */
+        .mp-card__body { padding: 18px 22px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+
+        /* Product image strip */
+        .mp-card__images { display: flex; gap: 6px; flex-shrink: 0; }
+        .mp-card__img { width: 56px; height: 56px; border-radius: 10px; object-fit: cover; border: 1px solid #e8edf3; background: #f4f6f9; display: flex; align-items: center; justify-content: center; color: #b0bec5; font-size: 1.3rem; overflow: hidden; flex-shrink: 0; }
+        .mp-card__img img { width: 100%; height: 100%; object-fit: cover; }
+        .mp-card__img-more { font-size: 0.72rem; font-weight: 700; color: #64748b; }
+
+        /* Info section */
+        .mp-card__info { flex: 1; min-width: 140px; }
+        .mp-card__info-label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 3px; display: flex; align-items: center; gap: 4px; }
+        .mp-card__info-value { font-size: 0.95rem; font-weight: 600; color: #1a1d23; }
+        .mp-card__total { font-size: 1.15rem; font-weight: 800; color: #27ae60; }
+
+        /* Card actions */
+        .mp-card__actions { display: flex; gap: 10px; margin-left: auto; flex-shrink: 0; }
+
+        /* Buttons */
+        .mp-btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 18px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all .2s; white-space: nowrap; text-decoration: none; border: none; font-family: 'Inter', sans-serif; }
+        .mp-btn--primary { background: linear-gradient(135deg, #27ae60, #1a8f4e); color: #fff; box-shadow: 0 3px 10px rgba(39,174,96,.3); }
+        .mp-btn--primary:hover { box-shadow: 0 6px 18px rgba(39,174,96,.45); transform: translateY(-1px); color: #fff; }
+        .mp-btn--outline { background: #fff; color: #475569; border: 1.5px solid #e2e8f0; }
+        .mp-btn--outline:hover { border-color: #27ae60; color: #27ae60; background: #f0faf4; }
+        .mp-btn:disabled, .mp-btn--disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+
+        /* ─── Empty state ─── */
+        .mp-empty { text-align: center; padding: 80px 20px; background: #fff; border-radius: 16px; border: 1px solid #e8edf3; }
+        .mp-empty-icon { width: 72px; height: 72px; background: #f0fdf4; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: #86efac; margin: 0 auto 18px; }
+        .mp-empty h3 { font-size: 1.2rem; font-weight: 700; color: #1a1d23; margin-bottom: 8px; }
+        .mp-empty p { color: #64748b; font-size: 0.9rem; margin-bottom: 22px; }
+
+        /* ─── Modal ─── */
+        .order-modal {
+            border: none;
+            border-radius: 20px;
+            padding: 0;
+            width: min(94vw, 840px);
+            max-height: 90vh;
+            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(0, 0, 0, 0.06);
+            background: #fff;
+            overflow: hidden;
+        }
+        .order-modal::backdrop {
+            background: rgba(15, 23, 42, 0.62);
+            backdrop-filter: blur(6px);
+        }
+        /* Respaldo para navegadores sin soporte de <dialog>.showModal() */
+        .order-modal.is-open {
+            display: block;
+            position: fixed;
+            inset: 0;
+            margin: auto;
+            z-index: 9999;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: translateY(18px) scale(.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .order-modal[open] {
+            animation: modalIn .26s cubic-bezier(.16, 1, .3, 1) both;
+        }
+        .order-modal__scroll {
+            overflow-y: auto;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .order-modal__scroll::-webkit-scrollbar {
+            width: 7px;
+        }
+        .order-modal__scroll::-webkit-scrollbar-track {
+            background: #f8fafc;
+        }
+        .order-modal__scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .order-modal__scroll::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
 
-        .pedidos-section h2 {
-            color: #27ae60;
-            margin-bottom: 20px;
-        }
-
-        .pedido-item {
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 15px;
-            transition: all 0.3s ease;
-        }
-
-        .pedido-item:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            transform: translateY(-2px);
-        }
-
-        .pedido-header {
+        /* Modal header */
+        .order-modal__header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
+            padding: 20px 28px;
+            background: linear-gradient(135deg, #1e824c 0%, #156239 100%);
+            color: #fff;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .order-modal__header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .order-modal__header-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, .2);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: #fff;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, .1);
+            flex-shrink: 0;
+        }
+        .order-modal__header h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            font-weight: 800;
+            letter-spacing: -.01em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #fff;
+        }
+        .order-modal__header p {
+            margin: 4px 0 0;
+            font-size: 0.82rem;
+            opacity: .88;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #fff;
+        }
+        .order-modal__close {
+            border: none;
+            background: rgba(255, 255, 255, .16);
+            color: #fff;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: all .2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .order-modal__close:hover {
+            background: rgba(255, 255, 255, .3);
+            transform: scale(1.05);
         }
 
-        .pedido-info {
+        /* Modal body */
+        .order-modal__body {
+            padding: 26px 28px;
+            background: #fbfcfd;
             flex: 1;
         }
 
-        .pedido-id {
-            font-weight: bold;
+        /* Info cards grid */
+        .order-modal__grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .omc {
+            background: #fff;
+            border: 1px solid #e9eef4;
+            border-radius: 14px;
+            padding: 14px 16px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, .025);
+            transition: all .2s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .omc:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, .05);
+            transform: translateY(-1px);
+        }
+        .omc__label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .omc__label i {
             color: #27ae60;
-            font-size: 18px;
+            font-size: 0.85rem;
+        }
+        .omc__value {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #1e293b;
+            word-break: break-word;
         }
 
-        .pedido-fecha {
-            color: #666;
-            font-size: 14px;
-            margin-top: 5px;
+        /* Badges for payment state inside modal */
+        .mp-paybadge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.76rem;
+            font-weight: 700;
+            letter-spacing: .3px;
+        }
+        .mp-paybadge--completado {
+            background: #ecfdf5;
+            color: #047857;
+            border: 1px solid #a7f3d0;
+        }
+        .mp-paybadge--pendiente {
+            background: #fffbeb;
+            color: #b45309;
+            border: 1px solid #fde68a;
+        }
+        .mp-paybadge--fallido {
+            background: #fef2f2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
         }
 
-        .pedido-estado {
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 500;
+        /* Divider label */
+        .modal-section-title {
+            font-size: 0.82rem;
+            font-weight: 800;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: .6px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .modal-section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e2e8f0;
         }
 
-        .estado-pendiente {
-            background: #fff3cd;
-            color: #856404;
+        /* Products table wrapper */
+        .order-modal__table-wrap {
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            overflow: hidden;
+            background: #fff;
+            margin-bottom: 22px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, .03);
+        }
+        .order-modal__table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .order-modal__table thead tr {
+            background: #f8fafc;
+        }
+        .order-modal__table th {
+            padding: 12px 16px;
+            font-size: 0.74rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .order-modal__table th.text-right,
+        .order-modal__table td.text-right {
+            text-align: right;
+        }
+        .order-modal__table td {
+            padding: 13px 16px;
+            font-size: 0.9rem;
+            color: #1e293b;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+        .order-modal__table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        .order-modal__table tbody tr:hover td {
+            background: #f8fafc;
         }
 
-        .estado-proceso {
-            background: #d1ecf1;
-            color: #0c5460;
+        /* Product cell */
+        .modal-product {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .modal-product__thumb {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            background: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+        .modal-product__thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .modal-product__name {
+            font-weight: 600;
+            color: #0f172a;
+            line-height: 1.35;
         }
 
-        .estado-completado {
-            background: #d4edda;
-            color: #155724;
+        .td-qty {
+            color: #475569;
+            font-weight: 600;
+        }
+        .td-price {
+            color: #64748b;
+            font-weight: 600;
+        }
+        .td-subtotal {
+            font-weight: 800;
+            color: #15803d;
         }
 
-        .pedido-vendedor {
-            margin-top: 10px;
-            color: #333;
-            font-size: 14px;
+        /* Summary box */
+        .order-modal__summary {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, .03);
+            margin-bottom: 4px;
+        }
+        .order-modal__total-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 18px;
+            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+            border: 1px solid #bbf7d0;
+            border-radius: 12px;
+        }
+        .order-modal__total-label {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #15803d;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .order-modal__total-val {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #15803d;
         }
 
-        .btn-ver-detalle {
-            background: #27ae60;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            transition: background 0.3s;
+        /* Monto pagado chip */
+        .order-modal__paid-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 10px 16px;
+            font-size: 0.88rem;
+            color: #334155;
+        }
+        .order-modal__paid-chip strong {
+            color: #15803d;
+            font-size: 1rem;
         }
 
-        .btn-ver-detalle:hover {
-            background: #1ef378;
+        /* Modal footer */
+        .order-modal__footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 28px;
+            border-top: 1px solid #f1f5f9;
+            background: #fafbfc;
+            position: sticky;
+            bottom: 0;
+            z-index: 10;
+            gap: 12px;
+        }
+        .order-modal__footer-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #666;
-        }
+        /* ─── Flash messages ─── */
+        .flash-msg { position: fixed; top: 90px; right: 22px; padding: 14px 20px; border-radius: 12px; font-size: 0.88rem; font-weight: 600; box-shadow: 0 6px 20px rgba(0,0,0,.13); z-index: 9999; animation: flashIn .3s ease both; }
+        @keyframes flashIn { from{opacity:0;transform:translateX(30px)} to{opacity:1;transform:translateX(0)} }
+        .flash-success { background: #d4edda; color: #155724; border-left: 4px solid #27ae60; }
+        .flash-error   { background: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; }
 
-        .empty-state i {
-            font-size: 64px;
-            color: #ccc;
-            margin-bottom: 20px;
+        /* ─── Responsive ─── */
+        @media (max-width: 680px) {
+            .mp-card__body { flex-direction: column; align-items: flex-start; }
+            .mp-card__actions { margin-left: 0; width: 100%; }
+            .mp-btn { flex: 1; justify-content: center; }
+            .mp-tabs { flex-wrap: wrap; }
+            .order-modal__footer { flex-direction: column-reverse; }
+            .order-modal__footer form { width: 100%; margin: 0; }
+            .order-modal__footer .mp-btn { width: 100%; justify-content: center; }
         }
     </style>
 </head>
 
 <body>
-    <header th:replace="~{fragments/header-comprador :: siteHeader}"></header>
+    <header th:replace="~{fragments/header :: siteHeader}"></header>
 
-    <div class="ventas-container">
-        <h1 style="color: #27ae60; margin-bottom: 30px;">
-            <i class="fa-solid fa-shopping-bag"></i> Mis Compras
-        </h1>
+    <div class="mp-page">
 
-        <!-- Lista de Pedidos -->
-        <div class="pedidos-section">
+        <!-- Heading -->
+        <div class="mp-heading">
+            <div class="mp-heading-icon"><i class="fa-solid fa-bag-shopping"></i></div>
+            <h1>Mis Pedidos</h1>
+        </div>
 
-            <div th:if="${pedidos == null || pedidos.isEmpty()}" class="empty-state">
-                <i class="fa-solid fa-box-open"></i>
-                <h3>No tienes pedidos aún</h3>
-                <p>Explora la tienda y comienza a comprar los mejores productos frescos.</p>
-                <br>
-                <a th:href="@{/}" class="btn-ver-detalle">Ir a la Tienda</a>
+        <!-- Toolbar: tabs + filter -->
+        <div class="mp-toolbar">
+            <div class="mp-tabs" role="tablist">
+                <button class="mp-tab active" id="tab-todos"       onclick="filterOrders('todos')"      role="tab">Todos</button>
+                <button class="mp-tab"         id="tab-entregados" onclick="filterOrders('entregados')" role="tab">Entregados</button>
+                <button class="mp-tab"         id="tab-proceso"    onclick="filterOrders('proceso')"    role="tab">En Proceso</button>
+                <button class="mp-tab"         id="tab-pendiente"  onclick="filterOrders('pendiente')"  role="tab">Pendientes</button>
             </div>
+            <button class="mp-filter-btn" onclick="sortByDate()">
+                <i class="fa-solid fa-arrow-down-wide-short"></i> Ordenar
+                <i class="fa-solid fa-chevron-down" style="font-size:.72rem;"></i>
+            </button>
+        </div>
 
-            <div th:each="pedido : ${pedidos}" class="pedido-item" style="display: block; width: 100%; border: 1px solid #eee; margin-bottom: 25px; padding: 0; overflow: hidden; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
-                <div class="pedido-header" style="background: #f8f9fa; padding: 15px 25px; border-bottom: 1px solid #eee; margin-bottom: 0;">
-                    <div class="pedido-info" style="display: flex; align-items: center; gap: 15px; width: 100%; justify-content: space-between;">
-                        <div class="pedido-id" style="color: #27ae60; font-weight: 700; font-size: 1.1rem;">
-                            <i class="fas fa-file-invoice"></i> <span th:text="${pedido.numeroFactura}">CLT-XXXXXX</span>
+        <!-- Order count -->
+        <p class="mp-count" id="orderCount"></p>
+
+        <!-- Empty state -->
+        <div th:if="${pedidos == null || pedidos.isEmpty()}" class="mp-empty">
+            <div class="mp-empty-icon"><i class="fa-solid fa-box-open"></i></div>
+            <h3>No tienes pedidos aún</h3>
+            <p>Explora la tienda y comienza a comprar los mejores productos frescos.</p>
+            <a th:href="@{/}" class="mp-btn mp-btn--primary">
+                <i class="fa-solid fa-store"></i> Ir a la Tienda
+            </a>
+        </div>
+
+        <!-- Order list -->
+        <div class="mp-list" id="orderList" th:if="${pedidos != null and !pedidos.isEmpty()}">
+
+            <div th:each="pedido : ${pedidos}"
+                 class="mp-card"
+                 th:data-estado="${pedido.estado}">
+
+                <!-- Card top bar -->
+                <div class="mp-card__top">
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <div class="mp-card__order-id">
+                            <div class="id-icon"><i class="fa-solid fa-receipt"></i></div>
+                            <div>
+                                <div th:text="${pedido.numeroFactura}">CLT-XXXXXX</div>
+                                <div class="mp-card__date">
+                                    <i class="fa-regular fa-calendar"></i>
+                                    <span th:text="${#temporals.format(pedido.fechaPedido, 'dd/MM/yyyy')}">01/01/2024</span>
+                                </div>
+                            </div>
                         </div>
-                        <span class="pedido-estado" 
-                              th:classappend="${pedido.estado == 'PENDIENTE' ? 'estado-pendiente' : 
-                                             (pedido.estado == 'EN_PROCESO' || pedido.estado == 'PROCESANDO' ? 'estado-proceso' : 
-                                             'estado-completado')}"
-                              th:text="${pedido.estado == 'EN_PROCESO' || pedido.estado == 'PROCESANDO' ? 'En proceso' : 
-                                       (pedido.estado == 'PENDIENTE' ? 'Pendiente' : 'Completado')}"
-                              style="margin-left: auto;">
+                        <span class="mp-badge"
+                              th:classappend="${pedido.estado == 'PENDIENTE' ? 'mp-badge--pendiente' :
+                                              (pedido.estado == 'CANCELADO'  ? 'mp-badge--cancelado'  :
+                                              (pedido.estado == 'EN_PROCESO' || pedido.estado == 'PROCESANDO' ? 'mp-badge--proceso' :
+                                              'mp-badge--completado'))}"
+                              th:text="${pedido.estado == 'EN_PROCESO' || pedido.estado == 'PROCESANDO' ? 'En Tránsito' :
+                                       (pedido.estado == 'PENDIENTE' ? 'Pendiente' :
+                                       (pedido.estado == 'CANCELADO' ? 'Cancelado' : 'Entregado'))}">
                         </span>
                     </div>
+                    <i class="fa-regular fa-calendar-check mp-card__calendar"></i>
                 </div>
 
-                <div style="padding: 25px; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
-                    <div class="col">
-                        <div class="pedido-fecha" style="font-size: 15px; margin-bottom: 8px; color: #666;">
-                            <i class="fa-solid fa-calendar-alt"></i> <strong>Fecha:</strong>
-                            <span th:text="${#temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm')}"></span>
-                        </div>
-                        <div class="pedido-vendedor" style="font-size: 15px; color: #333;">
-                            <i class="fa-solid fa-store"></i> <strong>Tienda:</strong>
-                            <span th:text="${pedido.vendedor != null and pedido.vendedor.nombreNegocio != null ? pedido.vendedor.nombreNegocio : 'Productor Local'}"></span>
+                <!-- Card body -->
+                <div class="mp-card__body">
+
+                    <!-- Product image strip -->
+                    <div class="mp-card__images">
+                        <th:block th:each="item, iter : ${pedido.items}" th:if="${iter.index < 2}">
+                            <div class="mp-card__img">
+                                <th:block th:if="${item.imagenSnapshot != null and item.imagenSnapshot != ''}">
+                                    <img th:src="${item.imagenSnapshot}"
+                                         th:alt="${item.nombreSnapshot}"
+                                         onerror="this.parentElement.innerHTML='<i class=\'fa-solid fa-leaf\'></i>'">
+                                </th:block>
+                                <th:block th:if="${item.imagenSnapshot == null or item.imagenSnapshot == ''}">
+                                    <i class="fa-solid fa-leaf"></i>
+                                </th:block>
+                            </div>
+                        </th:block>
+                        <div class="mp-card__img mp-card__img-more"
+                             th:if="${pedido.items != null and pedido.items.size() > 2}"
+                             th:text="'+' + (${pedido.items.size() - 2})">+N</div>
+                    </div>
+
+                    <!-- Store info -->
+                    <div class="mp-card__info">
+                        <div class="mp-card__info-label"><i class="fa-solid fa-store"></i> Tienda</div>
+                        <div class="mp-card__info-value"
+                             th:text="${pedido.vendedor != null and pedido.vendedor.razonSocial != null ? pedido.vendedor.razonSocial : (pedido.vendedor != null and pedido.vendedor.nombre != null ? pedido.vendedor.nombre : 'Productor Local')}">
                         </div>
                     </div>
 
-                    <div class="col" style="border-left: 1px solid #eee; padding-left: 20px;">
-                        <div style="font-size: 14px; color: #888; margin-bottom: 5px;">Resumen del Pedido</div>
-                        <div style="font-size: 16px; font-weight: 600; color: #2c3e50;">
-                            <i class="fas fa-boxes"></i> <span th:text="${pedido.items != null ? pedido.items.size() : 0}">0</span> productos
-                        </div>
-                        <div style="font-size: 20px; font-weight: 800; color: #27ae60; margin-top: 5px;">
-                            Total: $<span th:text="${pedido.total != null ? #numbers.formatDecimal(pedido.total, 0, 'COMMA', 0, 'POINT') : '0'}">0</span>
+                    <!-- Seller name -->
+                    <div class="mp-card__info">
+                        <div class="mp-card__info-label"><i class="fa-solid fa-user"></i> Vendedor</div>
+                        <div class="mp-card__info-value"
+                             th:text="${pedido.vendedor != null and pedido.vendedor.nombre != null ? pedido.vendedor.nombre : 'Usuario Cultivus'}">
                         </div>
                     </div>
 
-                    <div class="col" style="display: flex; align-items: center; justify-content: flex-end;">
-                        <a th:href="@{/usuario/pedidos/{id}(id=${pedido.id})}" 
-                           class="btn-ver-detalle" style="display: flex; align-items: center; gap: 10px; border-radius: 8px; padding: 12px 25px;">
-                            <i class="fa-solid fa-eye"></i> Ver Factura Completa
+                    <!-- Payment method -->
+                    <div class="mp-card__info">
+                        <div class="mp-card__info-label"><i class="fa-solid fa-credit-card"></i> Pago</div>
+                        <div class="mp-card__info-value"
+                             th:text="${pedido.pago != null and pedido.pago.metodo != null ? pedido.pago.metodo : 'No especificado'}">
+                        </div>
+                    </div>
+
+                    <!-- Items count -->
+                    <div class="mp-card__info">
+                        <div class="mp-card__info-label"><i class="fa-solid fa-boxes-stacked"></i> Artículos</div>
+                        <div class="mp-card__info-value">
+                            <span th:text="${pedido.items != null ? pedido.items.size() : 0}">0</span> ítems
+                        </div>
+                    </div>
+
+                    <!-- Shipping address -->
+                    <div class="mp-card__info">
+                        <div class="mp-card__info-label"><i class="fa-solid fa-location-dot"></i> Dirección</div>
+                        <div class="mp-card__info-value"
+                             th:text="${pedido.direccionEntrega != null ? ((pedido.direccionEntrega.direccion != null ? pedido.direccionEntrega.direccion : '') + (pedido.direccionEntrega.ciudad != null ? ', ' + pedido.direccionEntrega.ciudad : '')) : 'No especificada'}">
+                        </div>
+                    </div>
+
+                    <!-- Total -->
+                    <div class="mp-card__info">
+                        <div class="mp-card__info-label"><i class="fa-solid fa-tag"></i> Total</div>
+                        <div class="mp-card__total">
+                            $<span th:text="${pedido.total != null ? #numbers.formatDecimal(pedido.total, 0, 'COMMA', 0, 'POINT') : '0'}">0</span>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="mp-card__actions">
+                        <button type="button" class="mp-btn mp-btn--outline"
+                                th:attr="data-modal-target='pedidoModal-' + ${pedido.id}">
+                            <i class="fa-solid fa-eye"></i> Ver detalle
+                        </button>
+                        <a th:href="@{/usuario/pedidos/{id}(id=${pedido.id})}"
+                           class="mp-btn mp-btn--primary">
+                            <i class="fa-solid fa-file-invoice"></i> Factura
                         </a>
                     </div>
                 </div>
+
+                <!-- Detail modal -->
+                <dialog class="order-modal" th:id="'pedidoModal-' + ${pedido.id}">
+                    <div class="order-modal__scroll">
+
+                        <!-- Modal header -->
+                        <div class="order-modal__header">
+                            <div class="order-modal__header-left">
+                                <div class="order-modal__header-icon">
+                                    <i class="fa-solid fa-receipt"></i>
+                                </div>
+                                <div>
+                                    <h2>
+                                        <span>Pedido <span th:text="${pedido.numeroFactura}">CLT-XXXXXX</span></span>
+                                        <span class="mp-badge"
+                                              th:classappend="${pedido.estado == 'PENDIENTE' ? 'mp-badge--pendiente' :
+                                                              (pedido.estado == 'CANCELADO'  ? 'mp-badge--cancelado'  :
+                                                              (pedido.estado == 'EN_PROCESO' || pedido.estado == 'PROCESANDO' ? 'mp-badge--proceso' :
+                                                              'mp-badge--completado'))}"
+                                              th:text="${pedido.estado == 'EN_PROCESO' || pedido.estado == 'PROCESANDO' ? 'En Tránsito' :
+                                                       (pedido.estado == 'PENDIENTE' ? 'Pendiente' :
+                                                       (pedido.estado == 'CANCELADO' ? 'Cancelado' : 'Entregado'))}">
+                                        </span>
+                                    </h2>
+                                    <p>
+                                        <i class="fa-regular fa-calendar"></i>
+                                        <span th:text="${#temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm')}">01/01/2026 00:00</span>
+                                    </p>
+                                </div>
+                            </div>
+                            <form method="dialog">
+                                <button class="order-modal__close" aria-label="Cerrar">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </form>
+                        </div>
+
+                        <!-- Modal body -->
+                        <div class="order-modal__body">
+
+                            <!-- Info cards grid -->
+                            <div class="order-modal__grid">
+                                <!-- 1. Fecha -->
+                                <div class="omc">
+                                    <div class="omc__label"><i class="fa-regular fa-calendar"></i> Fecha</div>
+                                    <div class="omc__value" th:text="${#temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm')}">–</div>
+                                </div>
+                                <!-- 2. Tienda -->
+                                <div class="omc">
+                                    <div class="omc__label"><i class="fa-solid fa-store"></i> Tienda</div>
+                                    <div class="omc__value"
+                                         th:text="${pedido.vendedor != null and pedido.vendedor.razonSocial != null ? pedido.vendedor.razonSocial : (pedido.vendedor != null and pedido.vendedor.nombre != null ? pedido.vendedor.nombre : 'Productor Local')}">–</div>
+                                </div>
+                                <!-- 3. Estado del pedido -->
+                                <div class="omc">
+                                    <div class="omc__label"><i class="fa-solid fa-truck-fast"></i> Estado del pedido</div>
+                                    <div class="omc__value">
+                                        <span class="mp-badge"
+                                              th:classappend="${pedido.estado == 'PENDIENTE' ? 'mp-badge--pendiente' :
+                                                              (pedido.estado == 'CANCELADO'  ? 'mp-badge--cancelado'  :
+                                                              (pedido.estado == 'EN_PROCESO' || pedido.estado == 'PROCESANDO' ? 'mp-badge--proceso' :
+                                                              'mp-badge--completado'))}"
+                                              th:text="${pedido.estado == 'EN_PROCESO' || pedido.estado == 'PROCESANDO' ? 'En Tránsito' :
+                                                       (pedido.estado == 'PENDIENTE' ? 'Pendiente' :
+                                                       (pedido.estado == 'CANCELADO' ? 'Cancelado' : 'Entregado'))}">
+                                        </span>
+                                    </div>
+                                </div>
+                                <!-- 4. Productos -->
+                                <div class="omc">
+                                    <div class="omc__label"><i class="fa-solid fa-boxes-stacked"></i> Productos</div>
+                                    <div class="omc__value"
+                                         th:text="${(pedido.items != null ? pedido.items.size() : 0) + ' ítems'}">0 ítems</div>
+                                </div>
+                                <!-- 5. Método de pago -->
+                                <div class="omc">
+                                    <div class="omc__label"><i class="fa-solid fa-credit-card"></i> Método de pago</div>
+                                    <div class="omc__value"
+                                         th:text="${pedido.pago != null and pedido.pago.metodo != null ? pedido.pago.metodo : 'No especificado'}">–</div>
+                                </div>
+                                <!-- 6. Estado del pago -->
+                                <div class="omc">
+                                    <div class="omc__label"><i class="fa-solid fa-shield-halved"></i> Estado del pago</div>
+                                    <div class="omc__value">
+                                        <span class="mp-paybadge"
+                                              th:classappend="${pedido.pago != null and (pedido.pago.estado == 'COMPLETADO' or pedido.pago.estado == 'APROBADO' or pedido.pago.estado == 'PAGADO') ? 'mp-paybadge--completado' :
+                                                              (pedido.pago != null and (pedido.pago.estado == 'FALLIDO' or pedido.pago.estado == 'RECHAZADO') ? 'mp-paybadge--fallido' : 'mp-paybadge--pendiente')}"
+                                              th:text="${pedido.pago != null and pedido.pago.estado != null ? pedido.pago.estado : 'PENDIENTE'}">PENDIENTE
+                                        </span>
+                                    </div>
+                                </div>
+                                <!-- Extra: Vendedor -->
+                                <div class="omc">
+                                    <div class="omc__label"><i class="fa-solid fa-user"></i> Vendedor</div>
+                                    <div class="omc__value"
+                                         th:text="${pedido.vendedor != null and pedido.vendedor.nombre != null ? pedido.vendedor.nombre : 'Usuario Cultivus'}">–</div>
+                                </div>
+                                <!-- Extra: Dirección de entrega -->
+                                <div class="omc">
+                                    <div class="omc__label"><i class="fa-solid fa-location-dot"></i> Entrega</div>
+                                    <div class="omc__value"
+                                         th:text="${pedido.direccionEntrega != null ? ((pedido.direccionEntrega.direccion != null ? pedido.direccionEntrega.direccion : '') + (pedido.direccionEntrega.ciudad != null ? ', ' + pedido.direccionEntrega.ciudad : '') + (pedido.direccionEntrega.departamento != null ? ' - ' + pedido.direccionEntrega.departamento : '')) : 'No especificada'}">–</div>
+                                </div>
+                            </div>
+
+                            <!-- Products table -->
+                            <div class="modal-section-title">Detalle de productos</div>
+                            <div class="order-modal__table-wrap" th:if="${pedido.items != null and !pedido.items.isEmpty()}">
+                                <table class="order-modal__table">
+                                    <thead>
+                                        <tr>
+                                            <th>Producto</th>
+                                            <th>Cantidad</th>
+                                            <th>Precio unitario</th>
+                                            <th class="text-right">Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr th:each="item : ${pedido.items}">
+                                            <td>
+                                                <div class="modal-product">
+                                                    <div class="modal-product__thumb">
+                                                        <th:block th:if="${item.imagenSnapshot != null and item.imagenSnapshot != ''}">
+                                                            <img th:src="${item.imagenSnapshot}"
+                                                                 th:alt="${item.nombreSnapshot}"
+                                                                 onerror="this.parentElement.innerHTML='<i class=\'fa-solid fa-leaf\'></i>'">
+                                                        </th:block>
+                                                        <th:block th:if="${item.imagenSnapshot == null or item.imagenSnapshot == ''}">
+                                                            <i class="fa-solid fa-leaf"></i>
+                                                        </th:block>
+                                                    </div>
+                                                    <div class="modal-product__name"
+                                                         th:text="${item.nombreSnapshot != null ? item.nombreSnapshot : 'Producto'}">Producto</div>
+                                                </div>
+                                            </td>
+                                            <td class="td-qty">
+                                                <span th:text="${item.cantidad != null ? item.cantidad : 0}">0</span>
+                                                <span th:text="${item.unidadAbreviatura != null ? ' ' + item.unidadAbreviatura : ''}"></span>
+                                            </td>
+                                            <td class="td-price"
+                                                th:text="'$' + ${#numbers.formatDecimal(item.precioUnitario != null ? item.precioUnitario : 0, 0, 'COMMA', 0, 'POINT')}">$0</td>
+                                            <td class="td-subtotal text-right"
+                                                th:text="'$' + ${#numbers.formatDecimal(item.subtotal != null ? item.subtotal : 0, 0, 'COMMA', 0, 'POINT')}">$0</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Payment & Total Summary -->
+                            <div class="modal-section-title">Resumen de pago</div>
+                            <div class="order-modal__summary">
+                                <div class="order-modal__total-card">
+                                    <div class="order-modal__total-label">
+                                        <i class="fa-solid fa-coins"></i>
+                                        <span>Precio final del pedido</span>
+                                    </div>
+                                    <div class="order-modal__total-val">
+                                        $<span th:text="${pedido.total != null ? #numbers.formatDecimal(pedido.total, 0, 'COMMA', 0, 'POINT') : '0'}">0</span>
+                                    </div>
+                                </div>
+
+                                <!-- Monto pagado cuando aplica -->
+                                <div class="order-modal__paid-chip"
+                                     th:if="${pedido.pago != null and pedido.pago.monto != null}">
+                                    <div>
+                                        <i class="fa-solid fa-circle-check" style="color: #27ae60; margin-right: 6px;"></i>
+                                        <span>Monto pagado:</span>
+                                    </div>
+                                    <strong>$<span th:text="${#numbers.formatDecimal(pedido.pago.monto, 0, 'COMMA', 0, 'POINT')}">0</span></strong>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Modal footer -->
+                        <div class="order-modal__footer">
+                            <form method="dialog">
+                                <button class="mp-btn mp-btn--outline">
+                                    <i class="fa-solid fa-xmark"></i> Cerrar
+                                </button>
+                            </form>
+                            <a th:href="@{/usuario/pedidos/{id}(id=${pedido.id})}"
+                               class="mp-btn mp-btn--primary">
+                                <i class="fa-solid fa-file-invoice"></i> Ver Factura Completa
+                            </a>
+                        </div>
+                    </div>
+                </dialog>
             </div>
+
         </div>
     </div>
 
-    <!-- Mensajes Flash -->
-    <div th:if="${mensaje}" style="position: fixed; top: 100px; right: 20px; background: #d4edda; color: #155724; padding: 15px; border-radius: 5px; z-index: 1000;">
-        <span th:text="${mensaje}"></span>
+    <!-- Flash messages -->
+    <div th:if="${mensaje}" class="flash-msg flash-success">
+        <i class="fa-solid fa-circle-check"></i> <span th:text="${mensaje}"></span>
     </div>
-    <div th:if="${error}" style="position: fixed; top: 100px; right: 20px; background: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px; z-index: 1000;">
-        <span th:text="${error}"></span>
+    <div th:if="${error}" class="flash-msg flash-error">
+        <i class="fa-solid fa-triangle-exclamation"></i> <span th:text="${error}"></span>
     </div>
 
     <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
+
+    <script>
+        const tabMap = {
+            todos:      () => true,
+            entregados: s => s === 'COMPLETADO' || s === 'ENTREGADO',
+            proceso:    s => s === 'EN_PROCESO' || s === 'PROCESANDO',
+            pendiente:  s => s === 'PENDIENTE',
+        };
+
+        function filterOrders(tab) {
+            document.querySelectorAll('.mp-tab').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + tab).classList.add('active');
+            const cards = document.querySelectorAll('#orderList .mp-card');
+            let visible = 0;
+            cards.forEach(card => {
+                const estado = (card.dataset.estado || '').toUpperCase();
+                const show = tabMap[tab](estado);
+                card.style.display = show ? '' : 'none';
+                if (show) visible++;
+            });
+            updateCount(visible, cards.length);
+        }
+
+        function updateCount(visible, total) {
+            const el = document.getElementById('orderCount');
+            if (!el) return;
+            el.innerHTML = 'Mostrando <strong>' + visible + '</strong> de <strong>' + total + '</strong> pedido' + (total !== 1 ? 's' : '');
+        }
+
+        let sortAsc = false;
+        function sortByDate() {
+            const list = document.getElementById('orderList');
+            if (!list) return;
+            const cards = [...list.querySelectorAll('.mp-card')];
+            sortAsc = !sortAsc;
+            cards.sort((a, b) => {
+                const parseDate = el => {
+                    const txt = el ? el.textContent.trim() : '';
+                    const parts = txt.split('/');
+                    return parts.length === 3 ? new Date(parts[2], parts[1]-1, parts[0]) : new Date(0);
+                };
+                const da = parseDate(a.querySelector('.mp-card__date span'));
+                const db = parseDate(b.querySelector('.mp-card__date span'));
+                return sortAsc ? da - db : db - da;
+            });
+            cards.forEach(c => list.appendChild(c));
+        }
+
+        function abrirModal(id) {
+            const dlg = document.getElementById(id);
+            if (!dlg) return;
+            if (typeof dlg.showModal === 'function') {
+                dlg.showModal();
+            } else {
+                dlg.setAttribute('open', '');
+                dlg.classList.add('is-open');
+            }
+        }
+
+        document.addEventListener('click', e => {
+            const trigger = e.target.closest('[data-modal-target]');
+            if (trigger) {
+                e.preventDefault();
+                abrirModal(trigger.getAttribute('data-modal-target'));
+            }
+        });
+
+        document.querySelectorAll('.order-modal').forEach(dialog => {
+            dialog.addEventListener('click', e => {
+                if (e.target === dialog) {
+                    if (typeof dialog.close === 'function') dialog.close();
+                    else { dialog.removeAttribute('open'); dialog.classList.remove('is-open'); }
+                }
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('#orderList .mp-card');
+            updateCount(cards.length, cards.length);
+        });
+    </script>
 </body>
 </html>

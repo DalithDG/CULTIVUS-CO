@@ -207,10 +207,12 @@
             }
         }
     </style>
+    <link rel="stylesheet" th:href="@{/header.css}">
+    <link rel="stylesheet" th:href="@{/footer.css}">
 </head>
 
 <body>
-    <header th:replace="~{fragments/header-comprador :: siteHeader}"></header>
+    <header th:replace="~{fragments/header :: siteHeader}"></header>
 
     <div class="container">
         <h1><i class="fa-solid fa-cart-shopping"></i> Carrito de Compras</h1>
@@ -344,6 +346,7 @@
             form.submit();
         }
     </script>
+<footer th:replace="~{fragments/footer :: siteFooter}"></footer>
 </body>
 
 </html>

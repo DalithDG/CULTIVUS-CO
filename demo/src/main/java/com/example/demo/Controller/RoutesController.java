@@ -24,20 +24,12 @@ public class RoutesController {
 
     @GetMapping("/")
     public String index(Model model) {
-        // Obtener los productos aprobados del catálogo (limitados a 8 para el inicio)
-        List<ProductoCatalogo> productos = catalogoService.listarCatalogo()
-                .stream()
-                .limit(8)
-                .collect(Collectors.toList());
+        // Obtener los primeros 8 productos aprobados del catálogo
+        List<ProductoCatalogo> productos = catalogoService.listarCatalogo(0, 8, null, "relevancia", null).getContent();
 
         model.addAttribute("productos", productos);
         model.addAttribute("categorias", categoriaRepository.findAll());
         return "public/inicio-publico";
-    }
-
-    @GetMapping("/product-detall")
-    public String productoDetall() {
-        return "redirect:/category";
     }
 
     @GetMapping("/login")
@@ -56,49 +48,30 @@ public class RoutesController {
         return "redirect:/registro";
     }
 
-    @GetMapping("/frutas")
-    public String verFrutas() {
-        return categoriaRepository.findByNombre("Frutas")
+    @GetMapping({ "/frutas", "/verduras", "/lacteos", "/cafe", "/granos", "/miel" })
+    public String redirigirCategoria(jakarta.servlet.http.HttpServletRequest request) {
+        String slug = request.getRequestURI();
+        if (slug != null && slug.startsWith("/")) {
+            slug = slug.substring(1);
+        }
+        String nombre = switch (slug) {
+            case "frutas" -> "Frutas";
+            case "verduras" -> "Verduras";
+            case "lacteos" -> "L\u00E1cteos";
+            case "cafe" -> "Caf\u00E9 y Cacao";
+            case "granos" -> "Granos y Cereales";
+            case "miel" -> "Miel";
+            default -> null;
+        };
+        if (nombre == null) {
+            return "redirect:/category";
+        }
+        return categoriaRepository.findByNombre(nombre)
                 .map(cat -> "redirect:/category?categoria=" + cat.getId())
                 .orElse("redirect:/category");
     }
 
-    @GetMapping("/verduras")
-    public String verVerduras() {
-        return categoriaRepository.findByNombre("Verduras")
-                .map(cat -> "redirect:/category?categoria=" + cat.getId())
-                .orElse("redirect:/category");
-    }
-
-    @GetMapping("/lacteos")
-    public String verLacteos() {
-        return categoriaRepository.findByNombre("Lácteos")
-                .map(cat -> "redirect:/category?categoria=" + cat.getId())
-                .orElse("redirect:/category");
-    }
-
-    @GetMapping("/cafe")
-    public String verCafe() {
-        return categoriaRepository.findByNombre("Café y Cacao")
-                .map(cat -> "redirect:/category?categoria=" + cat.getId())
-                .orElse("redirect:/category");
-    }
-
-    @GetMapping("/granos")
-    public String verGranos() {
-        return categoriaRepository.findByNombre("Granos y Cereales")
-                .map(cat -> "redirect:/category?categoria=" + cat.getId())
-                .orElse("redirect:/category");
-    }
-
-    @GetMapping("/miel")
-    public String verMiel() {
-        return categoriaRepository.findByNombre("Miel")
-                .map(cat -> "redirect:/category?categoria=" + cat.getId())
-                .orElse("redirect:/category");
-    }
-
-    @GetMapping("/registro-vendedor")
+@GetMapping("/registro-vendedor")
     public String registroVendedor() {
         return "redirect:/vendedor/registro";
     }

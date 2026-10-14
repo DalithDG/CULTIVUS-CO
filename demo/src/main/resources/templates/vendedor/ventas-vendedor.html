@@ -154,6 +154,8 @@
             margin-bottom: 20px;
         }
     </style>
+    <link rel="stylesheet" th:href="@{/header.css}">
+    <link rel="stylesheet" th:href="@{/footer.css}">
 </head>
 
 <body>
@@ -235,6 +237,7 @@
         <span th:text="${error}"></span>
     </div>
 
+<footer th:replace="~{fragments/footer :: siteFooter}"></footer>
 </body>
 </html>
 

@@ -167,7 +167,7 @@ public class ProductoController {
 
             redirectAttributes.addFlashAttribute("mensaje",
                     "¡Felicidades! Tu oferta para '" + catalogo.getNombre() + "' ha sido publicada exitosamente.");
-            return "redirect:/vendedor/Miproductos";
+            return "redirect:/vendedor/mis-productos";
 
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -233,7 +233,7 @@ public class ProductoController {
     /**
      * Muestra todas las ofertas del vendedor (antes era "Mis Productos")
      */
-    @GetMapping("/Miproductos")
+    @GetMapping("/mis-productos")
     public String mostrarMisOfertas(HttpSession session, Model model,
             RedirectAttributes redirectAttributes) {
 
@@ -276,14 +276,14 @@ public class ProductoController {
         OfertaVendedor oferta = ofertaService.buscarPorId(id);
         if (oferta == null) {
             redirectAttributes.addFlashAttribute("error", "Oferta no encontrada");
-            return "redirect:/vendedor/Miproductos";
+            return "redirect:/vendedor/mis-productos";
         }
 
         // Verificar que la oferta pertenece al vendedor
         if (!oferta.getVendedor().getId().equals(usuario.getId())) {
             redirectAttributes.addFlashAttribute("error",
                     "No tienes permiso para editar esta oferta");
-            return "redirect:/vendedor/Miproductos";
+            return "redirect:/vendedor/mis-productos";
         }
 
         ProductoCatalogo productoCatalogo = catalogoService.obtenerPorId(oferta.getProductoCatalogoId());
@@ -319,12 +319,12 @@ public class ProductoController {
         OfertaVendedor oferta = ofertaService.buscarPorId(id);
         if (oferta == null) {
             redirectAttributes.addFlashAttribute("error", "Oferta no encontrada");
-            return "redirect:/vendedor/Miproductos";
+            return "redirect:/vendedor/mis-productos";
         }
         if (!oferta.getVendedor().getId().equals(usuario.getId())) {
             redirectAttributes.addFlashAttribute("error",
                     "No tienes permiso para editar esta oferta");
-            return "redirect:/vendedor/Miproductos";
+            return "redirect:/vendedor/mis-productos";
         }
 
         try {
@@ -360,7 +360,7 @@ public class ProductoController {
             ofertaService.actualizarOferta(oferta);
 
             redirectAttributes.addFlashAttribute("mensaje", "Oferta actualizada exitosamente");
-            return "redirect:/vendedor/Miproductos";
+            return "redirect:/vendedor/mis-productos";
 
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error",
@@ -392,7 +392,7 @@ public class ProductoController {
             if (!oferta.getVendedor().getId().equals(usuario.getId())) {
                 redirectAttributes.addFlashAttribute("error",
                         "No tiene permiso para eliminar esta oferta");
-                return "redirect:/vendedor/Miproductos";
+                return "redirect:/vendedor/mis-productos";
             }
 
             ofertaService.eliminarOferta(id);
@@ -401,7 +401,7 @@ public class ProductoController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Error al eliminar la oferta");
         }
-        return "redirect:/vendedor/Miproductos";
+        return "redirect:/vendedor/mis-productos";
     }
 
     // ── Métodos auxiliares ────────────────────────────────────────────────────

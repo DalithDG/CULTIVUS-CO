@@ -245,6 +245,7 @@
             .btn-back, .btn-submit { width: 100%; justify-content: center; }
         }
     </style>
+    <link rel="stylesheet" th:href="@{/footer.css}">
 </head>
 
 <body>
@@ -339,7 +340,7 @@
                 </div>
 
                 <div class="form-footer">
-                    <a th:href="@{/vendedor/Miproductos}" class="btn-back">
+                    <a th:href="@{/vendedor/mis-productos}" class="btn-back">
                         <i class="fas fa-arrow-left"></i> Volver
                     </a>
                     <button type="submit" class="btn-submit">
@@ -364,5 +365,6 @@
             });
         }
     </script>
+<footer th:replace="~{fragments/footer :: siteFooter}"></footer>
 </body>
 </html>

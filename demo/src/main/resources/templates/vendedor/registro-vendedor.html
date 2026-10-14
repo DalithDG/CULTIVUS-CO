@@ -17,11 +17,11 @@
     <!-- CSS Propios -->
     <link rel="stylesheet" th:href="@{/header.css}">
     <link rel="stylesheet" th:href="@{/registro-vendedor.css}">
+    <link rel="stylesheet" th:href="@{/footer.css}">
 </head>
 
 <body>
-    <!-- Header Comprador (Ya que aún no es vendedor) -->
-    <header th:replace="~{fragments/header-comprador :: siteHeader}"></header>
+    <header th:replace="~{fragments/header :: siteHeader}"></header>
 
     <main class="register-main">
         <div class="register-overlay"></div>
@@ -177,6 +177,7 @@
     </main>
 
     <script th:src="@{/js/header.js}"></script>
+<footer th:replace="~{fragments/footer :: siteFooter}"></footer>
 </body>
 
 </html>

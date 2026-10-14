@@ -113,6 +113,10 @@ public class VendedorController {
             // Actualizar sesión con usuario que ya tiene el perfil embebido
             session.setAttribute("usuarioLogueado", usuarioActualizado);
 
+            // Persistir la Authentication actualizada (con rol VENDEDOR) en la sesión
+            session.setAttribute("SPRING_SECURITY_CONTEXT",
+                    org.springframework.security.core.context.SecurityContextHolder.getContext());
+
             redirectAttributes.addFlashAttribute("mensaje",
                     "Tu solicitud ha sido enviada. Tu perfil de vendedor está ahora en proceso de validación por un administrador.");
             return "redirect:/vendedor/inicio";

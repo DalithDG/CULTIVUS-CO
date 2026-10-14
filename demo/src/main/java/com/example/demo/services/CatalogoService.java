@@ -5,6 +5,10 @@ import com.example.demo.Model.ProductoCatalogo;
 import com.example.demo.repository.OfertaRepository;
 import com.example.demo.repository.ProductoCatalogoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -38,6 +42,69 @@ public class CatalogoService {
      */
     public List<ProductoCatalogo> listarCatalogo() {
         return catalogoRepository.findByAprobadoTrueAndActivoTrue();
+    }
+
+    /**
+     * Catálogo paginado con filtros por categoría(es), precio máximo y orden.
+     */
+    public Page<ProductoCatalogo> listarCatalogo(int page, int size, List<String> categoriaIds, String orden, Double precioMax) {
+        int pagina = Math.max(0, page);
+        int tamano = Math.min(48, Math.max(1, size));
+
+        Sort sort = construirOrden(orden);
+        Pageable pageable = PageRequest.of(pagina, tamano, sort);
+
+        Page<ProductoCatalogo> resultado = consultarPagina(categoriaIds, precioMax, pageable);
+
+        // Si la página pedida no existe, usar la última disponible
+        if (resultado.getTotalPages() > 0 && pagina >= resultado.getTotalPages()) {
+            pagina = resultado.getTotalPages() - 1;
+            pageable = PageRequest.of(pagina, tamano, sort);
+            resultado = consultarPagina(categoriaIds, precioMax, pageable);
+        }
+
+        return resultado;
+    }
+
+    private Page<ProductoCatalogo> consultarPagina(List<String> categoriaIds, Double precioMax, Pageable pageable) {
+        boolean tieneCategorias = categoriaIds != null && !categoriaIds.isEmpty();
+        boolean tienePrecio = precioMax != null;
+
+        if (tieneCategorias && tienePrecio) {
+            return catalogoRepository.findPublicoByCategoriasAndPrecioMax(categoriaIds, precioMax, pageable);
+        }
+        if (tieneCategorias) {
+            return catalogoRepository.findPublicoByCategorias(categoriaIds, pageable);
+        }
+        if (tienePrecio) {
+            return catalogoRepository.findPublicoByPrecioMax(precioMax, pageable);
+        }
+        return catalogoRepository.findPublico(pageable);
+    }
+
+    private org.springframework.data.domain.Sort construirOrden(String orden) {
+        if (orden == null) {
+            orden = "relevancia";
+        }
+        switch (orden) {
+            case "precio-menor":
+                return org.springframework.data.domain.Sort.by(
+                        new org.springframework.data.domain.Sort.Order(org.springframework.data.domain.Sort.Direction.ASC, "precioMinimo")
+                                .with(org.springframework.data.domain.Sort.NullHandling.NULLS_LAST));
+            case "precio-mayor":
+                return org.springframework.data.domain.Sort.by(
+                        new org.springframework.data.domain.Sort.Order(org.springframework.data.domain.Sort.Direction.DESC, "precioMinimo")
+                                .with(org.springframework.data.domain.Sort.NullHandling.NULLS_LAST));
+            case "nombre":
+                return org.springframework.data.domain.Sort.by("nombre").ascending();
+            case "recientes":
+                return org.springframework.data.domain.Sort.by("createdAt").descending()
+                        .and(org.springframework.data.domain.Sort.by("id").ascending());
+            case "relevancia":
+            default:
+                return org.springframework.data.domain.Sort.by("createdAt").descending()
+                        .and(org.springframework.data.domain.Sort.by("id").ascending());
+        }
     }
 
     /**

@@ -6,6 +6,7 @@ import com.example.demo.Model.Usuario;
 import com.example.demo.Model.embebidos.PerfilVendedor;
 import com.example.demo.repository.PedidoRepository;
 import com.example.demo.repository.UsuarioRepository;
+import com.example.demo.security.SecurityContextRefreshService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +24,9 @@ public class VendedorService {
 
     @Autowired
     private NotificacionService notificacionService;
+
+    @Autowired
+    private SecurityContextRefreshService securityContextRefreshService;
 
     /**
      * Crea un perfil de vendedor para un usuario existente
@@ -61,7 +65,10 @@ public class VendedorService {
         usuario.setPerfilVendedor(perfil);
         usuario.addRole(Role.VENDEDOR);
 
-        return usuarioRepository.save(usuario);
+        Usuario guardado = usuarioRepository.save(usuario);
+        // Reconstruir Authentication con el nuevo rol (evita 403 sin cerrar sesión)
+        securityContextRefreshService.refrescarAutenticacion(guardado.getEmail());
+        return guardado;
     }
 
     /**
@@ -131,7 +138,9 @@ public class VendedorService {
                 usuario.addRole(Role.COMPRADOR);
             }
         }
-        usuarioRepository.save(usuario);
+        Usuario guardado = usuarioRepository.save(usuario);
+        // Reconstruir Authentication tras eliminar el rol VENDEDOR
+        securityContextRefreshService.refrescarAutenticacion(guardado.getEmail());
     }
 
     /**

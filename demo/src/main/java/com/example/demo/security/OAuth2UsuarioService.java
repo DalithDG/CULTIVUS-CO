@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
@@ -29,16 +31,25 @@ public class OAuth2UsuarioService extends DefaultOAuth2UserService {
         // Delegate la carga del perfil de Google al servicio base
         OAuth2User oAuth2User = super.loadUser(userRequest);
 
-        procesarUsuarioOAuth2(oAuth2User);
+        Usuario usuario = procesarUsuarioOAuth2(oAuth2User);
 
-        return oAuth2User;
+        // Reconstruir las autoridades desde los roles guardados en MongoDB
+        java.util.Collection<org.springframework.security.core.GrantedAuthority> authorities =
+                usuario.getRoles().stream()
+                        .map(rol -> new SimpleGrantedAuthority("ROLE_" + rol.name()))
+                        .collect(java.util.stream.Collectors.toList());
+
+        String nameAttributeKey = userRequest.getClientRegistration()
+                .getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName();
+
+        return new DefaultOAuth2User(authorities, oAuth2User.getAttributes(), nameAttributeKey);
     }
 
     /**
      * Busca el usuario por email. Si no existe, lo crea con rol COMPRADOR.
      * Si ya existe, actualiza su nombre si cambió en Google.
      */
-    private void procesarUsuarioOAuth2(OAuth2User oAuth2User) {
+    private Usuario procesarUsuarioOAuth2(OAuth2User oAuth2User) {
         String email = oAuth2User.getAttribute("email");
         String nombre = oAuth2User.getAttribute("name");
 
@@ -58,6 +69,7 @@ public class OAuth2UsuarioService extends DefaultOAuth2UserService {
             }
             usuario.setUltimaConexion(java.time.LocalDateTime.now());
             usuarioRepository.save(usuario);
+            return usuario;
         } else {
             // Primera vez con Google → crear cuenta automáticamente
             Usuario nuevoUsuario = new Usuario();
@@ -69,6 +81,7 @@ public class OAuth2UsuarioService extends DefaultOAuth2UserService {
             nuevoUsuario.setUltimaConexion(java.time.LocalDateTime.now());
 
             usuarioRepository.save(nuevoUsuario);
+            return nuevoUsuario;
         }
     }
 }

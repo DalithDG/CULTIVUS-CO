@@ -142,11 +142,12 @@
             }
         }
     </style>
+    <link rel="stylesheet" th:href="@{/footer.css}">
 </head>
 <body>
 
     <!-- Incluir Header -->
-    <header th:replace="~{fragments/header-comprador :: siteHeader}"></header>
+    <header th:replace="~{fragments/header :: siteHeader}"></header>
 
     <main class="container">
         <div class="page-header">
@@ -181,5 +182,6 @@
     </main>
 
     <script th:src="@{/js/header.js}"></script>
+<footer th:replace="~{fragments/footer :: siteFooter}"></footer>
 </body>
 </html>
