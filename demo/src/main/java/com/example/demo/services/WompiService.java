@@ -66,6 +66,14 @@ public class WompiService {
     }
 
     /**
+     * Total a cobrar en centavos: productos + envío. Es el monto que se firma con la
+     * firma de integridad y el que luego se compara con lo que reporta Wompi.
+     */
+    public long calcularTotalCentavos(double subtotalProductos, double costoEnvio) {
+        return convertirACentavos(subtotalProductos + costoEnvio);
+    }
+
+    /**
      * Genera una referencia única para cada intento de pago.
      * Formato: CUL-{timestamp}-{sufijoHex}
      */

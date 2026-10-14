@@ -13,6 +13,8 @@ public class DatosPago {
     // Referencia única enviada a Wompi (CUL-...) y id de la transacción devuelto por Wompi
     private String referencia;
     private String transaccionId;
+    // Total en centavos (productos + envío) firmado al iniciar el pago; se compara con lo que reporta Wompi
+    private Long montoCentavosFirmado;
 
     public DatosPago() {
         this.fechaPago = LocalDateTime.now();
@@ -43,4 +45,7 @@ public class DatosPago {
 
     public String getTransaccionId() { return transaccionId; }
     public void setTransaccionId(String transaccionId) { this.transaccionId = transaccionId; }
+
+    public Long getMontoCentavosFirmado() { return montoCentavosFirmado; }
+    public void setMontoCentavosFirmado(Long montoCentavosFirmado) { this.montoCentavosFirmado = montoCentavosFirmado; }
 }
