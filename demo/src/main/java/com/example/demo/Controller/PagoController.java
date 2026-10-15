@@ -1,6 +1,7 @@
 package com.example.demo.Controller;
 
 import com.example.demo.Model.Carrito;
+import com.example.demo.Model.Compra;
 import com.example.demo.Model.OfertaVendedor;
 import com.example.demo.Model.Pedido;
 import com.example.demo.Model.Usuario;
@@ -11,6 +12,7 @@ import com.example.demo.Model.embebidos.DireccionPedido;
 import com.example.demo.Model.embebidos.ProductoCarrito;
 import com.example.demo.Model.embebidos.ProductoPedido;
 import com.example.demo.repository.CarritoRepository;
+import com.example.demo.repository.CompraRepository;
 import com.example.demo.repository.OfertaRepository;
 import com.example.demo.repository.PedidoRepository;
 import com.example.demo.services.AppConfigService;
@@ -34,6 +36,9 @@ public class PagoController {
 
     @Autowired
     private CarritoRepository carritoRepository;
+
+    @Autowired
+    private CompraRepository compraRepository;
 
     @Autowired
     private PedidoRepository pedidoRepository;
@@ -92,15 +97,33 @@ public class PagoController {
             return "redirect:/carrito";
         }
 
-        // 2. Validar compra mínima por OFERTA (Vendedor)
+        // 2. Validar compra mínima y STOCK por OFERTA (US-21 Item 7)
         for (ProductoCarrito item : carrito.getItems()) {
             if (item.getOfertaId() != null) {
                 OfertaVendedor oferta = ofertaRepository.findById(item.getOfertaId()).orElse(null);
-                if (oferta != null && item.getCantidad() < oferta.getCompraMinima()) {
+                if (oferta == null || !oferta.isDisponible()) {
+                    redirectAttributes.addFlashAttribute("error",
+                            "El producto '" + item.getNombre() + "' ya no está disponible.");
+                    return "redirect:/carrito";
+                }
+                // Validar Compra Mínima
+                if (item.getCantidad() < oferta.getCompraMinima()) {
                     String unidad = item.getUnidadAbreviatura() != null ? item.getUnidadAbreviatura() : "unid";
                     redirectAttributes.addFlashAttribute("error",
                             "El producto '" + item.getNombre() + "' requiere una compra mínima de " +
                             oferta.getCompraMinima() + " " + unidad + ". Tienes " + item.getCantidad());
+                    return "redirect:/carrito";
+                }
+                // Validar Stock disponible
+                double stockDisponible = oferta.getStock() != null ? oferta.getStock() : 0.0;
+                if (stockDisponible < item.getCantidad()) {
+                    String unidad = item.getUnidadAbreviatura() != null ? item.getUnidadAbreviatura() : "unid";
+                    redirectAttributes.addFlashAttribute("error",
+                            "El producto '" + item.getNombre() + "' no tiene suficiente stock (disponible: " +
+                            (stockDisponible % 1 == 0 ? String.format("%.0f", stockDisponible) : stockDisponible) +
+                            " " + unidad + ", en tu carrito: " +
+                            (item.getCantidad() % 1 == 0 ? String.format("%.0f", item.getCantidad()) : item.getCantidad()) +
+                            " " + unidad + ").");
                     return "redirect:/carrito";
                 }
             }
@@ -138,208 +161,7 @@ public class PagoController {
     }
 
     /**
-     * Procesa el pago y crea el pedido
-     */
-    @PostMapping("/procesar")
-    public String procesarPago(
-            // ✅ required = false para capturar cuando no se selecciona nada
-            @RequestParam(value = "metodoPago", required = false) String metodoPago,
-            @RequestParam(value = "direccionEnvio", required = false) String direccionEnvio,
-            HttpSession session,
-            RedirectAttributes redirectAttributes) {
-        try {
-            Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
-            if (usuario == null) {
-                redirectAttributes.addFlashAttribute("error",
-                        "Debe iniciar sesión para realizar el pago");
-                return "redirect:/usuario/login";
-            }
-
-            // ✅ Validar que se seleccionó un método de pago
-            if (metodoPago == null || metodoPago.trim().isEmpty()) {
-                redirectAttributes.addFlashAttribute("error",
-                        "Debe seleccionar un método de pago");
-                return "redirect:/pago";
-            }
-
-            // ✅ Validar que el método sea uno de los permitidos
-            List<String> metodosValidos = List.of(
-                    "TARJETA_CREDITO", "TARJETA_DEBITO", "TRANSFERENCIA", "EFECTIVO");
-            if (!metodosValidos.contains(metodoPago)) {
-                redirectAttributes.addFlashAttribute("error",
-                        "Método de pago no válido");
-                return "redirect:/pago";
-            }
-
-            // Obtener carrito
-            Carrito carrito = carritoRepository.findByUsuarioId(usuario.getId())
-                    .orElseThrow(() -> new IllegalArgumentException("Carrito no encontrado"));
-
-            if (carrito.getItems().isEmpty()) {
-                redirectAttributes.addFlashAttribute("error", "Su carrito está vacío");
-                return "redirect:/carrito";
-            }
-
-            // Validar límite máximo de compra
-            double limiteMaximo = configService.obtenerValorDouble("LIMITE_COMPRA_MAX", 5000000.0);
-            if (carrito.getTotalEstimado() > limiteMaximo) {
-                redirectAttributes.addFlashAttribute("error",
-                        "El total de su compra excede el límite permitido de $" + String.format("%,.0f", limiteMaximo));
-                return "redirect:/pago";
-            }
-
-            // Verificar stock y COMPRA MÍNIMA de todas las ofertas antes de procesar
-            for (ProductoCarrito item : carrito.getItems()) {
-                if (item.getOfertaId() != null) {
-                    OfertaVendedor oferta = ofertaRepository.findById(item.getOfertaId())
-                            .orElseThrow(() -> new IllegalArgumentException(
-                                    "Oferta no encontrada para: " + item.getNombre()));
-
-                    // Validar Stock
-                    if (oferta.getStock() < item.getCantidad()) {
-                        redirectAttributes.addFlashAttribute("error",
-                                "El producto " + item.getNombre() + " no tiene suficiente stock");
-                        return "redirect:/carrito";
-                    }
-
-                    // Validar Compra Mínima
-                    if (item.getCantidad() < oferta.getCompraMinima()) {
-                        String unidad = item.getUnidadAbreviatura() != null ? item.getUnidadAbreviatura() : "unid";
-                        redirectAttributes.addFlashAttribute("error",
-                                "No cumples con la compra mínima de " + oferta.getCompraMinima() + " " + unidad
-                                        + " para el producto: " + item.getNombre());
-                        return "redirect:/carrito";
-                    }
-                }
-            }
-
-            // Agrupar items por vendedor para crear subórdenes (Modelo Amazon)
-            // Ahora usamos vendedorId del ProductoCarrito directamente
-            java.util.Map<String, java.util.List<ProductoPedido>> itemsPorVendedor = new java.util.HashMap<>();
-            java.util.Map<String, DatosVendedor> snapshotsVendedores = new java.util.HashMap<>();
-
-            for (ProductoCarrito item : carrito.getItems()) {
-                String vendedorIdLocal = item.getVendedorId();
-
-                // Si vendedorId es null (carritos antiguos pre-migración), intentar obtenerlo de la oferta
-                if (vendedorIdLocal == null && item.getOfertaId() != null) {
-                    OfertaVendedor oferta = ofertaRepository.findById(item.getOfertaId()).orElse(null);
-                    if (oferta != null && oferta.getVendedor() != null) {
-                        vendedorIdLocal = oferta.getVendedor().getId();
-                    }
-                }
-
-                if (vendedorIdLocal == null) {
-                    throw new IllegalArgumentException("No se pudo identificar al vendedor del producto: " + item.getNombre());
-                }
-
-                String unidadAb = item.getUnidadAbreviatura() != null ? item.getUnidadAbreviatura() : "unid";
-                ProductoPedido itemPedido = new ProductoPedido(
-                        item.getOfertaId() != null ? item.getOfertaId() : item.getProductoId(),
-                        item.getNombre(),
-                        item.getImagenUrl(),
-                        item.getPrecioUnitario(),
-                        item.getCantidad(),
-                        unidadAb);
-
-                itemsPorVendedor.computeIfAbsent(vendedorIdLocal, k -> new java.util.ArrayList<>()).add(itemPedido);
-
-                // Obtener snapshot del vendedor
-                if (!snapshotsVendedores.containsKey(vendedorIdLocal)) {
-                    if (item.getOfertaId() != null) {
-                        OfertaVendedor oferta = ofertaRepository.findById(item.getOfertaId()).orElse(null);
-                        if (oferta != null && oferta.getVendedor() != null) {
-                            snapshotsVendedores.put(vendedorIdLocal, oferta.getVendedor());
-                        }
-                    }
-                }
-            }
-
-            // Construir comprador embebido
-            DatosComprador comprador = new DatosComprador(
-                    usuario.getId(),
-                    usuario.getNombre());
-
-            // Construir dirección de entrega embebida
-            DireccionPedido direccionEntrega = new DireccionPedido(
-                    direccionEnvio != null ? direccionEnvio : "",
-                    usuario.getUbicacion() != null ? usuario.getUbicacion().getCiudad() : "",
-                    usuario.getUbicacion() != null ? usuario.getUbicacion().getDepartamento() : "");
-
-            java.util.List<String> pedidosGenerados = new java.util.ArrayList<>();
-
-            // Crear un pedido por cada vendedor
-            for (java.util.Map.Entry<String, java.util.List<ProductoPedido>> entry : itemsPorVendedor.entrySet()) {
-                String vendedorIdLocal = entry.getKey();
-                java.util.List<ProductoPedido> itemsVendedor = entry.getValue();
-                DatosVendedor snapshotVendedor = snapshotsVendedores.get(vendedorIdLocal);
-
-                double subtotalVendedor = itemsVendedor.stream().mapToDouble(ProductoPedido::getSubtotal).sum();
-                DatosPago datosPagoVendedor = new DatosPago(metodoPago, subtotalVendedor);
-                datosPagoVendedor.setEstado(PagoConfirmacionService.COMPLETADO);
-                datosPagoVendedor.setFechaPago(java.time.LocalDateTime.now());
-
-                Pedido pedidoVendedor = new Pedido(comprador, snapshotVendedor, direccionEntrega, itemsVendedor,
-                        datosPagoVendedor);
-                pedidoVendedor.setEstado("CONFIRMADO");
-                pedidoVendedor = pedidoRepository.save(pedidoVendedor);
-                pedidosGenerados.add(pedidoVendedor.getId());
-
-                // Notificar al Vendedor
-                notificacionService.enviar(
-                        vendedorIdLocal,
-                        "¡Nueva Venta!",
-                        "Has recibido un nuevo pedido #" + pedidoVendedor.getId() + " de " + usuario.getNombre(),
-                        "SUCCESS");
-            }
-
-            // Notificar al Comprador
-            notificacionService.enviar(
-                    usuario.getId(),
-                    "Pedido Confirmado",
-                    "Tu compra ha sido procesada con éxito. Pedidos generados: " + pedidosGenerados.size(),
-                    "SUCCESS");
-
-            // Actualizar stock de cada oferta
-            for (ProductoCarrito item : carrito.getItems()) {
-                if (item.getOfertaId() != null) {
-                    ofertaRepository.findById(item.getOfertaId()).ifPresent(oferta -> {
-                        oferta.setStock(oferta.getStock() - item.getCantidad());
-                        // Marcar como no disponible si se agotó el stock
-                        if (oferta.getStock() <= 0) {
-                            oferta.setDisponible(false);
-                        }
-                        ofertaRepository.save(oferta);
-
-                        // Recalcular estadísticas del catálogo
-                        catalogoService.actualizarEstadisticas(oferta.getProductoCatalogoId());
-                    });
-                }
-            }
-
-            // Limpiar carrito después del pago
-            carritoRepository.delete(carrito);
-
-            String mensajeConfirmacion = "¡Pago procesado exitosamente! ";
-            if (pedidosGenerados.size() > 1) {
-                mensajeConfirmacion += "Se dividió su compra en " + pedidosGenerados.size()
-                        + " pedidos separados por vendedor.";
-            } else {
-                mensajeConfirmacion += "Pedido #" + pedidosGenerados.get(0);
-            }
-
-            redirectAttributes.addFlashAttribute("mensaje", mensajeConfirmacion);
-            return "redirect:/pago/confirmacion/" + pedidosGenerados.get(0);
-
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error",
-                    "Error al procesar el pago: " + e.getMessage());
-            return "redirect:/pago";
-        }
-    }
-
-    /**
-     * Muestra la confirmación del pago
+     * Muestra la confirmación del pago (US-21 Item 8)
      */
     @GetMapping("/confirmacion/{pedidoId}")
     public String mostrarConfirmacion(@PathVariable String pedidoId,
@@ -355,15 +177,43 @@ public class PagoController {
                 .orElseThrow(() -> new IllegalArgumentException("Pedido no encontrado"));
 
         // Verificar que el pedido pertenece al usuario
-        if (!pedido.getComprador().getId().equals(usuario.getId())) {
+        if (pedido.getComprador() == null || !usuario.getId().equals(pedido.getComprador().getId())) {
             redirectAttributes.addFlashAttribute("error",
                     "No tiene permiso para ver este pedido");
             return "redirect:/";
         }
 
-        double subtotalProductos = pedido.getTotal() != null ? pedido.getTotal() : 0.0;
+        // Cargar Compra agrupada y todos los sub-pedidos
+        Compra compra = null;
+        if (pedido.getCompraId() != null) {
+            compra = compraRepository.findById(pedido.getCompraId()).orElse(null);
+        }
+        if (compra == null && pedido.getPago() != null && pedido.getPago().getReferencia() != null) {
+            compra = compraRepository.findByReferenciaPago(pedido.getPago().getReferencia()).orElse(null);
+        }
+
+        List<Pedido> subPedidos = new ArrayList<>();
+        if (compra != null && compra.getId() != null) {
+            subPedidos = pedidoRepository.findByCompraId(compra.getId());
+            if (subPedidos.isEmpty() && compra.getPedidoIds() != null && !compra.getPedidoIds().isEmpty()) {
+                subPedidos = pedidoRepository.findAllById(compra.getPedidoIds());
+            }
+        }
+        if (subPedidos.isEmpty() && pedido.getPago() != null && pedido.getPago().getReferencia() != null) {
+            subPedidos = pedidoRepository.findByPago_Referencia(pedido.getPago().getReferencia());
+        }
+        if (subPedidos.isEmpty()) {
+            subPedidos = List.of(pedido);
+        }
+
+        double subtotalProductos = subPedidos.stream()
+                .mapToDouble(p -> p.getTotal() != null ? p.getTotal() : 0.0)
+                .sum();
+
         double totalCobrado = subtotalProductos;
-        if (pedido.getPago() != null && pedido.getPago().getMontoCentavosFirmado() != null && pedido.getPago().getMontoCentavosFirmado() > 0) {
+        if (compra != null && compra.getTotalCentavos() != null && compra.getTotalCentavos() > 0) {
+            totalCobrado = compra.getTotalCentavos() / 100.0;
+        } else if (pedido.getPago() != null && pedido.getPago().getMontoCentavosFirmado() != null && pedido.getPago().getMontoCentavosFirmado() > 0) {
             totalCobrado = pedido.getPago().getMontoCentavosFirmado() / 100.0;
         } else if (pedido.getPago() != null && pedido.getPago().getMonto() != null) {
             totalCobrado = pedido.getPago().getMonto();
@@ -372,6 +222,8 @@ public class PagoController {
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("pedido", pedido);
+        model.addAttribute("compra", compra);
+        model.addAttribute("subPedidos", subPedidos);
         model.addAttribute("detalles", pedido.getItems());
         model.addAttribute("pago", pedido.getPago());
         model.addAttribute("subtotalProductos", subtotalProductos);
@@ -382,8 +234,8 @@ public class PagoController {
     }
 
     /**
-     * API: Pre-registra el pedido en estado PENDIENTE y devuelve datos firmados para el Widget de Wompi.
-     * Se crea un pedido por vendedor, todos con la misma referencia de pago.
+     * API: Pre-registra la Compra y sus sub-pedidos en estado PENDIENTE, y devuelve datos firmados para el Widget de Wompi.
+     * US-21 Item 5: Crea la entidad Compra junto a los pedidos PENDIENTE; cada pedido guarda su compraId.
      */
     @PostMapping("/iniciar-wompi")
     @ResponseBody
@@ -425,10 +277,11 @@ public class PagoController {
                 }
             }
 
-            // Cálculo seguro del total en centavos
+            // Cálculo seguro del total en centavos enteros
             double subtotal = carrito.getTotalEstimado();
             double costoEnvio = wompiService.obtenerCostoEnvioProvisional();
-            double totalConEnvio = subtotal + costoEnvio;
+            long subtotalCentavos = wompiService.convertirACentavos(subtotal);
+            long envioCentavos = wompiService.convertirACentavos(costoEnvio);
             long amountInCents = wompiService.calcularTotalCentavos(subtotal, costoEnvio);
 
             // Reutilizar referencia del frontend o generar una nueva
@@ -439,13 +292,19 @@ public class PagoController {
                             ? payload.get("reference").trim()
                             : wompiService.generarReferenciaUnica();
 
-            // Si la referencia ya existe y es de otro comprador, no se reutiliza
+            // Si la referencia ya existe y es de otro comprador, generar una nueva
             List<Pedido> existentes = pedidoRepository.findByPago_Referencia(reference);
-            boolean pedidosPropios = !existentes.isEmpty() && existentes.stream().allMatch(
+            java.util.Optional<Compra> optCompraExistente = compraRepository.findByReferenciaPago(reference);
+
+            boolean pedidosPropios = existentes.isEmpty() || existentes.stream().allMatch(
                     p -> p.getComprador() != null && usuario.getId().equals(p.getComprador().getId()));
-            if (!existentes.isEmpty() && !pedidosPropios) {
+            boolean compraPropia = optCompraExistente.isEmpty() || (optCompraExistente.get().getComprador() != null
+                    && usuario.getId().equals(optCompraExistente.get().getComprador().getId()));
+
+            if (!pedidosPropios || !compraPropia) {
                 reference = wompiService.generarReferenciaUnica();
                 existentes = new ArrayList<>();
+                optCompraExistente = java.util.Optional.empty();
             }
 
             String currency = wompiService.getCurrency();
@@ -482,8 +341,8 @@ public class PagoController {
             String ciudadFinal = !ciudad.isEmpty() ? ciudad : (usuario.getUbicacion() != null && usuario.getUbicacion().getCiudad() != null ? usuario.getUbicacion().getCiudad() : "Cartagena");
             String deptoFinal = !departamento.isEmpty() ? departamento : "Bolívar";
 
-            // Crear pedidos PENDIENTE (uno por vendedor) solo si aún no existen para esta referencia
-            if (existentes.isEmpty()) {
+            // Crear Compra y sus sub-pedidos PENDIENTE si aún no existen para esta referencia
+            if (existentes.isEmpty() && optCompraExistente.isEmpty()) {
                 java.util.Map<String, List<ProductoPedido>> itemsPorVendedor = new java.util.HashMap<>();
                 java.util.Map<String, DatosVendedor> snapshotsVendedores = new java.util.HashMap<>();
 
@@ -522,8 +381,16 @@ public class PagoController {
                         ciudadFinal,
                         deptoFinal);
 
+                // 1. Crear y persistir Compra
+                Compra compra = new Compra(comprador, reference, subtotalCentavos, envioCentavos);
+                compra = compraRepository.save(compra);
+
+                // 2. Crear un sub-pedido por vendedor, vinculando su compraId
+                List<String> pedidoIdsGenerados = new ArrayList<>();
                 for (java.util.Map.Entry<String, List<ProductoPedido>> entry : itemsPorVendedor.entrySet()) {
                     double subtotalVendedor = entry.getValue().stream().mapToDouble(ProductoPedido::getSubtotal).sum();
+                    long subtotalVendedorCentavos = wompiService.convertirACentavos(subtotalVendedor);
+
                     DatosPago datosPago = new DatosPago("WOMPI", subtotalVendedor);
                     datosPago.setEstado("PENDIENTE");
                     datosPago.setReferencia(reference);
@@ -531,11 +398,28 @@ public class PagoController {
 
                     Pedido pedido = new Pedido(comprador, snapshotsVendedores.get(entry.getKey()), direccion,
                             entry.getValue(), datosPago);
+                    pedido.setCompraId(compra.getId());
+                    pedido.setSubtotalCentavos(subtotalVendedorCentavos);
                     pedido.setEstado("PENDIENTE");
-                    pedidoRepository.save(pedido);
+                    pedido = pedidoRepository.save(pedido);
+
+                    pedidoIdsGenerados.add(pedido.getId());
                 }
+
+                compra.setPedidoIds(pedidoIdsGenerados);
+                compraRepository.save(compra);
+
             } else {
-                // Referencia reutilizada: el monto firmado vigente es el de esta solicitud
+                // Referencia reutilizada: actualizar monto vigente en Compra y pedidos
+                if (optCompraExistente.isPresent()) {
+                    Compra compra = optCompraExistente.get();
+                    if (!compra.esFinal()) {
+                        compra.setSubtotalCentavos(subtotalCentavos);
+                        compra.setEnvioCentavos(envioCentavos);
+                        compra.setTotalCentavos(amountInCents);
+                        compraRepository.save(compra);
+                    }
+                }
                 for (Pedido existente : existentes) {
                     DatosPago pagoExistente = existente.getPago();
                     if (pagoExistente != null && !PagoConfirmacionService.esFinal(pagoExistente.getEstado())) {

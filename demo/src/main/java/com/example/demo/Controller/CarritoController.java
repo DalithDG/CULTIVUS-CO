@@ -55,9 +55,32 @@ public class CarritoController {
                     return carritoRepository.save(nuevo);
                 });
 
+        // Agrupar items por vendedor para la vista (US-21 Item 6)
+        java.util.Map<String, java.util.List<ProductoCarrito>> itemsPorVendedor = new java.util.LinkedHashMap<>();
+        for (ProductoCarrito item : carrito.getItems()) {
+            String nombreVendedor = item.getVendedorNombre();
+            if (nombreVendedor == null || nombreVendedor.isBlank()) {
+                if (item.getOfertaId() != null) {
+                    OfertaVendedor of = ofertaRepository.findById(item.getOfertaId()).orElse(null);
+                    if (of != null && of.getVendedor() != null && of.getVendedor().getNombre() != null) {
+                        nombreVendedor = of.getVendedor().getNombre();
+                        item.setVendedorNombre(nombreVendedor);
+                        if (item.getVendedorId() == null) {
+                            item.setVendedorId(of.getVendedor().getId());
+                        }
+                    }
+                }
+            }
+            if (nombreVendedor == null || nombreVendedor.isBlank()) {
+                nombreVendedor = "Productor Local";
+            }
+            itemsPorVendedor.computeIfAbsent(nombreVendedor, k -> new java.util.ArrayList<>()).add(item);
+        }
+
         model.addAttribute("usuario", usuario);
         model.addAttribute("carrito", carrito);
         model.addAttribute("detalles", carrito.getItems());
+        model.addAttribute("itemsPorVendedor", itemsPorVendedor);
         model.addAttribute("total", carrito.getTotalEstimado());
 
         return "comprador/carrito";

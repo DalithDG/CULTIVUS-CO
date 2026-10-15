@@ -1,10 +1,12 @@
 package com.example.demo.services;
 
+import com.example.demo.Model.Compra;
 import com.example.demo.Model.OfertaVendedor;
 import com.example.demo.Model.Pedido;
 import com.example.demo.Model.embebidos.DatosPago;
 import com.example.demo.Model.embebidos.ProductoPedido;
 import com.example.demo.repository.CarritoRepository;
+import com.example.demo.repository.CompraRepository;
 import com.example.demo.repository.OfertaRepository;
 import com.example.demo.repository.PedidoRepository;
 import org.slf4j.Logger;
@@ -13,14 +15,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
 
 /**
  * Pieza compartida por el webhook de Wompi y por el retorno del comprador
- * (/pago/resultado): aplica el resultado de una transacción a los pagos y pedidos.
+ * (/pago/resultado): aplica el resultado de una transacción a las compras, pagos y pedidos.
  *
- * APPROVED                  -> COMPLETADO (pago), CONFIRMADO (pedido), descuenta stock, notifica y limpia carrito
- * DECLINED / ERROR / VOIDED -> FALLIDO (pago), CANCELADO (pedido), sin tocar stock ni carrito
+ * APPROVED                  -> COMPLETADO (pago), PAGADA (compra), CONFIRMADO (pedidos con stock),
+ *                              descuenta stock en una sola operación, notifica y limpia carrito.
+ *                              Si el stock no alcanza al confirmar, marca el pedido EN_REVISION y notifica al admin.
+ * DECLINED / ERROR / VOIDED -> FALLIDO (pago), RECHAZADA (compra), CANCELADO (pedidos), sin tocar stock ni carrito,
+ *                              y envía UNA SOLA notificación al comprador por compra.
  * PENDING                   -> sin cambios
  */
 @Service
@@ -61,24 +66,36 @@ public class PagoConfirmacionService {
     @Autowired(required = false)
     private CarritoRepository carritoRepository;
 
+    @Autowired(required = false)
+    private CompraRepository compraRepository;
+
     public PagoConfirmacionService() {
     }
 
     public PagoConfirmacionService(PedidoRepository pedidoRepository) {
-        this(pedidoRepository, null, null, null, null);
+        this(pedidoRepository, null, null, null, null, null);
     }
 
-    @Autowired
     public PagoConfirmacionService(PedidoRepository pedidoRepository,
                                   OfertaRepository ofertaRepository,
                                   CatalogoService catalogoService,
                                   NotificacionService notificacionService,
                                   CarritoRepository carritoRepository) {
+        this(pedidoRepository, ofertaRepository, catalogoService, notificacionService, carritoRepository, null);
+    }
+
+    public PagoConfirmacionService(PedidoRepository pedidoRepository,
+                                  OfertaRepository ofertaRepository,
+                                  CatalogoService catalogoService,
+                                  NotificacionService notificacionService,
+                                  CarritoRepository carritoRepository,
+                                  CompraRepository compraRepository) {
         this.pedidoRepository = pedidoRepository;
         this.ofertaRepository = ofertaRepository;
         this.catalogoService = catalogoService;
         this.notificacionService = notificacionService;
         this.carritoRepository = carritoRepository;
+        this.compraRepository = compraRepository;
     }
 
     public Resultado aplicarResultado(String referencia, String transaccionId, String estadoWompi,
@@ -87,8 +104,21 @@ public class PagoConfirmacionService {
         if (referencia == null || referencia.isBlank()) {
             return Resultado.REFERENCIA_DESCONOCIDA;
         }
-        List<Pedido> pedidos = pedidoRepository.findByPago_Referencia(referencia.trim());
-        if (pedidos == null || pedidos.isEmpty()) {
+        String refLimpia = referencia.trim();
+
+        List<Pedido> pedidos = pedidoRepository != null
+                ? pedidoRepository.findByPago_Referencia(refLimpia)
+                : Collections.emptyList();
+
+        Compra compra = compraRepository != null
+                ? compraRepository.findByReferenciaPago(refLimpia).orElse(null)
+                : null;
+
+        if ((pedidos == null || pedidos.isEmpty()) && compra != null && compra.getPedidoIds() != null && pedidoRepository != null) {
+            pedidos = pedidoRepository.findAllById(compra.getPedidoIds());
+        }
+
+        if ((pedidos == null || pedidos.isEmpty()) && compra == null) {
             return Resultado.REFERENCIA_DESCONOCIDA;
         }
 
@@ -109,106 +139,264 @@ public class PagoConfirmacionService {
                 return Resultado.ESTADO_DESCONOCIDO;
         }
 
-        boolean aplicado = false;
-        boolean montoInvalido = false;
+        // Si todos los pagos ya están en estado final, no se degradan ni se reaplican
+        boolean todosFinales = (pedidos != null && !pedidos.isEmpty())
+                && pedidos.stream().allMatch(p -> p.getPago() != null && esFinal(p.getPago().getEstado()));
+        if (todosFinales && (compra == null || compra.esFinal())) {
+            return Resultado.YA_FINALIZADO;
+        }
 
-        for (Pedido pedido : pedidos) {
-            DatosPago pago = pedido.getPago();
-            if (pago == null) {
-                continue;
-            }
-            // Estado final: no se degrada (COMPLETADO -> FALLIDO) ni se reaplica
-            if (esFinal(pago.getEstado())) {
-                continue;
-            }
-            if (COMPLETADO.equals(destino)) {
-                Long firmado = pago.getMontoCentavosFirmado();
-                if (firmado == null || firmado.longValue() != montoEnCentavos) {
-                    log.warn("Monto de Wompi no coincide con el firmado para la referencia {} (tx {})",
-                            referencia, transaccionId);
-                    montoInvalido = true;
-                    continue;
+        // Validación de monto en centavos para pagos aprobados
+        if (COMPLETADO.equals(destino)) {
+            if (compra != null) {
+                if (compra.getTotalCentavos() == null || compra.getTotalCentavos() != montoEnCentavos) {
+                    log.warn("Monto de Wompi ({}) no coincide con el total de la compra ({}) para ref {}",
+                            montoEnCentavos, compra.getTotalCentavos(), refLimpia);
+                    return Resultado.MONTO_NO_COINCIDE;
                 }
-            }
-
-            pago.setEstado(destino);
-            pago.setTransaccionId(transaccionId);
-            pago.setFechaPago(LocalDateTime.now());
-            pedido.setUpdatedAt(LocalDateTime.now());
-
-            if (COMPLETADO.equals(destino)) {
-                // 1. Pasar pedido a CONFIRMADO
-                pedido.setEstado("CONFIRMADO");
-
-                // 2. Descontar stock de cada oferta solo ahora que el pago fue aprobado
-                if (ofertaRepository != null && pedido.getItems() != null) {
-                    for (ProductoPedido item : pedido.getItems()) {
-                        String idOferta = item.getProductoId();
-                        if (idOferta != null) {
-                            ofertaRepository.findById(idOferta).ifPresent(oferta -> {
-                                double cantidad = item.getCantidad() != null ? item.getCantidad() : 0.0;
-                                double stockActual = oferta.getStock() != null ? oferta.getStock() : 0.0;
-                                double nuevoStock = Math.max(0.0, stockActual - cantidad);
-                                oferta.setStock(nuevoStock);
-                                if (nuevoStock <= 0.0) {
-                                    oferta.setDisponible(false);
-                                }
-                                ofertaRepository.save(oferta);
-
-                                if (catalogoService != null && oferta.getProductoCatalogoId() != null) {
-                                    catalogoService.actualizarEstadisticas(oferta.getProductoCatalogoId());
-                                }
-                            });
+            } else if (pedidos != null) {
+                for (Pedido p : pedidos) {
+                    if (p.getPago() != null) {
+                        Long firmado = p.getPago().getMontoCentavosFirmado();
+                        if (firmado == null || firmado.longValue() != montoEnCentavos) {
+                            log.warn("Monto de Wompi ({}) no coincide con el monto firmado ({}) en pedido {} para ref {}",
+                                    montoEnCentavos, firmado, p.getId(), refLimpia);
+                            return Resultado.MONTO_NO_COINCIDE;
                         }
                     }
                 }
+            }
+        }
 
-                // 3. Notificar al Vendedor
-                if (notificacionService != null && pedido.getVendedor() != null && pedido.getVendedor().getId() != null) {
-                    String nombreComprador = pedido.getComprador() != null ? pedido.getComprador().getNombre() : "un comprador";
+        String compradorId = null;
+        if (compra != null && compra.getComprador() != null) {
+            compradorId = compra.getComprador().getId();
+        } else if (pedidos != null && !pedidos.isEmpty() && pedidos.get(0).getComprador() != null) {
+            compradorId = pedidos.get(0).getComprador().getId();
+        }
+
+        // Actualizar datos de pago en pedidos
+        if (pedidos != null) {
+            for (Pedido p : pedidos) {
+                DatosPago pago = p.getPago();
+                if (pago != null && !esFinal(pago.getEstado())) {
+                    pago.setEstado(destino);
+                    pago.setTransaccionId(transaccionId);
+                    pago.setFechaPago(LocalDateTime.now());
+                }
+            }
+        }
+
+        if (COMPLETADO.equals(destino)) {
+            // US-03 Item 2: Valida primero el stock de todos los pedidos, luego aplica en una sola operación.
+            // Si el stock no alcanza al confirmar, marca ese pedido para revisión del admin (reembolso manual).
+            List<Pedido> pedidosAprobados = new ArrayList<>();
+            Map<Pedido, String> pedidosEnRevision = new LinkedHashMap<>();
+
+            // 1. Cargar ofertas involucradas
+            Map<String, OfertaVendedor> ofertasMap = new HashMap<>();
+            if (ofertaRepository != null && pedidos != null) {
+                Set<String> ofertaIds = new HashSet<>();
+                for (Pedido p : pedidos) {
+                    if (p.getItems() != null) {
+                        for (ProductoPedido item : p.getItems()) {
+                            if (item.getProductoId() != null) {
+                                ofertaIds.add(item.getProductoId());
+                            }
+                        }
+                    }
+                }
+                for (String oid : ofertaIds) {
+                    ofertaRepository.findById(oid).ifPresent(o -> ofertasMap.put(oid, o));
+                }
+            }
+
+            // 2. Validar pedido por pedido si el stock disponible alcanza para todos sus ítems
+            if (pedidos != null) {
+                for (Pedido p : pedidos) {
+                    boolean stockAlcanza = true;
+                    String motivoFalla = null;
+
+                    if (p.getItems() != null && ofertaRepository != null) {
+                        for (ProductoPedido item : p.getItems()) {
+                            String idOferta = item.getProductoId();
+                            OfertaVendedor oferta = ofertasMap.get(idOferta);
+                            double cant = item.getCantidad() != null ? item.getCantidad() : 0.0;
+                            double stockActual = (oferta != null && oferta.getStock() != null) ? oferta.getStock() : 0.0;
+
+                            if (oferta == null || stockActual < cant) {
+                                stockAlcanza = false;
+                                motivoFalla = "Stock insuficiente para '" + item.getNombreSnapshot()
+                                        + "'. Requerido: " + cant + ", disponible: " + stockActual;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (stockAlcanza) {
+                        pedidosAprobados.add(p);
+                    } else {
+                        pedidosEnRevision.put(p, motivoFalla != null ? motivoFalla : "Stock insuficiente");
+                    }
+                }
+            }
+
+            // 3. Aplicar descuento de stock SOLO a los pedidos aprobados en una sola operación
+            Set<OfertaVendedor> ofertasParaGuardar = new HashSet<>();
+            for (Pedido p : pedidosAprobados) {
+                if (p.getItems() != null) {
+                    for (ProductoPedido item : p.getItems()) {
+                        String idOferta = item.getProductoId();
+                        OfertaVendedor oferta = ofertasMap.get(idOferta);
+                        if (oferta != null) {
+                            double cant = item.getCantidad() != null ? item.getCantidad() : 0.0;
+                            double stockActual = oferta.getStock() != null ? oferta.getStock() : 0.0;
+                            double nuevoStock = Math.max(0.0, stockActual - cant);
+                            oferta.setStock(nuevoStock);
+                            if (nuevoStock <= 0.0) {
+                                oferta.setDisponible(false);
+                            }
+                            ofertasParaGuardar.add(oferta);
+                        }
+                    }
+                }
+            }
+
+            if (ofertaRepository != null) {
+                for (OfertaVendedor of : ofertasParaGuardar) {
+                    ofertaRepository.save(of);
+                    if (catalogoService != null && of.getProductoCatalogoId() != null) {
+                        catalogoService.actualizarEstadisticas(of.getProductoCatalogoId());
+                    }
+                }
+            }
+
+            // 4. Guardar pedidos aprobados y notificar a cada vendedor
+            for (Pedido p : pedidosAprobados) {
+                p.setEstado("CONFIRMADO");
+                p.setRequiereRevision(false);
+                p.setMotivoRevision(null);
+                p.setUpdatedAt(LocalDateTime.now());
+                if (pedidoRepository != null) {
+                    pedidoRepository.save(p);
+                }
+
+                if (notificacionService != null && p.getVendedor() != null && p.getVendedor().getId() != null) {
+                    String nombreComprador = p.getComprador() != null ? p.getComprador().getNombre() : "un comprador";
                     notificacionService.enviar(
-                            pedido.getVendedor().getId(),
+                            p.getVendedor().getId(),
                             "¡Nueva Venta!",
-                            "Has recibido un nuevo pedido #" + pedido.getId() + " de " + nombreComprador,
+                            "Has recibido un nuevo pedido #" + p.getId() + " de " + nombreComprador,
                             "SUCCESS");
                 }
+            }
 
-                // 4. Notificar al Comprador
-                if (notificacionService != null && pedido.getComprador() != null && pedido.getComprador().getId() != null) {
+            // 5. Guardar pedidos en revisión y notificar al ADMIN (reembolso manual)
+            for (Map.Entry<Pedido, String> entry : pedidosEnRevision.entrySet()) {
+                Pedido p = entry.getKey();
+                String motivo = entry.getValue();
+
+                p.setEstado(Pedido.EN_REVISION);
+                p.setRequiereRevision(true);
+                p.setMotivoRevision(motivo);
+                p.setUpdatedAt(LocalDateTime.now());
+                if (pedidoRepository != null) {
+                    pedidoRepository.save(p);
+                }
+
+                if (notificacionService != null) {
+                    notificacionService.enviarAAdmins(
+                            "Revisión requerida: Pedido #" + p.getId(),
+                            "Stock insuficiente al confirmar el pedido #" + p.getId() + " de la compra " + refLimpia
+                                    + ". " + motivo + ". Requiere reembolso manual.",
+                            "DANGER");
+                }
+            }
+
+            // 6. Notificar al Comprador (una sola notificación por la compra)
+            if (notificacionService != null && compradorId != null) {
+                if (pedidosEnRevision.isEmpty()) {
                     notificacionService.enviar(
-                            pedido.getComprador().getId(),
+                            compradorId,
                             "Pedido Confirmado",
-                            "Tu compra ha sido aprobada con éxito. Pedido #" + pedido.getId(),
+                            "Tu compra con referencia " + refLimpia + " ha sido aprobada con éxito.",
                             "SUCCESS");
-                }
-
-                // 5. Limpiar carrito del comprador
-                if (carritoRepository != null && pedido.getComprador() != null && pedido.getComprador().getId() != null) {
-                    carritoRepository.findByUsuarioId(pedido.getComprador().getId()).ifPresent(carritoRepository::delete);
-                }
-
-            } else if (FALLIDO.equals(destino)) {
-                // Si el pago falló o fue rechazado, el pedido se cancela y NO se descuenta stock
-                pedido.setEstado("CANCELADO");
-
-                // Notificar al Comprador
-                if (notificacionService != null && pedido.getComprador() != null && pedido.getComprador().getId() != null) {
+                } else if (!pedidosAprobados.isEmpty()) {
                     notificacionService.enviar(
-                            pedido.getComprador().getId(),
-                            "Pago No Aprobado",
-                            "El pago de tu pedido #" + pedido.getId() + " no fue aprobado por la pasarela (" + estadoNuevo + "). Tu carrito se mantiene intacto.",
+                            compradorId,
+                            "Compra Aprobada con Revisión",
+                            "Tu compra con referencia " + refLimpia
+                                    + " fue aprobada, pero algunos productos no tienen stock suficiente y están en revisión para reembolso.",
+                            "WARNING");
+                } else {
+                    notificacionService.enviar(
+                            compradorId,
+                            "Compra en Revisión de Stock",
+                            "Tu pago fue recibido, pero el stock de tus productos ya no alcanza. Tu pedido está en revisión del administrador para reembolso.",
                             "WARNING");
                 }
             }
 
-            pedidoRepository.save(pedido);
-            aplicado = true;
+            // 7. Limpiar carrito
+            if (carritoRepository != null && compradorId != null) {
+                carritoRepository.findByUsuarioId(compradorId).ifPresent(carritoRepository::delete);
+            }
+
+            // 8. Actualizar entidad Compra
+            if (compra != null && compraRepository != null) {
+                compra.setEstado(Compra.PAGADA);
+                compra.setTransaccionId(transaccionId);
+                compra.setFechaPago(LocalDateTime.now());
+                compra.setRequiereRevision(!pedidosEnRevision.isEmpty());
+                compra.setUpdatedAt(LocalDateTime.now());
+                compraRepository.save(compra);
+            }
+
+            // US-22: Punto de extensión para abonar en la billetera por compra
+            abonarBilleteraPorCompra(compra, pedidosAprobados);
+
+        } else if (FALLIDO.equals(destino)) {
+            // US-03 Item 3: En pago fallido, cada pedido se cancela sin tocar stock,
+            // y se envía UNA SOLA notificación al comprador por compra, no una por pedido.
+            if (pedidos != null) {
+                for (Pedido p : pedidos) {
+                    p.setEstado("CANCELADO");
+                    p.setUpdatedAt(LocalDateTime.now());
+                    if (pedidoRepository != null) {
+                        pedidoRepository.save(p);
+                    }
+                }
+            }
+
+            if (compra != null && compraRepository != null) {
+                compra.setEstado(Compra.RECHAZADA);
+                compra.setTransaccionId(transaccionId);
+                compra.setUpdatedAt(LocalDateTime.now());
+                compraRepository.save(compra);
+            }
+
+            if (notificacionService != null && compradorId != null) {
+                notificacionService.enviar(
+                        compradorId,
+                        "Pago No Aprobado",
+                        "El pago de tu compra con referencia " + refLimpia
+                                + " no fue aprobado por la pasarela (" + estadoNuevo
+                                + "). Tu carrito se mantiene intacto.",
+                        "WARNING");
+            }
         }
 
-        if (aplicado) {
-            return Resultado.APLICADO;
-        }
-        return montoInvalido ? Resultado.MONTO_NO_COINCIDE : Resultado.YA_FINALIZADO;
+        return Resultado.APLICADO;
+    }
+
+    /**
+     * US-22: Punto de extensión para que la historia US-22 abone en la billetera
+     * de los vendedores correspondientes a los sub-pedidos confirmados de la compra.
+     */
+    protected void abonarBilleteraPorCompra(Compra compra, List<Pedido> pedidosAprobados) {
+        // US-22 (Sprint 2): se implementará el abono a la billetera en la US-22.
+        log.info("Punto US-22 listo: compra={} con {} sub-pedidos aprobados",
+                compra != null ? compra.getId() : "sin-compra", pedidosAprobados.size());
     }
 
     public static boolean esFinal(String estadoPago) {

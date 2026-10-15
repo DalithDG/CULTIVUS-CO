@@ -27,4 +27,10 @@ public interface PedidoRepository extends MongoRepository<Pedido, String> {
 
     // Buscar pedidos por referencia de pago (Wompi)
     List<Pedido> findByPago_Referencia(String referencia);
+
+    // Sub-pedidos de una compra (US-21)
+    List<Pedido> findByCompraId(String compraId);
+
+    // Pedidos pagados que quedaron en revisión del admin (stock insuficiente al confirmar)
+    List<Pedido> findByRequiereRevisionTrue();
 }

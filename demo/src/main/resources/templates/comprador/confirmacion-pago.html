@@ -131,6 +131,18 @@
             background: #dcfce7;
             color: #15803d;
         }
+        .badge-revision {
+            background: #fef3c7;
+            color: #b45309;
+        }
+        .badge-cancelado {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .badge-proceso {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
 
         /* ── Bloque de Entrega ── */
         .seccion-bloque {
@@ -329,25 +341,26 @@
                 <!-- Metadatos Clave -->
                 <div class="meta-grid">
                     <div class="meta-item">
-                        <span class="meta-label">Número de Pedido</span>
-                        <span class="meta-value" style="color: var(--primary);" th:text="${pedido.numeroFactura != null ? pedido.numeroFactura : '#' + pedido.id}">#000000</span>
+                        <span class="meta-label" th:text="${compra != null ? 'Referencia Compra' : 'Número de Pedido'}">Número de Pedido</span>
+                        <span class="meta-value" style="color: var(--primary);"
+                              th:text="${compra != null ? compra.referenciaPago : (pedido.numeroFactura != null ? pedido.numeroFactura : '#' + pedido.id)}">#000000</span>
                     </div>
                     <div class="meta-item">
                         <span class="meta-label">Fecha y Hora</span>
                         <span class="meta-value" th:text="${#temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm')}">14/10/2026</span>
                     </div>
                     <div class="meta-item">
-                        <span class="meta-label">Estado de la Orden</span>
-                        <span class="badge-estado badge-confirmado">
+                        <span class="meta-label">Estado de la Compra</span>
+                        <span class="badge-estado"
+                              th:classappend="${(compra != null && compra.requiereRevision) || pedido.estado == 'EN_REVISION' ? 'badge-revision' : (pedido.estado == 'CANCELADO' ? 'badge-cancelado' : 'badge-confirmado')}">
                             <i class="fa-solid fa-circle-check"></i>
-                            <span th:text="${pedido.estado}">CONFIRMADO</span>
+                            <span th:text="${compra != null ? compra.estadoEtiqueta : pedido.estadoEtiqueta}">CONFIRMADO</span>
                         </span>
                     </div>
                     <div class="meta-item">
-                        <span class="meta-label">Pasarela / Pago</span>
+                        <span class="meta-label">Sub-pedidos</span>
                         <span class="meta-value">
-                            <i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i>
-                            <span th:text="${pago != null && pago.metodo != null ? pago.metodo : 'WOMPI'}">WOMPI</span>
+                            <span th:text="${subPedidos != null ? subPedidos.size() : 1}">1</span> pedido(s)
                         </span>
                     </div>
                 </div>
@@ -383,50 +396,74 @@
                             <strong>Dirección:</strong> <span th:text="${pedido.direccionEntrega.direccion}">Dirección de entrega</span><br>
                             <strong>Ubicación:</strong> <span th:text="${pedido.direccionEntrega.ciudad}">Cartagena</span>, <span th:text="${pedido.direccionEntrega.departamento}">Bolívar</span>
                         </div>
-                        <div th:if="${pedido.vendedor != null}" style="margin-top: 6px; color: #166534; font-size: 13px;">
-                            <i class="fa-solid fa-store"></i> <strong>Productor / Finca:</strong> <span th:text="${pedido.vendedor.nombre}">Finca</span>
-                        </div>
                     </div>
                 </div>
 
-                <!-- Tabla de Productos -->
+                <!-- Desglose de Sub-pedidos por Vendedor (US-21 Item 8) -->
                 <div class="seccion-bloque">
                     <h3 class="seccion-titulo">
-                        <i class="fa-solid fa-basket-shopping"></i> Productos en la Orden
+                        <i class="fa-solid fa-basket-shopping"></i> Sub-pedidos por Vendedor
                     </h3>
-                    <table class="tabla-productos">
-                        <thead>
-                            <tr>
-                                <th>Producto</th>
-                                <th style="text-align: center;">Cantidad</th>
-                                <th style="text-align: right;">Precio Unitario</th>
-                                <th style="text-align: right;">Subtotal</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr th:each="detalle : ${detalles}">
-                                <td>
-                                    <div class="producto-celda">
-                                        <img th:src="${detalle.imagenSnapshot}"
-                                             th:alt="${detalle.nombreSnapshot}"
-                                             class="producto-thumb"
-                                             onerror="this.src='/images/placeholder.jpg'">
-                                        <div class="producto-nombre" th:text="${detalle.nombreSnapshot}">Nombre Producto</div>
-                                    </div>
-                                </td>
-                                <td style="text-align: center;">
-                                    <span th:text="${detalle.cantidad}">1</span>
-                                    <span th:text="${detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : 'unid'}"></span>
-                                </td>
-                                <td style="text-align: right;">
-                                    $<span th:text="${#numbers.formatDecimal(detalle.precioUnitario, 0, 'COMMA', 0, 'POINT')}">0</span>
-                                </td>
-                                <td style="text-align: right; font-weight: 600;">
-                                    $<span th:text="${#numbers.formatDecimal(detalle.subtotal, 0, 'COMMA', 0, 'POINT')}">0</span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+
+                    <div th:each="sub : ${subPedidos}" class="subpedido-card"
+                         style="margin-bottom: 22px; border: 1.5px solid var(--border-color); border-radius: 10px; overflow: hidden; background: #ffffff;">
+                        <div style="background: #f8fafc; padding: 14px 18px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                            <div>
+                                <strong style="color: var(--text-main); font-size: 15px;">
+                                    <i class="fa-solid fa-receipt" style="color: var(--primary); margin-right: 6px;"></i>
+                                    Sub-pedido <span th:text="${sub.numeroFactura}">CLT-XXXXXX</span>
+                                </strong>
+                                <span style="color: var(--text-muted); font-size: 13px; margin-left: 12px;">
+                                    <i class="fa-solid fa-store" style="color: var(--primary);"></i>
+                                    Vendedor: <strong th:text="${sub.vendedor != null && sub.vendedor.nombre != null ? sub.vendedor.nombre : 'Productor Local'}">Vendedor</strong>
+                                </span>
+                            </div>
+                            <div>
+                                <span class="badge-estado"
+                                      th:classappend="${sub.estado == 'CONFIRMADO' ? 'badge-confirmado' : (sub.estado == 'EN_REVISION' ? 'badge-revision' : (sub.estado == 'CANCELADO' ? 'badge-cancelado' : 'badge-proceso'))}"
+                                      th:text="${sub.estadoEtiqueta}">
+                                    Confirmado
+                                </span>
+                            </div>
+                        </div>
+
+                        <table class="tabla-productos" style="margin-bottom: 0;">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th style="text-align: center;">Cantidad</th>
+                                    <th style="text-align: right;">Precio Unitario</th>
+                                    <th style="text-align: right;">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="detalle : ${sub.items}">
+                                    <td>
+                                        <div class="producto-celda">
+                                            <img th:src="${detalle.imagenSnapshot}"
+                                                 th:alt="${detalle.nombreSnapshot}"
+                                                 class="producto-thumb"
+                                                 onerror="this.src='/images/placeholder.jpg'">
+                                            <div class="producto-nombre" th:text="${detalle.nombreSnapshot}">Nombre Producto</div>
+                                        </div>
+                                    </td>
+                                    <td style="text-align: center;">
+                                        <span th:text="${detalle.cantidad}">1</span>
+                                        <span th:text="${detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : 'unid'}"></span>
+                                    </td>
+                                    <td style="text-align: right;">
+                                        $<span th:text="${#numbers.formatDecimal(detalle.precioUnitario, 0, 'COMMA', 0, 'POINT')}">0</span>
+                                    </td>
+                                    <td style="text-align: right; font-weight: 600;">
+                                        $<span th:text="${#numbers.formatDecimal(detalle.subtotal, 0, 'COMMA', 0, 'POINT')}">0</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div style="background: #fafbfc; padding: 10px 18px; text-align: right; border-top: 1px solid #f1f5f9; font-size: 13px; color: var(--text-muted);">
+                            Subtotal de este paquete: <strong style="color: var(--text-main); font-size: 14px;">$<span th:text="${#numbers.formatDecimal(sub.total != null ? sub.total : 0, 0, 'COMMA', 0, 'POINT')}">0</span> COP</strong>
+                        </div>
+                    </div>
 
                     <!-- Caja de Totales con desglose exacto (Productos + Envío = Total Pagado) -->
                     <div class="totales-box">

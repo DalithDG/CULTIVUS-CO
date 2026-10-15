@@ -232,68 +232,72 @@
 
         <div th:if="${detalles != null && !detalles.isEmpty()}" class="carrito-layout">
             <div class="productos-section">
-                <h2 style="margin-bottom: 20px;">Productos</h2>
+                <h2 style="margin-bottom: 20px;">Productos en tu Carrito</h2>
 
-                <div th:each="detalle : ${detalles}" class="producto-item">
-                    <!-- ✅ Antes: detalle.producto.imagenUrl -->
-                    <img th:src="${detalle.imagenUrl}"
-                         th:alt="${detalle.nombre}"
-                         class="producto-imagen"
-                         onerror="this.src='/images/placeholder.jpg'">
+                <!-- Agrupación de productos por vendedor (US-21 Item 6) -->
+                <div th:each="entry : ${itemsPorVendedor}" class="vendedor-grupo"
+                     style="margin-bottom: 24px; border: 1.5px solid #e2e8f0; border-radius: 10px; overflow: hidden; background: #ffffff;">
+                    <div style="background: #f8fafc; padding: 12px 18px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between;">
+                        <span style="font-weight: 700; color: #1e293b; font-size: 15px;">
+                            <i class="fa-solid fa-store" style="color: #27ae60; margin-right: 8px;"></i>
+                            Vendedor: <span th:text="${entry.key}">Vendedor</span>
+                        </span>
+                        <span style="font-size: 12px; color: #64748b; background: #ffffff; padding: 3px 10px; border-radius: 20px; border: 1px solid #e2e8f0; font-weight: 600;">
+                            <span th:text="${entry.value.size()}">1</span> producto(s)
+                        </span>
+                    </div>
 
-                    <div class="producto-info">
-                        <!-- ✅ Antes: detalle.producto.nombre -->
-                        <div class="producto-nombre" th:text="${detalle.nombre}"></div>
-                        <div th:if="${detalle.vendedorNombre != null and !detalle.vendedorNombre.isEmpty()}"
-                             style="font-size:0.82rem;color:#888;margin-bottom:4px;">
-                            <i class="fa-solid fa-store" style="color:#27ae60;"></i>
-                            Vendedor: <span th:text="${detalle.vendedorNombre}"></span>
-                        </div>
+                    <div th:each="detalle : ${entry.value}" class="producto-item">
+                        <img th:src="${detalle.imagenUrl}"
+                             th:alt="${detalle.nombre}"
+                             class="producto-imagen"
+                             onerror="this.src='/images/placeholder.jpg'">
 
-                        <div class="producto-precio">
-                            $<span th:text="${#numbers.formatDecimal(
-                                detalle.precioUnitario, 0, 'COMMA', 0, 'POINT')}">0</span>
-                            x <span th:text="${(detalle.cantidad % 1 == 0 ? #numbers.formatDecimal(detalle.cantidad, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(detalle.cantidad, 1, 'POINT', 2, 'COMMA'))} + ' ' + ${detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : ''}">1</span>
-                        </div>
-                        
-                        <!-- Nota de compra mínima (Informativo) -->
-                        <div class="compra-minima-nota" style="font-size: 0.8rem; color: #888; margin-top: 5px;">
-                            <i class="fa-solid fa-circle-info"></i> Mínimo requerido: 
-                            <span th:text="${(detalle.cantidad % 1 == 0 ? #numbers.formatDecimal(detalle.cantidad, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(detalle.cantidad, 1, 'POINT', 2, 'COMMA'))}">1</span> / 
-                            <span th:text="${(detalle.compraMinima != null ? (detalle.compraMinima % 1 == 0 ? #numbers.formatDecimal(detalle.compraMinima, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(detalle.compraMinima, 1, 'POINT', 2, 'COMMA')) : '1')}">1</span> 
-                            <span th:text="${detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : ''}">unid</span>
-                        </div>
+                        <div class="producto-info">
+                            <div class="producto-nombre" th:text="${detalle.nombre}"></div>
 
-                        <div class="cantidad-control">
-                            <form th:action="@{/carrito/actualizar}" method="post"
-                                style="display: flex; align-items: center; gap: 10px;">
-                                <input type="hidden" name="ofertaId"
-                                    th:value="${detalle.ofertaId != null ? detalle.ofertaId : detalle.productoId}">
-                                <!-- Bug #3 corregido: se eliminó readonly + onchange muerto.
-                                     Los botones +/- controlan el valor y hacen submit directamente. -->
-                                <button type="button" class="btn-cantidad"
-                                    onclick="cambiarCantidad(this, -1)">
-                                    <i class="fa-solid fa-minus"></i>
-                                </button>
-                                <input type="number" name="cantidad"
-                                    th:value="${detalle.cantidad}"
-                                    min="0.01" max="9999" step="any"
-                                    class="cantidad-input">
-                                <!-- Bug #4 corregido: el botón + respeta max=99 -->
-                                <button type="button" class="btn-cantidad"
-                                    onclick="cambiarCantidad(this, +1)">
-                                    <i class="fa-solid fa-plus"></i>
-                                </button>
-                            </form>
+                            <div class="producto-precio">
+                                $<span th:text="${#numbers.formatDecimal(
+                                    detalle.precioUnitario, 0, 'COMMA', 0, 'POINT')}">0</span>
+                                x <span th:text="${(detalle.cantidad % 1 == 0 ? #numbers.formatDecimal(detalle.cantidad, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(detalle.cantidad, 1, 'POINT', 2, 'COMMA'))} + ' ' + ${detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : ''}">1</span>
+                            </div>
+                            
+                            <!-- Nota de compra mínima (Informativo) -->
+                            <div class="compra-minima-nota" style="font-size: 0.8rem; color: #888; margin-top: 5px;">
+                                <i class="fa-solid fa-circle-info"></i> Mínimo requerido: 
+                                <span th:text="${(detalle.cantidad % 1 == 0 ? #numbers.formatDecimal(detalle.cantidad, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(detalle.cantidad, 1, 'POINT', 2, 'COMMA'))}">1</span> / 
+                                <span th:text="${(detalle.compraMinima != null ? (detalle.compraMinima % 1 == 0 ? #numbers.formatDecimal(detalle.compraMinima, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(detalle.compraMinima, 1, 'POINT', 2, 'COMMA')) : '1')}">1</span> 
+                                <span th:text="${detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : ''}">unid</span>
+                            </div>
 
-                            <form th:action="@{/carrito/eliminar}" method="post"
-                                style="margin-left: auto;">
-                                <input type="hidden" name="ofertaId"
-                                    th:value="${detalle.ofertaId != null ? detalle.ofertaId : detalle.productoId}">
-                                <button type="submit" class="btn-eliminar">
-                                    <i class="fa-solid fa-trash"></i> Eliminar
-                                </button>
-                            </form>
+                            <div class="cantidad-control">
+                                <form th:action="@{/carrito/actualizar}" method="post"
+                                    style="display: flex; align-items: center; gap: 10px;">
+                                    <input type="hidden" name="ofertaId"
+                                        th:value="${detalle.ofertaId != null ? detalle.ofertaId : detalle.productoId}">
+                                    <button type="button" class="btn-cantidad"
+                                        onclick="cambiarCantidad(this, -1)">
+                                        <i class="fa-solid fa-minus"></i>
+                                    </button>
+                                    <input type="number" name="cantidad"
+                                        th:value="${detalle.cantidad}"
+                                        min="0.01" max="9999" step="any"
+                                        class="cantidad-input">
+                                    <button type="button" class="btn-cantidad"
+                                        onclick="cambiarCantidad(this, +1)">
+                                        <i class="fa-solid fa-plus"></i>
+                                    </button>
+                                </form>
+
+                                <form th:action="@{/carrito/eliminar}" method="post"
+                                    style="margin-left: auto;">
+                                    <input type="hidden" name="ofertaId"
+                                        th:value="${detalle.ofertaId != null ? detalle.ofertaId : detalle.productoId}">
+                                    <button type="submit" class="btn-eliminar">
+                                        <i class="fa-solid fa-trash"></i> Eliminar
+                                    </button>
+                                </form>
+                            </div>
                         </div>
                     </div>
                 </div>

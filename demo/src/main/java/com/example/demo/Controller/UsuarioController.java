@@ -17,7 +17,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.example.demo.repository.PedidoRepository;
 import com.example.demo.repository.NotificacionRepository;
 import com.example.demo.repository.CategoriaRepository;
+import com.example.demo.repository.CompraRepository;
 import com.example.demo.Model.Pedido;
+import com.example.demo.Model.Compra;
 import com.example.demo.Model.Notificacion;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -43,6 +45,9 @@ public class UsuarioController {
     private final NotificacionRepository notificacionRepository;
     private final CatalogoService catalogoService;
     private final CategoriaRepository categoriaRepository;
+
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private CompraRepository compraRepository;
 
     @org.springframework.beans.factory.annotation.Autowired
     public UsuarioController(UsuarioService usuarioService,
@@ -333,8 +338,32 @@ public class UsuarioController {
             return "redirect:/usuario/login";
         }
 
+        List<Compra> compras = new ArrayList<>();
+        java.util.Set<String> subPedidoIds = new java.util.HashSet<>();
+        if (compraRepository != null) {
+            compras = compraRepository.findByComprador_IdOrderByFechaDesc(usuario.getId());
+            for (Compra c : compras) {
+                List<Pedido> subs = pedidoRepository.findByCompraId(c.getId());
+                if (subs.isEmpty() && c.getPedidoIds() != null && !c.getPedidoIds().isEmpty()) {
+                    subs = (List<Pedido>) pedidoRepository.findAllById(c.getPedidoIds());
+                }
+                c.setSubPedidos(subs);
+                for (Pedido p : subs) {
+                    if (p.getId() != null) {
+                        subPedidoIds.add(p.getId());
+                    }
+                }
+            }
+        }
+
         List<Pedido> misPedidos = pedidoRepository.findByCompradorId(usuario.getId());
+        List<Pedido> pedidosSinCompra = misPedidos.stream()
+                .filter(p -> p.getCompraId() == null && !subPedidoIds.contains(p.getId()))
+                .collect(Collectors.toList());
+
         model.addAttribute("usuario", usuario);
+        model.addAttribute("compras", compras);
+        model.addAttribute("pedidosSinCompra", pedidosSinCompra);
         model.addAttribute("pedidos", misPedidos);
 
         return "comprador/pedidos-comprador";
