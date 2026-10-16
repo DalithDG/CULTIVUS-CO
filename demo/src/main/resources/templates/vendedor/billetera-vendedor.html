@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cultivus - Mi Billetera</title>
     <meta name="description" content="Consulta el saldo de tu billetera y el historial de movimientos de tus ventas.">
-    <link rel="stylesheet" th:href="@{/style.css}">
+    <link rel="stylesheet" th:href="@{/vendedor.css}">
     <link rel="stylesheet" th:href="@{/header.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -37,7 +37,8 @@
 </head>
 
 <body>
-    <header th:replace="~{fragments/header :: siteHeader}"></header>
+    <!-- Header Vendedor consistente con todas las vistas de vendedor -->
+    <header th:replace="~{fragments/header-vendedor :: siteHeader}"></header>
 
     <main class="bw-page">
         <h1 class="bw-title"><i class="fa-solid fa-wallet" style="color:#27ae60"></i> Mi Billetera</h1>
@@ -46,17 +47,17 @@
         <section class="bw-saldos" aria-label="Saldos por estado">
             <div class="bw-card bw-card--retencion" id="saldo-retencion">
                 <div class="bw-card__label"><i class="fa-solid fa-hourglass-half"></i> En retención</div>
-                <div class="bw-card__value">$<span th:text="${#numbers.formatDecimal(billetera != null ? billetera.saldoRetencion : 0, 0, 'COMMA', 2, 'POINT')}">0.00</span></div>
+                <div class="bw-card__value">$<span th:text="${#numbers.formatDecimal(billetera != null ? billetera.saldoRetencion : 0.0, 0, 'COMMA', 2, 'POINT')}">0.00</span></div>
                 <div class="bw-card__hint">Ventas aprobadas pendientes de liberación</div>
             </div>
             <div class="bw-card bw-card--inactivo" id="saldo-disponible">
                 <div class="bw-card__label"><i class="fa-solid fa-circle-check"></i> Disponible</div>
-                <div class="bw-card__value">$<span th:text="${#numbers.formatDecimal(billetera != null ? billetera.saldoDisponible : 0, 0, 'COMMA', 2, 'POINT')}">0.00</span></div>
+                <div class="bw-card__value">$<span th:text="${#numbers.formatDecimal(billetera != null ? billetera.saldoDisponible : 0.0, 0, 'COMMA', 2, 'POINT')}">0.00</span></div>
                 <div class="bw-card__hint">Se habilita con la liberación de fondos</div>
             </div>
             <div class="bw-card bw-card--inactivo" id="saldo-retirado">
                 <div class="bw-card__label"><i class="fa-solid fa-arrow-up-from-bracket"></i> Retirado</div>
-                <div class="bw-card__value">$<span th:text="${#numbers.formatDecimal(billetera != null ? billetera.saldoRetirado : 0, 0, 'COMMA', 2, 'POINT')}">0.00</span></div>
+                <div class="bw-card__value">$<span th:text="${#numbers.formatDecimal(billetera != null ? billetera.saldoRetirado : 0.0, 0, 'COMMA', 2, 'POINT')}">0.00</span></div>
                 <div class="bw-card__hint">Total ya retirado a tu cuenta</div>
             </div>
         </section>
@@ -80,11 +81,15 @@
                 </thead>
                 <tbody>
                     <tr th:each="m : ${movimientos}">
-                        <td th:text="${#temporals.format(m.fecha, 'dd/MM/yyyy HH:mm')}">01/01/2026</td>
+                        <td th:text="${m.fecha != null ? #temporals.format(m.fecha, 'dd/MM/yyyy HH:mm') : '—'}">01/01/2026</td>
                         <td><span class="bw-badge" th:classappend="'bw-badge--' + ${m.tipo}" th:text="${m.tipo}">ABONO</span></td>
                         <td th:text="${m.pedidoId != null ? '#' + m.pedidoId : '—'}">—</td>
                         <td th:text="${m.compraId != null ? '#' + m.compraId : '—'}">—</td>
-                        <td th:text="${m.estadoSaldo}">EN_RETENCION</td>
+                        <td>
+                            <span th:if="${m.estadoSaldo != null}"
+                                  th:text="${m.estadoSaldo == T(com.example.demo.Model.Billetera.EstadoSaldo).EN_RETENCION ? 'En retención' : (m.estadoSaldo == T(com.example.demo.Model.Billetera.EstadoSaldo).DISPONIBLE ? 'Disponible' : 'Retirado')}">En retención</span>
+                            <span th:if="${m.estadoSaldo == null}">—</span>
+                        </td>
                         <td style="text-align:right" th:classappend="${m.montoCentavos >= 0 ? 'bw-pos' : 'bw-neg'}"
                             th:text="${(m.montoCentavos >= 0 ? '+$' : '-$') + #numbers.formatDecimal(m.montoCentavos >= 0 ? m.monto : -m.monto, 0, 'COMMA', 2, 'POINT')}">+$0.00</td>
                     </tr>
@@ -94,6 +99,7 @@
     </main>
 
     <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
+    <script th:src="@{/js/header.js}"></script>
 </body>
 
 </html>

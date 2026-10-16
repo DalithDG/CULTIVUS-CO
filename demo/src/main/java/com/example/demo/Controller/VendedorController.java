@@ -50,7 +50,7 @@ public class VendedorController {
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("billetera", billeteraService != null
-                ? billeteraService.obtenerBilleteraVendedor(usuario.getId()).orElse(null) : null);
+                ? billeteraService.obtenerOCrearBilleteraVendedor(usuario.getId()) : null);
         model.addAttribute("movimientos", billeteraService != null
                 ? billeteraService.listarMovimientosVendedor(usuario.getId()) : java.util.List.of());
         return "vendedor/billetera-vendedor";

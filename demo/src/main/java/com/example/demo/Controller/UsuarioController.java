@@ -463,5 +463,22 @@ public class UsuarioController {
 
         return "public/notificaciones";
     }
+
+    /**
+     * Redirige al vendedor a su billetera o al registro si aún no es vendedor.
+     */
+    @GetMapping("/billetera")
+    public String redirigirBilletera(HttpSession session, RedirectAttributes redirectAttributes) {
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuario == null) {
+            redirectAttributes.addFlashAttribute("error", "Debe iniciar sesión primero");
+            return "redirect:/usuario/login";
+        }
+        if (vendedorService.esVendedor(usuario.getId())) {
+            return "redirect:/vendedor/billetera";
+        }
+        redirectAttributes.addFlashAttribute("info", "La billetera está disponible para vendedores y productores locales. Regístrate como vendedor para activarla.");
+        return "redirect:/vendedor/registro";
+    }
 }
 

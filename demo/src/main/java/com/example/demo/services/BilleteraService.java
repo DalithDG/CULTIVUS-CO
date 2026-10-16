@@ -128,6 +128,10 @@ public class BilleteraService {
         return almacen.buscar(vendedorId, Billetera.Rol.VENDEDOR);
     }
 
+    public Billetera obtenerOCrearBilleteraVendedor(String vendedorId) {
+        return almacen.obtenerOCrear(vendedorId, Billetera.Rol.VENDEDOR);
+    }
+
     public List<MovimientoBilletera> listarMovimientosVendedor(String vendedorId) {
         return almacen.listarMovimientos(vendedorId, Billetera.Rol.VENDEDOR);
     }
