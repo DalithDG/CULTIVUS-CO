@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cultivus - Mi Billetera</title>
+    <meta name="description" content="Consulta el saldo de tu billetera y el historial de movimientos de tus ventas.">
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <link rel="stylesheet" th:href="@{/header.css}">
+    <link rel="stylesheet" th:href="@{/footer.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        body { background: #f4f6f9; font-family: 'Inter', 'Segoe UI', sans-serif; color: #1a1d23; }
+        .bw-page { max-width: 1000px; margin: 0 auto; padding: 36px 20px 60px; }
+        .bw-title { font-size: 1.7rem; font-weight: 800; margin: 0 0 6px; }
+        .bw-sub { color: #64748b; margin: 0 0 24px; font-size: .92rem; }
+        .bw-saldos { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 28px; }
+        .bw-card { background: #fff; border: 1px solid #e8edf3; border-radius: 16px; padding: 20px 22px; box-shadow: 0 2px 8px rgba(0,0,0,.05); }
+        .bw-card__label { font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; color: #64748b; display: flex; gap: 6px; align-items: center; }
+        .bw-card__value { font-size: 1.7rem; font-weight: 800; margin-top: 8px; color: #15803d; }
+        .bw-card--retencion { background: linear-gradient(135deg, #f0fdf4, #dcfce7); border-color: #bbf7d0; }
+        .bw-card--inactivo .bw-card__value { color: #94a3b8; }
+        .bw-card__hint { font-size: .75rem; color: #94a3b8; margin-top: 6px; }
+        .bw-table-wrap { background: #fff; border: 1px solid #e8edf3; border-radius: 16px; overflow-x: auto; box-shadow: 0 2px 8px rgba(0,0,0,.05); }
+        .bw-table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+        .bw-table th { text-align: left; background: #f8fafc; padding: 12px 16px; font-size: .75rem; text-transform: uppercase; color: #64748b; }
+        .bw-table td { padding: 12px 16px; border-top: 1px solid #f1f5f9; }
+        .bw-badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: .75rem; font-weight: 700; }
+        .bw-badge--ABONO { background: #dcfce7; color: #15803d; }
+        .bw-badge--COMISION { background: #fee2e2; color: #b91c1c; }
+        .bw-badge--AJUSTE { background: #e0f2fe; color: #0369a1; }
+        .bw-pos { color: #15803d; font-weight: 700; }
+        .bw-neg { color: #b91c1c; font-weight: 700; }
+        .bw-empty { text-align: center; padding: 50px 20px; color: #64748b; }
+    </style>
+</head>
+
+<body>
+    <header th:replace="~{fragments/header :: siteHeader}"></header>
+
+    <main class="bw-page">
+        <h1 class="bw-title"><i class="fa-solid fa-wallet" style="color:#27ae60"></i> Mi Billetera</h1>
+        <p class="bw-sub">Lo que has vendido, menos la comisión de la plataforma. Los valores en retención aún no están disponibles para retiro.</p>
+
+        <section class="bw-saldos" aria-label="Saldos por estado">
+            <div class="bw-card bw-card--retencion" id="saldo-retencion">
+                <div class="bw-card__label"><i class="fa-solid fa-hourglass-half"></i> En retención</div>
+                <div class="bw-card__value">$<span th:text="${#numbers.formatDecimal(billetera != null ? billetera.saldoRetencion : 0, 0, 'COMMA', 2, 'POINT')}">0.00</span></div>
+                <div class="bw-card__hint">Ventas aprobadas pendientes de liberación</div>
+            </div>
+            <div class="bw-card bw-card--inactivo" id="saldo-disponible">
+                <div class="bw-card__label"><i class="fa-solid fa-circle-check"></i> Disponible</div>
+                <div class="bw-card__value">$<span th:text="${#numbers.formatDecimal(billetera != null ? billetera.saldoDisponible : 0, 0, 'COMMA', 2, 'POINT')}">0.00</span></div>
+                <div class="bw-card__hint">Se habilita con la liberación de fondos</div>
+            </div>
+            <div class="bw-card bw-card--inactivo" id="saldo-retirado">
+                <div class="bw-card__label"><i class="fa-solid fa-arrow-up-from-bracket"></i> Retirado</div>
+                <div class="bw-card__value">$<span th:text="${#numbers.formatDecimal(billetera != null ? billetera.saldoRetirado : 0, 0, 'COMMA', 2, 'POINT')}">0.00</span></div>
+                <div class="bw-card__hint">Total ya retirado a tu cuenta</div>
+            </div>
+        </section>
+
+        <h2 style="font-size:1.1rem; font-weight:800; margin-bottom:12px;">Movimientos</h2>
+        <div class="bw-table-wrap">
+            <div class="bw-empty" th:if="${movimientos == null or movimientos.isEmpty()}">
+                <i class="fa-solid fa-receipt" style="font-size:1.8rem; color:#cbd5e1;"></i>
+                <p>Aún no tienes movimientos. Aparecerán cuando se apruebe el pago de tus ventas.</p>
+            </div>
+            <table class="bw-table" th:if="${movimientos != null and !movimientos.isEmpty()}">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Tipo</th>
+                        <th>Pedido</th>
+                        <th>Compra</th>
+                        <th>Saldo</th>
+                        <th style="text-align:right">Monto</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="m : ${movimientos}">
+                        <td th:text="${#temporals.format(m.fecha, 'dd/MM/yyyy HH:mm')}">01/01/2026</td>
+                        <td><span class="bw-badge" th:classappend="'bw-badge--' + ${m.tipo}" th:text="${m.tipo}">ABONO</span></td>
+                        <td th:text="${m.pedidoId != null ? '#' + m.pedidoId : '—'}">—</td>
+                        <td th:text="${m.compraId != null ? '#' + m.compraId : '—'}">—</td>
+                        <td th:text="${m.estadoSaldo}">EN_RETENCION</td>
+                        <td style="text-align:right" th:classappend="${m.montoCentavos >= 0 ? 'bw-pos' : 'bw-neg'}"
+                            th:text="${(m.montoCentavos >= 0 ? '+$' : '-$') + #numbers.formatDecimal(m.montoCentavos >= 0 ? m.monto : -m.monto, 0, 'COMMA', 2, 'POINT')}">+$0.00</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
+</body>
+
+</html>

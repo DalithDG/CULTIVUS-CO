@@ -69,7 +69,15 @@ public class PagoConfirmacionService {
     @Autowired(required = false)
     private CompraRepository compraRepository;
 
+    @Autowired(required = false)
+    private BilleteraService billeteraService;
+
     public PagoConfirmacionService() {
+    }
+
+    /** Para pruebas: inyecta el servicio de billetera (US-22). */
+    public void setBilleteraService(BilleteraService billeteraService) {
+        this.billeteraService = billeteraService;
     }
 
     public PagoConfirmacionService(PedidoRepository pedidoRepository) {
@@ -241,6 +249,10 @@ public class PagoConfirmacionService {
                 }
             }
 
+            // US-22: reparto a billeteras. Va ANTES de persistir stock y pedidos para que, si algo falla,
+            // el reintento (aún con pedidos PENDIENTE) vuelva a entrar y el abono, idempotente, no se duplique.
+            abonarBilleteraPorCompra(compra, pedidosAprobados);
+
             // 3. Aplicar descuento de stock SOLO a los pedidos aprobados en una sola operación
             Set<OfertaVendedor> ofertasParaGuardar = new HashSet<>();
             for (Pedido p : pedidosAprobados) {
@@ -352,8 +364,6 @@ public class PagoConfirmacionService {
                 compraRepository.save(compra);
             }
 
-            // US-22: Punto de extensión para abonar en la billetera por compra
-            abonarBilleteraPorCompra(compra, pedidosAprobados);
 
         } else if (FALLIDO.equals(destino)) {
             // US-03 Item 3: En pago fallido, cada pedido se cancela sin tocar stock,
@@ -390,13 +400,14 @@ public class PagoConfirmacionService {
     }
 
     /**
-     * US-22: Punto de extensión para que la historia US-22 abone en la billetera
-     * de los vendedores correspondientes a los sub-pedidos confirmados de la compra.
+     * US-22: abona a la billetera de cada vendedor (en retención) el subtotal de productos de sus
+     * sub-pedidos aprobados menos la comisión. Idempotente. Solo se invoca con pago aprobado.
      */
     protected void abonarBilleteraPorCompra(Compra compra, List<Pedido> pedidosAprobados) {
-        // US-22 (Sprint 2): se implementará el abono a la billetera en la US-22.
-        log.info("Punto US-22 listo: compra={} con {} sub-pedidos aprobados",
-                compra != null ? compra.getId() : "sin-compra", pedidosAprobados.size());
+        if (billeteraService == null) {
+            return;
+        }
+        billeteraService.registrarRepartoVentas(compra, pedidosAprobados);
     }
 
     public static boolean esFinal(String estadoPago) {

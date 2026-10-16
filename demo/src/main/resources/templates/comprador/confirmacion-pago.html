@@ -338,160 +338,37 @@
 
             <div class="recibo-body">
 
-                <!-- Metadatos Clave -->
-                <div class="meta-grid">
+                <!-- Resumen corto -->
+                <div class="meta-grid" style="grid-template-columns: 1fr 1fr;">
                     <div class="meta-item">
-                        <span class="meta-label" th:text="${compra != null ? 'Referencia Compra' : 'Número de Pedido'}">Número de Pedido</span>
+                        <span class="meta-label">Referencia de la compra</span>
                         <span class="meta-value" style="color: var(--primary);"
-                              th:text="${compra != null ? compra.referenciaPago : (pedido.numeroFactura != null ? pedido.numeroFactura : '#' + pedido.id)}">#000000</span>
+                              th:text="${compra != null ? compra.referenciaPago : (pedido.numeroFactura != null ? pedido.numeroFactura : '#' + pedido.id)}">CUL-000</span>
                     </div>
                     <div class="meta-item">
-                        <span class="meta-label">Fecha y Hora</span>
-                        <span class="meta-value" th:text="${#temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm')}">14/10/2026</span>
+                        <span class="meta-label">Total pagado</span>
+                        <span class="meta-value">$<span th:text="${#numbers.formatDecimal(totalCobrado, 0, 'COMMA', 0, 'POINT')}">0</span> COP</span>
                     </div>
-                    <div class="meta-item">
-                        <span class="meta-label">Estado de la Compra</span>
+                </div>
+
+                <!-- Una línea por agricultor con su estado -->
+                <div class="seccion-bloque">
+                    <div th:each="sub : ${subPedidos}"
+                         style="display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 4px; border-bottom: 1px solid var(--border-color);">
+                        <span>
+                            <i class="fa-solid fa-store" style="color: var(--primary); margin-right: 6px;"></i>
+                            <strong th:text="${sub.vendedor != null and sub.vendedor.nombre != null ? sub.vendedor.nombre : 'Productor Local'}">Agricultor</strong>
+                        </span>
                         <span class="badge-estado"
-                              th:classappend="${(compra != null && compra.requiereRevision) || pedido.estado == 'EN_REVISION' ? 'badge-revision' : (pedido.estado == 'CANCELADO' ? 'badge-cancelado' : 'badge-confirmado')}">
-                            <i class="fa-solid fa-circle-check"></i>
-                            <span th:text="${compra != null ? compra.estadoEtiqueta : pedido.estadoEtiqueta}">CONFIRMADO</span>
-                        </span>
-                    </div>
-                    <div class="meta-item">
-                        <span class="meta-label">Sub-pedidos</span>
-                        <span class="meta-value">
-                            <span th:text="${subPedidos != null ? subPedidos.size() : 1}">1</span> pedido(s)
-                        </span>
+                              th:classappend="${sub.estado == 'CONFIRMADO' ? 'badge-confirmado' : (sub.estado == 'EN_REVISION' ? 'badge-revision' : (sub.estado == 'CANCELADO' ? 'badge-cancelado' : 'badge-proceso'))}"
+                              th:text="${sub.estadoEtiqueta}">Confirmado</span>
                     </div>
                 </div>
 
-                <!-- Detalle de la Transacción Wompi si existe -->
-                <div th:if="${pago != null && pago.referencia != null}" class="seccion-bloque">
-                    <h3 class="seccion-titulo">
-                        <i class="fa-solid fa-receipt"></i> Detalle de la Transacción Bancaria
-                    </h3>
-                    <div class="entrega-box" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: space-between;">
-                        <div>
-                            <strong>Referencia Wompi:</strong> <span th:text="${pago.referencia}">CUL-000</span>
-                        </div>
-                        <div th:if="${pago.transaccionId != null}">
-                            <strong>ID Transacción:</strong> <span th:text="${pago.transaccionId}">00000-00</span>
-                        </div>
-                        <div>
-                            <strong>Estado del Pago:</strong> <span style="color: #15803d; font-weight: 700;" th:text="${pago.estado}">COMPLETADO</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Información de Entrega -->
-                <div class="seccion-bloque">
-                    <h3 class="seccion-titulo">
-                        <i class="fa-solid fa-location-dot"></i> Destino de Entrega
-                    </h3>
-                    <div class="entrega-box">
-                        <div>
-                            <strong>Comprador:</strong> <span th:text="${pedido.comprador != null ? pedido.comprador.nombre : usuario.nombre}">Nombre</span>
-                        </div>
-                        <div th:if="${pedido.direccionEntrega != null}">
-                            <strong>Dirección:</strong> <span th:text="${pedido.direccionEntrega.direccion}">Dirección de entrega</span><br>
-                            <strong>Ubicación:</strong> <span th:text="${pedido.direccionEntrega.ciudad}">Cartagena</span>, <span th:text="${pedido.direccionEntrega.departamento}">Bolívar</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Desglose de Sub-pedidos por Vendedor (US-21 Item 8) -->
-                <div class="seccion-bloque">
-                    <h3 class="seccion-titulo">
-                        <i class="fa-solid fa-basket-shopping"></i> Sub-pedidos por Vendedor
-                    </h3>
-
-                    <div th:each="sub : ${subPedidos}" class="subpedido-card"
-                         style="margin-bottom: 22px; border: 1.5px solid var(--border-color); border-radius: 10px; overflow: hidden; background: #ffffff;">
-                        <div style="background: #f8fafc; padding: 14px 18px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                            <div>
-                                <strong style="color: var(--text-main); font-size: 15px;">
-                                    <i class="fa-solid fa-receipt" style="color: var(--primary); margin-right: 6px;"></i>
-                                    Sub-pedido <span th:text="${sub.numeroFactura}">CLT-XXXXXX</span>
-                                </strong>
-                                <span style="color: var(--text-muted); font-size: 13px; margin-left: 12px;">
-                                    <i class="fa-solid fa-store" style="color: var(--primary);"></i>
-                                    Vendedor: <strong th:text="${sub.vendedor != null && sub.vendedor.nombre != null ? sub.vendedor.nombre : 'Productor Local'}">Vendedor</strong>
-                                </span>
-                            </div>
-                            <div>
-                                <span class="badge-estado"
-                                      th:classappend="${sub.estado == 'CONFIRMADO' ? 'badge-confirmado' : (sub.estado == 'EN_REVISION' ? 'badge-revision' : (sub.estado == 'CANCELADO' ? 'badge-cancelado' : 'badge-proceso'))}"
-                                      th:text="${sub.estadoEtiqueta}">
-                                    Confirmado
-                                </span>
-                            </div>
-                        </div>
-
-                        <table class="tabla-productos" style="margin-bottom: 0;">
-                            <thead>
-                                <tr>
-                                    <th>Producto</th>
-                                    <th style="text-align: center;">Cantidad</th>
-                                    <th style="text-align: right;">Precio Unitario</th>
-                                    <th style="text-align: right;">Subtotal</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr th:each="detalle : ${sub.items}">
-                                    <td>
-                                        <div class="producto-celda">
-                                            <img th:src="${detalle.imagenSnapshot}"
-                                                 th:alt="${detalle.nombreSnapshot}"
-                                                 class="producto-thumb"
-                                                 onerror="this.src='/images/placeholder.jpg'">
-                                            <div class="producto-nombre" th:text="${detalle.nombreSnapshot}">Nombre Producto</div>
-                                        </div>
-                                    </td>
-                                    <td style="text-align: center;">
-                                        <span th:text="${detalle.cantidad}">1</span>
-                                        <span th:text="${detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : 'unid'}"></span>
-                                    </td>
-                                    <td style="text-align: right;">
-                                        $<span th:text="${#numbers.formatDecimal(detalle.precioUnitario, 0, 'COMMA', 0, 'POINT')}">0</span>
-                                    </td>
-                                    <td style="text-align: right; font-weight: 600;">
-                                        $<span th:text="${#numbers.formatDecimal(detalle.subtotal, 0, 'COMMA', 0, 'POINT')}">0</span>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <div style="background: #fafbfc; padding: 10px 18px; text-align: right; border-top: 1px solid #f1f5f9; font-size: 13px; color: var(--text-muted);">
-                            Subtotal de este paquete: <strong style="color: var(--text-main); font-size: 14px;">$<span th:text="${#numbers.formatDecimal(sub.total != null ? sub.total : 0, 0, 'COMMA', 0, 'POINT')}">0</span> COP</strong>
-                        </div>
-                    </div>
-
-                    <!-- Caja de Totales con desglose exacto (Productos + Envío = Total Pagado) -->
-                    <div class="totales-box">
-                        <div class="fila-desglose">
-                            <span>Subtotal productos:</span>
-                            <span>$<span th:text="${#numbers.formatDecimal(subtotalProductos, 0, 'COMMA', 0, 'POINT')}">0</span></span>
-                        </div>
-                        <div class="fila-desglose">
-                            <span>Costo de envío a domicilio:</span>
-                            <span>$<span th:text="${#numbers.formatDecimal(costoEnvio, 0, 'COMMA', 0, 'POINT')}">0</span></span>
-                        </div>
-                        <div class="fila-desglose total-destacado">
-                            <span>Total Pagado en Wompi:</span>
-                            <span>$<span th:text="${#numbers.formatDecimal(totalCobrado, 0, 'COMMA', 0, 'POINT')}">0</span> COP</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Botones de Acción -->
+                <!-- Botón único -->
                 <div class="acciones-recibo">
-                    <button onclick="window.print()" class="btn-accion btn-secundario">
-                        <i class="fa-solid fa-print"></i> Imprimir Comprobante
-                    </button>
-                    <a th:href="@{/}" class="btn-accion btn-secundario">
-                        <i class="fa-solid fa-store"></i> Seguir Comprando
-                    </a>
-                    <a th:href="@{/usuario/inicio}" class="btn-accion btn-primario">
-                        <i class="fa-solid fa-boxes-packing"></i> Ver Mis Pedidos
+                    <a th:href="@{/usuario/pedidos}" class="btn-accion btn-primario">
+                        <i class="fa-solid fa-boxes-packing"></i> Ver mis pedidos
                     </a>
                 </div>
 

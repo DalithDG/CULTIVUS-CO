@@ -640,12 +640,8 @@
                                     </span>
                                     <button type="button" class="mp-btn mp-btn--outline" style="padding: 7px 14px; font-size: 0.8rem;"
                                             th:attr="data-modal-target='pedidoModal-' + ${sub.id}">
-                                        <i class="fa-solid fa-eye"></i> Detalle
+                                        <i class="fa-solid fa-eye"></i> Ver detalle
                                     </button>
-                                    <a th:href="@{/usuario/pedidos/{id}(id=${sub.id})}"
-                                       class="mp-btn mp-btn--primary" style="padding: 7px 14px; font-size: 0.8rem;">
-                                        <i class="fa-solid fa-file-invoice"></i> Factura
-                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -756,10 +752,6 @@
                                     th:attr="data-modal-target='pedidoModal-' + ${pedido.id}">
                                 <i class="fa-solid fa-eye"></i> Ver detalle
                             </button>
-                            <a th:href="@{/usuario/pedidos/{id}(id=${pedido.id})}"
-                               class="mp-btn mp-btn--primary">
-                                <i class="fa-solid fa-file-invoice"></i> Factura
-                            </a>
                         </div>
                     </div>
                 </div>
