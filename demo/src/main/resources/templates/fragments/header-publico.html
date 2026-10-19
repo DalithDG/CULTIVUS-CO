@@ -9,11 +9,7 @@
             <!-- Logo con Slogan -->
             <div class="header-logo">
                 <a th:href="@{/}">
-                    <img th:src="@{/images/LogoCultivus.png}" alt="Cultivus">
-                    <div class="logo-text-group">
-                        <span class="logo-text">Cultivus</span>
-                        <span class="logo-slogan">Del campo a tu mesa</span>
-                    </div>
+                    <img th:src="@{/images/LogotipoCultivus.png}" alt="Cultivus">
                 </a>
             </div>
 
@@ -76,7 +72,7 @@
     <script th:src="@{/js/header.js}"></script>
     <script>
         // Marcar enlace activo según la página actual
-        (function() {
+        (function () {
             try {
                 const path = window.location.pathname;
                 const hash = window.location.hash;

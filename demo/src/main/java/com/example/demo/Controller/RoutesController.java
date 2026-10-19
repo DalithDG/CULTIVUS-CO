@@ -25,7 +25,10 @@ public class RoutesController {
     @GetMapping("/")
     public String index(Model model) {
         // Obtener los primeros 8 productos aprobados del catálogo
-        List<ProductoCatalogo> productos = catalogoService.listarCatalogo(0, 8, null, "relevancia", null).getContent();
+        List<ProductoCatalogo> productos = catalogoService.listarCatalogo()
+                .stream()
+                .limit(8)
+                .collect(Collectors.toList());
 
         model.addAttribute("productos", productos);
         model.addAttribute("categorias", categoriaRepository.findAll());
