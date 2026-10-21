@@ -17,9 +17,9 @@ import org.springframework.util.StringUtils;
 /**
  * Configuración de Spring Security.
  *
- * OAuth2 con Google es OPCIONAL: solo se activa si las credenciales
- * (client-id y client-secret) están presentes y no vacías. Si no lo están,
- * la app funciona con el login por formulario.
+ * OAuth2 con Google y Facebook es OPCIONAL: solo se activa si las credenciales
+ * (client-id y client-secret) de al menos un proveedor están presentes y no
+ * vacías. Si no lo están, la app funciona con el login por formulario.
  *
  * IMPORTANTE: "/error" debe ser público. Si no lo es, cualquier excepción
  * en un controlador (por ejemplo, un fallo al conectar con MongoDB) termina
@@ -54,6 +54,14 @@ public class SecurityConfig {
 
     @Value("${spring.security.oauth2.client.registration.google.client-secret:}")
     private String googleClientSecret;
+
+    // Credenciales de Facebook leídas desde las propiedades de Spring
+    // (que a su vez vienen de las variables de entorno en Render).
+    @Value("${spring.security.oauth2.client.registration.facebook.client-id:}")
+    private String facebookClientId;
+
+    @Value("${spring.security.oauth2.client.registration.facebook.client-secret:}")
+    private String facebookClientSecret;
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
@@ -139,10 +147,15 @@ public class SecurityConfig {
                 .permitAll()
             );
 
-        // OAuth2 solo se activa si las credenciales de Google están presentes
-        // y los beans necesarios existen.
-        boolean oauthHabilitado = StringUtils.hasText(googleClientId)
-                && StringUtils.hasText(googleClientSecret)
+        // OAuth2 solo se activa si las credenciales de Google o Facebook están
+        // presentes y los beans necesarios existen.
+        boolean googleHabilitado = StringUtils.hasText(googleClientId)
+                && StringUtils.hasText(googleClientSecret);
+
+        boolean facebookHabilitado = StringUtils.hasText(facebookClientId)
+                && StringUtils.hasText(facebookClientSecret);
+
+        boolean oauthHabilitado = (googleHabilitado || facebookHabilitado)
                 && clientRegistrationRepository != null
                 && oAuth2UsuarioService != null
                 && oAuth2LoginSuccessHandler != null;

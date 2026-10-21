@@ -132,6 +132,71 @@
             </div>
         </section>
 
+        <!-- ================= OFERTAS DESTACADAS ================= -->
+        <section class="section">
+            <div class="container">
+                <div class="section-header">
+                    <div class="section-title">
+                        <i class="fas fa-tag section-icon"></i>
+                        <div>
+                            <h2>Ofertas del campo</h2>
+                            <p>Precios directos de nuestros productores locales</p>
+                        </div>
+                    </div>
+                    <a th:href="@{/ofertas}" class="view-all">
+                        Ver todas las ofertas
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+
+                <!-- Si hay ofertas -->
+                <div th:if="${ofertas != null and !ofertas.isEmpty()}" class="products-grid">
+                    <article th:each="oferta, iterStat : ${ofertas}" th:if="${iterStat.index < 4}"
+                        class="product-card">
+                        <div class="product-image">
+                            <img th:src="${oferta.imagenUrl != null and !oferta.imagenUrl.isBlank()} ? ${oferta.imagenUrl} : '/images/frutas.webp'"
+                                th:alt="${oferta.nombreProducto}"
+                                onerror="this.onerror=null;this.src='/images/frutas.webp'">
+                            <span class="product-badge"><i class="fas fa-tag"></i> Oferta</span>
+                        </div>
+
+                        <div class="product-info">
+                            <h3 th:text="${oferta.nombreProducto}">Producto</h3>
+
+                            <div class="product-meta">
+                                <span class="producer-avatar"><i class="fas fa-store"></i></span>
+                                <span
+                                    th:text="${oferta.vendedor != null and oferta.vendedor.nombre != null ? oferta.vendedor.nombre : 'Productor local'}">Productor local</span>
+                            </div>
+
+                            <div class="product-price">
+                                <span
+                                    th:text="'$' + ${#numbers.formatDecimal(oferta.precio, 0, 'COMMA', 0, 'POINT')}">$0</span>
+                                <small th:if="${oferta.stock != null}"
+                                    th:text="'Stock: ' + ${#numbers.formatDecimal(oferta.stock, 0, 0)}">Stock</small>
+                            </div>
+
+                            <a th:href="@{/oferta/{id}(id=${oferta.id})}" class="btn-add-cart">
+                                <i class="fas fa-eye"></i>
+                                Ver oferta
+                            </a>
+                        </div>
+                    </article>
+                </div>
+
+                <!-- Si NO hay ofertas -->
+                <div th:if="${ofertas == null or ofertas.isEmpty()}" class="empty-state">
+                    <div class="empty-icon"><i class="fas fa-tag"></i></div>
+                    <h3>Aún no hay ofertas disponibles</h3>
+                    <p>Estamos trabajando para traerte las mejores ofertas del campo muy pronto.</p>
+                    <a th:href="@{/ofertas}" class="btn-explore">
+                        <i class="fas fa-tag"></i>
+                        Explorar ofertas
+                    </a>
+                </div>
+            </div>
+        </section>
+
         <!-- ================= CATEGORÍAS ================= -->
         <section class="section">
             <div class="container">

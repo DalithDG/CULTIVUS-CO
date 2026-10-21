@@ -1,0 +1,935 @@
+/* ==========================================================================
+   CARULLA & ÉXITO MODERN E-COMMERCE STYLES FOR CULTIVUS
+   Replicates the exact aesthetics of Carulla (Detail view) and Éxito (Product grid)
+   ========================================================================== */
+
+:root {
+    --carulla-purple: #5c2483;
+    --carulla-purple-hover: #481a69;
+    --exito-orange: #f26822;
+    --exito-orange-hover: #db5613;
+    --cultivus-green: #27ae60;
+    --cultivus-green-dark: #1e8449;
+    --cultivus-green-light: #e8f8f0;
+    --text-primary: #222222;
+    --text-secondary: #555555;
+    --text-muted: #888888;
+    --bg-page: #f8f9fa;
+    --bg-card: #ffffff;
+    --border-light: #eaeaea;
+    --border-card: #e5e7eb;
+    --shadow-card: 0 2px 10px rgba(0, 0, 0, 0.04);
+    --shadow-hover: 0 10px 25px rgba(0, 0, 0, 0.09);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-full: 9999px;
+    --font-main: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+    background-color: var(--bg-page);
+    color: var(--text-primary);
+    font-family: var(--font-main);
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   1. BREADCRUMBS (Carulla Style)
+   ────────────────────────────────────────────────────────────────────────── */
+.carulla-breadcrumb-wrapper {
+    background: #ffffff;
+    border-bottom: 1px solid var(--border-light);
+    padding: 12px 0;
+    font-size: 0.85rem;
+}
+
+.carulla-breadcrumb {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    color: var(--text-muted);
+}
+
+.carulla-breadcrumb a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.carulla-breadcrumb a:hover {
+    color: var(--cultivus-green);
+    text-decoration: underline;
+}
+
+.carulla-breadcrumb .separator {
+    color: #ccc;
+    font-size: 0.8rem;
+}
+
+.carulla-breadcrumb .active {
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   2. CARULLA DETAIL PAGE LAYOUT (Image 1)
+   ────────────────────────────────────────────────────────────────────────── */
+.carulla-detail-container {
+    max-width: 1240px;
+    margin: 25px auto 40px;
+    padding: 0 20px;
+}
+
+.carulla-main-grid {
+    display: grid;
+    grid-template-columns: 460px 1fr 340px;
+    gap: 30px;
+    background: #ffffff;
+    border-radius: var(--radius-lg);
+    padding: 30px;
+    box-shadow: var(--shadow-card);
+    align-items: start;
+}
+
+@media (max-width: 1100px) {
+    .carulla-main-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    .carulla-sidebar-box {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 768px) {
+    .carulla-main-grid {
+        grid-template-columns: 1fr;
+        padding: 20px;
+        gap: 20px;
+    }
+}
+
+/* ── Image Gallery Column ── */
+.carulla-gallery-col {
+    position: relative;
+}
+
+.carulla-image-card {
+    position: relative;
+    background: #ffffff;
+    border: 1px solid #f0f0f0;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 420px;
+    padding: 20px;
+}
+
+.carulla-image-card img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.carulla-image-card:hover img {
+    transform: scale(1.04);
+}
+
+.carulla-float-actions {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 5;
+}
+
+.carulla-action-circle {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 1rem;
+}
+
+.carulla-action-circle:hover {
+    color: #e74c3c;
+    border-color: #fca5a5;
+    transform: scale(1.1);
+}
+
+.carulla-action-circle.favorited {
+    color: #e74c3c;
+    background: #fef2f2;
+}
+
+/* ── Product Info Center Column ── */
+.carulla-info-col {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.carulla-product-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    line-height: 1.25;
+    margin: 0;
+}
+
+.carulla-sku-code {
+    font-size: 0.78rem;
+    color: #888888;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.carulla-unit-price {
+    font-size: 0.88rem;
+    color: #666;
+    margin-top: 4px;
+}
+
+/* Discount & Price styling (Exact Carulla) */
+.carulla-price-group {
+    margin: 8px 0 12px;
+}
+
+.carulla-discount-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.carulla-discount-pill {
+    background: #111111;
+    color: #ffffff;
+    font-size: 0.8rem;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 4px;
+    letter-spacing: -0.3px;
+}
+
+.carulla-old-price {
+    color: #888888;
+    text-decoration: line-through;
+    font-size: 1.05rem;
+}
+
+.carulla-info-icon {
+    font-size: 0.75rem;
+    color: #999;
+    cursor: help;
+}
+
+.carulla-main-price {
+    font-size: 2.2rem;
+    font-weight: 800;
+    color: #1a1a1a;
+    line-height: 1.1;
+}
+
+.carulla-puntos-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: #444;
+    margin-top: 6px;
+}
+
+.carulla-puntos-pill {
+    background: #2563eb;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 4px;
+}
+
+.carulla-puntos-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    background: #5c2483;
+    color: #fff;
+    border-radius: 50%;
+    font-size: 0.65rem;
+    font-weight: 800;
+}
+
+.carulla-seller-tag {
+    font-size: 0.95rem;
+    color: #333;
+    margin-top: 10px;
+}
+
+.carulla-seller-tag strong {
+    color: var(--cultivus-green-dark);
+}
+
+.carulla-badge-verified {
+    background: #e8f5e9;
+    color: #2e7d32;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 6px;
+}
+
+.carulla-disclaimer {
+    font-size: 0.75rem;
+    color: #999;
+    font-style: italic;
+    margin-top: 5px;
+    line-height: 1.4;
+}
+
+.carulla-scroll-link {
+    color: #5c2483;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+    margin-top: 8px;
+    display: inline-block;
+}
+
+.carulla-scroll-link:hover {
+    color: #3f1559;
+}
+
+/* ── Delivery Conditions Box (Right Sidebar Image 1) ── */
+.carulla-sidebar-box {
+    background: #ffffff;
+    border: 1px solid var(--border-card);
+    border-radius: var(--radius-md);
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.carulla-delivery-block h4 {
+    font-size: 0.85rem;
+    color: #333;
+    margin: 0 0 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.carulla-delivery-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 0.85rem;
+    color: #4b5563;
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.carulla-delivery-row i {
+    color: #6b7280;
+    font-size: 1rem;
+    margin-top: 2px;
+}
+
+.carulla-delivery-row strong {
+    color: #111;
+}
+
+.carulla-sidebar-divider {
+    height: 1px;
+    background: #f0f0f0;
+    margin: 4px 0;
+}
+
+/* Quantity and Action button */
+.carulla-qty-picker {
+    display: flex;
+    align-items: center;
+    border: 1px solid #d1d5db;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    width: 100%;
+    background: #fff;
+}
+
+.carulla-qty-picker button {
+    width: 44px;
+    height: 40px;
+    border: none;
+    background: #f9fafb;
+    color: #374151;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.carulla-qty-picker button:hover {
+    background: #e5e7eb;
+}
+
+.carulla-qty-picker input {
+    flex: 1;
+    height: 40px;
+    border: none;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: #111;
+}
+
+.carulla-qty-picker input:focus {
+    outline: none;
+}
+
+/* Primary Action Button (Carulla Purple / Cultivus Premium) */
+.carulla-btn-primary {
+    width: 100%;
+    padding: 14px 20px;
+    background: var(--carulla-purple);
+    color: #ffffff;
+    border: none;
+    border-radius: var(--radius-sm);
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 14px rgba(92, 36, 131, 0.25);
+}
+
+.carulla-btn-primary:hover {
+    background: var(--carulla-purple-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(92, 36, 131, 0.35);
+}
+
+.carulla-btn-orange {
+    background: var(--exito-orange);
+    box-shadow: 0 4px 14px rgba(242, 104, 34, 0.25);
+}
+
+.carulla-btn-orange:hover {
+    background: var(--exito-orange-hover);
+    box-shadow: 0 6px 18px rgba(242, 104, 34, 0.35);
+}
+
+.carulla-min-order-note {
+    font-size: 0.78rem;
+    color: #d97706;
+    margin: 6px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 600;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   3. "DETALLES DEL PRODUCTO" ACCORDION (Exact Carulla Image 1)
+   ────────────────────────────────────────────────────────────────────────── */
+.carulla-details-accordion {
+    background: #ffffff;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    margin-top: 25px;
+    overflow: hidden;
+    border: 1px solid var(--border-light);
+}
+
+.carulla-accordion-header {
+    padding: 22px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    user-select: none;
+    border-bottom: 1px solid transparent;
+    transition: background 0.2s;
+}
+
+.carulla-accordion-header:hover {
+    background: #fafafa;
+}
+
+.carulla-accordion-header.is-open {
+    border-bottom-color: var(--border-light);
+}
+
+.carulla-accordion-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+}
+
+.carulla-accordion-chevron {
+    font-size: 1.1rem;
+    color: #6b7280;
+    transition: transform 0.3s ease;
+}
+
+.carulla-accordion-header.is-open .carulla-accordion-chevron {
+    transform: rotate(180deg);
+}
+
+.carulla-accordion-content {
+    padding: 30px;
+    display: block;
+}
+
+.carulla-accordion-content.is-collapsed {
+    display: none;
+}
+
+/* Technical Specs Cards Grid (Image 1 style: grey pills) */
+.carulla-specs-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 25px;
+}
+
+@media (max-width: 900px) {
+    .carulla-specs-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 500px) {
+    .carulla-specs-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.carulla-spec-pill {
+    background: #f8f9fa;
+    border-radius: var(--radius-sm);
+    padding: 14px 18px;
+    border: 1px solid #f0f0f0;
+}
+
+.carulla-spec-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: capitalize;
+    margin-bottom: 4px;
+}
+
+.carulla-spec-val {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    word-break: break-word;
+}
+
+.carulla-description-text {
+    line-height: 1.7;
+    color: #4b5563;
+    font-size: 0.95rem;
+    margin-top: 15px;
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   4. ÉXITO PRODUCT CARDS GRID (Image 3)
+   Exact replica of Éxito & Carulla listing cards
+   ────────────────────────────────────────────────────────────────────────── */
+.exito-grid-section {
+    margin-top: 35px;
+}
+
+.exito-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.exito-section-title {
+    font-size: 1.4rem;
+    font-weight: 800;
+    color: #1a1a1a;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.exito-section-subtitle {
+    font-size: 0.9rem;
+    color: #6b7280;
+    margin-top: 4px;
+}
+
+.exito-products-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+@media (max-width: 1100px) {
+    .exito-products-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .exito-products-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .exito-products-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ── Éxito Single Card (Image 3) ── */
+.exito-card {
+    background: #ffffff;
+    border: 1px solid #ececec;
+    border-radius: var(--radius-md);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+    text-decoration: none;
+    color: inherit;
+}
+
+.exito-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
+    border-color: #d1d5db;
+}
+
+/* Top bar: promo badge + heart */
+.exito-card__top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    min-height: 32px;
+    margin-bottom: 10px;
+}
+
+.exito-promo-badge {
+    background: #ffeb3b;
+    color: #111;
+    font-size: 0.68rem;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    line-height: 1.2;
+    text-transform: uppercase;
+    letter-spacing: 0.2px;
+}
+
+.exito-fav-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+    color: #9ca3af;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+    margin-left: auto;
+}
+
+.exito-fav-btn:hover {
+    color: #ef4444;
+    border-color: #fca5a5;
+    background: #fef2f2;
+}
+
+/* Image container */
+.exito-card__image-wrap {
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+    overflow: hidden;
+}
+
+.exito-card__img {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.exito-card:hover .exito-card__img {
+    transform: scale(1.06);
+}
+
+/* Title & Unit price */
+.exito-card__title {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: #1f2937;
+    line-height: 1.35;
+    margin: 0 0 4px;
+    min-height: 2.7em;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.exito-card__unit-price {
+    font-size: 0.78rem;
+    color: #6b7280;
+    margin-bottom: 8px;
+}
+
+/* Discount row (Image 3: -10% / -40%) */
+.exito-card__discount-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+
+.exito-discount-pill {
+    background: #111111;
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.exito-card__crossed-price {
+    font-size: 0.85rem;
+    color: #9ca3af;
+    text-decoration: line-through;
+}
+
+/* Main price: bold orange / black */
+.exito-card__price-row {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 4px;
+}
+
+.exito-card__main-price {
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #f26822;
+}
+
+.exito-card__other-price {
+    font-size: 0.82rem;
+    color: #4b5563;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.exito-card__seller {
+    font-size: 0.78rem;
+    color: #6b7280;
+    margin-bottom: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.exito-card__seller strong {
+    color: #111827;
+}
+
+/* Vibrant Orange Button: "Agregar 🛒" (Exact Image 3) */
+.exito-btn-add {
+    width: 100%;
+    background: #f26822;
+    color: #ffffff;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+    box-shadow: 0 3px 8px rgba(242, 104, 34, 0.28);
+}
+
+.exito-btn-add:hover {
+    background: #e05712;
+    transform: translateY(-1px);
+    box-shadow: 0 5px 12px rgba(242, 104, 34, 0.38);
+}
+
+.exito-btn-add:active {
+    transform: translateY(0);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+   5. CARULLA TRUST BADGES STRIP (Image 1 Bottom)
+   ────────────────────────────────────────────────────────────────────────── */
+.carulla-trust-strip {
+    background: #ffffff;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    padding: 24px 30px;
+    margin-top: 35px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+@media (max-width: 900px) {
+    .carulla-trust-strip {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 500px) {
+    .carulla-trust-strip {
+        grid-template-columns: 1fr;
+    }
+}
+
+.carulla-trust-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.carulla-trust-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: #f0fdf4;
+    color: #16a34a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.carulla-trust-text {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #1f2937;
+    line-height: 1.3;
+}
+
+.carulla-trust-text small {
+    display: block;
+    font-size: 0.75rem;
+    color: #6b7280;
+    font-weight: 400;
+    margin-top: 2px;
+}
+
+/* ── Producer Contact Drawer / Box ── */
+.carulla-producer-card {
+    background: #ffffff;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    border: 1px solid var(--border-light);
+    padding: 24px 30px;
+    margin-top: 25px;
+}
+
+.carulla-producer-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 14px;
+}
+
+.carulla-producer-avatar {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: #e8f5e9;
+    color: #2e7d32;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+}
+
+.carulla-producer-meta h3 {
+    margin: 0 0 4px;
+    font-size: 1.15rem;
+    color: #1a1a1a;
+}
+
+.carulla-contact-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-decoration: none;
+    transition: opacity 0.2s;
+}
+
+.carulla-contact-whatsapp {
+    background: #25d366;
+    color: #ffffff;
+}
+
+.carulla-contact-whatsapp:hover {
+    opacity: 0.9;
+}

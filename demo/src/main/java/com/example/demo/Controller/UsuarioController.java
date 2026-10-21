@@ -1,5 +1,6 @@
 package com.example.demo.Controller;
 
+import com.example.demo.Model.OfertaVendedor;
 import com.example.demo.Model.ProductoCatalogo;
 import com.example.demo.Model.Role;
 import com.example.demo.Model.Usuario;
@@ -17,6 +18,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.example.demo.repository.PedidoRepository;
 import com.example.demo.repository.NotificacionRepository;
 import com.example.demo.repository.CategoriaRepository;
+import com.example.demo.repository.OfertaRepository;
 import com.example.demo.Model.Pedido;
 import com.example.demo.Model.Notificacion;
 
@@ -26,8 +28,10 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.stream.Collectors;
 
 @Controller
@@ -43,6 +47,7 @@ public class UsuarioController {
     private final NotificacionRepository notificacionRepository;
     private final CatalogoService catalogoService;
     private final CategoriaRepository categoriaRepository;
+    private final OfertaRepository ofertaRepository;
 
     @org.springframework.beans.factory.annotation.Autowired
     public UsuarioController(UsuarioService usuarioService,
@@ -53,7 +58,8 @@ public class UsuarioController {
             PedidoRepository pedidoRepository,
             NotificacionRepository notificacionRepository,
             CatalogoService catalogoService,
-            CategoriaRepository categoriaRepository) {
+            CategoriaRepository categoriaRepository,
+            OfertaRepository ofertaRepository) {
         this.usuarioService = usuarioService;
         this.ubicacionService = ubicacionService;
         this.vendedorService = vendedorService;
@@ -63,6 +69,7 @@ public class UsuarioController {
         this.notificacionRepository = notificacionRepository;
         this.catalogoService = catalogoService;
         this.categoriaRepository = categoriaRepository;
+        this.ofertaRepository = ofertaRepository;
     }
 
     @GetMapping("/registro")
@@ -209,6 +216,16 @@ public class UsuarioController {
         model.addAttribute("usuario", usuario);
         model.addAttribute("productos", productos);
         model.addAttribute("categorias", categoriaRepository.findAll());
+
+        // Ofertas destacadas: disponibles, con precio, las más recientes primero
+        List<OfertaVendedor> ofertasDestacadas = ofertaRepository.findAll().stream()
+                .filter(o -> o.isDisponible() && o.getPrecio() != null)
+                .sorted(Comparator.comparing(
+                        (OfertaVendedor o) -> o.getCreatedAt() != null ? o.getCreatedAt() : LocalDateTime.MIN)
+                        .reversed())
+                .limit(4)
+                .collect(Collectors.toList());
+        model.addAttribute("ofertas", ofertasDestacadas);
 
         // Estadísticas de comprador para el dashboard (independiente del rol actual)
         long totalPedidos = pedidoRepository.findByCompradorId(usuario.getId()).size();

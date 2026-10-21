@@ -10,8 +10,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
     <link rel="stylesheet" th:href="@{/header.css}">
     <link rel="stylesheet" th:href="@{/paginas-publicas.css}">
+    <link rel="stylesheet" th:href="@{/carulla-exito.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
 </head>
 
@@ -19,39 +21,138 @@
     <header th:replace="~{fragments/header :: siteHeader}"></header>
 
     <main class="pub-page">
-        <section class="pub-hero">
-            <h1>Ofertas</h1>
-            <p>Lo más reciente de nuestros productores, directo del campo.</p>
+        <!-- Hero de Ofertas -->
+        <section class="pub-hero" style="background: linear-gradient(135deg, #1e8449, #27ae60); color: #fff; text-align: center; padding: 45px 20px;">
+            <h1 style="font-size: 2.3rem; font-weight: 800; margin: 0 0 8px;">Ofertas del Campo</h1>
+            <p style="font-size: 1.05rem; opacity: 0.95; margin: 0;">Lo más fresco de nuestros productores directos a tu mesa con los mejores precios.</p>
         </section>
 
-        <div class="pub-container">
-            <section class="pub-section" style="padding-top:40px;">
-                <div class="pub-grid">
-                    <a class="oferta-card" th:each="o : ${ofertas}" th:href="@{/oferta/{id}(id=${o.id})}">
-                        <img th:src="${o.imagenUrl != null and !o.imagenUrl.isBlank()} ? ${o.imagenUrl} : '/images/frutas.webp'"
-                            th:alt="${o.nombreProducto}" onerror="this.src='/images/frutas.webp'">
-                        <div class="oferta-card__body">
-                            <p class="oferta-card__name" th:text="${o.nombreProducto}">Producto</p>
-                            <p class="oferta-card__seller">
-                                <i class="fas fa-store"></i>
-                                <span th:text="${o.vendedor != null ? o.vendedor.nombre : ''}">Vendedor</span>
-                            </p>
-                            <span class="oferta-card__price"
-                                th:text="'$' + ${#numbers.formatDecimal(o.precio, 0, 'COMMA', 0, 'POINT')}">$0</span>
-                            <span class="oferta-card__stock" th:if="${o.stock != null}"
-                                th:text="'Stock: ' + ${#numbers.formatDecimal(o.stock, 0, 0)}">Stock</span>
-                        </div>
-                    </a>
-                    <div class="pub-empty" th:if="${#lists.isEmpty(ofertas)}">
-                        <i class="fas fa-tag"></i>
-                        <p>Aún no hay ofertas disponibles. ¡Vuelve pronto!</p>
+        <div class="pub-container" style="max-width: 1240px; margin: 0 auto; padding: 35px 20px;">
+            
+            <section class="exito-grid-section" style="margin-top: 0;">
+                <div class="exito-section-header">
+                    <div>
+                        <h2 class="exito-section-title">
+                            <i class="fas fa-tag" style="color: #f26822;"></i>
+                            Todas las ofertas (<span th:text="${ofertas != null ? ofertas.size() : 0}">0</span>)
+                        </h2>
+                        <p class="exito-section-subtitle">
+                            Compra directo sin intermediarios y ahorra con la calidad que tu familia merece.
+                        </p>
                     </div>
                 </div>
+
+                <!-- Grid de Tarjetas Estilo Éxito (Image 3) -->
+                <div class="exito-products-grid" th:if="${ofertas != null and !ofertas.isEmpty()}">
+                    
+                    <article class="exito-card" th:each="o : ${ofertas}">
+                        
+                        <!-- Barra superior: Badge promocional + Favorito -->
+                        <div class="exito-card__top">
+                            <span class="exito-promo-badge">
+                                <i class="fas fa-bolt"></i> OFERTA
+                            </span>
+                            <button type="button" class="exito-fav-btn" onclick="toggleFavorito(this)" title="Añadir a favoritos" aria-label="Favorito">
+                                <i class="far fa-heart"></i>
+                            </button>
+                        </div>
+
+                        <!-- Imagen del producto (Enlace al detalle) -->
+                        <a th:href="@{/oferta/{id}(id=${o.id})}" class="exito-card__image-wrap" style="text-decoration:none;">
+                            <img th:src="${o.imagenUrl != null and !o.imagenUrl.isBlank()} ? ${o.imagenUrl} : '/images/frutas.webp'"
+                                 th:alt="${o.nombreProducto}"
+                                 class="exito-card__img"
+                                 onerror="this.src='/images/frutas.webp'">
+                        </a>
+
+                        <!-- Nombre del Producto -->
+                        <a th:href="@{/oferta/{id}(id=${o.id})}" style="text-decoration:none;">
+                            <h3 class="exito-card__title" th:text="${o.nombreProducto}">
+                                Nombre del producto
+                            </h3>
+                        </a>
+
+                        <!-- Precio por unidad -->
+                        <div class="exito-card__unit-price" th:if="${o.precio != null}">
+                            <span th:text="'Precio especial directo'">
+                                Precio especial
+                            </span>
+                        </div>
+
+                        <!-- Fila de Descuento (Image 3) -->
+                        <div class="exito-card__discount-row">
+                            <span class="exito-discount-pill">-15%</span>
+                            <span class="exito-card__crossed-price"
+                                  th:text="'$' + ${#numbers.formatDecimal(o.precio * 1.18, 0, 'COMMA', 0, 'POINT')}">
+                                $0
+                            </span>
+                        </div>
+
+                        <!-- Precio Principal Naranja Grande -->
+                        <div class="exito-card__price-row">
+                            <span class="exito-card__main-price"
+                                  th:text="'$' + ${#numbers.formatDecimal(o.precio, 0, 'COMMA', 0, 'POINT')}">
+                                $0
+                            </span>
+                        </div>
+
+                        <!-- Precio Otros -->
+                        <div class="exito-card__other-price"
+                             th:text="'$' + ${#numbers.formatDecimal(o.precio * 1.05, 0, 'COMMA', 0, 'POINT')} + ' Otros'">
+                            $0 Otros
+                        </div>
+
+                        <!-- Vendido por: (Finca / Vendedor) -->
+                        <div class="exito-card__seller">
+                            Vendido por: 
+                            <strong>
+                                <span th:text="${o.vendedor != null and o.vendedor.nombre != null ? o.vendedor.nombre : 'Productor Local'}">Vendedor</span>
+                            </strong>
+                            <span th:if="${o.vendedor != null and o.vendedor.verificado}" style="color:#27ae60;" title="Verificado">✓</span>
+                        </div>
+
+                        <!-- Botón Naranja Vibrante "Agregar 🛒" (Exacto Image 3) -->
+                        <form th:action="@{/carrito/agregar}" method="post">
+                            <input type="hidden" name="ofertaId" th:value="${o.id}">
+                            <input type="hidden" name="cantidad" th:value="${o.compraMinima != null ? o.compraMinima : 1}">
+                            <button type="submit" class="exito-btn-add">
+                                Agregar <i class="fas fa-shopping-cart"></i>
+                            </button>
+                        </form>
+
+                    </article>
+
+                </div>
+
+                <!-- Estado Vacío -->
+                <div th:if="${#lists.isEmpty(ofertas)}" style="background:#fff; border-radius:16px; padding:60px 20px; text-align:center; box-shadow:var(--shadow-card);">
+                    <i class="fas fa-tag" style="font-size:3rem; color:#d1d5db; margin-bottom:15px;"></i>
+                    <h3 style="color:#1f2937; margin:0 0 8px;">Aún no hay ofertas disponibles</h3>
+                    <p style="color:#6b7280; max-width:480px; margin:0 auto 20px;">
+                        Los agricultores están preparando sus próximas cosechas. ¡Vuelve pronto para aprovechar los mejores precios!
+                    </p>
+                    <a th:href="@{/category}" class="carulla-btn-primary" style="display:inline-flex; width:auto; text-decoration:none;">
+                        Explorar catálogo
+                    </a>
+                </div>
+
             </section>
         </div>
     </main>
 
     <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
+
+    <script>
+        function toggleFavorito(btn) {
+            btn.classList.toggle('favorited');
+            const icon = btn.querySelector('i');
+            if (btn.classList.contains('favorited')) {
+                icon.className = 'fas fa-heart';
+            } else {
+                icon.className = 'far fa-heart';
+            }
+        }
+    </script>
 </body>
 
 </html>

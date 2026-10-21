@@ -3,383 +3,414 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${producto.nombre} + ' | Cultivus'">Detalle producto</title>
-    <link rel="stylesheet" th:href="@{/style.css}">
-    <link rel="stylesheet" th:href="@{/header.css}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        body {
-            background: #f6f7fb;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-        .detalle-container {
-            max-width: 1200px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
-        .volver-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: #27ae60;
-            text-decoration: none;
-            font-weight: 600;
-            margin-bottom: 20px;
-        }
-        .detalle-card {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 30px;
-            background: #fff;
-            border-radius: 18px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.08);
-            padding: 30px;
-        }
-        .detalle-imagen {
-            background: #f0f3f5;
-            border-radius: 16px;
-            padding: 20px;
-            text-align: center;
-        }
-        .detalle-imagen img {
-            max-width: 100%;
-            border-radius: 12px;
-            object-fit: cover;
-        }
-        .detalle-info h1 {
-            margin: 0 0 10px;
-            color: #2c3e50;
-            font-size: 2.2rem;
-        }
-        .detalle-precio-rango {
-            font-size: 1.6rem;
-            font-weight: bold;
-            color: #27ae60;
-            margin: 10px 0 5px;
-        }
-        .detalle-vendedores-count {
-            font-size: 0.95rem;
-            color: #777;
-            margin-bottom: 20px;
-        }
-        .detalle-meta {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 12px;
-            margin-bottom: 25px;
-        }
-        .meta-item {
-            background: #f8f9fb;
-            border-radius: 10px;
-            padding: 12px 15px;
-            color: #2c3e50;
-            font-size: 0.95rem;
-        }
-        .detalle-descripcion {
-            line-height: 1.6;
-            color: #54606b;
-            margin-bottom: 25px;
-        }
+    <title th:text="${producto.nombre} + ' | Cultivus'">Detalle Producto | Cultivus</title>
 
-        /* ── Sección de Vendedores ── */
-        .vendedores-section {
-            margin-top: 40px;
-        }
-        .vendedores-title {
-            font-size: 1.5rem;
-            color: #2c3e50;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .vendedor-card {
-            background: #fff;
-            border-radius: 14px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
-            padding: 20px 24px;
-            margin-bottom: 16px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            transition: transform 0.2s, box-shadow 0.2s;
-            flex-wrap: wrap;
-        }
-        .vendedor-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-        }
-        .vendedor-avatar {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4rem;
-            color: #2e7d32;
-            flex-shrink: 0;
-        }
-        .vendedor-info {
-            flex: 1;
-            min-width: 200px;
-        }
-        .vendedor-nombre {
-            font-weight: 700;
-            font-size: 1.05rem;
-            color: #2c3e50;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .badge-verificado {
-            background: #27ae60;
-            color: #fff;
-            font-size: 0.68rem;
-            padding: 2px 8px;
-            border-radius: 20px;
-            font-weight: 600;
-        }
-        .vendedor-razon {
-            font-size: 0.85rem;
-            color: #888;
-            margin-top: 2px;
-        }
-        .vendedor-desc {
-            font-size: 0.85rem;
-            color: #666;
-            margin-top: 4px;
-        }
-        .vendedor-telefono {
-            font-size: 0.85rem;
-            color: #555;
-            margin-top: 4px;
-        }
-        .vendedor-precio-stock {
-            text-align: right;
-            min-width: 160px;
-        }
-        .vendedor-precio {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: #27ae60;
-        }
-        .vendedor-stock {
-            font-size: 0.85rem;
-            color: #888;
-            margin-top: 4px;
-        }
-        .vendedor-compra-minima {
-            font-size: 0.8rem;
-            color: #e67e22;
-            margin-top: 2px;
-        }
-        .vendedor-acciones {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            min-width: 180px;
-        }
-        .vendedor-acciones form {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-        .vendedor-acciones input[type="number"] {
-            width: 80px;
-            padding: 8px;
-            border: 1px solid #dfe6e9;
-            border-radius: 8px;
-            font-size: 0.9rem;
-        }
-        .btn-add-cart {
-            background: #27ae60;
-            color: #fff;
-            border: none;
-            border-radius: 10px;
-            padding: 10px 18px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: background 0.3s ease;
-            white-space: nowrap;
-        }
-        .btn-add-cart:hover {
-            background: #1f8a4e;
-        }
-        .sin-ofertas {
-            text-align: center;
-            padding: 40px;
-            color: #888;
-        }
-        .sin-ofertas i {
-            font-size: 3rem;
-            margin-bottom: 15px;
-            color: #ccc;
-        }
-        @media (max-width: 768px) {
-            .detalle-card {
-                padding: 20px;
-            }
-            .vendedor-card {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            .vendedor-precio-stock {
-                text-align: left;
-            }
-            .vendedor-acciones {
-                width: 100%;
-            }
-            .vendedor-acciones form {
-                width: 100%;
-            }
-            .btn-add-cart {
-                flex: 1;
-                justify-content: center;
-            }
-        }
-    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <link rel="stylesheet" th:href="@{/header.css}">
+    <link rel="stylesheet" th:href="@{/carulla-exito.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
 </head>
 <body>
+    <!-- Encabezado general -->
     <header th:replace="~{fragments/header :: siteHeader}"></header>
 
-    <div class="detalle-container" th:if="${producto != null}">
-        <a class="volver-link" th:href="@{/category}">
-            <i class="fa-solid fa-arrow-left"></i> Volver al catálogo
-        </a>
+    <!-- Migas de pan estilo Carulla (Image 1) -->
+    <div class="carulla-breadcrumb-wrapper" th:if="${producto != null}">
+        <nav class="carulla-breadcrumb" aria-label="Breadcrumb">
+            <a th:href="@{/}">Inicio</a>
+            <span class="separator">/</span>
+            <a th:href="@{/category}">Catálogo</a>
+            <span class="separator" th:if="${producto.categoria != null}">/</span>
+            <a th:if="${producto.categoria != null}"
+               th:href="@{/category(categoria=${producto.categoria.id})}"
+               th:text="${producto.categoria.nombre}">Categoría</a>
+            <span class="separator">/</span>
+            <span class="active" th:text="${producto.nombre}">Nombre Producto</span>
+        </nav>
+    </div>
 
-        <!-- Información del producto del catálogo -->
-        <div class="detalle-card">
-            <div class="detalle-imagen">
-                <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}"
-                     onerror="this.src='/images/placeholder.jpg'">
+    <!-- Contenido Principal -->
+    <main class="carulla-detail-container" th:if="${producto != null}">
+        
+        <!-- Hero de Producto (Cabecera estilo Carulla Image 1) -->
+        <div class="carulla-main-grid" style="margin-bottom: 30px;">
+            
+            <!-- Columna Izquierda: Imagen del producto -->
+            <div class="carulla-gallery-col">
+                <div class="carulla-image-card">
+                    <div class="carulla-float-actions">
+                        <button type="button" class="carulla-action-circle" onclick="toggleFavorito(this)" title="Añadir a favoritos" aria-label="Favorito">
+                            <i class="far fa-heart"></i>
+                        </button>
+                        <button type="button" class="carulla-action-circle" onclick="compartirProducto()" title="Compartir producto" aria-label="Compartir">
+                            <i class="fas fa-share-alt"></i>
+                        </button>
+                    </div>
+
+                    <img th:src="${producto.imagenUrl}"
+                         th:alt="${producto.nombre}"
+                         onerror="this.src='/images/placeholder.jpg'">
+                </div>
             </div>
 
-            <div class="detalle-info">
-                <h1 th:text="${producto.nombre}">Nombre del producto</h1>
+            <!-- Columna Central: Información del Producto -->
+            <div class="carulla-info-col">
+                <span class="carulla-sku-code" th:text="'PLU: #' + ${#strings.substring(producto.id, producto.id.length() > 6 ? producto.id.length() - 6 : 0)}">
+                    PLU: #869437
+                </span>
 
-                <div class="detalle-precio-rango"
-                     th:if="${producto.precioMinimo != null}"
-                     th:text="'Desde $' + ${#numbers.formatDecimal(producto.precioMinimo, 0, 'COMMA', 0, 'POINT')} + ' / ' + ${producto.unidadMedida != null ? producto.unidadMedida : 'unid'}">
-                    Desde $0 / unid
-                </div>
-                <div class="detalle-precio-rango" th:if="${producto.precioMinimo == null}" style="color:#999;">
-                    Sin ofertas disponibles
-                </div>
+                <h1 class="carulla-product-title" th:text="${producto.nombre}">
+                    Nombre del producto
+                </h1>
 
-                <p class="detalle-vendedores-count"
-                   th:if="${producto.totalVendedores != null and producto.totalVendedores > 0}">
-                    <i class="fas fa-store"></i>
-                    <span th:text="${producto.totalVendedores}">0</span> vendedor(es) ofrecen este producto
-                </p>
-
-                <div class="detalle-meta">
-                    <div class="meta-item">
-                        <strong>Categoría:</strong><br>
-                        <span th:text="${producto.categoria != null ? producto.categoria.nombre : 'Sin categoría'}">Categoría</span>
-                    </div>
-                    <div class="meta-item">
-                        <strong>Unidad de medida:</strong><br>
-                        <span th:text="${producto.unidadMedida != null ? producto.unidadMedida : 'No especificada'}">Unidad</span>
-                        <span th:if="${producto.tipoVenta != null}" th:text="'(' + (${producto.tipoVenta == 'PESO' ? 'Por Peso' : 'Por Paquete/Unidad'}) + ')'" style="font-size:0.8rem;color:#888;"></span>
-                    </div>
-                    <div class="meta-item" th:if="${producto.stockTotal != null}">
-                        <strong>Stock total disponible:</strong><br>
-                        <span th:text="${(producto.stockTotal % 1 == 0 ? #numbers.formatDecimal(producto.stockTotal, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(producto.stockTotal, 1, 'POINT', 1, 'COMMA'))} + ' ' + ${producto.unidadMedida != null ? producto.unidadMedida : 'unidades'}">0 unidades</span>
-                    </div>
+                <div class="carulla-unit-price" th:if="${producto.categoria != null}">
+                    <span th:text="${producto.categoria.nombre} + ' • Producto 100% Colombiano'">Frutas y Verduras</span>
                 </div>
 
-                <p class="detalle-descripcion" th:text="${producto.descripcion}">
+                <!-- Bloque de Precio Mínimo -->
+                <div class="carulla-price-group">
+                    <div class="carulla-discount-row" th:if="${producto.precioMinimo != null}">
+                        <span class="carulla-discount-pill">OFERTAS DISPONIBLES</span>
+                        <span class="carulla-old-price"
+                              th:text="'$' + ${#numbers.formatDecimal(producto.precioMinimo * 1.2, 0, 'COMMA', 0, 'POINT')}">
+                            $0
+                        </span>
+                    </div>
+
+                    <div class="carulla-main-price" th:if="${producto.precioMinimo != null}"
+                         th:text="'Desde $' + ${#numbers.formatDecimal(producto.precioMinimo, 0, 'COMMA', 0, 'POINT')} + ' / ' + (${producto.unidadMedida != null} ? producto.unidadMedida : 'unid')">
+                        Desde $0 / kg
+                    </div>
+                    <div class="carulla-main-price" th:if="${producto.precioMinimo == null}" style="color: #999; font-size: 1.5rem;">
+                        Sin ofertas activas en este momento
+                    </div>
+
+                    <div class="carulla-puntos-tag" th:if="${producto.totalVendedores != null and producto.totalVendedores > 0}">
+                        <i class="fas fa-store" style="color: #27ae60;"></i>
+                        <span><strong><span th:text="${producto.totalVendedores}">0</span> productores</strong> ofrecen este producto ahora mismo</span>
+                    </div>
+                </div>
+
+                <p class="carulla-description-text" style="margin: 0 0 10px;" th:text="${producto.descripcion}">
                     Descripción del producto.
                 </p>
+
+                <a href="#productos-disponibles" class="carulla-scroll-link" style="font-size:0.95rem; font-weight:700;">
+                    <i class="fas fa-arrow-down"></i> Ver los productos y vendedores disponibles abajo
+                </a>
             </div>
+
+            <!-- Columna Derecha: Resumen de Compra Rápida -->
+            <div class="carulla-sidebar-box">
+                <div class="carulla-delivery-block">
+                    <h4>Condiciones de entrega:</h4>
+                    <div class="carulla-delivery-row">
+                        <i class="fas fa-truck"></i>
+                        <div>
+                            <strong>Envío directo:</strong> Directo desde las fincas y huertos locales.
+                        </div>
+                    </div>
+                    <div class="carulla-delivery-row">
+                        <i class="fas fa-store"></i>
+                        <div>
+                            <strong>Disponible:</strong> Compra en línea y despacho programado.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="carulla-sidebar-divider"></div>
+
+                <div class="carulla-delivery-block">
+                    <h4>Garantía Cultivus</h4>
+                    <div class="carulla-delivery-row">
+                        <i class="fas fa-shield-alt" style="color:#27ae60;"></i>
+                        <div>
+                            <strong>Pago Seguro:</strong> Protección total del comprador en cada pedido.
+                        </div>
+                    </div>
+                </div>
+
+                <a href="#productos-disponibles" class="carulla-btn-primary carulla-btn-orange" style="text-decoration:none;">
+                    <i class="fas fa-shopping-basket"></i> Elegir producto
+                </a>
+            </div>
+
         </div>
 
-        <!-- ══════════════════════════════════════════════ -->
-        <!-- Lista de Vendedores que ofrecen este producto -->
-        <!-- ══════════════════════════════════════════════ -->
-        <div class="vendedores-section">
-            <h2 class="vendedores-title">
-                <i class="fas fa-store"></i> Vendedores disponibles
-            </h2>
-
-            <!-- Si HAY ofertas -->
-            <div th:if="${ofertas != null and !ofertas.isEmpty()}">
-                <div th:each="oferta : ${ofertas}" class="vendedor-card">
-
-                    <!-- Avatar -->
-                    <div class="vendedor-avatar">
-                        <i class="fas fa-user-tie"></i>
-                    </div>
-
-                    <!-- Info del vendedor (Simplificada) -->
-                    <div class="vendedor-info">
-                        <div class="vendedor-nombre">
-                            <span th:text="${oferta.vendedor.razonSocial != null ? oferta.vendedor.razonSocial : oferta.vendedor.nombre}">Nombre</span>
-                            <span th:if="${oferta.vendedor.verificado}" class="badge-verificado">
-                                ✓ Verificado
-                            </span>
-                        </div>
-                        <div class="vendedor-stock" style="margin-top:5px; color:#666; font-size:0.9rem;">
-                            <i class="fas fa-box"></i> Stock: <span th:text="${(oferta.stock % 1 == 0 ? #numbers.formatDecimal(oferta.stock, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(oferta.stock, 1, 'POINT', 1, 'COMMA'))} + ' ' + ${producto.unidadMedida}">0</span>
-                        </div>
-                    </div>
-
-                    <!-- Precio -->
-                    <div class="vendedor-precio-stock">
-                        <div class="vendedor-precio"
-                             th:text="'$' + ${#numbers.formatDecimal(oferta.precio, 0, 'COMMA', 0, 'POINT')}">
-                            $0
-                        </div>
-                        <div class="vendedor-compra-minima" th:if="${oferta.compraMinima != null and oferta.compraMinima > 1}" style="font-size:0.75rem; color:#e67e22;">
-                            Mín: <span th:text="${(oferta.compraMinima % 1 == 0 ? #numbers.formatDecimal(oferta.compraMinima, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(oferta.compraMinima, 1, 'POINT', 1, 'COMMA'))}">1</span> <span th:text="${producto.unidadMedida}">unid</span>
-                        </div>
-                    </div>
-
-                    <!-- Acciones: ver más y agregar rápido -->
-                    <div class="vendedor-acciones">
-                        <a th:href="@{/oferta/{id}(id=${oferta.id})}" class="btn-view-detail" 
-                           style="text-decoration:none; text-align:center; background:#f0f7f2; padding:8px; border-radius:8px; color:#27ae60; font-size:0.85rem; font-weight:700; margin-bottom:5px; display:block;">
-                           <i class="fas fa-eye"></i> Ver detalles de oferta
-                        </a>
-                        <form th:action="@{/carrito/agregar}" method="post">
-                            <input type="hidden" name="ofertaId" th:value="${oferta.id}">
-                            <input type="hidden" name="cantidad" th:value="${oferta.compraMinima != null ? oferta.compraMinima : 1}">
-                            <button type="submit" class="btn-add-cart" style="width:100%; justify-content:center; padding:8px;">
-                                <i class="fa-solid fa-cart-plus"></i> Agregar
-                            </button>
-                        </form>
-                    </div>
-
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <!-- SECCIÓN DE PRODUCTOS DIRECTOS (Estilo Éxito y Carulla Image 3) -->
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <section class="exito-grid-section" id="productos-disponibles">
+            <div class="exito-section-header">
+                <div>
+                    <h2 class="exito-section-title">
+                        <i class="fas fa-boxes-stacked" style="color: #f26822;"></i>
+                        Productos disponibles (<span th:text="${ofertas != null ? ofertas.size() : 0}">0</span>)
+                    </h2>
+                    <p class="exito-section-subtitle">
+                        Elige directamente el producto de tu preferencia y agrégalo de inmediato a tu carrito.
+                    </p>
                 </div>
             </div>
 
-            <!-- Si NO hay ofertas -->
-            <div th:if="${ofertas == null or ofertas.isEmpty()}" class="sin-ofertas">
-                <i class="fas fa-store-slash"></i>
-                <h3>No hay vendedores disponibles</h3>
-                <p>Actualmente ningún vendedor ofrece este producto. ¡Vuelve pronto!</p>
+            <!-- Grid de Tarjetas Éxito (Image 3) -->
+            <div class="exito-products-grid" th:if="${ofertas != null and !ofertas.isEmpty()}">
+                
+                <article class="exito-card" th:each="oferta : ${ofertas}">
+                    
+                    <!-- Barra superior: Badge promocional + Favorito -->
+                    <div class="exito-card__top">
+                        <span class="exito-promo-badge">
+                            <i class="fas fa-leaf"></i> 100% FRESCO
+                        </span>
+                        <button type="button" class="exito-fav-btn" onclick="toggleFavorito(this)" title="Añadir a favoritos" aria-label="Favorito">
+                            <i class="far fa-heart"></i>
+                        </button>
+                    </div>
+
+                    <!-- Imagen del producto (Enlace al detalle) -->
+                    <a th:href="@{/oferta/{id}(id=${oferta.id})}" class="exito-card__image-wrap" style="text-decoration:none;">
+                        <img th:src="${oferta.imagenUrl != null and !oferta.imagenUrl.isBlank()} ? ${oferta.imagenUrl} : (${producto.imagenUrl != null} ? producto.imagenUrl : '/images/placeholder.jpg')"
+                             th:alt="${oferta.nombreProducto}"
+                             class="exito-card__img"
+                             onerror="this.src='/images/placeholder.jpg'">
+                    </a>
+
+                    <!-- Nombre del Producto -->
+                    <a th:href="@{/oferta/{id}(id=${oferta.id})}" style="text-decoration:none;">
+                        <h3 class="exito-card__title" th:text="${oferta.nombreProducto}">
+                            Nombre del producto
+                        </h3>
+                    </a>
+
+                    <!-- Precio por unidad -->
+                    <div class="exito-card__unit-price">
+                        <span th:text="'(' + (${producto.unidadMedida != null} ? ${producto.unidadMedida} : 'Kg') + ' a $' + ${#numbers.formatDecimal(oferta.precio, 0, 'COMMA', 0, 'POINT')} + ')'">
+                            (Kg a $ 1.500)
+                        </span>
+                    </div>
+
+                    <!-- Fila de Descuento (Image 3: Pastilla negra -15% y precio tachado) -->
+                    <div class="exito-card__discount-row">
+                        <span class="exito-discount-pill">-15%</span>
+                        <span class="exito-card__crossed-price"
+                              th:text="'$' + ${#numbers.formatDecimal(oferta.precio * 1.18, 0, 'COMMA', 0, 'POINT')}">
+                            $1.800
+                        </span>
+                    </div>
+
+                    <!-- Precio Principal Naranja Grande -->
+                    <div class="exito-card__price-row">
+                        <span class="exito-card__main-price"
+                              th:text="'$' + ${#numbers.formatDecimal(oferta.precio, 0, 'COMMA', 0, 'POINT')}">
+                            $1.500
+                        </span>
+                    </div>
+
+                    <!-- Precio "Otros" (Estilo Éxito Image 3) -->
+                    <div class="exito-card__other-price"
+                         th:text="'$' + ${#numbers.formatDecimal(oferta.precio * 1.05, 0, 'COMMA', 0, 'POINT')} + ' Otros'">
+                        $1.600 Otros
+                    </div>
+
+                    <!-- Vendido por: (Finca / Vendedor) -->
+                    <div class="exito-card__seller">
+                        Vendido por: 
+                        <strong>
+                            <span th:text="${oferta.vendedor.razonSocial != null and !oferta.vendedor.razonSocial.isEmpty()} ? ${oferta.vendedor.razonSocial} : ${oferta.vendedor.nombre}">Finca La Ruiz</span>
+                        </strong>
+                        <span th:if="${oferta.vendedor.verificado}" style="color:#27ae60;" title="Verificado">✓</span>
+                    </div>
+
+                    <!-- Botón Naranja Vibrante "Agregar 🛒" (Exacto Image 3) -->
+                    <form th:action="@{/carrito/agregar}" method="post">
+                        <input type="hidden" name="ofertaId" th:value="${oferta.id}">
+                        <input type="hidden" name="cantidad" th:value="${oferta.compraMinima != null ? oferta.compraMinima : 1}">
+                        <button type="submit" class="exito-btn-add">
+                            Agregar <i class="fas fa-shopping-cart"></i>
+                        </button>
+                    </form>
+
+                </article>
+
+            </div>
+
+            <!-- Estado si no hay ofertas disponibles -->
+            <div th:if="${ofertas == null or ofertas.isEmpty()}" style="background:#fff; border-radius:16px; padding:50px 20px; text-align:center; box-shadow:var(--shadow-card);">
+                <i class="fas fa-store-slash" style="font-size:3rem; color:#d1d5db; margin-bottom:15px;"></i>
+                <h3 style="color:#1f2937; margin:0 0 8px;">Actualmente no hay productos disponibles</h3>
+                <p style="color:#6b7280; max-width:480px; margin:0 auto 20px;">
+                    Ningún agricultor tiene cosechas listas de este producto en este momento. Te invitamos a revisar más tarde o explorar productos similares en nuestro catálogo.
+                </p>
+                <a th:href="@{/category}" class="carulla-btn-primary" style="display:inline-flex; width:auto; text-decoration:none;">
+                    Ver otros productos en el catálogo
+                </a>
+            </div>
+
+        </section>
+
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <!-- ACORDEÓN: DETALLES DEL PRODUCTO (Image 1)                      -->
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <section class="carulla-details-accordion" id="detalles-producto">
+            <div class="carulla-accordion-header is-open" onclick="toggleAcordeon(this)">
+                <h2 class="carulla-accordion-title">Detalles del producto</h2>
+                <i class="fas fa-chevron-up carulla-accordion-chevron"></i>
+            </div>
+
+            <div class="carulla-accordion-content" id="acordeonContenido">
+                <div class="carulla-specs-grid">
+                    <div class="carulla-spec-pill">
+                        <div class="carulla-spec-label">Referencia</div>
+                        <div class="carulla-spec-val" th:text="'CUL-' + ${#strings.substring(producto.id, producto.id.length() > 8 ? producto.id.length() - 8 : 0)}">
+                            ATENDIDA**
+                        </div>
+                    </div>
+
+                    <div class="carulla-spec-pill">
+                        <div class="carulla-spec-label">País de Origen</div>
+                        <div class="carulla-spec-val">Colombia</div>
+                    </div>
+
+                    <div class="carulla-spec-pill">
+                        <div class="carulla-spec-label">Categoría</div>
+                        <div class="carulla-spec-val" th:text="${producto.categoria != null ? producto.categoria.nombre : 'General'}">
+                            Frutas
+                        </div>
+                    </div>
+
+                    <div class="carulla-spec-pill">
+                        <div class="carulla-spec-label">Unidad de Medida</div>
+                        <div class="carulla-spec-val" th:text="${producto.unidadMedida != null ? producto.unidadMedida : 'Kilogramo'}">
+                            Kg
+                        </div>
+                    </div>
+
+                    <div class="carulla-spec-pill">
+                        <div class="carulla-spec-label">Tipo de Venta</div>
+                        <div class="carulla-spec-val" th:text="${producto.tipoVenta == 'PESO' ? 'Por Peso' : 'Por Paquete/Unidad'}">
+                            Por Peso
+                        </div>
+                    </div>
+
+                    <div class="carulla-spec-pill">
+                        <div class="carulla-spec-label">Stock Total Disponible</div>
+                        <div class="carulla-spec-val" th:text="${producto.stockTotal != null ? ((producto.stockTotal % 1 == 0 ? #numbers.formatDecimal(producto.stockTotal, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(producto.stockTotal, 1, 'POINT', 1, 'COMMA')) + ' ' + (producto.unidadMedida != null ? producto.unidadMedida : 'unidades')) : '0 unidades'}">
+                            0
+                        </div>
+                    </div>
+
+                    <div class="carulla-spec-pill">
+                        <div class="carulla-spec-label">Conservación</div>
+                        <div class="carulla-spec-val">Refrigerado / Fresco</div>
+                    </div>
+
+                    <div class="carulla-spec-pill">
+                        <div class="carulla-spec-label">Instrucciones De Uso</div>
+                        <div class="carulla-spec-val">Lavar con abundante agua antes de consumir.</div>
+                    </div>
+                </div>
+
+                <div class="carulla-description-text">
+                    <p th:text="${producto.descripcion}">
+                        Descripción completa del producto.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tira de Confianza de Carulla (Image 1 Bottom) -->
+        <div class="carulla-trust-strip">
+            <div class="carulla-trust-item">
+                <div class="carulla-trust-icon">
+                    <i class="fas fa-leaf"></i>
+                </div>
+                <div class="carulla-trust-text">
+                    Más de 100 mil productos
+                    <small>Directos del campo colombiano</small>
+                </div>
+            </div>
+            <div class="carulla-trust-item">
+                <div class="carulla-trust-icon">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <div class="carulla-trust-text">
+                    Compras seguras
+                    <small>Garantía y protección en tu pago</small>
+                </div>
+            </div>
+            <div class="carulla-trust-item">
+                <div class="carulla-trust-icon">
+                    <i class="fas fa-coins"></i>
+                </div>
+                <div class="carulla-trust-text">
+                    Acumulas Puntos Cultivus
+                    <small>Ahorra con cada pedido</small>
+                </div>
+            </div>
+            <div class="carulla-trust-item">
+                <div class="carulla-trust-icon">
+                    <i class="fas fa-credit-card"></i>
+                </div>
+                <div class="carulla-trust-text">
+                    Paga en línea o en efectivo
+                    <small>Wompi, PSE, tarjetas o contraentrega</small>
+                </div>
             </div>
         </div>
+
+    </main>
+
+    <!-- Estado vacío si el producto no existe -->
+    <div class="carulla-detail-container" th:if="${producto == null}" style="text-align: center; padding: 60px 20px;">
+        <i class="fas fa-box-open" style="font-size: 3rem; color: #ccc; margin-bottom: 20px;"></i>
+        <h2>Producto no encontrado</h2>
+        <p style="color: #666;">El producto que estás buscando no existe o fue retirado de la plataforma.</p>
+        <a th:href="@{/category}" class="carulla-btn-primary" style="display:inline-flex; width:auto; margin-top:20px;">
+            Ir al catálogo
+        </a>
     </div>
 
-    <div class="detalle-container" th:if="${producto == null}">
-        <div class="empty-state">
-            <i class="fa-solid fa-face-frown"></i>
-            <h3>Producto no disponible</h3>
-            <p>Lo sentimos, este producto no existe o fue retirado.</p>
-            <a class="volver-link" th:href="@{/category}">
-                Volver al catálogo
-            </a>
-        </div>
-    </div>
+    <!-- Pie de página general -->
+    <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
 
-    <footer th:replace="fragments/footer :: siteFooter"></footer>
+    <!-- Scripts de interactividad -->
+    <script>
+        function toggleAcordeon(header) {
+            header.classList.toggle('is-open');
+            const chevron = header.querySelector('.carulla-accordion-chevron');
+            const content = document.getElementById('acordeonContenido');
+            if (content) {
+                content.classList.toggle('is-collapsed');
+            }
+        }
+
+        function toggleFavorito(btn) {
+            btn.classList.toggle('favorited');
+            const icon = btn.querySelector('i');
+            if (btn.classList.contains('favorited')) {
+                icon.className = 'fas fa-heart';
+            } else {
+                icon.className = 'far fa-heart';
+            }
+        }
+
+        function compartirProducto() {
+            if (navigator.share) {
+                navigator.share({
+                    title: document.title,
+                    url: window.location.href
+                }).catch(() => {});
+            } else {
+                navigator.clipboard.writeText(window.location.href).then(() => {
+                    alert('Enlace copiado al portapapeles');
+                });
+            }
+        }
+    </script>
 </body>
 </html>

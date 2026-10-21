@@ -58,8 +58,8 @@
             <div th:if="${param.error}" class="toast toast-error" role="alert" id="toastOAuth">
                 <i class="fas fa-exclamation-circle"></i>
                 <span th:switch="${param.error[0]}">
-                    <span th:case="'oauth_failed'">Error al iniciar sesion con Google. Intenta de nuevo.</span>
-                    <span th:case="'oauth_email'">Google no proporciono un correo valido.</span>
+                    <span th:case="'oauth_failed'">Error al iniciar sesion con el proveedor. Intenta de nuevo.</span>
+                    <span th:case="'oauth_email'">El proveedor no proporciono un correo valido.</span>
                     <span th:case="*">Error de autenticacion. Intenta de nuevo.</span>
                 </span>
                 <button type="button" class="toast-close" onclick="closeToast('toastOAuth')" aria-label="Cerrar">
@@ -106,12 +106,12 @@
                     </a>
 
                     <!-- Facebook -->
-                    <button type="button" class="social-row facebook" id="btnFacebook" disabled>
+                    <a th:href="@{/oauth2/authorization/facebook}" href="#" class="social-row facebook" id="btnFacebook">
                         <span class="social-icon-wrap">
                             <i class="fab fa-facebook-f"></i>
                         </span>
                         <span class="social-label">Continuar con Facebook</span>
-                    </button>
+                    </a>
 
                     <!-- X / Twitter -->
                     <button type="button" class="social-row twitter" id="btnTwitter" disabled>

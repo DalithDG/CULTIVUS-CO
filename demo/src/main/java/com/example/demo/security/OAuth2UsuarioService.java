@@ -15,8 +15,9 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 /**
- * Servicio que se ejecuta después de que Google autentica al usuario.
- * Recibe los datos del perfil de Google (email, nombre, foto) y:
+ * Servicio que se ejecuta después de que un proveedor OAuth2 (Google o
+ * Facebook) autentica al usuario.
+ * Recibe los datos del perfil (email, nombre, foto) y:
  * - Si el usuario ya existe en MongoDB → lo actualiza si es necesario
  * - Si es la primera vez → crea automáticamente un Usuario nuevo
  */
@@ -47,14 +48,14 @@ public class OAuth2UsuarioService extends DefaultOAuth2UserService {
 
     /**
      * Busca el usuario por email. Si no existe, lo crea con rol COMPRADOR.
-     * Si ya existe, actualiza su nombre si cambió en Google.
+     * Si ya existe, actualiza su nombre si cambió en el proveedor.
      */
     private Usuario procesarUsuarioOAuth2(OAuth2User oAuth2User) {
         String email = oAuth2User.getAttribute("email");
         String nombre = oAuth2User.getAttribute("name");
 
         if (email == null) {
-            throw new OAuth2AuthenticationException("Google no proporcionó un email válido");
+            throw new OAuth2AuthenticationException("El proveedor no proporcionó un email válido");
         }
 
         String emailLimpio = email.trim().toLowerCase();
@@ -62,7 +63,7 @@ public class OAuth2UsuarioService extends DefaultOAuth2UserService {
         Optional<Usuario> usuarioExistente = usuarioRepository.findByEmail(emailLimpio);
 
         if (usuarioExistente.isPresent()) {
-            // Usuario ya registrado — actualizar nombre si cambió en Google
+            // Usuario ya registrado — actualizar nombre si cambió en el proveedor
             Usuario usuario = usuarioExistente.get();
             if (nombre != null && !nombre.equals(usuario.getNombre())) {
                 usuario.setNombre(nombre);
@@ -71,11 +72,11 @@ public class OAuth2UsuarioService extends DefaultOAuth2UserService {
             usuarioRepository.save(usuario);
             return usuario;
         } else {
-            // Primera vez con Google → crear cuenta automáticamente
+            // Primera vez con OAuth2 → crear cuenta automáticamente
             Usuario nuevoUsuario = new Usuario();
             nuevoUsuario.setEmail(emailLimpio);
             nuevoUsuario.setNombre(nombre != null ? nombre : emailLimpio);
-            // Sin contraseña: este usuario solo puede autenticarse vía Google
+            // Sin contraseña: este usuario solo puede autenticarse vía OAuth2
             nuevoUsuario.setContrasena(null);
             nuevoUsuario.setRol(Role.COMPRADOR);
             nuevoUsuario.setUltimaConexion(java.time.LocalDateTime.now());
