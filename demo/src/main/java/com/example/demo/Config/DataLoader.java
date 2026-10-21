@@ -111,8 +111,8 @@ public class DataLoader implements CommandLineRunner {
                 "NUMBER");
         configService.guardarConfig("MAX_PRODUCTOS_VENDEDOR", "50", "Cantidad máxima de productos activos por vendedor",
                 "NUMBER");
-        configService.guardarConfig("COMISION_VENTA_PORCENTAJE", "5.0",
-                "Porcentaje de comisión que cobra la plataforma por cada venta (%)", "NUMBER");
+        configService.guardarConfig("COMISION_VENTA_PORCENTAJE", "8.0",
+                "Porcentaje de comisión que cobra la plataforma sobre los productos de cada venta, sin envío (%)", "NUMBER");
         configService.guardarConfig("MENSAJE_BIENVENIDA", "¡Bienvenido a Cultivus! Del campo a tu mesa.",
                 "Mensaje que se muestra en el inicio", "STRING");
 

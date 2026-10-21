@@ -57,6 +57,7 @@ class DataLoaderTest {
         admin.setContrasena(encodedPassword);
 
         when(usuarioRepository.findByEmail(ADMIN_EMAIL)).thenReturn(Optional.of(admin));
+        when(passwordEncoder.matches("Admin1234!", encodedPassword)).thenReturn(true);
 
         dataLoader.run();
 

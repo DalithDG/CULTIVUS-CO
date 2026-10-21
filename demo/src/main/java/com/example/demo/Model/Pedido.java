@@ -6,6 +6,7 @@ import com.example.demo.Model.embebidos.DatosVendedor;
 import com.example.demo.Model.embebidos.DireccionPedido;
 import com.example.demo.Model.embebidos.ProductoPedido;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -16,15 +17,33 @@ import java.util.List;
 @Document(collection = "pedidos")
 public class Pedido {
 
+    public static final String EN_REVISION = "EN_REVISION";
+
     @Id
     private String id;
+
+    // US-21: compra (pago único) a la que pertenece este sub-pedido. Null en pedidos antiguos.
+    @Indexed
+    @Field("compra_id")
+    private String compraId;
 
     @Field("vendedor")
     private DatosVendedor vendedor;
 
-    // PENDIENTE, CONFIRMADO, ENVIADO, ENTREGADO, CANCELADO
+    // PENDIENTE, CONFIRMADO, ENVIADO, ENTREGADO, CANCELADO,
+    // EN_REVISION (pagado pero sin stock al confirmar: el admin gestiona el reembolso manual)
     @Field("estado")
     private String estado = "PENDIENTE";
+
+    // Subtotal de productos de este sub-pedido en centavos (base para abonar al vendedor en US-22)
+    @Field("subtotal_centavos")
+    private Long subtotalCentavos;
+
+    @Field("requiere_revision")
+    private boolean requiereRevision;
+
+    @Field("motivo_revision")
+    private String motivoRevision;
 
     @Field("fecha_pedido")
     private LocalDateTime fechaPedido;
@@ -92,9 +111,54 @@ public class Pedido {
         return "CLT-" + suffix.toUpperCase();
     }
 
+    /** Etiqueta legible del estado para las vistas del comprador. */
+    public String getEstadoEtiqueta() {
+        String e = estado == null ? "" : estado.toUpperCase();
+        switch (e) {
+            case "PENDIENTE": return "Pendiente de pago";
+            case "CONFIRMADO": return "Confirmado";
+            case "EN_PROCESO":
+            case "PROCESANDO": return "En preparación";
+            case "ENVIADO": return "Enviado";
+            case "ENTREGADO":
+            case "COMPLETADO": return "Entregado";
+            case "CANCELADO": return "Cancelado";
+            case EN_REVISION: return "En revisión";
+            default: return estado != null ? estado : "Pendiente";
+        }
+    }
+
+    /** Sufijo CSS del estado: pendiente, confirmado, proceso, enviado, completado, cancelado, revision. */
+    public String getEstadoCss() {
+        String e = estado == null ? "" : estado.toUpperCase();
+        switch (e) {
+            case "CONFIRMADO": return "confirmado";
+            case "EN_PROCESO":
+            case "PROCESANDO": return "proceso";
+            case "ENVIADO": return "enviado";
+            case "ENTREGADO":
+            case "COMPLETADO": return "completado";
+            case "CANCELADO": return "cancelado";
+            case EN_REVISION: return "revision";
+            default: return "pendiente";
+        }
+    }
+
     // Getters y Setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
+
+    public String getCompraId() { return compraId; }
+    public void setCompraId(String compraId) { this.compraId = compraId; }
+
+    public Long getSubtotalCentavos() { return subtotalCentavos; }
+    public void setSubtotalCentavos(Long subtotalCentavos) { this.subtotalCentavos = subtotalCentavos; }
+
+    public boolean isRequiereRevision() { return requiereRevision; }
+    public void setRequiereRevision(boolean requiereRevision) { this.requiereRevision = requiereRevision; }
+
+    public String getMotivoRevision() { return motivoRevision; }
+    public void setMotivoRevision(String motivoRevision) { this.motivoRevision = motivoRevision; }
 
     public DatosVendedor getVendedor() { return vendedor; }
     public void setVendedor(DatosVendedor vendedor) { this.vendedor = vendedor; }

@@ -84,6 +84,12 @@
         .mp-badge--completado::before { background: #22c55e; }
         .mp-badge--cancelado { background: #fff1f2; color: #be123c; }
         .mp-badge--cancelado::before { background: #f43f5e; }
+        .mp-badge--confirmado { background: #ecfdf5; color: #047857; }
+        .mp-badge--confirmado::before { background: #10b981; }
+        .mp-badge--revision { background: #fef2f2; color: #b91c1c; }
+        .mp-badge--revision::before { background: #ef4444; }
+        .mp-badge--enviado { background: #eff6ff; color: #1d4ed8; }
+        .mp-badge--enviado::before { background: #3b82f6; }
 
         /* Card body */
         .mp-card__body { padding: 18px 22px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
@@ -551,120 +557,211 @@
         </div>
 
         <!-- Order list -->
-        <div class="mp-list" id="orderList" th:if="${pedidos != null and !pedidos.isEmpty()}">
+        <div class="mp-list" id="orderList" th:if="${(compras != null and !compras.isEmpty()) or (pedidos != null and !pedidos.isEmpty())}">
 
-            <div th:each="pedido : ${pedidos}"
-                 class="mp-card"
-                 th:data-estado="${pedido.estado}">
+            <!-- Compras agrupadas multi-vendedor (US-21 Item 8) -->
+            <th:block th:if="${compras != null and !compras.isEmpty()}">
+                <div th:each="compra : ${compras}"
+                     class="mp-card"
+                     th:data-estado="${compra.estado}">
 
-                <!-- Card top bar -->
-                <div class="mp-card__top">
-                    <div style="display:flex;align-items:center;gap:12px;">
-                        <div class="mp-card__order-id">
-                            <div class="id-icon"><i class="fa-solid fa-receipt"></i></div>
-                            <div>
-                                <div th:text="${pedido.numeroFactura}">CLT-XXXXXX</div>
-                                <div class="mp-card__date">
-                                    <i class="fa-regular fa-calendar"></i>
-                                    <span th:text="${#temporals.format(pedido.fechaPedido, 'dd/MM/yyyy')}">01/01/2024</span>
+                    <!-- Card top bar -->
+                    <div class="mp-card__top" style="background: linear-gradient(135deg, #f8fafc, #f1f5f9);">
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <div class="mp-card__order-id">
+                                <div class="id-icon" style="background: linear-gradient(135deg, #16a34a, #15803d);"><i class="fa-solid fa-layer-group"></i></div>
+                                <div>
+                                    <div style="font-weight: 800; font-size: 1.02rem;">
+                                        Compra <span th:text="${compra.referenciaPago}">CUL-XXXXXX</span>
+                                    </div>
+                                    <div class="mp-card__date">
+                                        <i class="fa-regular fa-calendar"></i>
+                                        <span th:text="${#temporals.format(compra.fecha, 'dd/MM/yyyy HH:mm')}">01/01/2026</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="mp-badge"
+                                  th:classappend="'mp-badge--' + ${compra.estadoCss}"
+                                  th:text="${compra.estadoEtiqueta}">
+                            </span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 14px;">
+                            <div style="text-align: right;">
+                                <div style="font-size: 0.72rem; color: #64748b; font-weight: 600; text-transform: uppercase;">Total Transacción</div>
+                                <div style="font-size: 1.2rem; font-weight: 800; color: #16a34a;">
+                                    $<span th:text="${#numbers.formatDecimal(compra.total, 0, 'COMMA', 0, 'POINT')}">0</span>
                                 </div>
                             </div>
                         </div>
-                        <span class="mp-badge"
-                              th:classappend="${pedido.estado == 'PENDIENTE' ? 'mp-badge--pendiente' :
-                                              (pedido.estado == 'CANCELADO'  ? 'mp-badge--cancelado'  :
-                                              (pedido.estado == 'EN_PROCESO' || pedido.estado == 'PROCESANDO' ? 'mp-badge--proceso' :
-                                              'mp-badge--completado'))}"
-                              th:text="${pedido.estado == 'EN_PROCESO' || pedido.estado == 'PROCESANDO' ? 'En Tránsito' :
-                                       (pedido.estado == 'PENDIENTE' ? 'Pendiente' :
-                                       (pedido.estado == 'CANCELADO' ? 'Cancelado' : 'Entregado'))}">
-                        </span>
                     </div>
-                    <i class="fa-regular fa-calendar-check mp-card__calendar"></i>
-                </div>
 
-                <!-- Card body -->
-                <div class="mp-card__body">
+                    <!-- Sub-pedidos -->
+                    <div style="padding: 16px 20px; background: #ffffff;">
+                        <div style="font-size: 0.78rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                            <i class="fa-solid fa-basket-shopping" style="color: #27ae60;"></i>
+                            Sub-pedidos por Agricultor (<span th:text="${compra.subPedidos != null ? compra.subPedidos.size() : 0}">0</span>)
+                        </div>
 
-                    <!-- Product image strip -->
-                    <div class="mp-card__images">
-                        <th:block th:each="item, iter : ${pedido.items}" th:if="${iter.index < 2}">
-                            <div class="mp-card__img">
-                                <th:block th:if="${item.imagenSnapshot != null and item.imagenSnapshot != ''}">
-                                    <img th:src="${item.imagenSnapshot}"
-                                         th:alt="${item.nombreSnapshot}"
-                                         onerror="this.parentElement.innerHTML='<i class=\'fa-solid fa-leaf\'></i>'">
-                                </th:block>
-                                <th:block th:if="${item.imagenSnapshot == null or item.imagenSnapshot == ''}">
-                                    <i class="fa-solid fa-leaf"></i>
-                                </th:block>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <div th:each="sub : ${compra.subPedidos}"
+                                 style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 16px; background: #fbfcfd; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+
+                                <div style="display: flex; align-items: center; gap: 14px; min-width: 220px; flex: 1;">
+                                    <div class="mp-card__images">
+                                        <th:block th:each="item, iter : ${sub.items}" th:if="${iter.index < 2}">
+                                            <div class="mp-card__img" style="width: 44px; height: 44px;">
+                                                <th:block th:if="${item.imagenSnapshot != null and item.imagenSnapshot != ''}">
+                                                    <img th:src="${item.imagenSnapshot}"
+                                                         th:alt="${item.nombreSnapshot}"
+                                                         onerror="this.parentElement.innerHTML='<i class=\'fa-solid fa-leaf\'></i>'">
+                                                </th:block>
+                                                <th:block th:if="${item.imagenSnapshot == null or item.imagenSnapshot == ''}">
+                                                    <i class="fa-solid fa-leaf"></i>
+                                                </th:block>
+                                            </div>
+                                        </th:block>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 700; color: #1e293b; font-size: 0.92rem;">
+                                            <span th:text="${sub.vendedor != null and sub.vendedor.razonSocial != null ? sub.vendedor.razonSocial : (sub.vendedor != null and sub.vendedor.nombre != null ? sub.vendedor.nombre : 'Productor Local')}">Tienda</span>
+                                            <span style="font-size: 0.78rem; color: #64748b; font-weight: normal; margin-left: 6px;" th:text="'(' + ${sub.numeroFactura} + ')'">(CLT-000)</span>
+                                        </div>
+                                        <div style="font-size: 0.8rem; color: #64748b; margin-top: 2px;">
+                                            <span th:text="${sub.items != null ? sub.items.size() : 0}">0</span> artículo(s) · Subtotal: <strong style="color: #15803d;">$<span th:text="${#numbers.formatDecimal(sub.total, 0, 'COMMA', 0, 'POINT')}">0</span></strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+                                    <span class="mp-badge"
+                                          th:classappend="'mp-badge--' + ${sub.estadoCss}"
+                                          th:text="${sub.estadoEtiqueta}">
+                                        Confirmado
+                                    </span>
+                                    <button type="button" class="mp-btn mp-btn--outline" style="padding: 7px 14px; font-size: 0.8rem;"
+                                            th:attr="data-modal-target='pedidoModal-' + ${sub.id}">
+                                        <i class="fa-solid fa-eye"></i> Ver detalle
+                                    </button>
+                                </div>
                             </div>
-                        </th:block>
-                        <div class="mp-card__img mp-card__img-more"
-                             th:if="${pedido.items != null and pedido.items.size() > 2}"
-                             th:text="'+' + (${pedido.items.size() - 2})">+N</div>
-                    </div>
-
-                    <!-- Store info -->
-                    <div class="mp-card__info">
-                        <div class="mp-card__info-label"><i class="fa-solid fa-store"></i> Tienda</div>
-                        <div class="mp-card__info-value"
-                             th:text="${pedido.vendedor != null and pedido.vendedor.razonSocial != null ? pedido.vendedor.razonSocial : (pedido.vendedor != null and pedido.vendedor.nombre != null ? pedido.vendedor.nombre : 'Productor Local')}">
                         </div>
-                    </div>
-
-                    <!-- Seller name -->
-                    <div class="mp-card__info">
-                        <div class="mp-card__info-label"><i class="fa-solid fa-user"></i> Vendedor</div>
-                        <div class="mp-card__info-value"
-                             th:text="${pedido.vendedor != null and pedido.vendedor.nombre != null ? pedido.vendedor.nombre : 'Usuario Cultivus'}">
-                        </div>
-                    </div>
-
-                    <!-- Payment method -->
-                    <div class="mp-card__info">
-                        <div class="mp-card__info-label"><i class="fa-solid fa-credit-card"></i> Pago</div>
-                        <div class="mp-card__info-value"
-                             th:text="${pedido.pago != null and pedido.pago.metodo != null ? pedido.pago.metodo : 'No especificado'}">
-                        </div>
-                    </div>
-
-                    <!-- Items count -->
-                    <div class="mp-card__info">
-                        <div class="mp-card__info-label"><i class="fa-solid fa-boxes-stacked"></i> Artículos</div>
-                        <div class="mp-card__info-value">
-                            <span th:text="${pedido.items != null ? pedido.items.size() : 0}">0</span> ítems
-                        </div>
-                    </div>
-
-                    <!-- Shipping address -->
-                    <div class="mp-card__info">
-                        <div class="mp-card__info-label"><i class="fa-solid fa-location-dot"></i> Dirección</div>
-                        <div class="mp-card__info-value"
-                             th:text="${pedido.direccionEntrega != null ? ((pedido.direccionEntrega.direccion != null ? pedido.direccionEntrega.direccion : '') + (pedido.direccionEntrega.ciudad != null ? ', ' + pedido.direccionEntrega.ciudad : '')) : 'No especificada'}">
-                        </div>
-                    </div>
-
-                    <!-- Total -->
-                    <div class="mp-card__info">
-                        <div class="mp-card__info-label"><i class="fa-solid fa-tag"></i> Total</div>
-                        <div class="mp-card__total">
-                            $<span th:text="${pedido.total != null ? #numbers.formatDecimal(pedido.total, 0, 'COMMA', 0, 'POINT') : '0'}">0</span>
-                        </div>
-                    </div>
-
-                    <!-- Actions -->
-                    <div class="mp-card__actions">
-                        <button type="button" class="mp-btn mp-btn--outline"
-                                th:attr="data-modal-target='pedidoModal-' + ${pedido.id}">
-                            <i class="fa-solid fa-eye"></i> Ver detalle
-                        </button>
-                        <a th:href="@{/usuario/pedidos/{id}(id=${pedido.id})}"
-                           class="mp-btn mp-btn--primary">
-                            <i class="fa-solid fa-file-invoice"></i> Factura
-                        </a>
                     </div>
                 </div>
+            </th:block>
+
+            <!-- Pedidos individuales / legacy (si no hay compras o pedidos huérfanos) -->
+            <th:block th:if="${compras == null || compras.isEmpty() || (pedidosSinCompra != null and !pedidosSinCompra.isEmpty())}">
+                <div th:each="pedido : ${(compras == null || compras.isEmpty()) ? pedidos : pedidosSinCompra}"
+                     class="mp-card"
+                     th:data-estado="${pedido.estado}">
+
+                    <!-- Card top bar -->
+                    <div class="mp-card__top">
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <div class="mp-card__order-id">
+                                <div class="id-icon"><i class="fa-solid fa-receipt"></i></div>
+                                <div>
+                                    <div th:text="${pedido.numeroFactura}">CLT-XXXXXX</div>
+                                    <div class="mp-card__date">
+                                        <i class="fa-regular fa-calendar"></i>
+                                        <span th:text="${#temporals.format(pedido.fechaPedido, 'dd/MM/yyyy')}">01/01/2024</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="mp-badge"
+                                  th:classappend="'mp-badge--' + ${pedido.estadoCss}"
+                                  th:text="${pedido.estadoEtiqueta}">
+                            </span>
+                        </div>
+                        <i class="fa-regular fa-calendar-check mp-card__calendar"></i>
+                    </div>
+
+                    <!-- Card body -->
+                    <div class="mp-card__body">
+
+                        <!-- Product image strip -->
+                        <div class="mp-card__images">
+                            <th:block th:each="item, iter : ${pedido.items}" th:if="${iter.index < 2}">
+                                <div class="mp-card__img">
+                                    <th:block th:if="${item.imagenSnapshot != null and item.imagenSnapshot != ''}">
+                                        <img th:src="${item.imagenSnapshot}"
+                                             th:alt="${item.nombreSnapshot}"
+                                             onerror="this.parentElement.innerHTML='<i class=\'fa-solid fa-leaf\'></i>'">
+                                    </th:block>
+                                    <th:block th:if="${item.imagenSnapshot == null or item.imagenSnapshot == ''}">
+                                        <i class="fa-solid fa-leaf"></i>
+                                    </th:block>
+                                </div>
+                            </th:block>
+                            <div class="mp-card__img mp-card__img-more"
+                                 th:if="${pedido.items != null and pedido.items.size() > 2}"
+                                 th:text="'+' + (${pedido.items.size() - 2})">+N</div>
+                        </div>
+
+                        <!-- Store info -->
+                        <div class="mp-card__info">
+                            <div class="mp-card__info-label"><i class="fa-solid fa-store"></i> Tienda</div>
+                            <div class="mp-card__info-value"
+                                 th:text="${pedido.vendedor != null and pedido.vendedor.razonSocial != null ? pedido.vendedor.razonSocial : (pedido.vendedor != null and pedido.vendedor.nombre != null ? pedido.vendedor.nombre : 'Productor Local')}">
+                            </div>
+                        </div>
+
+                        <!-- Seller name -->
+                        <div class="mp-card__info">
+                            <div class="mp-card__info-label"><i class="fa-solid fa-user"></i> Vendedor</div>
+                            <div class="mp-card__info-value"
+                                 th:text="${pedido.vendedor != null and pedido.vendedor.nombre != null ? pedido.vendedor.nombre : 'Usuario Cultivus'}">
+                            </div>
+                        </div>
+
+                        <!-- Payment method -->
+                        <div class="mp-card__info">
+                            <div class="mp-card__info-label"><i class="fa-solid fa-credit-card"></i> Pago</div>
+                            <div class="mp-card__info-value"
+                                 th:text="${pedido.pago != null and pedido.pago.metodo != null ? pedido.pago.metodo : 'No especificado'}">
+                            </div>
+                        </div>
+
+                        <!-- Items count -->
+                        <div class="mp-card__info">
+                            <div class="mp-card__info-label"><i class="fa-solid fa-boxes-stacked"></i> Artículos</div>
+                            <div class="mp-card__info-value">
+                                <span th:text="${pedido.items != null ? pedido.items.size() : 0}">0</span> ítems
+                            </div>
+                        </div>
+
+                        <!-- Shipping address -->
+                        <div class="mp-card__info">
+                            <div class="mp-card__info-label"><i class="fa-solid fa-location-dot"></i> Dirección</div>
+                            <div class="mp-card__info-value"
+                                 th:text="${pedido.direccionEntrega != null ? ((pedido.direccionEntrega.direccion != null ? pedido.direccionEntrega.direccion : '') + (pedido.direccionEntrega.ciudad != null ? ', ' + pedido.direccionEntrega.ciudad : '')) : 'No especificada'}">
+                            </div>
+                        </div>
+
+                        <!-- Total -->
+                        <div class="mp-card__info">
+                            <div class="mp-card__info-label"><i class="fa-solid fa-tag"></i> Total</div>
+                            <div class="mp-card__total">
+                                $<span th:text="${pedido.total != null ? #numbers.formatDecimal(pedido.total, 0, 'COMMA', 0, 'POINT') : '0'}">0</span>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="mp-card__actions">
+                            <button type="button" class="mp-btn mp-btn--outline"
+                                    th:attr="data-modal-target='pedidoModal-' + ${pedido.id}">
+                                <i class="fa-solid fa-eye"></i> Ver detalle
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </th:block>
+
+        </div>
+
+        <!-- Detail modals para todos los pedidos -->
+        <th:block th:if="${pedidos != null}">
+            <div th:each="pedido : ${pedidos}">
 
                 <!-- Detail modal -->
                 <dialog class="order-modal" th:id="'pedidoModal-' + ${pedido.id}">
@@ -680,13 +777,8 @@
                                     <h2>
                                         <span>Pedido <span th:text="${pedido.numeroFactura}">CLT-XXXXXX</span></span>
                                         <span class="mp-badge"
-                                              th:classappend="${pedido.estado == 'PENDIENTE' ? 'mp-badge--pendiente' :
-                                                              (pedido.estado == 'CANCELADO'  ? 'mp-badge--cancelado'  :
-                                                              (pedido.estado == 'EN_PROCESO' || pedido.estado == 'PROCESANDO' ? 'mp-badge--proceso' :
-                                                              'mp-badge--completado'))}"
-                                              th:text="${pedido.estado == 'EN_PROCESO' || pedido.estado == 'PROCESANDO' ? 'En Tránsito' :
-                                                       (pedido.estado == 'PENDIENTE' ? 'Pendiente' :
-                                                       (pedido.estado == 'CANCELADO' ? 'Cancelado' : 'Entregado'))}">
+                                              th:classappend="'mp-badge--' + ${pedido.estadoCss}"
+                                              th:text="${pedido.estadoEtiqueta}">
                                         </span>
                                     </h2>
                                     <p>
@@ -723,13 +815,8 @@
                                     <div class="omc__label"><i class="fa-solid fa-truck-fast"></i> Estado del pedido</div>
                                     <div class="omc__value">
                                         <span class="mp-badge"
-                                              th:classappend="${pedido.estado == 'PENDIENTE' ? 'mp-badge--pendiente' :
-                                                              (pedido.estado == 'CANCELADO'  ? 'mp-badge--cancelado'  :
-                                                              (pedido.estado == 'EN_PROCESO' || pedido.estado == 'PROCESANDO' ? 'mp-badge--proceso' :
-                                                              'mp-badge--completado'))}"
-                                              th:text="${pedido.estado == 'EN_PROCESO' || pedido.estado == 'PROCESANDO' ? 'En Tránsito' :
-                                                       (pedido.estado == 'PENDIENTE' ? 'Pendiente' :
-                                                       (pedido.estado == 'CANCELADO' ? 'Cancelado' : 'Entregado'))}">
+                                              th:classappend="'mp-badge--' + ${pedido.estadoCss}"
+                                              th:text="${pedido.estadoEtiqueta}">
                                         </span>
                                     </div>
                                 </div>
@@ -854,8 +941,7 @@
                     </div>
                 </dialog>
             </div>
-
-        </div>
+        </th:block>
     </div>
 
     <!-- Flash messages -->
@@ -872,7 +958,7 @@
         const tabMap = {
             todos:      () => true,
             entregados: s => s === 'COMPLETADO' || s === 'ENTREGADO',
-            proceso:    s => s === 'EN_PROCESO' || s === 'PROCESANDO',
+            proceso:    s => s === 'CONFIRMADO' || s === 'PAGADA' || s === 'EN_PROCESO' || s === 'PROCESANDO' || s === 'ENVIADO' || s === 'EN_REVISION' || s === 'REVISION',
             pendiente:  s => s === 'PENDIENTE',
         };
 

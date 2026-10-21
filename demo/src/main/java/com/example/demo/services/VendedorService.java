@@ -182,7 +182,7 @@ public class VendedorService {
     public double calcularTotalVentas(String vendedorId) {
         List<Pedido> pedidos = pedidoRepository.findByVendedor_Id(vendedorId);
         return pedidos.stream()
-                .filter(p -> !"CANCELADO".equals(p.getEstado())) // Consideramos ventas no canceladas
+                .filter(p -> !"CANCELADO".equalsIgnoreCase(p.getEstado()) && !"PENDIENTE".equalsIgnoreCase(p.getEstado())) // Solo ventas confirmadas o en curso
                 .mapToDouble(Pedido::getTotal)
                 .sum();
     }

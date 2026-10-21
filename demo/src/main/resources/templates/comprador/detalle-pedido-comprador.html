@@ -76,6 +76,26 @@
             color: #155724;
         }
 
+        .estado-confirmado {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .estado-revision {
+            background: #fef3c7;
+            color: #b45309;
+        }
+
+        .estado-cancelado {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        .estado-enviado {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
         .productos-table {
             width: 100%;
             border-collapse: collapse;
@@ -160,11 +180,8 @@
                     <div class="info-item">
                         <strong><i class="fa-solid fa-truck"></i> Estado del Envío:</strong>
                         <span class="estado-badge" 
-                              th:classappend="${pedido.estado == 'PENDIENTE' ? 'estado-pendiente' : 
-                                             (pedido.estado == 'EN_PROCESO' || pedido.estado == 'PROCESANDO' ? 'estado-proceso' : 
-                                             'estado-completado')}"
-                              th:text="${pedido.estado == 'EN_PROCESO' || pedido.estado == 'PROCESANDO' ? 'En preparación' : 
-                                       (pedido.estado == 'PENDIENTE' ? 'Pendiente' : 'Entregado')}">
+                              th:classappend="'estado-' + ${pedido.estadoCss}"
+                              th:text="${pedido.estadoEtiqueta}">
                         </span>
                     </div>
                 </div>

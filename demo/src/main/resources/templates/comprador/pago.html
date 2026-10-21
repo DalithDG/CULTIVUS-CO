@@ -3,397 +3,771 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pago - Cultivus</title>
+    <title>Finalizar Compra - Cultivus</title>
     <link rel="stylesheet" th:href="@{/style.css}">
+    <link rel="stylesheet" th:href="@{/header.css}">
+    <link rel="stylesheet" th:href="@{/footer.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        .pago-layout {
+        :root {
+            --primary: #27ae60;
+            --primary-dark: #1e8449;
+            --primary-light: #e8f8f0;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --bg-page: #f8fafc;
+            --card-bg: #ffffff;
+            --danger: #ef4444;
+            --danger-bg: #fef2f2;
+            --radius: 12px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 14px -2px rgba(0,0,0,0.08);
+        }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-main);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        .checkout-container {
+            max-width: 1180px;
+            margin: 30px auto 60px;
+            padding: 0 20px;
+        }
+
+        .checkout-header {
+            margin-bottom: 25px;
+        }
+
+        .btn-volver {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 12px;
+            transition: color 0.2s;
+        }
+
+        .btn-volver:hover {
+            color: var(--primary);
+        }
+
+        .checkout-title {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .checkout-title i {
+            color: var(--primary);
+        }
+
+        .checkout-subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* ── Grid principal ── */
+        .checkout-grid {
             display: grid;
             grid-template-columns: 1fr 400px;
-            gap: 30px;
+            gap: 28px;
+            align-items: start;
         }
-        .form-section {
-            background: white;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
+        /* ── Cards ── */
+        .card-checkout {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 28px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
         }
-        .resumen-section {
-            background: white;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            height: fit-content;
-            position: sticky;
-            top: 100px;
-        }
-        .metodo-pago {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .metodo-option {
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 15px;
-            cursor: pointer;
-            transition: all 0.3s;
-            text-align: center;
-            display: block;
-        }
-        .metodo-option:hover {
-            border-color: #27ae60;
-        }
-        /* ✅ Fix para que los radio buttons sean visibles */
-        .metodo-option input[type="radio"] {
-            width: auto !important;
-            margin-right: 8px;
-        }
-        .metodo-option.selected {
-            border-color: #27ae60;
-            background: #f0fdf4;
-        }
-        .resumen-titulo {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: #333;
-        }
-        .resumen-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-            color: #666;
-        }
-        .resumen-total {
-            display: flex;
-            justify-content: space-between;
-            font-size: 24px;
-            font-weight: bold;
-            color: #27ae60;
-            padding-top: 20px;
-            border-top: 2px solid #e0e0e0;
-            margin-top: 20px;
-        }
-        .producto-resumen {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 15px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-        .producto-resumen:last-child {
-            border-bottom: none;
-        }
-        .producto-resumen img {
-            width: 60px;
-            height: 60px;
-            object-fit: cover;
-            border-radius: 6px;
-        }
-        .producto-resumen-info {
-            flex: 1;
-        }
-        .btn-pagar {
-            width: 100%;
-            padding: 15px;
-            background: #27ae60;
-            color: white;
-            border: none;
-            border-radius: 8px;
+
+        .card-title {
             font-size: 18px;
             font-weight: 600;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: background 0.3s;
+            color: var(--text-main);
+            margin: 0 0 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        .btn-pagar:hover {
-            background: #219a52;
+
+        .card-title i {
+            color: var(--primary);
         }
-        .alert {
-            padding: 15px;
+
+        /* ── Formulario de Entrega ── */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .form-row.single {
+            grid-template-columns: 1fr;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-field label {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .form-field label span.required {
+            color: var(--danger);
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1.5px solid var(--border-color);
             border-radius: 8px;
+            font-size: 14px;
+            color: var(--text-main);
+            background: #ffffff;
+            transition: all 0.2s;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.12);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 70px;
+        }
+
+        .input-hint {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        /* ── Banner de Cobertura y Disponibilidad ── */
+        .info-cobertura {
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 8px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
             margin-bottom: 20px;
+            font-size: 13px;
+            color: #166534;
         }
-        .alert-error {
-            background: #f8d7da;
-            color: #721c24;
+
+        .info-cobertura i {
+            font-size: 18px;
+            color: var(--primary);
+            margin-top: 1px;
         }
-        .seguridad-box {
-            background: #f8f9fa;
+
+        /* ── Caja de Pago Seguro Wompi ── */
+        .wompi-box {
+            background: #fafaf9;
+            border: 1.5px solid #e7e5e4;
+            border-radius: 10px;
             padding: 20px;
-            border-radius: 8px;
-            margin-top: 30px;
+            margin-top: 24px;
         }
-        @media (max-width: 768px) {
-            .pago-layout {
+
+        .wompi-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .wompi-logo-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            color: #1c1917;
+        }
+
+        .badge-seguro {
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .wompi-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.5;
+            margin-bottom: 14px;
+        }
+
+        .payment-methods-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 18px;
+        }
+
+        .pay-badge {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 5px 10px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #475569;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-pagar {
+            width: 100%;
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #27ae60 0%, #219a52 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.25);
+        }
+
+        .btn-pagar:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(39, 174, 96, 0.35);
+            background: linear-gradient(135deg, #219a52 0%, #1e8449 100%);
+        }
+
+        .btn-pagar:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* ── Columna Derecha: Resumen de Compra ── */
+        .resumen-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 24px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            position: sticky;
+            top: 90px;
+        }
+
+        .resumen-items-list {
+            max-height: 280px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding-right: 4px;
+        }
+
+        .item-resumen {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .item-resumen:last-child {
+            border-bottom: none;
+        }
+
+        .item-img {
+            width: 52px;
+            height: 52px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+
+        .item-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .item-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-bottom: 3px;
+        }
+
+        .item-subtext {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .item-total {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+            text-align: right;
+            white-space: nowrap;
+        }
+
+        .totales-tabla {
+            border-top: 1.5px dashed var(--border-color);
+            padding-top: 16px;
+            margin-top: 10px;
+        }
+
+        .linea-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .linea-total.destacado {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+            padding-top: 12px;
+            border-top: 1px solid var(--border-color);
+            margin-top: 10px;
+            margin-bottom: 0;
+        }
+
+        .badge-fresco {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #15803d;
+            background: #f0fdf4;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-top: 18px;
+        }
+
+        /* ── Alertas ── */
+        .alert-box {
+            padding: 14px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-danger {
+            background: var(--danger-bg);
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        @media (max-width: 860px) {
+            .checkout-grid {
                 grid-template-columns: 1fr;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            .resumen-card {
+                position: static;
             }
         }
     </style>
-    <link rel="stylesheet" th:href="@{/header.css}">
 </head>
 <body>
     <header th:replace="~{fragments/header :: siteHeader}"></header>
 
-    <div class="container">
-        <h1><i class="fa-solid fa-credit-card"></i> Proceso de Pago</h1>
+    <div class="checkout-container">
+        <div class="checkout-header">
+            <a th:href="@{/carrito}" class="btn-volver">
+                <i class="fa-solid fa-arrow-left"></i> Modificar productos del carrito
+            </a>
+            <h1 class="checkout-title">
+                <i class="fa-solid fa-credit-card"></i> Entrega y Pago
+            </h1>
+            <p class="checkout-subtitle">Ingresa tus datos de envío para procesar tu orden con Wompi de Bancolombia.</p>
+        </div>
 
-        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+        <div th:if="${error}" class="alert-box alert-danger">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span th:text="${error}"></span>
+        </div>
 
-        <div class="pago-layout">
+        <div th:if="${wompiError}" class="alert-box alert-danger">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span th:text="${wompiError}"></span>
+        </div>
 
-            <!-- ── Lado izquierdo: formulario ── -->
-            <div class="form-section">
-                <h2 style="margin-bottom: 20px; color: #333;">Información de Pago</h2>
+        <!-- Alerta dinámica de validación JS -->
+        <div id="alertJs" class="alert-box alert-danger" style="display: none;">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <span id="alertJsText"></span>
+        </div>
 
-                <form id="formPago" th:action="@{/pago/procesar}" method="post">
+        <div class="checkout-grid">
 
-                    <div th:if="${wompiError}" class="alert alert-error" th:text="${wompiError}"></div>
+            <!-- ── Columna Izquierda: Datos de Entrega y Pasarela ── -->
+            <div class="card-checkout">
+                <h2 class="card-title">
+                    <i class="fa-solid fa-location-dot"></i> Información de Entrega
+                </h2>
 
-                    <!-- Selección de pasarela -->
-                    <div class="form-group">
-                        <label>Pasarela de Pago *</label>
-                        <div class="metodo-pago">
-                            <label class="metodo-option pasarela-opt selected" onclick="selectPasarela('WOMPI', this)">
-                                <input type="radio" name="tipoPasarela" value="WOMPI" checked>
-                                <i class="fa-solid fa-lock"></i> Wompi (Bancolombia)
+                <!-- Aviso de Cobertura Regional -->
+                <div class="info-cobertura">
+                    <i class="fa-solid fa-truck-ramp-box"></i>
+                    <div>
+                        <strong>Cobertura Regional: Departamento de Bolívar</strong>
+                        <div style="margin-top: 3px; color: #15803d;">
+                            Envíos directos desde las fincas productoras a tu mesa.
+                        </div>
+                    </div>
+                </div>
+
+                <form id="formCheckout">
+                    <!-- Token CSRF inyectado por Thymeleaf -->
+                    <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+
+                    <!-- Fila 1: Receptor y Teléfono -->
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label for="receptor">
+                                <i class="fa-solid fa-user"></i> Nombre de quien recibe <span class="required">*</span>
                             </label>
-                            <label class="metodo-option pasarela-opt" onclick="selectPasarela('SIMULADA', this)">
-                                <input type="radio" name="tipoPasarela" value="SIMULADA">
-                                <i class="fa-solid fa-flask"></i> Pago simulado
+                            <input type="text" id="receptor" name="receptor" class="form-input"
+                                   th:value="${usuario != null ? usuario.nombre : ''}"
+                                   placeholder="Ej: Carlos Pérez" required>
+                        </div>
+                        <div class="form-field">
+                            <label for="telefono">
+                                <i class="fa-solid fa-phone"></i> Teléfono de contacto <span class="required">*</span>
                             </label>
+                            <input type="tel" id="telefono" name="telefono" class="form-input"
+                                   placeholder="Ej: 300 123 4567" required>
+                            <span class="input-hint">Para coordinar la entrega con el repartidor.</span>
                         </div>
                     </div>
 
-                    <!-- ✅ Radio buttons de método de pago (solo pasarela simulada) -->
-                    <div class="form-group" id="seccion-metodos-simulados" style="display: none;">
-                        <label>Método de Pago *</label>
-                        <div class="metodo-pago">
-                            <label class="metodo-option" onclick="selectMetodo(this)">
-                                <input type="radio" name="metodoPago" value="TARJETA_CREDITO">
-                                <i class="fa-solid fa-credit-card"></i> Tarjeta de Crédito
+                    <!-- Fila 2: Departamento y Municipio -->
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label for="departamento">
+                                <i class="fa-solid fa-map"></i> Departamento
                             </label>
-                            <label class="metodo-option" onclick="selectMetodo(this)">
-                                <input type="radio" name="metodoPago" value="TARJETA_DEBITO">
-                                <i class="fa-solid fa-credit-card"></i> Tarjeta de Débito
+                            <select id="departamento" name="departamento" class="form-select" readonly>
+                                <option value="Bolívar" selected>Bolívar (Cobertura Regional)</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label for="ciudad">
+                                <i class="fa-solid fa-city"></i> Ciudad / Municipio <span class="required">*</span>
                             </label>
-                            <label class="metodo-option" onclick="selectMetodo(this)">
-                                <input type="radio" name="metodoPago" value="TRANSFERENCIA">
-                                <i class="fa-solid fa-building-columns"></i> Transferencia
-                            </label>
-                            <label class="metodo-option" onclick="selectMetodo(this)">
-                                <input type="radio" name="metodoPago" value="EFECTIVO">
-                                <i class="fa-solid fa-money-bill"></i> Contra Entrega
-                            </label>
+                            <select id="ciudad" name="ciudad" class="form-select" required>
+                                <option value="Cartagena" selected>Cartagena</option>
+                                <option value="Turbaco">Turbaco</option>
+                                <option value="Arjona">Arjona</option>
+                                <option value="Turbana">Turbana</option>
+                                <option value="Magangué">Magangué</option>
+                                <option value="El Carmen de Bolívar">El Carmen de Bolívar</option>
+                                <option value="San Jacinto">San Jacinto</option>
+                                <option value="Santa Rosa">Santa Rosa</option>
+                                <option value="Santa Catalina">Santa Catalina</option>
+                                <option value="Villanueva">Villanueva</option>
+                                <option value="Otro municipio de Bolívar">Otro municipio de Bolívar</option>
+                            </select>
                         </div>
                     </div>
 
-                    <div class="form-group" style="margin-top: 20px;">
-                        <label for="direccionEnvio">
-                            <i class="fa-solid fa-location-dot"></i> Dirección de Envío (Opcional)
-                        </label>
-                        <textarea id="direccionEnvio" name="direccionEnvio" rows="3"
-                            placeholder="Ingrese la dirección de envío si es diferente a la registrada"
-                            style="width: 100%; margin-top: 8px;"></textarea>
+                    <!-- Fila 3: Dirección de la casa -->
+                    <div class="form-row single">
+                        <div class="form-field">
+                            <label for="direccion">
+                                <i class="fa-solid fa-house"></i> Dirección de entrega (Casa, apto, barrio) <span class="required">*</span>
+                            </label>
+                            <input type="text" id="direccion" name="direccion" class="form-input"
+                                   placeholder="Ej: Cra 14 # 35-22, Barrio Manga, Conjunto Las Flores Apto 302" required>
+                        </div>
                     </div>
 
-                    <div class="seguridad-box">
-                        <h3 style="margin-bottom: 15px; color: #333;">Información de Seguridad</h3>
-                        <p style="color: #666; font-size: 14px; line-height: 1.6;">
-                            <i class="fa-solid fa-shield-halved" style="color: #27ae60;"></i>
-                            Sus datos están protegidos. Este es un sistema de demostración.
-                            En producción, aquí se integraría una pasarela de pago segura.
+                    <!-- Fila 4: Código Postal (Opcional) y Notas de Entrega -->
+                    <div class="form-row">
+                        <div class="form-field">
+                            <label for="codigoPostal">
+                                <i class="fa-solid fa-envelopes-bulk"></i> Código Postal (Opcional)
+                            </label>
+                            <input type="text" id="codigoPostal" name="codigoPostal" class="form-input"
+                                   placeholder="Ej: 130001">
+                        </div>
+                        <div class="form-field">
+                            <label for="notas">
+                                <i class="fa-solid fa-comment-dots"></i> Indicaciones adicionales (Opcional)
+                            </label>
+                            <input type="text" id="notas" name="notas" class="form-input"
+                                   placeholder="Ej: Dejar en portería o tocar timbre blanco">
+                        </div>
+                    </div>
+
+                    <!-- Caja de Wompi -->
+                    <div class="wompi-box">
+                        <div class="wompi-header">
+                            <div class="wompi-logo-badge">
+                                <i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i>
+                                Pasarela Wompi · Bancolombia
+                            </div>
+                            <span class="badge-seguro">
+                                <i class="fa-solid fa-lock"></i> Pago 100% Seguro
+                            </span>
+                        </div>
+                        <p class="wompi-desc">
+                            Al hacer clic, se abrirá el widget oficial y seguro de Wompi. Tus datos bancarios están protegidos y encriptados.
                         </p>
-                    </div>
+                        <div class="payment-methods-badges">
+                            <span class="pay-badge"><i class="fa-solid fa-credit-card"></i> Tarjeta Débito / Crédito</span>
+                            <span class="pay-badge"><i class="fa-solid fa-building-columns"></i> PSE</span>
+                            <span class="pay-badge"><i class="fa-solid fa-mobile-screen"></i> Nequi</span>
+                            <span class="pay-badge"><i class="fa-solid fa-money-bill-transfer"></i> Bancolombia</span>
+                        </div>
 
-                    <button type="submit" id="btnPagar" class="btn-pagar">
-                        <i class="fa-solid fa-lock"></i> Pagar con Wompi
-                    </button>
+                        <button type="button" id="btnPagar" class="btn-pagar">
+                            <i class="fa-solid fa-lock"></i>
+                            Pagar con Wompi · $<span th:text="${#numbers.formatDecimal(total, 0, 'COMMA', 0, 'POINT')}">0</span> COP
+                        </button>
+                    </div>
                 </form>
             </div>
 
-            <!-- ── Lado derecho: resumen del pedido ── -->
-            <div class="resumen-section">
-                <div class="resumen-titulo">Resumen del Pedido</div>
+            <!-- ── Columna Derecha: Resumen de la Orden ── -->
+            <div class="resumen-card">
+                <h3 class="card-title" style="margin-bottom: 16px;">
+                    <i class="fa-solid fa-basket-shopping"></i> Resumen de Compra
+                </h3>
 
-                <div style="max-height: 300px; overflow-y: auto; margin-bottom: 20px;">
-                    <div th:each="detalle : ${detalles}" class="producto-resumen">
-                        <!-- ✅ Campos directos de ProductoCarrito -->
+                <div class="resumen-items-list">
+                    <div th:each="detalle : ${detalles}" class="item-resumen">
                         <img th:src="${detalle.imagenUrl}"
                              th:alt="${detalle.nombre}"
+                             class="item-img"
                              onerror="this.src='/images/placeholder.jpg'">
-                        <div class="producto-resumen-info">
-                            <div style="font-weight: 600; margin-bottom: 5px;"
-                                th:text="${detalle.nombre}"></div>
-                            <div style="font-size: 14px; color: #666;">
-                                <span th:text="${detalle.cantidad}">1</span> x
-                                $<span th:text="${#numbers.formatDecimal(
-                                    detalle.precioUnitario, 0, 'COMMA', 0, 'POINT')}">0</span>
+                        <div class="item-details">
+                            <div class="item-name" th:text="${detalle.nombre}">Nombre Producto</div>
+                            <div class="item-subtext">
+                                <span th:text="${detalle.cantidad}">1</span>
+                                <span th:text="${detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : 'unid'}"></span>
+                                x $<span th:text="${#numbers.formatDecimal(detalle.precioUnitario, 0, 'COMMA', 0, 'POINT')}">0</span>
                             </div>
+                        </div>
+                        <div class="item-total">
+                            $<span th:text="${#numbers.formatDecimal(detalle.subtotal, 0, 'COMMA', 0, 'POINT')}">0</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="resumen-item">
-                    <span>Subtotal:</span>
-                    <span>$<span th:text="${#numbers.formatDecimal(
-                        subtotal, 0, 'COMMA', 0, 'POINT')}">0</span></span>
+                <div class="totales-tabla">
+                    <div class="linea-total">
+                        <span>Subtotal productos:</span>
+                        <span>$<span th:text="${#numbers.formatDecimal(subtotal, 0, 'COMMA', 0, 'POINT')}">0</span></span>
+                    </div>
+                    <div class="linea-total">
+                        <span>Envío (departamental):</span>
+                        <span>$<span th:text="${#numbers.formatDecimal(costoEnvio, 0, 'COMMA', 0, 'POINT')}">0</span></span>
+                    </div>
+                    <div class="linea-total destacado">
+                        <span>Total:</span>
+                        <span>$<span th:text="${#numbers.formatDecimal(total, 0, 'COMMA', 0, 'POINT')}">0</span></span>
+                    </div>
                 </div>
-                <div class="resumen-item">
-                    <span>Envío (provisional):</span>
-                    <span>$<span th:text="${#numbers.formatDecimal(
-                        costoEnvio, 0, 'COMMA', 0, 'POINT')}">0</span></span>
-                </div>
-                <div class="resumen-total">
-                    <span>Total:</span>
-                    <span>$<span th:text="${#numbers.formatDecimal(
-                        total, 0, 'COMMA', 0, 'POINT')}">0</span></span>
+
+                <div class="badge-fresco">
+                    <i class="fa-solid fa-seedling"></i>
+                    <span>Productos frescos y directos del campo colombiano.</span>
                 </div>
             </div>
+
         </div>
     </div>
 
+    <!-- Script Oficial del Widget de Wompi -->
     <script type="text/javascript" src="https://checkout.wompi.co/widget.js"></script>
 
     <script th:inline="javascript">
         /*<![CDATA[*/
-        let pasarelaSeleccionada = 'WOMPI';
+        const serverReference = /*[[${reference}]]*/ '';
 
-        // Valores pre-renderizados por el servidor (usados como fallback para referencia inicial)
-        const serverPublicKey          = /*[[${wompiPublicKey}]]*/ '';
-        const serverCurrency           = /*[[${currency}]]*/ 'COP';
-        const serverAmountInCents      = parseInt(/*[[${amountInCents}]]*/ 0, 10);
-        const serverReference          = /*[[${reference}]]*/ '';
-        const serverSignatureIntegrity = /*[[${signatureIntegrity}]]*/ '';
-
-        function selectMetodo(element) {
-            document.querySelectorAll('#seccion-metodos-simulados .metodo-option').forEach(opt => {
-                opt.classList.remove('selected');
-            });
-            element.classList.add('selected');
-            element.querySelector('input[type="radio"]').checked = true;
+        function mostrarError(mensaje) {
+            const alertBox = document.getElementById('alertJs');
+            const alertText = document.getElementById('alertJsText');
+            alertText.textContent = mensaje;
+            alertBox.style.display = 'flex';
+            window.scrollTo({ top: alertBox.offsetTop - 80, behavior: 'smooth' });
         }
 
-        function selectPasarela(tipo, element) {
-            pasarelaSeleccionada = tipo;
-            document.querySelectorAll('.pasarela-opt').forEach(opt => opt.classList.remove('selected'));
-            element.classList.add('selected');
-            element.querySelector('input[name="tipoPasarela"]').checked = true;
-
-            const btnPagar = document.getElementById('btnPagar');
-            const seccionSimulada = document.getElementById('seccion-metodos-simulados');
-            if (tipo === 'WOMPI') {
-                if (seccionSimulada) seccionSimulada.style.display = 'none';
-                btnPagar.innerHTML = '<i class="fa-solid fa-lock"></i> Pagar con Wompi';
-            } else {
-                if (seccionSimulada) seccionSimulada.style.display = 'block';
-                btnPagar.innerHTML = '<i class="fa-solid fa-check"></i> Confirmar Pago Simulado';
-            }
+        function ocultarError() {
+            const alertBox = document.getElementById('alertJs');
+            alertBox.style.display = 'none';
         }
 
-        document.getElementById('formPago').addEventListener('submit', async function (e) {
+        document.getElementById('btnPagar').addEventListener('click', async function (e) {
             e.preventDefault();
+            ocultarError();
 
-            // ── Plan B: pasarela simulada ──
-            if (pasarelaSeleccionada === 'SIMULADA') {
-                const metodoPago = document.querySelector('input[name="metodoPago"]:checked');
-                if (!metodoPago) {
-                    alert('Por favor seleccione un método de pago simulado.');
-                    return;
-                }
-                this.submit();
+            const receptor = document.getElementById('receptor').value.trim();
+            const telefono = document.getElementById('telefono').value.trim();
+            const direccion = document.getElementById('direccion').value.trim();
+            const ciudad = document.getElementById('ciudad').value;
+            const departamento = document.getElementById('departamento').value;
+            const codigoPostal = document.getElementById('codigoPostal').value.trim();
+            const notas = document.getElementById('notas').value.trim();
+
+            // Validaciones de entrega
+            if (!receptor) {
+                mostrarError('Por favor ingresa el nombre de la persona que recibe el pedido.');
+                document.getElementById('receptor').focus();
+                return;
+            }
+            if (!telefono || telefono.length < 7) {
+                mostrarError('Por favor ingresa un número de teléfono válido para coordinar la entrega.');
+                document.getElementById('telefono').focus();
+                return;
+            }
+            if (!direccion || direccion.length < 5) {
+                mostrarError('Por favor ingresa una dirección de entrega completa (calle, carrera, casa/apto).');
+                document.getElementById('direccion').focus();
                 return;
             }
 
-            // ── Flujo Wompi Widget ──
+            // Validar que el script de Wompi haya cargado
             if (typeof WidgetCheckout === 'undefined') {
-                alert('El script de Wompi no se pudo cargar. Revisa tu conexión o bloqueadores de publicidad.');
+                mostrarError('El servicio de pago de Wompi no se pudo cargar. Revisa tu conexión a internet o desactiva bloqueadores de anuncios.');
                 return;
             }
 
             const btn = document.getElementById('btnPagar');
-            const direccionEnvio = document.getElementById('direccionEnvio')
-                ? document.getElementById('direccionEnvio').value : '';
+            const originalBtnHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Preparando pago seguro...';
 
-            // Token CSRF (Thymeleaf lo inyecta como input oculto en el formulario)
-            const csrfInput = document.querySelector('#formPago input[name="_csrf"]');
+            // Token CSRF si existe en el formulario
+            const csrfInput = document.querySelector('#formCheckout input[name="_csrf"]');
             const headers = { 'Content-Type': 'application/json' };
             if (csrfInput) headers['X-CSRF-TOKEN'] = csrfInput.value;
 
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Procesando...';
-
             try {
-                // PASO A: Registrar pedido en el servidor y obtener datos firmados
-                console.log('[Wompi] Iniciando registro del pedido. Referencia previa:', serverReference);
-
+                // Paso 1: Notificar al backend los datos de entrega y obtener firma Wompi
                 const resp = await fetch('/pago/iniciar-wompi', {
                     method: 'POST',
                     headers: headers,
-                    body: JSON.stringify({ reference: serverReference, direccionEnvio: direccionEnvio })
+                    body: JSON.stringify({
+                        reference: serverReference,
+                        receptor: receptor,
+                        telefono: telefono,
+                        direccion: direccion,
+                        ciudad: ciudad,
+                        departamento: departamento,
+                        codigoPostal: codigoPostal,
+                        notas: notas
+                    })
                 });
 
                 if (!resp.ok) {
-                    const errText = await resp.text();
-                    throw new Error('Error del servidor (' + resp.status + '): ' + errText);
+                    const errJson = await resp.json().catch(() => null);
+                    const errorMsg = errJson && errJson.error ? errJson.error : 'Error (' + resp.status + ') al contactar al servidor.';
+                    throw new Error(errorMsg);
                 }
 
                 const data = await resp.json();
-                console.log('[Wompi] Respuesta del servidor:', data);
-
                 if (!data.ok) {
-                    throw new Error(data.error || 'El servidor rechazó la solicitud de pago.');
+                    throw new Error(data.error || 'El servidor no pudo autorizar el inicio de pago.');
                 }
 
-                // PASO B: Construir redirectUrl solo si estamos en HTTPS (Wompi rechaza URLs con HTTP devolviendo 403)
+                // Paso 2: Configurar parámetros del Widget de Wompi
                 const configWidget = {
-                    currency:      data.currency,
+                    currency: data.currency,
                     amountInCents: data.amountInCents,
-                    reference:     data.reference,
-                    publicKey:     data.publicKey,
+                    reference: data.reference,
+                    publicKey: data.publicKey,
                     signature: {
                         integrity: data.signatureIntegrity
                     }
                 };
 
+                // Configurar redirección de retorno si aplica
                 if (window.location.protocol === 'https:') {
                     configWidget.redirectUrl = window.location.origin + '/pago/resultado?reference='
                         + encodeURIComponent(data.reference);
                 }
 
-                console.log('[Wompi] Abriendo widget con parámetros del servidor:', configWidget);
+                btn.innerHTML = '<i class="fa-solid fa-lock"></i> Abriendo Wompi...';
 
-                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Abriendo Wompi...';
-
-                // PASO C: Abrir el Widget con datos del servidor
+                // Paso 3: Abrir Widget de Wompi
                 const checkout = new WidgetCheckout(configWidget);
 
                 checkout.open(function (result) {
                     const transaction = result.transaction;
-                    console.log('[Wompi] Resultado del widget:', transaction);
+                    console.log('[Wompi] Transacción finalizada:', transaction);
 
                     if (transaction && transaction.id) {
-                        // Transacción procesada → ir a página de resultado
+                        // Transacción procesada por el usuario en Wompi -> Ir a página de resultado
+                        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verificando compra...';
                         window.location.href = '/pago/resultado?reference='
                             + encodeURIComponent(data.reference)
                             + '&id=' + encodeURIComponent(transaction.id);
                     } else {
-                        // Usuario canceló o cerró el widget
+                        // El usuario cerró la ventana sin pagar
                         btn.disabled = false;
-                        btn.innerHTML = '<i class="fa-solid fa-lock"></i> Pagar con Wompi';
+                        btn.innerHTML = originalBtnHtml;
                     }
                 });
 
             } catch (err) {
-                console.error('[Wompi] Error al iniciar el pago:', err);
-                alert('No se pudo iniciar el pago: ' + err.message);
+                console.error('[Wompi] Error:', err);
+                mostrarError('No se pudo iniciar el proceso de pago: ' + err.message);
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fa-solid fa-lock"></i> Pagar con Wompi';
+                btn.innerHTML = originalBtnHtml;
             }
         });
         /*]]>*/
     </script>
+
+    <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
 </body>
 </html>

@@ -27,6 +27,35 @@ public class VendedorController {
     @Autowired
     private com.example.demo.services.OfertaService ofertaService;
 
+    @Autowired(required = false)
+    private com.example.demo.services.BilleteraService billeteraService;
+
+    /**
+     * US-22: saldos por estado y movimientos de la billetera del vendedor.
+     * Solo lectura: no hay endpoints para editar ni borrar movimientos.
+     */
+    @GetMapping("/billetera")
+    public String mostrarBilletera(HttpSession session, Model model,
+            RedirectAttributes redirectAttributes) {
+
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuario == null) {
+            redirectAttributes.addFlashAttribute("error", "Debe iniciar sesión primero");
+            return "redirect:/usuario/login";
+        }
+        if (!vendedorService.esVendedor(usuario.getId())) {
+            redirectAttributes.addFlashAttribute("error", "Debe registrarse como vendedor primero");
+            return "redirect:/vendedor/registro";
+        }
+
+        model.addAttribute("usuario", usuario);
+        model.addAttribute("billetera", billeteraService != null
+                ? billeteraService.obtenerOCrearBilleteraVendedor(usuario.getId()) : null);
+        model.addAttribute("movimientos", billeteraService != null
+                ? billeteraService.listarMovimientosVendedor(usuario.getId()) : java.util.List.of());
+        return "vendedor/billetera-vendedor";
+    }
+
     /**
      * Muestra el formulario para convertirse en vendedor
      */
@@ -291,7 +320,9 @@ public class VendedorController {
         long pendientes = pedidos.stream()
                 .filter(p -> "PENDIENTE".equalsIgnoreCase(p.getEstado())).count();
         long enProceso = pedidos.stream()
-                .filter(p -> "ENVIADO".equalsIgnoreCase(p.getEstado())).count();
+                .filter(p -> "CONFIRMADO".equalsIgnoreCase(p.getEstado())
+                          || "EN_PROCESO".equalsIgnoreCase(p.getEstado())
+                          || "ENVIADO".equalsIgnoreCase(p.getEstado())).count();
         long completados = pedidos.stream()
                 .filter(p -> "ENTREGADO".equalsIgnoreCase(p.getEstado())).count();
 
