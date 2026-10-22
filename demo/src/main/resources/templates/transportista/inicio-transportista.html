@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Logística y Rutas | Cultivus</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <link rel="stylesheet" th:href="@{/header.css}">
+    <link rel="stylesheet" th:href="@{/footer.css}">
+
+    <style>
+        :root {
+            --primary: #059669;
+            --primary-dark: #065f46;
+            --primary-light: #ecfdf5;
+            --text-dark: #1f2937;
+            --text-muted: #6b7280;
+            --card-bg: #ffffff;
+            --border-color: #e5e7eb;
+        }
+
+        body {
+            background-color: #f3f4f6;
+            font-family: 'Inter', -apple-system, sans-serif;
+            margin: 0;
+            color: var(--text-dark);
+        }
+
+        .dashboard-container {
+            max-width: 1240px;
+            margin: 30px auto 50px;
+            padding: 0 20px;
+        }
+
+        /* Banner de Bienvenida */
+        .driver-hero {
+            background: linear-gradient(135deg, #065f46, #047857);
+            color: #ffffff;
+            border-radius: 16px;
+            padding: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+            box-shadow: 0 10px 25px rgba(6, 95, 70, 0.15);
+            margin-bottom: 25px;
+        }
+
+        .driver-info-group {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .driver-avatar-circle {
+            width: 68px;
+            height: 68px;
+            border-radius: 50%;
+            background: #ffffff;
+            color: #065f46;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .driver-texts h1 {
+            margin: 0 0 6px;
+            font-size: 1.6rem;
+            font-weight: 800;
+        }
+
+        .driver-badges-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .status-pill {
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-available {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-busy {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .toggle-status-form button {
+            background: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 8px;
+            padding: 10px 18px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toggle-status-form button:hover {
+            background: #ffffff;
+            color: #065f46;
+        }
+
+        /* Cuadrícula de Métricas */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+
+        @media (max-width: 900px) {
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 500px) {
+            .metrics-grid { grid-template-columns: 1fr; }
+        }
+
+        .metric-card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .metric-icon-box {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+        }
+
+        .metric-num {
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin: 0;
+            color: #111827;
+        }
+
+        .metric-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* Layout de Contenido Principal: Dos Columnas */
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 25px;
+        }
+
+        @media (max-width: 990px) {
+            .main-layout { grid-template-columns: 1fr; }
+        }
+
+        .section-box {
+            background: var(--card-bg);
+            border-radius: 14px;
+            border: 1px solid var(--border-color);
+            padding: 24px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+            margin-bottom: 25px;
+        }
+
+        .section-header-title {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #111827;
+            margin: 0 0 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Tarjeta de Pedido / Envío */
+        .order-shipment-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 14px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .order-shipment-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+            border-color: #d1d5db;
+        }
+
+        .order-shipment-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .route-stops {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin: 14px 0;
+            position: relative;
+            padding-left: 24px;
+        }
+
+        .route-stops::before {
+            content: '';
+            position: absolute;
+            left: 7px;
+            top: 10px;
+            bottom: 10px;
+            width: 2px;
+            background: #d1d5db;
+        }
+
+        .route-stop-point {
+            position: relative;
+            font-size: 0.88rem;
+            line-height: 1.4;
+        }
+
+        .route-stop-point::before {
+            content: '';
+            position: absolute;
+            left: -24px;
+            top: 4px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #fff;
+            border: 3px solid #059669;
+        }
+
+        .route-stop-point.delivery::before {
+            border-color: #2563eb;
+        }
+
+        .vehicle-spec-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 0.85rem;
+        }
+
+        .vehicle-spec-row:last-child { border-bottom: none; }
+        .vehicle-spec-row span { color: var(--text-muted); }
+        .vehicle-spec-row strong { color: #111827; }
+    </style>
+</head>
+
+<body>
+    <header th:replace="~{fragments/header :: siteHeader}"></header>
+
+    <main class="dashboard-container">
+
+        <!-- Mensajes de Alerta -->
+        <div th:if="${mensaje}" style="background: #ecfdf5; color: #065f46; padding: 14px 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #a7f3d0; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-check-circle" style="font-size: 1.2rem;"></i>
+            <span th:text="${mensaje}"></span>
+        </div>
+
+        <div th:if="${error}" style="background: #fef2f2; color: #dc2626; padding: 14px 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #fecaca; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-exclamation-circle" style="font-size: 1.2rem;"></i>
+            <span th:text="${error}"></span>
+        </div>
+
+        <!-- Banner del Transportista -->
+        <section class="driver-hero">
+            <div class="driver-info-group">
+                <div class="driver-avatar-circle">
+                    <i class="fas fa-truck-fast"></i>
+                </div>
+                <div class="driver-texts">
+                    <h1 th:text="'¡Hola, ' + ${usuario.nombre} + '!'">¡Hola, Conductor!</h1>
+                    <div class="driver-badges-row">
+                        <span class="status-pill status-available" th:if="${perfil != null and perfil.disponible}">
+                            <i class="fas fa-circle" style="font-size: 0.5rem;"></i> DISPONIBLE PARA RUTAS
+                        </span>
+                        <span class="status-pill status-busy" th:if="${perfil != null and !perfil.disponible}">
+                            <i class="fas fa-circle" style="font-size: 0.5rem;"></i> EN RUTA / NO DISPONIBLE
+                        </span>
+
+                        <span style="background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 9999px; font-size: 0.78rem;">
+                            <i class="fas fa-id-badge"></i> <span th:text="${perfil != null ? perfil.placa : 'Sin placa'}">ABC-123</span>
+                        </span>
+
+                        <span style="background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 9999px; font-size: 0.78rem;">
+                            ⭐ 5.0 (Excelente servicio)
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botón Cambiar Disponibilidad -->
+            <form th:action="@{/transportista/disponibilidad}" method="post" class="toggle-status-form" th:if="${perfil != null}">
+                <input type="hidden" name="disponible" th:value="${!perfil.disponible}">
+                <button type="submit">
+                    <i class="fas fa-arrows-rotate"></i>
+                    <span th:text="${perfil.disponible} ? 'Cambiar a: En Ruta' : 'Cambiar a: Disponible'">Cambiar Estado</span>
+                </button>
+            </form>
+        </section>
+
+        <!-- Métricas Rápidas -->
+        <section class="metrics-grid">
+            
+            <div class="metric-card">
+                <div class="metric-icon-box" style="background: #ecfdf5; color: #059669;">
+                    <i class="fas fa-boxes-packing"></i>
+                </div>
+                <div>
+                    <h3 class="metric-num" th:text="${totalPedidosDisponibles != null ? totalPedidosDisponibles : 0}">0</h3>
+                    <p class="metric-label">Envíos disponibles para tomar</p>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-icon-box" style="background: #eff6ff; color: #2563eb;">
+                    <i class="fas fa-weight-hanging"></i>
+                </div>
+                <div>
+                    <h3 class="metric-num" th:text="${perfil != null and perfil.capacidadCargaKg != null ? #numbers.formatDecimal(perfil.capacidadCargaKg, 0, 'POINT', 0, 'COMMA') + ' Kg' : '0 Kg'}">1.500 Kg</h3>
+                    <p class="metric-label">Capacidad de carga</p>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-icon-box" style="background: #fef3c7; color: #d97706;">
+                    <i class="fas fa-truck-ramp-box"></i>
+                </div>
+                <div>
+                    <h3 class="metric-num" th:text="${perfil != null and perfil.totalEntregas != null ? perfil.totalEntregas : 0}">0</h3>
+                    <p class="metric-label">Entregas completadas</p>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-icon-box" style="background: #f3e8ff; color: #7c3aed;">
+                    <i class="fas fa-snowflake" th:if="${perfil != null and perfil.refrigerado}"></i>
+                    <i class="fas fa-truck" th:if="${perfil == null or !perfil.refrigerado}"></i>
+                </div>
+                <div>
+                    <h3 class="metric-num" style="font-size: 1.15rem;" th:text="${perfil != null and perfil.refrigerado ? 'Refrigerado' : 'Estándar'}">Estándar</h3>
+                    <p class="metric-label">Cadena de frío</p>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- Contenido en Dos Columnas -->
+        <div class="main-layout">
+            
+            <!-- Columna Izquierda: Cargas y Pedidos Disponibles -->
+            <div class="left-col">
+                <div class="section-box">
+                    <div class="section-header-title">
+                        <div>
+                            <span><i class="fas fa-route" style="color: #059669;"></i> Envíos y Cargas Disponibles</span>
+                            <small style="display: block; font-size: 0.8rem; color: #6b7280; font-weight: 400; margin-top: 4px;">
+                                Cargas listas en fincas campesinas para consolidación y entrega
+                            </small>
+                        </div>
+                    </div>
+
+                    <!-- Si hay pedidos para despachar -->
+                    <div th:if="${pedidos != null and !pedidos.isEmpty()}">
+                        <div class="order-shipment-card" th:each="pedido : ${pedidos}">
+                            <div class="order-shipment-top">
+                                <div>
+                                    <strong style="color: #111827;">Pedido #<span th:text="${#strings.substring(pedido.id, pedido.id.length() > 6 ? pedido.id.length() - 6 : 0)}">123456</span></strong>
+                                    <span style="font-size: 0.75rem; color: #6b7280; margin-left: 8px;" th:text="${#temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm')}">Fecha</span>
+                                </div>
+                                <span class="status-pill" style="background: #eff6ff; color: #1d4ed8;" th:text="${pedido.estado}">CONFIRMADO</span>
+                            </div>
+
+                            <!-- Ruta Origen (Finca) -> Destino (Comprador) -->
+                            <div class="route-stops">
+                                <div class="route-stop-point">
+                                    <strong style="color: #065f46;">Origen (Finca Campesina):</strong><br>
+                                    <span th:text="${pedido.vendedor != null ? (pedido.vendedor.razonSocial != null ? pedido.vendedor.razonSocial : pedido.vendedor.nombre) : 'Finca Asociada Cultivus'}">Finca Productora</span>
+                                </div>
+                                <div class="route-stop-point delivery">
+                                    <strong style="color: #1e40af;">Destino (Entrega):</strong><br>
+                                    <span th:text="${pedido.direccionEntrega != null ? pedido.direccionEntrega.direccionCompleta : 'Dirección registrada del comprador'}">Bogotá D.C.</span>
+                                </div>
+                            </div>
+
+                            <!-- Resumen de items -->
+                            <div style="background: #f9fafb; border-radius: 8px; padding: 10px 14px; font-size: 0.85rem; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <i class="fas fa-box" style="color: #059669;"></i>
+                                    <span th:text="${pedido.items != null ? pedido.items.size() : 0} + ' producto(s) en este paquete'">1 producto</span>
+                                </div>
+                                <div style="font-weight: 700; color: #111827;" th:if="${pedido.total != null}">
+                                    Valor: $<span th:text="${#numbers.formatDecimal(pedido.total, 0, 'COMMA', 0, 'POINT')}">0</span>
+                                </div>
+                            </div>
+
+                            <!-- Botón de acción -->
+                            <div style="display: flex; gap: 10px;">
+                                <a th:href="@{/}" class="carulla-btn-primary" style="background: #059669; padding: 10px 16px; font-size: 0.85rem; border-radius: 6px; text-decoration: none; width: auto; flex: 1;">
+                                    <i class="fas fa-truck"></i> Tomar este Envío
+                                </a>
+                                <a th:href="@{/}" class="carulla-btn-primary" style="background: #f3f4f6; color: #374151; padding: 10px 16px; font-size: 0.85rem; border-radius: 6px; text-decoration: none; width: auto;">
+                                    <i class="fas fa-eye"></i> Ver Detalle
+                                </a>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Si no hay pedidos en este momento -->
+                    <div th:if="${pedidos == null or pedidos.isEmpty()}" style="text-align: center; padding: 45px 20px; color: #6b7280;">
+                        <i class="fas fa-truck-clock" style="font-size: 2.8rem; color: #d1d5db; margin-bottom: 12px; display: block;"></i>
+                        <h4 style="color: #374151; margin: 0 0 6px;">No hay cargas pendientes en tu zona</h4>
+                        <p style="font-size: 0.88rem; margin: 0;">En cuanto una finca prepare un pedido para despacho, aparecerá en esta lista.</p>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Columna Derecha: Tarjeta del Vehículo y Perfil -->
+            <div class="right-col">
+                <div class="section-box" th:if="${perfil != null}">
+                    <h3 style="font-size: 1.1rem; font-weight: 800; color: #111827; margin: 0 0 16px; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-truck" style="color: #059669;"></i> Mi Vehículo de Carga
+                    </h3>
+
+                    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 14px; text-align: center; margin-bottom: 16px;">
+                        <span style="font-size: 0.75rem; color: #047857; font-weight: 700; text-transform: uppercase;">Placa Registrada</span>
+                        <div style="font-size: 1.8rem; font-weight: 800; letter-spacing: 2px; color: #065f46;" th:text="${perfil.placa}">
+                            ABC-123
+                        </div>
+                    </div>
+
+                    <div class="vehicle-spec-row">
+                        <span>Tipo de Vehículo:</span>
+                        <strong th:text="${perfil.tipoVehiculo != null ? perfil.tipoVehiculo : 'Camioneta'}">Camioneta</strong>
+                    </div>
+
+                    <div class="vehicle-spec-row">
+                        <span>Capacidad Máxima:</span>
+                        <strong th:text="${perfil.capacidadCargaKg != null ? #numbers.formatDecimal(perfil.capacidadCargaKg, 0, 'POINT', 0, 'COMMA') + ' Kg' : 'N/A'}">1.500 Kg</strong>
+                    </div>
+
+                    <div class="vehicle-spec-row">
+                        <span>Cadena de Frío:</span>
+                        <strong th:text="${perfil.refrigerado ? 'Sí (Furgón refrigerado)' : 'No (Carga seca/ambiente)'}">No</strong>
+                    </div>
+
+                    <div class="vehicle-spec-row">
+                        <span>Licencia:</span>
+                        <strong th:text="${perfil.licenciaConduccion}">C2</strong>
+                    </div>
+
+                    <div class="vehicle-spec-row">
+                        <span>Base de Operación:</span>
+                        <strong th:text="${perfil.ciudadBase != null ? perfil.ciudadBase : 'Centro del País'}">Bogotá</strong>
+                    </div>
+
+                    <div class="vehicle-spec-row">
+                        <span>Zonas Cobertura:</span>
+                        <strong style="text-align: right; max-width: 160px;" th:text="${perfil.zonasCobertura}">Sabana, Boyacá</strong>
+                    </div>
+
+                    <div style="margin-top: 20px; padding-top: 14px; border-top: 1px solid #f3f4f6;">
+                        <span style="font-size: 0.78rem; color: #6b7280; display: block; margin-bottom: 6px;">
+                            <i class="fas fa-phone"></i> Línea de ruta: <strong th:text="${perfil.telefonoContacto}">3001234567</strong>
+                        </span>
+                        <span style="font-size: 0.75rem; color: #059669; font-weight: 600;">
+                            <i class="fas fa-shield-check"></i> Conductor Verificado por Cultivus
+                        </span>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
+</body>
+
+</html>

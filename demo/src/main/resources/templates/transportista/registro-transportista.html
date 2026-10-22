@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Únete como Transportista | Cultivus Logística</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <link rel="stylesheet" th:href="@{/header.css}">
+    <link rel="stylesheet" th:href="@{/registro-vendedor.css}">
+    <link rel="stylesheet" th:href="@{/footer.css}">
+
+    <style>
+        .transport-hero {
+            background: linear-gradient(135deg, rgba(6, 78, 59, 0.95), rgba(15, 118, 110, 0.95)), url('/images/ImageIndex1.jpg') center/cover;
+        }
+        .transport-badge {
+            background: rgba(52, 211, 153, 0.2);
+            color: #34d399;
+            border: 1px solid rgba(52, 211, 153, 0.4);
+            padding: 6px 14px;
+            border-radius: 9999px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 15px;
+        }
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        @media (max-width: 600px) {
+            .form-grid-2 { grid-template-columns: 1fr; }
+        }
+        .vehicle-type-select {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 6px;
+        }
+        .vehicle-radio-label {
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 10px 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            color: #374151;
+        }
+        .vehicle-radio-label i { font-size: 1.3rem; color: #059669; }
+        .vehicle-radio-label:hover { border-color: #059669; background: #f0fdf4; }
+        input[type="radio"]:checked + .vehicle-radio-label {
+            border-color: #059669;
+            background: #ecfdf5;
+            color: #065f46;
+            box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2);
+        }
+        .custom-checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f9fafb;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            margin: 12px 0;
+            cursor: pointer;
+        }
+        .custom-checkbox-row input {
+            width: 18px;
+            height: 18px;
+            accent-color: #059669;
+        }
+    </style>
+</head>
+
+<body>
+    <header th:replace="~{fragments/header :: siteHeader}"></header>
+
+    <main class="register-main transport-hero">
+        <div class="register-overlay"></div>
+
+        <div class="register-content">
+            <div class="register-grid">
+                
+                <!-- Columna Informativa Izquierda -->
+                <div class="info-side">
+                    <div class="transport-badge">
+                        <i class="fas fa-truck-fast"></i> Red Logística Agrícola
+                    </div>
+                    <h1>Conecta el campo con la ciudad y <span class="highlight" style="color: #34d399;">genera ingresos</span></h1>
+                    <p class="subtitle">
+                        Transporta cosechas frescas directamente desde las fincas campesinas hacia los hogares, restaurantes y comercios.
+                    </p>
+
+                    <div class="benefits-list">
+                        <div class="benefit-item">
+                            <div class="benefit-icon" style="background: rgba(52, 211, 153, 0.2); color: #34d399;">
+                                <i class="fas fa-route"></i>
+                            </div>
+                            <div class="benefit-text">
+                                <h3>Rutas Directas</h3>
+                                <p>Cargas consolidadas y trazabilidad punto a punto.</p>
+                            </div>
+                        </div>
+
+                        <div class="benefit-item">
+                            <div class="benefit-icon" style="background: rgba(52, 211, 153, 0.2); color: #34d399;">
+                                <i class="fas fa-hand-holding-dollar"></i>
+                            </div>
+                            <div class="benefit-text">
+                                <h3>Fletes Garantizados</h3>
+                                <p>Pagos puntuales y seguros directo a tu cuenta bancaria.</p>
+                            </div>
+                        </div>
+
+                        <div class="benefit-item">
+                            <div class="benefit-icon" style="background: rgba(52, 211, 153, 0.2); color: #34d399;">
+                                <i class="fas fa-toggle-on"></i>
+                            </div>
+                            <div class="benefit-text">
+                                <h3>Tú Decides Cuándo</h3>
+                                <p>Activa o pausa tu disponibilidad de transporte cuando lo desees.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 30px; padding: 18px; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                        <p style="margin: 0; font-size: 0.9rem; color: #d1fae5;">
+                            ¿Ya tienes cuenta de transportista? 
+                            <a th:href="@{/transportista/login}" style="color: #34d399; font-weight: 700; text-decoration: underline;">Inicia sesión aquí</a>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Columna Formulario Derecha -->
+                <div class="form-side">
+                    <div class="form-card">
+                        
+                        <div class="form-header">
+                            <h2>Registro de Transportista</h2>
+                            <p>Completa los datos de tu vehículo y zonas de operación</p>
+                        </div>
+
+                        <!-- Alertas de Error / Éxito -->
+                        <div th:if="${error}" class="alert alert-error" style="background: #fef2f2; color: #dc2626; padding: 12px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #fecaca; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <span th:text="${error}"></span>
+                        </div>
+
+                        <div th:if="${mensaje}" class="alert alert-success" style="background: #ecfdf5; color: #059669; padding: 12px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #a7f3d0; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-check-circle"></i>
+                            <span th:text="${mensaje}"></span>
+                        </div>
+
+                        <form th:action="@{/transportista/guardar}" method="post">
+                            
+                            <!-- Datos del Conductor si no está logueado -->
+                            <th:block th:if="${session.usuarioLogueado == null}">
+                                <div style="margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
+                                    <h4 style="color: #065f46; margin: 0 0 12px; font-size: 0.95rem; font-weight: 700;">
+                                        <i class="fas fa-user"></i> Datos Personales
+                                    </h4>
+                                    
+                                    <div class="input-group" style="margin-bottom: 12px;">
+                                        <label for="nombre">Nombre completo:</label>
+                                        <input type="text" id="nombre" name="nombre" placeholder="Ej. Carlos Mendoza" required>
+                                    </div>
+
+                                    <div class="form-grid-2">
+                                        <div class="input-group">
+                                            <label for="email">Correo electrónico:</label>
+                                            <input type="email" id="email" name="email" placeholder="carlos@correo.com" required>
+                                        </div>
+                                        <div class="input-group">
+                                            <label for="contrasena">Contraseña:</label>
+                                            <input type="password" id="contrasena" name="contrasena" placeholder="Mínimo 6 caracteres" required minlength="6">
+                                        </div>
+                                    </div>
+                                </div>
+                            </th:block>
+
+                            <!-- Datos del Vehículo -->
+                            <div style="margin-bottom: 20px;">
+                                <h4 style="color: #065f46; margin: 0 0 12px; font-size: 0.95rem; font-weight: 700;">
+                                    <i class="fas fa-truck"></i> Datos del Vehículo
+                                </h4>
+
+                                <label style="font-size: 0.85rem; font-weight: 600; color: #374151;">Tipo de Vehículo:</label>
+                                <div class="vehicle-type-select" style="margin-bottom: 15px;">
+                                    <div>
+                                        <input type="radio" id="vehiculoCamioneta" name="tipoVehiculo" value="Camioneta Pick-up" checked style="display:none;">
+                                        <label for="vehiculoCamioneta" class="vehicle-radio-label">
+                                            <i class="fas fa-truck-pickup"></i>
+                                            <span>Pick-up</span>
+                                        </label>
+                                    </div>
+                                    <div>
+                                        <input type="radio" id="vehiculoTurbo" name="tipoVehiculo" value="Furgón Turbo" style="display:none;">
+                                        <label for="vehiculoTurbo" class="vehicle-radio-label">
+                                            <i class="fas fa-truck"></i>
+                                            <span>Turbo / Furgón</span>
+                                        </label>
+                                    </div>
+                                    <div>
+                                        <input type="radio" id="vehiculoCamion" name="tipoVehiculo" value="Camión Pesado" style="display:none;">
+                                        <label for="vehiculoCamion" class="vehicle-radio-label">
+                                            <i class="fas fa-truck-moving"></i>
+                                            <span>Camión C2/C3</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div class="form-grid-2">
+                                    <div class="input-group">
+                                        <label for="placa">Placa del vehículo:</label>
+                                        <input type="text" id="placa" name="placa" placeholder="Ej. ABC-123" required style="text-transform: uppercase;">
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="capacidadCargaKg">Capacidad de carga (Kg):</label>
+                                        <input type="number" id="capacidadCargaKg" name="capacidadCargaKg" placeholder="Ej. 1500" required min="50" step="50">
+                                    </div>
+                                </div>
+
+                                <label class="custom-checkbox-row">
+                                    <input type="checkbox" name="refrigerado" value="true">
+                                    <span style="font-size: 0.88rem; font-weight: 600; color: #1f2937;">
+                                        <i class="fas fa-snowflake" style="color: #0284c7;"></i> Cuenta con sistema de refrigeración / Cadena de frío
+                                    </span>
+                                </label>
+                            </div>
+
+                            <!-- Datos de Conducción y Cobertura -->
+                            <div style="margin-bottom: 20px;">
+                                <h4 style="color: #065f46; margin: 0 0 12px; font-size: 0.95rem; font-weight: 700;">
+                                    <i class="fas fa-id-card"></i> Licencia y Operación
+                                </h4>
+
+                                <div class="form-grid-2">
+                                    <div class="input-group">
+                                        <label for="licenciaConduccion">Licencia de Conducción:</label>
+                                        <input type="text" id="licenciaConduccion" name="licenciaConduccion" placeholder="Categoría C1, C2 o C3" required>
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="telefonoContacto">Teléfono WhatsApp de Ruta:</label>
+                                        <input type="tel" id="telefonoContacto" name="telefonoContacto" placeholder="Ej. 3001234567" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-grid-2">
+                                    <div class="input-group">
+                                        <label for="departamentoBase">Departamento Base:</label>
+                                        <select id="departamentoBase" name="departamentoBase">
+                                            <option value="">Seleccionar Departamento</option>
+                                            <th:block th:each="dep : ${departamentos}">
+                                                <option th:value="${dep.nombre}" th:text="${dep.nombre}">Cundinamarca</option>
+                                            </th:block>
+                                        </select>
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="ciudadBase">Ciudad / Municipio Base:</label>
+                                        <input type="text" id="ciudadBase" name="ciudadBase" placeholder="Ej. Bogotá, Tunja, Villavicencio">
+                                    </div>
+                                </div>
+
+                                <div class="input-group" style="margin-top: 10px;">
+                                    <label for="zonasCobertura">Zonas o Corredores de Cobertura:</label>
+                                    <input type="text" id="zonasCobertura" name="zonasCobertura" placeholder="Ej. Sabana de Bogotá, Boyacá, Meta, Tolima" required>
+                                </div>
+                            </div>
+
+                            <!-- Datos Bancarios -->
+                            <div style="margin-bottom: 20px;">
+                                <h4 style="color: #065f46; margin: 0 0 12px; font-size: 0.95rem; font-weight: 700;">
+                                    <i class="fas fa-building-columns"></i> Pagos de Fletes (Opcional)
+                                </h4>
+                                <div class="form-grid-2">
+                                    <div class="input-group">
+                                        <label for="banco">Entidad Bancaria:</label>
+                                        <input type="text" id="banco" name="banco" placeholder="Bancolombia, Nequi, Davivienda...">
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="cuentaBancaria">Número de Cuenta:</label>
+                                        <input type="text" id="cuentaBancaria" name="cuentaBancaria" placeholder="Ahorros o Corriente">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn-submit" style="background: linear-gradient(135deg, #059669, #047857); color: #fff; width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                <i class="fas fa-truck-fast"></i> Registrarme como Transportista
+                            </button>
+
+                        </form>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
+</body>
+
+</html>

@@ -16,8 +16,13 @@
             <th:block th:replace="~{fragments/header-vendedor :: siteHeader}"></th:block>
         </th:block>
 
+        <th:block th:if="${currentPath != null and #strings.startsWith(currentPath, '/transportista') and session.usuarioLogueado != null and session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).TRANSPORTISTA)}">
+            <th:block th:replace="~{fragments/header-transportista :: siteHeader}"></th:block>
+        </th:block>
+
         <th:block th:if="${!((currentPath != null and #strings.startsWith(currentPath, '/admin') and session.usuarioLogueado != null and session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).ADMIN))
-                or (currentPath != null and #strings.startsWith(currentPath, '/vendedor') and session.usuarioLogueado != null and session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).VENDEDOR)))}">
+                or (currentPath != null and #strings.startsWith(currentPath, '/vendedor') and session.usuarioLogueado != null and session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).VENDEDOR))
+                or (currentPath != null and #strings.startsWith(currentPath, '/transportista') and session.usuarioLogueado != null and session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).TRANSPORTISTA)))}">
             <th:block th:replace="~{fragments/header-comprador :: siteHeader}"></th:block>
         </th:block>
     </th:block>

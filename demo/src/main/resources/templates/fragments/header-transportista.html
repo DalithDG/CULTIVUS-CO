@@ -1,0 +1,59 @@
+<header th:fragment="siteHeader" class="site-header">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <div class="header-premium" id="mainHeader" style="background: linear-gradient(135deg, #134e4a, #065f46); color: #fff;">
+        <div class="header-container" style="max-width: 1240px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 12px 20px;">
+            
+            <!-- Logo con Sello Logístico -->
+            <div class="header-logo">
+                <a th:href="@{/transportista/inicio}" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: #fff;">
+                    <img th:src="@{/images/LogoCultivus.png}" alt="Cultivus" style="height: 42px; width: auto;">
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="font-weight: 800; font-size: 1.25rem; letter-spacing: -0.5px;">Cultivus</span>
+                        <span style="font-size: 0.72rem; color: #a7f3d0; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
+                            <i class="fas fa-truck-fast"></i> Red Logística
+                        </span>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Navegación de Transportista -->
+            <nav class="header-nav" style="display: flex; align-items: center; gap: 20px;">
+                <a th:href="@{/transportista/inicio}" class="nav-link" style="color: #fff; text-decoration: none; font-weight: 600; font-size: 0.92rem; display: flex; align-items: center; gap: 6px;">
+                    <i class="fas fa-route" style="color: #34d399;"></i>
+                    <span>Mis Rutas y Envíos</span>
+                </a>
+
+                <a th:href="@{/}" class="nav-link" style="color: #e5e7eb; text-decoration: none; font-size: 0.9rem; display: flex; align-items: center; gap: 6px;">
+                    <i class="fas fa-store"></i>
+                    <span>Ver Tienda</span>
+                </a>
+            </nav>
+
+            <!-- Acciones / Perfil -->
+            <div class="header-actions" style="display: flex; align-items: center; gap: 16px;">
+                
+                <!-- Badge de Disponibilidad -->
+                <div th:if="${session.usuarioLogueado != null and session.usuarioLogueado.perfilTransportista != null}" 
+                     style="display: flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 9999px; font-size: 0.78rem; font-weight: 700;"
+                     th:styleappend="${session.usuarioLogueado.perfilTransportista.disponible} ? 'background:#064e3b; color:#6ee7b7; border: 1px solid #059669;' : 'background:#7f1d1d; color:#fca5a5; border: 1px solid #dc2626;'">
+                    <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%;"
+                          th:styleappend="${session.usuarioLogueado.perfilTransportista.disponible} ? 'background:#34d399;' : 'background:#ef4444;'"></span>
+                    <span th:text="${session.usuarioLogueado.perfilTransportista.disponible} ? 'DISPONIBLE' : 'EN RUTA'">DISPONIBLE</span>
+                </div>
+
+                <!-- Usuario y Logout -->
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="font-weight: 600; font-size: 0.9rem; color: #fff;" th:text="${session.usuarioLogueado != null ? session.usuarioLogueado.nombre : 'Conductor'}">Transportista</span>
+                    <a th:href="@{/usuario/logout}" title="Cerrar sesión" style="color: #fca5a5; background: rgba(255,255,255,0.1); width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none;">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</header>

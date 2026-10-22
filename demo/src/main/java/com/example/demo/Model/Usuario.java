@@ -2,6 +2,7 @@ package com.example.demo.Model;
 
 import com.example.demo.Model.embebidos.PerfilAdmin;
 import com.example.demo.Model.embebidos.PerfilVendedor;
+import com.example.demo.Model.embebidos.PerfilTransportista;
 import com.example.demo.Model.embebidos.UbicacionUsuario;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -46,6 +47,10 @@ public class Usuario {
     // Perfil de administrador — disponible para cualquier usuario (rol flexible)
     @Field("perfil_admin")
     private PerfilAdmin perfilAdmin;
+
+    // Perfil de transportista — disponible para conductor / transportista logístico
+    @Field("perfil_transportista")
+    private PerfilTransportista perfilTransportista;
 
     @Field("ultima_conexion")
     private LocalDateTime ultimaConexion;
@@ -111,6 +116,7 @@ public class Usuario {
         if (roles == null || roles.isEmpty()) return null;
         // Retornar el rol de mayor jerarquía o el primero para compatibilidad
         if (roles.contains(Role.ADMIN)) return Role.ADMIN;
+        if (roles.contains(Role.TRANSPORTISTA)) return Role.TRANSPORTISTA;
         if (roles.contains(Role.VENDEDOR)) return Role.VENDEDOR;
         return roles.iterator().next();
     }
@@ -167,5 +173,13 @@ public class Usuario {
 
     public void setUltimaConexion(LocalDateTime ultimaConexion) {
         this.ultimaConexion = ultimaConexion;
+    }
+
+    public PerfilTransportista getPerfilTransportista() {
+        return perfilTransportista;
+    }
+
+    public void setPerfilTransportista(PerfilTransportista perfilTransportista) {
+        this.perfilTransportista = perfilTransportista;
     }
 }

@@ -59,6 +59,8 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         // Redirigir según el rol
         if (usuario.hasRole(com.example.demo.Model.Role.ADMIN)) {
             getRedirectStrategy().sendRedirect(request, response, "/admin/dashboard");
+        } else if (usuario.hasRole(com.example.demo.Model.Role.TRANSPORTISTA)) {
+            getRedirectStrategy().sendRedirect(request, response, "/transportista/inicio");
         } else if (usuario.hasRole(com.example.demo.Model.Role.VENDEDOR)) {
             getRedirectStrategy().sendRedirect(request, response, "/vendedor/inicio");
         } else {

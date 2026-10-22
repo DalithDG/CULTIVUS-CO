@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ingreso Transportistas | Cultivus Logística</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <link rel="stylesheet" th:href="@{/login_new.css}">
+
+    <style>
+        .transport-panel-left {
+            background: linear-gradient(135deg, rgba(6, 78, 59, 0.92), rgba(4, 120, 87, 0.95)), url('/images/ImageIndex1.jpg') center/cover !important;
+        }
+        .transport-icon-badge {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: #ecfdf5;
+            color: #059669;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            margin-bottom: 12px;
+        }
+        .btn-transport-submit {
+            background: linear-gradient(135deg, #059669, #047857) !important;
+            color: white !important;
+            font-weight: 700 !important;
+        }
+        .btn-transport-submit:hover {
+            background: linear-gradient(135deg, #047857, #065f46) !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="container">
+
+        <!-- Panel Izquierdo -->
+        <div class="panel-left transport-panel-left">
+            <div class="brand-top">
+                <div class="brand-logo-box">
+                    <img th:src="@{/images/LogoCultivus.png}" src="/images/LogoCultivus.png" alt="Logo Cultivus" class="brand-logo-img">
+                </div>
+                <div class="brand-text-group">
+                    <span class="brand-name">Cultivus</span>
+                    <span class="brand-tagline">Red Logística del Campo</span>
+                </div>
+            </div>
+            
+            <div style="color: #fff; max-width: 380px; z-index: 2; margin-top: auto; margin-bottom: auto;">
+                <span style="background: rgba(52, 211, 153, 0.2); color: #34d399; padding: 4px 12px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; text-transform: uppercase;">
+                    <i class="fas fa-truck-fast"></i> Portal de Conductores
+                </span>
+                <h2 style="font-size: 1.8rem; font-weight: 800; margin: 15px 0 10px; line-height: 1.25;">
+                    Mueve las cosechas de Colombia
+                </h2>
+                <p style="font-size: 0.92rem; color: #d1fae5; line-height: 1.5;">
+                    Accede a tu panel para ver las cargas disponibles en fincas, gestionar tus rutas y registrar entregas exitosas.
+                </p>
+            </div>
+
+            <a th:href="@{/}" class="btn-home" id="btnHome">
+                <i class="fas fa-arrow-left"></i>
+                <span>Volver a la tienda</span>
+            </a>
+        </div>
+
+        <!-- Panel Derecho: Formulario de Login -->
+        <div class="panel-right">
+            <div class="form-container">
+
+                <div class="form-header">
+                    <div class="transport-icon-badge">
+                        <i class="fas fa-truck-moving"></i>
+                    </div>
+                    <h1 class="form-title">Ingreso de Transportistas</h1>
+                    <p class="form-subtitle">Ingresa tus credenciales para acceder a tus rutas asignadas</p>
+                </div>
+
+                <!-- Alertas -->
+                <div th:if="${param.error}" style="background: #fef2f2; color: #dc2626; padding: 12px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #fecaca; font-size: 0.88rem; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>Correo o contraseña incorrectos. Verifica tus datos.</span>
+                </div>
+
+                <div th:if="${mensaje}" style="background: #ecfdf5; color: #059669; padding: 12px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #a7f3d0; font-size: 0.88rem; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-check-circle"></i>
+                    <span th:text="${mensaje}"></span>
+                </div>
+
+                <div th:if="${error}" style="background: #fef2f2; color: #dc2626; padding: 12px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #fecaca; font-size: 0.88rem; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span th:text="${error}"></span>
+                </div>
+
+                <!-- Formulario -->
+                <form th:action="@{/usuario/login}" method="post" id="loginForm">
+                    
+                    <div class="input-wrap" style="margin-bottom: 16px;">
+                        <label for="email" style="font-size: 0.82rem; font-weight: 600; color: #374151; display: block; margin-bottom: 6px;">
+                            Correo Electrónico:
+                        </label>
+                        <div class="input-field" style="display: flex; align-items: center; border: 1px solid #d1d5db; border-radius: 8px; padding: 0 12px; background: #fff;">
+                            <i class="fas fa-envelope" style="color: #9ca3af; margin-right: 10px;"></i>
+                            <input type="email" id="email" name="email" placeholder="conductor@correo.com" required style="border: none; outline: none; width: 100%; height: 44px; font-size: 0.95rem;">
+                        </div>
+                    </div>
+
+                    <div class="input-wrap" style="margin-bottom: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                            <label for="contrasena" style="font-size: 0.82rem; font-weight: 600; color: #374151;">
+                                Contraseña:
+                            </label>
+                        </div>
+                        <div class="input-field" style="display: flex; align-items: center; border: 1px solid #d1d5db; border-radius: 8px; padding: 0 12px; background: #fff;">
+                            <i class="fas fa-lock" style="color: #9ca3af; margin-right: 10px;"></i>
+                            <input type="password" id="contrasena" name="contrasena" placeholder="Tu contraseña" required style="border: none; outline: none; width: 100%; height: 44px; font-size: 0.95rem;">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-submit btn-transport-submit" style="width: 100%; height: 46px; border: none; border-radius: 8px; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>Ingresar a mi Ruta</span>
+                    </button>
+
+                </form>
+
+                <div style="text-align: center; margin-top: 25px; padding-top: 20px; border-top: 1px solid #f3f4f6;">
+                    <p style="font-size: 0.88rem; color: #6b7280; margin: 0 0 10px;">
+                        ¿Aún no eres parte de la flota de transporte?
+                    </p>
+                    <a th:href="@{/transportista/registro}" style="color: #059669; font-weight: 700; text-decoration: none; font-size: 0.92rem; display: inline-flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-truck-fast"></i> Registrar mi vehículo aquí
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</body>
+
+</html>

@@ -3,6 +3,7 @@ package com.example.demo.Config;
 import com.example.demo.Model.Role;
 import com.example.demo.Model.Usuario;
 import com.example.demo.Model.embebidos.PerfilAdmin;
+import com.example.demo.Model.embebidos.PerfilTransportista;
 import com.example.demo.repository.UsuarioRepository;
 import com.example.demo.services.AppConfigService;
 import org.slf4j.Logger;
@@ -40,6 +41,8 @@ public class DataLoader implements CommandLineRunner {
             usuarioRepository.findByEmail(ADMIN_EMAIL).ifPresentOrElse(
                     admin -> migrarAdminSiEsNecesario(admin),
                     () -> crearAdmin());
+
+            crearTransportistaDemoSiNoExiste();
 
             inicializarConfiguracion();
 
@@ -97,8 +100,44 @@ public class DataLoader implements CommandLineRunner {
         logger.info("   🔑 Contraseña: {}", ADMIN_PASSWORD);
         System.out.println("✅ Usuario ADMIN creado:");
         System.out.println("   📧 Email: " + ADMIN_EMAIL);
-        System.out.println("   📧 Email: " + ADMIN_EMAIL);
         System.out.println("   🔑 Contraseña: " + ADMIN_PASSWORD);
+    }
+
+    private void crearTransportistaDemoSiNoExiste() {
+        String transportistaEmail = "transportista@demo.com";
+        String transportistaPass = "Trans1234!";
+
+        if (usuarioRepository.findByEmail(transportistaEmail).isEmpty()) {
+            PerfilTransportista perfil = new PerfilTransportista(
+                    "Camioneta Pick-up",
+                    "TRA-789",
+                    1500.0,
+                    "C2",
+                    "3101234567",
+                    "Bogotá D.C.",
+                    "Cundinamarca",
+                    "Bogotá, Sabana, Boyacá, Cundinamarca",
+                    true,
+                    "Transportes del Campo S.A.S.",
+                    "Bancolombia",
+                    "123-456789-00"
+            );
+            perfil.setVerificado(true);
+            perfil.setDisponible(true);
+
+            Usuario transportista = new Usuario();
+            transportista.setNombre("Carlos Mendoza (Conductor)");
+            transportista.setEmail(transportistaEmail);
+            transportista.setContrasena(passwordEncoder.encode(transportistaPass));
+            transportista.addRole(Role.TRANSPORTISTA);
+            transportista.addRole(Role.COMPRADOR);
+            transportista.setPerfilTransportista(perfil);
+
+            usuarioRepository.save(transportista);
+            logger.info("✅ Usuario TRANSPORTISTA demo creado:");
+            logger.info("   📧 Email: {}", transportistaEmail);
+            logger.info("   🔑 Contraseña: {}", transportistaPass);
+        }
     }
 
     private void inicializarConfiguracion() {

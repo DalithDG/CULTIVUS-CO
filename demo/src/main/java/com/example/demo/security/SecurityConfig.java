@@ -127,6 +127,8 @@ public class SecurityConfig {
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/vendedor/registro", "/vendedor/guardar").authenticated()
                 .requestMatchers("/vendedor/**").hasAnyRole("VENDEDOR", "ADMIN")
+                .requestMatchers("/transportista/registro", "/transportista/guardar", "/transportista/login").permitAll()
+                .requestMatchers("/transportista/**").hasAnyRole("TRANSPORTISTA", "ADMIN")
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
