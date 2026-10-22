@@ -104,6 +104,11 @@ public class SecurityConfig {
                     "/cafe",
                     "/granos",
                     "/miel",
+                    "/carnes",
+                    "/bebidas",
+                    "/condimentos",
+                    "/panaderia",
+                    "/otros",
                     "/api/**",
                     // Página de error de Spring (necesaria para ver el error real)
                     "/error",

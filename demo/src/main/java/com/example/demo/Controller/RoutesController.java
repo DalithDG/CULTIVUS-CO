@@ -51,20 +51,26 @@ public class RoutesController {
         return "redirect:/registro";
     }
 
-    @GetMapping({ "/frutas", "/verduras", "/lacteos", "/cafe", "/granos", "/miel" })
+    @GetMapping({ "/frutas", "/verduras", "/lacteos", "/cafe", "/granos", "/miel",
+                   "/carnes", "/bebidas", "/condimentos", "/panaderia", "/otros" })
     public String redirigirCategoria(jakarta.servlet.http.HttpServletRequest request) {
         String slug = request.getRequestURI();
         if (slug != null && slug.startsWith("/")) {
             slug = slug.substring(1);
         }
         String nombre = switch (slug) {
-            case "frutas" -> "Frutas";
-            case "verduras" -> "Verduras";
-            case "lacteos" -> "L\u00E1cteos";
-            case "cafe" -> "Caf\u00E9 y Cacao";
-            case "granos" -> "Granos y Cereales";
-            case "miel" -> "Miel";
-            default -> null;
+            case "frutas"      -> "Frutas";
+            case "verduras"    -> "Verduras";
+            case "lacteos"     -> "L\u00E1cteos";
+            case "cafe"        -> "Caf\u00E9 y Cacao";
+            case "granos"      -> "Granos y Cereales";
+            case "miel"        -> "Miel";
+            case "carnes"      -> "Carnes y Aves";
+            case "bebidas"     -> "Bebidas";
+            case "condimentos" -> "Condimentos";
+            case "panaderia"   -> "Panadería";
+            case "otros"       -> "Otros";
+            default            -> null;
         };
         if (nombre == null) {
             return "redirect:/category";

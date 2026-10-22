@@ -11,7 +11,8 @@
     <!-- Google Fonts: Inter & Caveat -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Inter:wght@400;500;600;700;800&display=swap"
+    <link
+        href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Inter:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
 
     <!-- Font Awesome Icons -->
@@ -161,7 +162,7 @@
                     </a>
 
                     <!-- 4. Carnes -->
-                    <a th:href="@{/category}" class="cat-card-pill">
+                    <a th:href="@{/carnes}" class="cat-card-pill">
                         <div class="cat-card-pill__img-wrap">
                             <img th:src="@{/images/carnes y aves.png}" alt="Carnes" class="cat-card-pill__img"
                                 onerror="this.src='/images/ImageIndex3.jpg'">
@@ -191,7 +192,7 @@
                     </a>
 
                     <!-- 6. Bebidas -->
-                    <a th:href="@{/category}" class="cat-card-pill">
+                    <a th:href="@{/bebidas}" class="cat-card-pill">
                         <div class="cat-card-pill__img-wrap">
                             <img th:src="@{/images/bebidas.webp}" alt="Bebidas" class="cat-card-pill__img"
                                 onerror="this.src='/images/ImageIndex2.jpg'">
@@ -206,7 +207,7 @@
                     </a>
 
                     <!-- 7. Condimentos -->
-                    <a th:href="@{/category}" class="cat-card-pill">
+                    <a th:href="@{/condimentos}" class="cat-card-pill">
                         <div class="cat-card-pill__img-wrap">
                             <img th:src="@{/images/condimentos.png}" alt="Condimentos" class="cat-card-pill__img"
                                 onerror="this.src='/images/Verduras.jpg'">
@@ -221,7 +222,7 @@
                     </a>
 
                     <!-- 8. Otros -->
-                    <a th:href="@{/category}" class="cat-card-pill">
+                    <a th:href="@{/otros}" class="cat-card-pill">
                         <div class="cat-card-pill__img-wrap">
                             <img th:src="@{/images/panaderia.png}" alt="Otros" class="cat-card-pill__img"
                                 onerror="this.src='/images/imageIndex.jpg'">
@@ -252,7 +253,8 @@
                                     <i class="fas fa-filter"></i>
                                     <span>Filtros</span>
                                 </div>
-                                <a th:href="@{/category}" class="cat-sidebar__clear-btn" onclick="limpiarFiltros(event)">Limpiar todo</a>
+                                <a th:href="@{/category}" class="cat-sidebar__clear-btn"
+                                    onclick="limpiarFiltros(event)">Limpiar todo</a>
                             </div>
 
                             <!-- Grupo 1: Categorías -->
@@ -274,34 +276,42 @@
                                     <!-- Respaldo estático idéntico al mockup si la BD no tiene categorías cargadas -->
                                     <th:block th:if="${categorias == null or categorias.isEmpty()}">
                                         <label class="cat-checkbox-label">
-                                            <input type="checkbox" name="categoria" value="frutas" class="cat-checkbox-input" checked>
+                                            <input type="checkbox" name="categoria" value="frutas"
+                                                class="cat-checkbox-input" checked>
                                             <span>Frutas</span>
                                         </label>
                                         <label class="cat-checkbox-label">
-                                            <input type="checkbox" name="categoria" value="verduras" class="cat-checkbox-input">
+                                            <input type="checkbox" name="categoria" value="verduras"
+                                                class="cat-checkbox-input">
                                             <span>Verduras</span>
                                         </label>
                                         <label class="cat-checkbox-label">
-                                            <input type="checkbox" name="categoria" value="procesados" class="cat-checkbox-input">
+                                            <input type="checkbox" name="categoria" value="procesados"
+                                                class="cat-checkbox-input">
                                             <span>Procesados Artesanales</span>
                                         </label>
                                         <label class="cat-checkbox-label">
-                                            <input type="checkbox" name="categoria" value="lacteos" class="cat-checkbox-input">
+                                            <input type="checkbox" name="categoria" value="lacteos"
+                                                class="cat-checkbox-input">
                                             <span>Lácteos</span>
                                         </label>
                                         <label class="cat-checkbox-label">
-                                            <input type="checkbox" name="categoria" value="granos" class="cat-checkbox-input">
+                                            <input type="checkbox" name="categoria" value="granos"
+                                                class="cat-checkbox-input">
                                             <span>Granos y Cereales</span>
                                         </label>
                                         <label class="cat-checkbox-label">
-                                            <input type="checkbox" name="categoria" value="tuberculos" class="cat-checkbox-input">
+                                            <input type="checkbox" name="categoria" value="tuberculos"
+                                                class="cat-checkbox-input">
                                             <span>Tubérculos</span>
                                         </label>
                                     </th:block>
                                 </div>
 
-                                <button type="button" class="cat-see-more-link" id="toggleMoreCatsBtn" onclick="toggleMasCategorias()">
-                                    <span>Ver más categorías</span> <i class="fas fa-chevron-down" id="toggleMoreCatsIcon"></i>
+                                <button type="button" class="cat-see-more-link" id="toggleMoreCatsBtn"
+                                    onclick="toggleMasCategorias()">
+                                    <span>Ver más categorías</span> <i class="fas fa-chevron-down"
+                                        id="toggleMoreCatsIcon"></i>
                                 </button>
                             </div>
 
@@ -314,8 +324,8 @@
                                         <span id="priceMaxDisplay">$ 100,000</span>
                                     </div>
                                     <input type="range" class="cat-range-input" min="0" max="100000" step="1000"
-                                        th:value="${precioMax != null ? precioMax : 100000}"
-                                        name="precioMax" id="precioSlider" oninput="actualizarPrecio(this.value)">
+                                        th:value="${precioMax != null ? precioMax : 100000}" name="precioMax"
+                                        id="precioSlider" oninput="actualizarPrecio(this.value)">
                                 </div>
                             </div>
 
@@ -351,7 +361,8 @@
                             <div class="cat-toolbar__count">
                                 <i class="fas fa-box-open"></i>
                                 <span>
-                                    <strong th:text="${totalItems != null ? totalItems : (catalogo != null ? catalogo.size() : 0)}">0</strong>
+                                    <strong
+                                        th:text="${totalItems != null ? totalItems : (catalogo != null ? catalogo.size() : 0)}">0</strong>
                                     productos encontrados
                                 </span>
                             </div>
@@ -359,17 +370,27 @@
                             <div class="cat-toolbar__actions">
                                 <div class="cat-toolbar__sort">
                                     <label for="ordenarSelect">Ordenar por:</label>
-                                    <select id="ordenarSelect" class="cat-select-sort" onchange="ordenarProductos(this.value)">
-                                        <option value="relevancia" th:selected="${ordenSeleccionado == null or ordenSeleccionado == 'relevancia'}">Relevancia</option>
-                                        <option value="precio-menor" th:selected="${ordenSeleccionado == 'precio-menor'}">Precio: Menor a Mayor</option>
-                                        <option value="precio-mayor" th:selected="${ordenSeleccionado == 'precio-mayor'}">Precio: Mayor a Menor</option>
-                                        <option value="nombre" th:selected="${ordenSeleccionado == 'nombre'}">Nombre A-Z</option>
-                                        <option value="recientes" th:selected="${ordenSeleccionado == 'recientes'}">Más Recientes</option>
+                                    <select id="ordenarSelect" class="cat-select-sort"
+                                        onchange="ordenarProductos(this.value)">
+                                        <option value="relevancia"
+                                            th:selected="${ordenSeleccionado == null or ordenSeleccionado == 'relevancia'}">
+                                            Relevancia</option>
+                                        <option value="precio-menor"
+                                            th:selected="${ordenSeleccionado == 'precio-menor'}">Precio: Menor a Mayor
+                                        </option>
+                                        <option value="precio-mayor"
+                                            th:selected="${ordenSeleccionado == 'precio-mayor'}">Precio: Mayor a Menor
+                                        </option>
+                                        <option value="nombre" th:selected="${ordenSeleccionado == 'nombre'}">Nombre A-Z
+                                        </option>
+                                        <option value="recientes" th:selected="${ordenSeleccionado == 'recientes'}">Más
+                                            Recientes</option>
                                     </select>
                                 </div>
 
                                 <div class="cat-view-toggle">
-                                    <button type="button" class="cat-view-btn active" title="Vista cuadrícula" aria-label="Cuadrícula">
+                                    <button type="button" class="cat-view-btn active" title="Vista cuadrícula"
+                                        aria-label="Cuadrícula">
                                         <i class="fas fa-th-large"></i>
                                     </button>
                                     <button type="button" class="cat-view-btn" title="Vista lista" aria-label="Lista">
@@ -397,16 +418,18 @@
                                         </span>
 
                                         <!-- Botón Favorito -->
-                                        <button type="button" class="cat-card__fav-btn" onclick="toggleFavorito(this)" title="Guardar en favoritos" aria-label="Favorito">
+                                        <button type="button" class="cat-card__fav-btn" onclick="toggleFavorito(this)"
+                                            title="Guardar en favoritos" aria-label="Favorito">
                                             <i class="far fa-heart"></i>
                                         </button>
 
-                                        <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}" class="cat-card__img"
-                                            onerror="this.src='/images/Verduras.jpg'">
+                                        <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}"
+                                            class="cat-card__img" onerror="this.src='/images/Verduras.jpg'">
                                     </div>
 
                                     <div class="cat-card__content">
-                                        <h3 class="cat-card__title" th:text="${producto.nombre}">Nombre del Producto</h3>
+                                        <h3 class="cat-card__title" th:text="${producto.nombre}">Nombre del Producto
+                                        </h3>
                                         <p class="cat-card__meta"
                                             th:text="${(producto.categoria != null ? producto.categoria.nombre : 'General') + ' • Producto local'}">
                                             Frutas y Verduras • Producto local
@@ -435,12 +458,14 @@
 
                                         <!-- Selector interactivo de cantidad -->
                                         <div class="cat-card__qty-pill">
-                                            <button type="button" class="cat-qty-btn" onclick="decrementarCantidad(this)">-</button>
+                                            <button type="button" class="cat-qty-btn"
+                                                onclick="decrementarCantidad(this)">-</button>
                                             <span class="cat-qty-value"
                                                 th:text="'1 ' + ${producto.unidadMedida != null ? producto.unidadMedida : 'kg'}">
                                                 1 kg
                                             </span>
-                                            <button type="button" class="cat-qty-btn" onclick="incrementarCantidad(this)">+</button>
+                                            <button type="button" class="cat-qty-btn"
+                                                onclick="incrementarCantidad(this)">+</button>
                                         </div>
 
                                         <!-- Botón de acción: detalle del producto y sus ofertas -->
@@ -452,10 +477,15 @@
                             </th:block>
 
                             <!-- ESTADO VACÍO CUANDO NO HAY PRODUCTOS -->
-                            <div class="cat-empty" th:if="${catalogo == null or catalogo.isEmpty()}" style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem;">
-                                <i class="fas fa-box-open" style="font-size: 3rem; color: #a0aec0; margin-bottom: 1rem; display: block;"></i>
-                                <h3 style="color: #4a5568; font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">Aún no hay productos para esta categoría</h3>
-                                <p style="color: #718096; font-size: 0.95rem;">Pronto nuestros productores locales agregarán nuevas cosechas.</p>
+                            <div class="cat-empty" th:if="${catalogo == null or catalogo.isEmpty()}"
+                                style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem;">
+                                <i class="fas fa-box-open"
+                                    style="font-size: 3rem; color: #a0aec0; margin-bottom: 1rem; display: block;"></i>
+                                <h3
+                                    style="color: #4a5568; font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">
+                                    Aún no hay productos para esta categoría</h3>
+                                <p style="color: #718096; font-size: 0.95rem;">Pronto nuestros productores locales
+                                    agregarán nuevas cosechas.</p>
                             </div>
 
                         </div>
