@@ -11,7 +11,8 @@
     <!-- Google Fonts: Inter & Caveat -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Inter:wght@400;500;600;700;800&display=swap"
+    <link
+        href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Inter:wght@400;500;600;700;800&display=swap"
         rel="stylesheet">
 
     <!-- Font Awesome Icons -->
@@ -161,7 +162,7 @@
                     </a>
 
                     <!-- 4. Carnes -->
-                    <a th:href="@{/category}" class="cat-card-pill">
+                    <a th:href="@{/carnes}" class="cat-card-pill">
                         <div class="cat-card-pill__img-wrap">
                             <img th:src="@{/images/carnes y aves.png}" alt="Carnes" class="cat-card-pill__img"
                                 onerror="this.src='/images/ImageIndex3.jpg'">
@@ -191,7 +192,7 @@
                     </a>
 
                     <!-- 6. Bebidas -->
-                    <a th:href="@{/category}" class="cat-card-pill">
+                    <a th:href="@{/bebidas}" class="cat-card-pill">
                         <div class="cat-card-pill__img-wrap">
                             <img th:src="@{/images/bebidas.webp}" alt="Bebidas" class="cat-card-pill__img"
                                 onerror="this.src='/images/ImageIndex2.jpg'">
@@ -206,7 +207,7 @@
                     </a>
 
                     <!-- 7. Condimentos -->
-                    <a th:href="@{/category}" class="cat-card-pill">
+                    <a th:href="@{/condimentos}" class="cat-card-pill">
                         <div class="cat-card-pill__img-wrap">
                             <img th:src="@{/images/condimentos.png}" alt="Condimentos" class="cat-card-pill__img"
                                 onerror="this.src='/images/Verduras.jpg'">
@@ -221,7 +222,7 @@
                     </a>
 
                     <!-- 8. Otros -->
-                    <a th:href="@{/category}" class="cat-card-pill">
+                    <a th:href="@{/otros}" class="cat-card-pill">
                         <div class="cat-card-pill__img-wrap">
                             <img th:src="@{/images/panaderia.png}" alt="Otros" class="cat-card-pill__img"
                                 onerror="this.src='/images/imageIndex.jpg'">
@@ -252,7 +253,8 @@
                                     <i class="fas fa-filter"></i>
                                     <span>Filtros</span>
                                 </div>
-                                <a th:href="@{/category}" class="cat-sidebar__clear-btn" onclick="limpiarFiltros(event)">Limpiar todo</a>
+                                <a th:href="@{/category}" class="cat-sidebar__clear-btn"
+                                    onclick="limpiarFiltros(event)">Limpiar todo</a>
                             </div>
 
                             <!-- Grupo 1: Categorías -->
@@ -274,34 +276,42 @@
                                     <!-- Respaldo estático idéntico al mockup si la BD no tiene categorías cargadas -->
                                     <th:block th:if="${categorias == null or categorias.isEmpty()}">
                                         <label class="cat-checkbox-label">
-                                            <input type="checkbox" name="categoria" value="frutas" class="cat-checkbox-input" checked>
+                                            <input type="checkbox" name="categoria" value="frutas"
+                                                class="cat-checkbox-input" checked>
                                             <span>Frutas</span>
                                         </label>
                                         <label class="cat-checkbox-label">
-                                            <input type="checkbox" name="categoria" value="verduras" class="cat-checkbox-input">
+                                            <input type="checkbox" name="categoria" value="verduras"
+                                                class="cat-checkbox-input">
                                             <span>Verduras</span>
                                         </label>
                                         <label class="cat-checkbox-label">
-                                            <input type="checkbox" name="categoria" value="procesados" class="cat-checkbox-input">
+                                            <input type="checkbox" name="categoria" value="procesados"
+                                                class="cat-checkbox-input">
                                             <span>Procesados Artesanales</span>
                                         </label>
                                         <label class="cat-checkbox-label">
-                                            <input type="checkbox" name="categoria" value="lacteos" class="cat-checkbox-input">
+                                            <input type="checkbox" name="categoria" value="lacteos"
+                                                class="cat-checkbox-input">
                                             <span>Lácteos</span>
                                         </label>
                                         <label class="cat-checkbox-label">
-                                            <input type="checkbox" name="categoria" value="granos" class="cat-checkbox-input">
+                                            <input type="checkbox" name="categoria" value="granos"
+                                                class="cat-checkbox-input">
                                             <span>Granos y Cereales</span>
                                         </label>
                                         <label class="cat-checkbox-label">
-                                            <input type="checkbox" name="categoria" value="tuberculos" class="cat-checkbox-input">
+                                            <input type="checkbox" name="categoria" value="tuberculos"
+                                                class="cat-checkbox-input">
                                             <span>Tubérculos</span>
                                         </label>
                                     </th:block>
                                 </div>
 
-                                <button type="button" class="cat-see-more-link" id="toggleMoreCatsBtn" onclick="toggleMasCategorias()">
-                                    <span>Ver más categorías</span> <i class="fas fa-chevron-down" id="toggleMoreCatsIcon"></i>
+                                <button type="button" class="cat-see-more-link" id="toggleMoreCatsBtn"
+                                    onclick="toggleMasCategorias()">
+                                    <span>Ver más categorías</span> <i class="fas fa-chevron-down"
+                                        id="toggleMoreCatsIcon"></i>
                                 </button>
                             </div>
 
@@ -314,8 +324,8 @@
                                         <span id="priceMaxDisplay">$ 100,000</span>
                                     </div>
                                     <input type="range" class="cat-range-input" min="0" max="100000" step="1000"
-                                        th:value="${precioMax != null ? precioMax : 100000}"
-                                        name="precioMax" id="precioSlider" oninput="actualizarPrecio(this.value)">
+                                        th:value="${precioMax != null ? precioMax : 100000}" name="precioMax"
+                                        id="precioSlider" oninput="actualizarPrecio(this.value)">
                                 </div>
                             </div>
 
@@ -351,7 +361,8 @@
                             <div class="cat-toolbar__count">
                                 <i class="fas fa-box-open"></i>
                                 <span>
-                                    <strong th:text="${totalItems != null ? totalItems : (catalogo != null ? catalogo.size() : 0)}">0</strong>
+                                    <strong
+                                        th:text="${totalItems != null ? totalItems : (catalogo != null ? catalogo.size() : 0)}">0</strong>
                                     productos encontrados
                                 </span>
                             </div>
@@ -359,17 +370,27 @@
                             <div class="cat-toolbar__actions">
                                 <div class="cat-toolbar__sort">
                                     <label for="ordenarSelect">Ordenar por:</label>
-                                    <select id="ordenarSelect" class="cat-select-sort" onchange="ordenarProductos(this.value)">
-                                        <option value="relevancia" th:selected="${ordenSeleccionado == null or ordenSeleccionado == 'relevancia'}">Relevancia</option>
-                                        <option value="precio-menor" th:selected="${ordenSeleccionado == 'precio-menor'}">Precio: Menor a Mayor</option>
-                                        <option value="precio-mayor" th:selected="${ordenSeleccionado == 'precio-mayor'}">Precio: Mayor a Menor</option>
-                                        <option value="nombre" th:selected="${ordenSeleccionado == 'nombre'}">Nombre A-Z</option>
-                                        <option value="recientes" th:selected="${ordenSeleccionado == 'recientes'}">Más Recientes</option>
+                                    <select id="ordenarSelect" class="cat-select-sort"
+                                        onchange="ordenarProductos(this.value)">
+                                        <option value="relevancia"
+                                            th:selected="${ordenSeleccionado == null or ordenSeleccionado == 'relevancia'}">
+                                            Relevancia</option>
+                                        <option value="precio-menor"
+                                            th:selected="${ordenSeleccionado == 'precio-menor'}">Precio: Menor a Mayor
+                                        </option>
+                                        <option value="precio-mayor"
+                                            th:selected="${ordenSeleccionado == 'precio-mayor'}">Precio: Mayor a Menor
+                                        </option>
+                                        <option value="nombre" th:selected="${ordenSeleccionado == 'nombre'}">Nombre A-Z
+                                        </option>
+                                        <option value="recientes" th:selected="${ordenSeleccionado == 'recientes'}">Más
+                                            Recientes</option>
                                     </select>
                                 </div>
 
                                 <div class="cat-view-toggle">
-                                    <button type="button" class="cat-view-btn active" title="Vista cuadrícula" aria-label="Cuadrícula">
+                                    <button type="button" class="cat-view-btn active" title="Vista cuadrícula"
+                                        aria-label="Cuadrícula">
                                         <i class="fas fa-th-large"></i>
                                     </button>
                                     <button type="button" class="cat-view-btn" title="Vista lista" aria-label="Lista">
@@ -397,16 +418,18 @@
                                         </span>
 
                                         <!-- Botón Favorito -->
-                                        <button type="button" class="cat-card__fav-btn" onclick="toggleFavorito(this)" title="Guardar en favoritos" aria-label="Favorito">
+                                        <button type="button" class="cat-card__fav-btn" onclick="toggleFavorito(this)"
+                                            title="Guardar en favoritos" aria-label="Favorito">
                                             <i class="far fa-heart"></i>
                                         </button>
 
-                                        <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}" class="cat-card__img"
-                                            onerror="this.src='/images/Verduras.jpg'">
+                                        <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}"
+                                            class="cat-card__img" onerror="this.src='/images/Verduras.jpg'">
                                     </div>
 
                                     <div class="cat-card__content">
-                                        <h3 class="cat-card__title" th:text="${producto.nombre}">Nombre del Producto</h3>
+                                        <h3 class="cat-card__title" th:text="${producto.nombre}">Nombre del Producto
+                                        </h3>
                                         <p class="cat-card__meta"
                                             th:text="${(producto.categoria != null ? producto.categoria.nombre : 'General') + ' • Producto local'}">
                                             Frutas y Verduras • Producto local
@@ -435,12 +458,14 @@
 
                                         <!-- Selector interactivo de cantidad -->
                                         <div class="cat-card__qty-pill">
-                                            <button type="button" class="cat-qty-btn" onclick="decrementarCantidad(this)">-</button>
+                                            <button type="button" class="cat-qty-btn"
+                                                onclick="decrementarCantidad(this)">-</button>
                                             <span class="cat-qty-value"
                                                 th:text="'1 ' + ${producto.unidadMedida != null ? producto.unidadMedida : 'kg'}">
                                                 1 kg
                                             </span>
-                                            <button type="button" class="cat-qty-btn" onclick="incrementarCantidad(this)">+</button>
+                                            <button type="button" class="cat-qty-btn"
+                                                onclick="incrementarCantidad(this)">+</button>
                                         </div>
 
                                         <!-- Botón de acción: detalle del producto y sus ofertas -->
@@ -451,293 +476,17 @@
                                 </article>
                             </th:block>
 
-                            <!-- PRODUCTOS DEMOSTRATIVOS (SI LA BD NO TIENE PRODUCTOS O ESTÁ VACÍA) -->
-                            <!-- Replica exacta de las tarjetas del mockup suministrado -->
-                            <th:block th:if="${catalogo == null or catalogo.isEmpty()}">
-
-                                <!-- 1. Tomate Chonto -->
-                                <article class="cat-card">
-                                    <div class="cat-card__media">
-                                        <span class="cat-badge-tag cat-badge-tag--natural">
-                                            <i class="fas fa-leaf"></i> 100% Natural
-                                        </span>
-                                        <button type="button" class="cat-card__fav-btn" onclick="toggleFavorito(this)" aria-label="Favorito">
-                                            <i class="far fa-heart"></i>
-                                        </button>
-                                        <img th:src="@{/images/Verduras.jpg}" alt="Tomate Chonto" class="cat-card__img">
-                                    </div>
-                                    <div class="cat-card__content">
-                                        <h3 class="cat-card__title">Tomate Chonto de Temporada</h3>
-                                        <p class="cat-card__meta">Frutas y Verduras • Producto local</p>
-                                        <div class="cat-card__rating">
-                                            <i class="fas fa-star cat-card__rating-star"></i>
-                                            <span class="cat-card__rating-score">4.8</span>
-                                            <span class="cat-card__rating-count">(124)</span>
-                                            <i class="fas fa-leaf cat-card__rating-leaf"></i>
-                                        </div>
-                                        <div class="cat-card__price-row">
-                                            <span class="cat-card__price-val">$2.500</span>
-                                            <span class="cat-card__price-unit">/ kg</span>
-                                        </div>
-                                        <div class="cat-card__qty-pill">
-                                            <button type="button" class="cat-qty-btn" onclick="decrementarCantidad(this)">-</button>
-                                            <span class="cat-qty-value">1 kg</span>
-                                            <button type="button" class="cat-qty-btn" onclick="incrementarCantidad(this)">+</button>
-                                        </div>
-                                        <button type="button" class="cat-card__btn-add" onclick="agregarAlCarritoDemo('Tomate Chonto de Temporada')">
-                                            <i class="fas fa-shopping-cart"></i> Agregar al carrito
-                                        </button>
-                                    </div>
-                                </article>
-
-                                <!-- 2. Aguacate Hass -->
-                                <article class="cat-card">
-                                    <div class="cat-card__media">
-                                        <span class="cat-badge-tag cat-badge-tag--bestseller">
-                                            <i class="fas fa-fire"></i> Más vendido
-                                        </span>
-                                        <button type="button" class="cat-card__fav-btn" onclick="toggleFavorito(this)" aria-label="Favorito">
-                                            <i class="far fa-heart"></i>
-                                        </button>
-                                        <img th:src="@{/images/hero-background.jpg}" alt="Aguacate Hass" class="cat-card__img"
-                                            onerror="this.src='/images/Verduras.jpg'">
-                                    </div>
-                                    <div class="cat-card__content">
-                                        <h3 class="cat-card__title">Aguacate Hass Premium</h3>
-                                        <p class="cat-card__meta">Frutas y Verduras • Producto local</p>
-                                        <div class="cat-card__rating">
-                                            <i class="fas fa-star cat-card__rating-star"></i>
-                                            <span class="cat-card__rating-score">4.7</span>
-                                            <span class="cat-card__rating-count">(98)</span>
-                                            <i class="fas fa-leaf cat-card__rating-leaf"></i>
-                                        </div>
-                                        <div class="cat-card__price-row">
-                                            <span class="cat-card__price-val">$6.500</span>
-                                            <span class="cat-card__price-unit">/ kg</span>
-                                        </div>
-                                        <div class="cat-card__qty-pill">
-                                            <button type="button" class="cat-qty-btn" onclick="decrementarCantidad(this)">-</button>
-                                            <span class="cat-qty-value">1 kg</span>
-                                            <button type="button" class="cat-qty-btn" onclick="incrementarCantidad(this)">+</button>
-                                        </div>
-                                        <button type="button" class="cat-card__btn-add" onclick="agregarAlCarritoDemo('Aguacate Hass Premium')">
-                                            <i class="fas fa-shopping-cart"></i> Agregar al carrito
-                                        </button>
-                                    </div>
-                                </article>
-
-                                <!-- 3. Fresa Dulce -->
-                                <article class="cat-card">
-                                    <div class="cat-card__media">
-                                        <span class="cat-badge-tag cat-badge-tag--natural">
-                                            <i class="fas fa-leaf"></i> 100% Natural
-                                        </span>
-                                        <button type="button" class="cat-card__fav-btn" onclick="toggleFavorito(this)" aria-label="Favorito">
-                                            <i class="far fa-heart"></i>
-                                        </button>
-                                        <img th:src="@{/images/frutas.webp}" alt="Fresa Dulce" class="cat-card__img">
-                                    </div>
-                                    <div class="cat-card__content">
-                                        <h3 class="cat-card__title">Fresa Dulce Extra</h3>
-                                        <p class="cat-card__meta">Frutas • Producto local</p>
-                                        <div class="cat-card__rating">
-                                            <i class="fas fa-star cat-card__rating-star"></i>
-                                            <span class="cat-card__rating-score">4.9</span>
-                                            <span class="cat-card__rating-count">(156)</span>
-                                            <i class="fas fa-leaf cat-card__rating-leaf"></i>
-                                        </div>
-                                        <div class="cat-card__price-row">
-                                            <span class="cat-card__price-val">$8.000</span>
-                                            <span class="cat-card__price-unit">/ kg</span>
-                                        </div>
-                                        <div class="cat-card__qty-pill">
-                                            <button type="button" class="cat-qty-btn" onclick="decrementarCantidad(this)">-</button>
-                                            <span class="cat-qty-value">1 kg</span>
-                                            <button type="button" class="cat-qty-btn" onclick="incrementarCantidad(this)">+</button>
-                                        </div>
-                                        <button type="button" class="cat-card__btn-add" onclick="agregarAlCarritoDemo('Fresa Dulce Extra')">
-                                            <i class="fas fa-shopping-cart"></i> Agregar al carrito
-                                        </button>
-                                    </div>
-                                </article>
-
-                                <!-- 4. Lechuga Criolla -->
-                                <article class="cat-card">
-                                    <div class="cat-card__media">
-                                        <span class="cat-badge-tag cat-badge-tag--fresh">
-                                            <i class="fas fa-seedling"></i> Recién cosechada
-                                        </span>
-                                        <button type="button" class="cat-card__fav-btn" onclick="toggleFavorito(this)" aria-label="Favorito">
-                                            <i class="far fa-heart"></i>
-                                        </button>
-                                        <img th:src="@{/images/Verduras.jpg}" alt="Lechuga Criolla" class="cat-card__img">
-                                    </div>
-                                    <div class="cat-card__content">
-                                        <h3 class="cat-card__title">Lechuga Criolla</h3>
-                                        <p class="cat-card__meta">Verduras • Producto local</p>
-                                        <div class="cat-card__rating">
-                                            <i class="fas fa-star cat-card__rating-star"></i>
-                                            <span class="cat-card__rating-score">4.6</span>
-                                            <span class="cat-card__rating-count">(72)</span>
-                                            <i class="fas fa-leaf cat-card__rating-leaf"></i>
-                                        </div>
-                                        <div class="cat-card__price-row">
-                                            <span class="cat-card__price-val">$2.000</span>
-                                            <span class="cat-card__price-unit">/ unidad</span>
-                                        </div>
-                                        <div class="cat-card__qty-pill">
-                                            <button type="button" class="cat-qty-btn" onclick="decrementarCantidad(this)">-</button>
-                                            <span class="cat-qty-value">1 unidad</span>
-                                            <button type="button" class="cat-qty-btn" onclick="incrementarCantidad(this)">+</button>
-                                        </div>
-                                        <button type="button" class="cat-card__btn-add" onclick="agregarAlCarritoDemo('Lechuga Criolla')">
-                                            <i class="fas fa-shopping-cart"></i> Agregar al carrito
-                                        </button>
-                                    </div>
-                                </article>
-
-                                <!-- 5. Plátano Maduro -->
-                                <article class="cat-card">
-                                    <div class="cat-card__media">
-                                        <span class="cat-badge-tag cat-badge-tag--offer">
-                                            <i class="fas fa-tag"></i> Oferta
-                                        </span>
-                                        <button type="button" class="cat-card__fav-btn" onclick="toggleFavorito(this)" aria-label="Favorito">
-                                            <i class="far fa-heart"></i>
-                                        </button>
-                                        <img th:src="@{/images/frutas.webp}" alt="Plátano Maduro" class="cat-card__img">
-                                    </div>
-                                    <div class="cat-card__content">
-                                        <h3 class="cat-card__title">Plátano Maduro de Urabá</h3>
-                                        <p class="cat-card__meta">Frutas • Producto local</p>
-                                        <div class="cat-card__rating">
-                                            <i class="fas fa-star cat-card__rating-star"></i>
-                                            <span class="cat-card__rating-score">4.8</span>
-                                            <span class="cat-card__rating-count">(89)</span>
-                                            <i class="fas fa-leaf cat-card__rating-leaf"></i>
-                                        </div>
-                                        <div class="cat-card__price-row">
-                                            <span class="cat-card__price-val">$3.200</span>
-                                            <span class="cat-card__price-unit">/ kg</span>
-                                        </div>
-                                        <div class="cat-card__qty-pill">
-                                            <button type="button" class="cat-qty-btn" onclick="decrementarCantidad(this)">-</button>
-                                            <span class="cat-qty-value">1 kg</span>
-                                            <button type="button" class="cat-qty-btn" onclick="incrementarCantidad(this)">+</button>
-                                        </div>
-                                        <button type="button" class="cat-card__btn-add" onclick="agregarAlCarritoDemo('Plátano Maduro de Urabá')">
-                                            <i class="fas fa-shopping-cart"></i> Agregar al carrito
-                                        </button>
-                                    </div>
-                                </article>
-
-                                <!-- 6. Zanahoria Fresca -->
-                                <article class="cat-card">
-                                    <div class="cat-card__media">
-                                        <span class="cat-badge-tag cat-badge-tag--fresh">
-                                            <i class="fas fa-seedling"></i> Recién cosechada
-                                        </span>
-                                        <button type="button" class="cat-card__fav-btn" onclick="toggleFavorito(this)" aria-label="Favorito">
-                                            <i class="far fa-heart"></i>
-                                        </button>
-                                        <img th:src="@{/images/Verduras.jpg}" alt="Zanahoria" class="cat-card__img">
-                                    </div>
-                                    <div class="cat-card__content">
-                                        <h3 class="cat-card__title">Zanahoria Fresca Lavada</h3>
-                                        <p class="cat-card__meta">Verduras • Producto local</p>
-                                        <div class="cat-card__rating">
-                                            <i class="fas fa-star cat-card__rating-star"></i>
-                                            <span class="cat-card__rating-score">4.7</span>
-                                            <span class="cat-card__rating-count">(64)</span>
-                                            <i class="fas fa-leaf cat-card__rating-leaf"></i>
-                                        </div>
-                                        <div class="cat-card__price-row">
-                                            <span class="cat-card__price-val">$2.800</span>
-                                            <span class="cat-card__price-unit">/ kg</span>
-                                        </div>
-                                        <div class="cat-card__qty-pill">
-                                            <button type="button" class="cat-qty-btn" onclick="decrementarCantidad(this)">-</button>
-                                            <span class="cat-qty-value">1 kg</span>
-                                            <button type="button" class="cat-qty-btn" onclick="incrementarCantidad(this)">+</button>
-                                        </div>
-                                        <button type="button" class="cat-card__btn-add" onclick="agregarAlCarritoDemo('Zanahoria Fresca Lavada')">
-                                            <i class="fas fa-shopping-cart"></i> Agregar al carrito
-                                        </button>
-                                    </div>
-                                </article>
-
-                                <!-- 7. Papa Pastusa -->
-                                <article class="cat-card">
-                                    <div class="cat-card__media">
-                                        <span class="cat-badge-tag cat-badge-tag--natural">
-                                            <i class="fas fa-leaf"></i> 100% Natural
-                                        </span>
-                                        <button type="button" class="cat-card__fav-btn" onclick="toggleFavorito(this)" aria-label="Favorito">
-                                            <i class="far fa-heart"></i>
-                                        </button>
-                                        <img th:src="@{/images/ImagenIndex4.jpg}" alt="Papa Pastusa" class="cat-card__img"
-                                            onerror="this.src='/images/Verduras.jpg'">
-                                    </div>
-                                    <div class="cat-card__content">
-                                        <h3 class="cat-card__title">Papa Pastusa Seleccionada</h3>
-                                        <p class="cat-card__meta">Tubérculos • Producto local</p>
-                                        <div class="cat-card__rating">
-                                            <i class="fas fa-star cat-card__rating-star"></i>
-                                            <span class="cat-card__rating-score">4.9</span>
-                                            <span class="cat-card__rating-count">(182)</span>
-                                            <i class="fas fa-leaf cat-card__rating-leaf"></i>
-                                        </div>
-                                        <div class="cat-card__price-row">
-                                            <span class="cat-card__price-val">$3.500</span>
-                                            <span class="cat-card__price-unit">/ kg</span>
-                                        </div>
-                                        <div class="cat-card__qty-pill">
-                                            <button type="button" class="cat-qty-btn" onclick="decrementarCantidad(this)">-</button>
-                                            <span class="cat-qty-value">1 kg</span>
-                                            <button type="button" class="cat-qty-btn" onclick="incrementarCantidad(this)">+</button>
-                                        </div>
-                                        <button type="button" class="cat-card__btn-add" onclick="agregarAlCarritoDemo('Papa Pastusa Seleccionada')">
-                                            <i class="fas fa-shopping-cart"></i> Agregar al carrito
-                                        </button>
-                                    </div>
-                                </article>
-
-                                <!-- 8. Leche Entera -->
-                                <article class="cat-card">
-                                    <div class="cat-card__media">
-                                        <span class="cat-badge-tag cat-badge-tag--bestseller">
-                                            <i class="fas fa-fire"></i> Más vendido
-                                        </span>
-                                        <button type="button" class="cat-card__fav-btn" onclick="toggleFavorito(this)" aria-label="Favorito">
-                                            <i class="far fa-heart"></i>
-                                        </button>
-                                        <img th:src="@{/images/lacteos.jpg}" alt="Leche Entera" class="cat-card__img">
-                                    </div>
-                                    <div class="cat-card__content">
-                                        <h3 class="cat-card__title">Leche Entera Campesina</h3>
-                                        <p class="cat-card__meta">Lácteos • Producto local</p>
-                                        <div class="cat-card__rating">
-                                            <i class="fas fa-star cat-card__rating-star"></i>
-                                            <span class="cat-card__rating-score">4.8</span>
-                                            <span class="cat-card__rating-count">(110)</span>
-                                            <i class="fas fa-leaf cat-card__rating-leaf"></i>
-                                        </div>
-                                        <div class="cat-card__price-row">
-                                            <span class="cat-card__price-val">$4.200</span>
-                                            <span class="cat-card__price-unit">/ litro</span>
-                                        </div>
-                                        <div class="cat-card__qty-pill">
-                                            <button type="button" class="cat-qty-btn" onclick="decrementarCantidad(this)">-</button>
-                                            <span class="cat-qty-value">1 litro</span>
-                                            <button type="button" class="cat-qty-btn" onclick="incrementarCantidad(this)">+</button>
-                                        </div>
-                                        <button type="button" class="cat-card__btn-add" onclick="agregarAlCarritoDemo('Leche Entera Campesina')">
-                                            <i class="fas fa-shopping-cart"></i> Agregar al carrito
-                                        </button>
-                                    </div>
-                                </article>
-
-                            </th:block>
+                            <!-- ESTADO VACÍO CUANDO NO HAY PRODUCTOS -->
+                            <div class="cat-empty" th:if="${catalogo == null or catalogo.isEmpty()}"
+                                style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem;">
+                                <i class="fas fa-box-open"
+                                    style="font-size: 3rem; color: #a0aec0; margin-bottom: 1rem; display: block;"></i>
+                                <h3
+                                    style="color: #4a5568; font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">
+                                    Aún no hay productos para esta categoría</h3>
+                                <p style="color: #718096; font-size: 0.95rem;">Pronto nuestros productores locales
+                                    agregarán nuevas cosechas.</p>
+                            </div>
 
                         </div>
 

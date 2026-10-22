@@ -1,12 +1,16 @@
 package com.example.demo.Controller;
 
 import com.example.demo.Model.OfertaVendedor;
+import com.example.demo.Model.Role;
+import com.example.demo.Model.Usuario;
 import com.example.demo.repository.OfertaRepository;
+import com.example.demo.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -25,6 +29,9 @@ public class PublicoController {
 
     @Autowired
     private OfertaRepository ofertaRepository;
+
+    @Autowired
+    private UsuarioRepository usuarioRepository;
 
     /** Resumen público de un productor, derivado de sus ofertas disponibles. */
     public static class ProductorResumen {
@@ -49,12 +56,28 @@ public class PublicoController {
     }
 
     /** Una sola página con "Sobre Nosotros" y "Productores" (el select hace scroll entre secciones). */
-    @GetMapping("/nosotros")
+    @GetMapping({"/nosotros", "/productores"})
     public String nosotros(
             @RequestParam(value = "page", required = false, defaultValue = "0") int page,
             @RequestParam(value = "size", required = false, defaultValue = "8") int size,
             Model model) {
         Map<String, ProductorResumen> productores = new LinkedHashMap<>();
+
+        // 1. Cargar todos los vendedores registrados
+        List<Usuario> vendedores = usuarioRepository.findByRolesContaining(Role.VENDEDOR);
+        for (Usuario u : vendedores) {
+            String nombre = (u.getPerfilVendedor() != null && u.getPerfilVendedor().getRazonSocial() != null && !u.getPerfilVendedor().getRazonSocial().isBlank())
+                    ? u.getPerfilVendedor().getRazonSocial()
+                    : u.getNombre();
+            String desc = (u.getPerfilVendedor() != null && u.getPerfilVendedor().getDescripcionNegocio() != null)
+                    ? u.getPerfilVendedor().getDescripcionNegocio()
+                    : "Productor local de Cultivus.";
+            boolean verificado = u.getPerfilVendedor() != null && u.getPerfilVendedor().isVerificado();
+
+            productores.put(u.getId(), new ProductorResumen(u.getId(), nombre, desc, verificado));
+        }
+
+        // 2. Contar ofertas activas para cada productor
         for (OfertaVendedor o : ofertaRepository.findAll()) {
             if (!o.isDisponible() || o.getVendedor() == null || o.getVendedor().getId() == null) {
                 continue;
@@ -114,4 +137,38 @@ public class PublicoController {
         model.addAttribute("ofertas", ofertas);
         return "public/ofertas";
     }
+
+    /** Endpoint REST para consultar la lista de productores registrados (formato JSON). */
+    @GetMapping("/api/productores")
+    @ResponseBody
+    public List<ProductorResumen> apiProductores() {
+        Map<String, ProductorResumen> productores = new LinkedHashMap<>();
+
+        List<Usuario> vendedores = usuarioRepository.findByRolesContaining(Role.VENDEDOR);
+        for (Usuario u : vendedores) {
+            String nombre = (u.getPerfilVendedor() != null && u.getPerfilVendedor().getRazonSocial() != null && !u.getPerfilVendedor().getRazonSocial().isBlank())
+                    ? u.getPerfilVendedor().getRazonSocial()
+                    : u.getNombre();
+            String desc = (u.getPerfilVendedor() != null && u.getPerfilVendedor().getDescripcionNegocio() != null)
+                    ? u.getPerfilVendedor().getDescripcionNegocio()
+                    : "Productor local de Cultivus.";
+            boolean verificado = u.getPerfilVendedor() != null && u.getPerfilVendedor().isVerificado();
+
+            productores.put(u.getId(), new ProductorResumen(u.getId(), nombre, desc, verificado));
+        }
+
+        for (OfertaVendedor o : ofertaRepository.findAll()) {
+            if (o.isDisponible() && o.getVendedor() != null && o.getVendedor().getId() != null) {
+                ProductorResumen p = productores.get(o.getVendedor().getId());
+                if (p != null) {
+                    p.totalOfertas++;
+                }
+            }
+        }
+
+        List<ProductorResumen> lista = new ArrayList<>(productores.values());
+        lista.sort(Comparator.comparingInt(ProductorResumen::getTotalOfertas).reversed());
+        return lista;
+    }
 }
+
