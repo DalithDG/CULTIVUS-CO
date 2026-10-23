@@ -45,11 +45,23 @@ public class CalculoEnvioService {
     @Autowired
     private AppConfigService configService;
 
+    public record DesgloseEnvioVendedor(
+            String vendedorId,
+            String vendedorNombre,
+            String ciudadOrigen,
+            Integer zonaOrigen,
+            String ciudadDestino,
+            Integer zonaDestino,
+            long tarifaCentavos,
+            boolean tarifaPorDefecto
+    ) {}
+
     public record ResultadoCalculoEnvio(
             long totalCentavos,
             Map<String, Long> tarifasPorVendedor,
             Map<String, Integer> zonasOrigenPorVendedor,
-            Integer zonaDestino
+            Integer zonaDestino,
+            List<DesgloseEnvioVendedor> desglose
     ) {
         public double getTotalCop() {
             return totalCentavos / 100.0;
@@ -111,7 +123,7 @@ public class CalculoEnvioService {
      */
     public ResultadoCalculoEnvio calcularTarifaCarrito(Carrito carrito, String ciudadEntrega) {
         if (carrito == null || carrito.getItems() == null || carrito.getItems().isEmpty()) {
-            return new ResultadoCalculoEnvio(0L, Collections.emptyMap(), Collections.emptyMap(), null);
+            return new ResultadoCalculoEnvio(0L, Collections.emptyMap(), Collections.emptyMap(), null, Collections.emptyList());
         }
 
         Set<String> vendedoresIds = new LinkedHashSet<>();
@@ -138,21 +150,37 @@ public class CalculoEnvioService {
         Integer zonaDestino = obtenerZonaPorCiudad(ciudadEntrega).orElse(null);
         Map<String, Long> tarifasPorVendedor = new LinkedHashMap<>();
         Map<String, Integer> zonasOrigenPorVendedor = new LinkedHashMap<>();
+        List<DesgloseEnvioVendedor> desglose = new ArrayList<>();
         long totalCentavos = 0L;
 
         if (vendedoresIds == null || vendedoresIds.isEmpty()) {
             long defecto = obtenerTarifaPorDefectoCentavos();
-            return new ResultadoCalculoEnvio(defecto, Collections.emptyMap(), Collections.emptyMap(), zonaDestino);
+            return new ResultadoCalculoEnvio(defecto, Collections.emptyMap(), Collections.emptyMap(), zonaDestino, Collections.emptyList());
         }
+
+        String ciudadDestinoStr = ciudadEntrega;
 
         for (String vId : vendedoresIds) {
             Integer zonaOrigen = null;
+            String ciudadOrigen = null;
+            String nombreVendedor = vId;
+            boolean tarifaPorDefecto = false;
+
             if (vId != null) {
                 Optional<Usuario> optVendedor = usuarioRepository.findById(vId);
-                if (optVendedor.isPresent() && optVendedor.get().getUbicacion() != null) {
-                    String ciudadVendedor = optVendedor.get().getUbicacion().getCiudad();
-                    zonaOrigen = obtenerZonaPorCiudad(ciudadVendedor).orElse(null);
+                if (optVendedor.isPresent()) {
+                    Usuario v = optVendedor.get();
+                    nombreVendedor = v.getNombre() != null ? v.getNombre() : vId;
+                    if (v.getUbicacion() != null) {
+                        ciudadOrigen = v.getUbicacion().getCiudad();
+                        zonaOrigen = obtenerZonaPorCiudad(ciudadOrigen).orElse(null);
+                    }
                 }
+            }
+
+            // Tarifa por defecto si falta ciudad origen o zona destino
+            if (zonaOrigen == null || zonaDestino == null) {
+                tarifaPorDefecto = true;
             }
 
             long tarifa = calcularTarifaEntreZonas(zonaOrigen, zonaDestino);
@@ -161,8 +189,19 @@ public class CalculoEnvioService {
                 zonasOrigenPorVendedor.put(vId, zonaOrigen);
             }
             totalCentavos += tarifa;
+
+            desglose.add(new DesgloseEnvioVendedor(
+                    vId,
+                    nombreVendedor,
+                    ciudadOrigen,
+                    zonaOrigen,
+                    ciudadDestinoStr,
+                    zonaDestino,
+                    tarifa,
+                    tarifaPorDefecto
+            ));
         }
 
-        return new ResultadoCalculoEnvio(totalCentavos, tarifasPorVendedor, zonasOrigenPorVendedor, zonaDestino);
+        return new ResultadoCalculoEnvio(totalCentavos, tarifasPorVendedor, zonasOrigenPorVendedor, zonaDestino, desglose);
     }
 }

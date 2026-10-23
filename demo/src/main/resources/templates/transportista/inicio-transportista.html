@@ -2,6 +2,7 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
+    <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Logística y Rutas | Cultivus</title>
@@ -16,9 +17,9 @@
 
     <style>
         :root {
-            --primary: #059669;
-            --primary-dark: #065f46;
-            --primary-light: #ecfdf5;
+            --primary: #3d7a1e;
+            --primary-dark: #2c5c14;
+            --primary-light: #e8f5e1;
             --text-dark: #1f2937;
             --text-muted: #6b7280;
             --card-bg: #ffffff;
@@ -40,7 +41,7 @@
 
         /* Banner de Bienvenida */
         .driver-hero {
-            background: linear-gradient(135deg, #065f46, #047857);
+            background: linear-gradient(135deg, #2c5c14, #2c5c14);
             color: #ffffff;
             border-radius: 16px;
             padding: 26px 30px;
@@ -64,7 +65,7 @@
             height: 64px;
             border-radius: 50%;
             background: #ffffff;
-            color: #065f46;
+            color: #2c5c14;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -97,7 +98,7 @@
 
         .status-available {
             background: #d1fae5;
-            color: #065f46;
+            color: #2c5c14;
         }
 
         .status-busy {
@@ -130,12 +131,12 @@
         }
 
         .tab-btn:hover {
-            color: #059669;
+            color: #3d7a1e;
         }
 
         .tab-btn.active {
-            color: #065f46;
-            border-bottom-color: #059669;
+            color: #2c5c14;
+            border-bottom-color: #3d7a1e;
         }
 
         .tab-badge {
@@ -148,8 +149,8 @@
         }
 
         .tab-btn.active .tab-badge {
-            background: #ecfdf5;
-            color: #059669;
+            background: #e8f5e1;
+            color: #3d7a1e;
         }
 
         /* Cuadrícula de Métricas */
@@ -255,9 +256,9 @@
         }
 
         .badge-in-zone {
-            background: #ecfdf5;
-            color: #065f46;
-            border: 1px solid #a7f3d0;
+            background: #e8f5e1;
+            color: #2c5c14;
+            border: 1px solid #c8e6c9;
             padding: 4px 10px;
             border-radius: 9999px;
             font-size: 0.76rem;
@@ -317,7 +318,7 @@
             height: 12px;
             border-radius: 50%;
             background: #ffffff;
-            border: 3px solid #059669;
+            border: 3px solid #3d7a1e;
         }
 
         .stop-item.delivery-point {
@@ -356,11 +357,11 @@
         .earning-amount {
             font-size: 1.35rem;
             font-weight: 800;
-            color: #065f46;
+            color: #2c5c14;
         }
 
         .btn-accept-route {
-            background: linear-gradient(135deg, #059669, #047857);
+            background: linear-gradient(135deg, #3d7a1e, #2c5c14);
             color: #ffffff;
             border: none;
             border-radius: 8px;
@@ -434,7 +435,7 @@
     <main class="dashboard-container">
 
         <!-- Mensajes de Alerta -->
-        <div th:if="${mensaje}" style="background: #ecfdf5; color: #065f46; padding: 14px 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #a7f3d0; display: flex; align-items: center; gap: 10px;">
+        <div th:if="${mensaje}" style="background: #e8f5e1; color: #2c5c14; padding: 14px 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #c8e6c9; display: flex; align-items: center; gap: 10px;">
             <i class="fas fa-check-circle" style="font-size: 1.2rem;"></i>
             <span th:text="${mensaje}"></span>
         </div>
@@ -471,7 +472,7 @@
                         </span>
 
                         <span th:if="${perfil != null and perfil.verificado}"
-                              style="background: #10b981; color: white; padding: 4px 10px; border-radius: 9999px; font-size: 0.78rem; font-weight: 700;">
+                              style="background: #4e9628; color: white; padding: 4px 10px; border-radius: 9999px; font-size: 0.78rem; font-weight: 700;">
                             <i class="fas fa-shield-check"></i> Verificado
                         </span>
 
@@ -496,7 +497,7 @@
         <!-- Métricas Rápidas -->
         <section class="metrics-grid">
             <div class="metric-card">
-                <div class="metric-icon-box" style="background: #ecfdf5; color: #059669;">
+                <div class="metric-icon-box" style="background: #e8f5e1; color: #3d7a1e;">
                     <i class="fas fa-route"></i>
                 </div>
                 <div>
@@ -560,7 +561,7 @@
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
                             <div>
                                 <h2 style="font-size: 1.25rem; font-weight: 800; color: #111827; margin: 0;">
-                                    <i class="fas fa-route" style="color: #059669;"></i> Rutas y Fletes Disponibles
+                                    <i class="fas fa-route" style="color: #3d7a1e;"></i> Rutas y Fletes Disponibles
                                 </h2>
                                 <p style="font-size: 0.8rem; color: #6b7280; margin: 4px 0 0;">
                                     Cada compra agrupa las recolecciones en fincas y la entrega consolidada al comprador.
@@ -595,7 +596,7 @@
                                     <div th:each="pd, stat : ${r.paradasDetalle}" class="stop-item">
                                         <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
                                             <div>
-                                                <div style="font-size: 0.82rem; font-weight: 700; color: #065f46;">
+                                                <div style="font-size: 0.82rem; font-weight: 700; color: #2c5c14;">
                                                     <i class="fas fa-store"></i> Parada <span th:text="${stat.count}">1</span> (Recolección):
                                                     <span th:text="${pd.parada.vendedorNombre}">Finca Los Rosales</span>
                                                 </div>
@@ -606,14 +607,14 @@
                                                     <i class="fas fa-phone"></i> Contacto: <span th:text="${pd.parada.vendedorTelefono}">3001234567</span>
                                                 </div>
                                                 <div style="font-size: 0.75rem; color: #1e293b; margin-top: 4px;" th:if="${pd.parada.itemsResumen != null and !pd.parada.itemsResumen.empty}">
-                                                    <i class="fas fa-box-open" style="color: #059669;"></i>
+                                                    <i class="fas fa-box-open" style="color: #3d7a1e;"></i>
                                                     <span th:text="${#strings.arrayJoin(pd.parada.itemsResumen, ', ')}">2x Plátano verde, 1x Ñame</span>
                                                 </div>
                                             </div>
                                             <div style="text-align: right; min-width: 120px;">
                                                 <span th:style="${pd.estadoPedidoCss}" style="padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; display: inline-block;"
                                                       th:text="${pd.estadoPedidoEtiqueta}">Listo para recoger</span>
-                                                <div style="font-size: 0.78rem; font-weight: 700; color: #047857; margin-top: 4px;"
+                                                <div style="font-size: 0.78rem; font-weight: 700; color: #2c5c14; margin-top: 4px;"
                                                      th:text="'+' + ${pd.parada.getTarifaFormateada()}">+$15.000</div>
                                             </div>
                                         </div>
@@ -671,7 +672,7 @@
                     <div class="section-box">
                         <div style="margin-bottom: 18px;">
                             <h2 style="font-size: 1.25rem; font-weight: 800; color: #111827; margin: 0;">
-                                <i class="fas fa-box-archive" style="color: #059669;"></i> Mis Envíos Asignados
+                                <i class="fas fa-box-archive" style="color: #3d7a1e;"></i> Mis Envíos Asignados
                             </h2>
                             <p style="font-size: 0.8rem; color: #6b7280; margin: 4px 0 0;">
                                 Rutas que has aceptado y tienes actualmente a tu cargo.
@@ -698,7 +699,7 @@
                                     <div th:each="pd, stat : ${me.paradasDetalle}" class="stop-item">
                                         <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
                                             <div>
-                                                <div style="font-size: 0.82rem; font-weight: 700; color: #065f46;">
+                                                <div style="font-size: 0.82rem; font-weight: 700; color: #2c5c14;">
                                                     <i class="fas fa-store"></i> Parada <span th:text="${stat.count}">1</span>:
                                                     <span th:text="${pd.parada.vendedorNombre}">Finca</span>
                                                 </div>
@@ -711,7 +712,7 @@
                                             </div>
                                             <div style="text-align: right;">
                                                 <!-- Parada ya recogida -->
-                                                <span th:if="${pd.parada.recolectado}" style="background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
+                                                <span th:if="${pd.parada.recolectado}" style="background: #e8f5e1; color: #2c5c14; border: 1px solid #c8e6c9; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
                                                     <i class="fas fa-check-circle"></i> Recolectado
                                                 </span>
 
@@ -720,7 +721,7 @@
                                                     <form th:if="${pd.estadoPedido == 'LISTO_PARA_RECOGER'}"
                                                           th:action="@{/transportista/parada/{envioId}/{pedidoId}/recoger(envioId=${me.envio.id}, pedidoId=${pd.parada.pedidoId})}"
                                                           method="post">
-                                                        <button type="submit" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 6px; padding: 6px 14px; font-size: 0.76rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(16,185,129,0.25);">
+                                                        <button type="submit" style="background: linear-gradient(135deg, #4e9628, #3d7a1e); color: white; border: none; border-radius: 6px; padding: 6px 14px; font-size: 0.76rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(16,185,129,0.25);">
                                                             <i class="fas fa-box-open"></i> Marcar Recogido
                                                         </button>
                                                     </form>
@@ -753,9 +754,9 @@
                                 <div style="padding: 0 16px 14px 16px;">
                                     <!-- Entregado -->
                                     <div th:if="${me.envio.estado == 'ENTREGADO'}"
-                                         style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 8px; padding: 10px 16px; color: #065f46; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; justify-content: space-between;">
+                                         style="background: #e8f5e1; border: 1px solid #c8e6c9; border-radius: 8px; padding: 10px 16px; color: #2c5c14; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; justify-content: space-between;">
                                         <span><i class="fas fa-circle-check"></i> Entrega final completada al comprador</span>
-                                        <span th:if="${me.envio.fechaEntrega != null}" style="font-size: 0.75rem; font-weight: normal; color: #047857;"
+                                        <span th:if="${me.envio.fechaEntrega != null}" style="font-size: 0.75rem; font-weight: normal; color: #2c5c14;"
                                               th:text="${#temporals.format(me.envio.fechaEntrega, 'dd/MM/yyyy HH:mm')}"></span>
                                     </div>
 
@@ -772,7 +773,7 @@
                                         </div>
                                         <form th:action="@{/transportista/envio/{envioId}/entregar(envioId=${me.envio.id})}" method="post"
                                               onsubmit="return confirm('¿Confirmas que has entregado los paquetes en la dirección del comprador?')">
-                                            <button type="submit" style="background: linear-gradient(135deg, #059669, #047857); color: white; border: none; border-radius: 8px; padding: 9px 18px; font-size: 0.84rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 3px 8px rgba(5,150,105,0.35);">
+                                            <button type="submit" style="background: linear-gradient(135deg, #3d7a1e, #2c5c14); color: white; border: none; border-radius: 8px; padding: 9px 18px; font-size: 0.84rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 3px 8px rgba(5,150,105,0.35);">
                                                 <i class="fas fa-truck-ramp-box"></i> Marcar Entrega Final
                                             </button>
                                         </form>
@@ -830,15 +831,15 @@
             <div class="right-col">
                 <div class="section-box" th:if="${perfil != null}">
                     <h3 style="font-size: 1.05rem; font-weight: 800; color: #111827; margin: 0 0 16px; display: flex; align-items: center; gap: 8px;">
-                        <i class="fas fa-id-card-clip" style="color: #059669;"></i> Perfil Operativo
+                        <i class="fas fa-id-card-clip" style="color: #3d7a1e;"></i> Perfil Operativo
                     </h3>
 
                     <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 14px; text-align: center; margin-bottom: 16px;">
-                        <span style="font-size: 0.72rem; color: #047857; font-weight: 700; text-transform: uppercase;">
+                        <span style="font-size: 0.72rem; color: #2c5c14; font-weight: 700; text-transform: uppercase;">
                             <span th:if="${perfil != null and (perfil.tipo == 'EMPRESA' or perfil.isEmpresa())}">NIT EMPRESA</span>
                             <span th:unless="${perfil != null and (perfil.tipo == 'EMPRESA' or perfil.isEmpresa())}">PLACA VEHÍCULO</span>
                         </span>
-                        <div style="font-size: 1.6rem; font-weight: 800; letter-spacing: 1.5px; color: #065f46;">
+                        <div style="font-size: 1.6rem; font-weight: 800; letter-spacing: 1.5px; color: #2c5c14;">
                             <span th:if="${perfil != null and (perfil.tipo == 'EMPRESA' or perfil.isEmpresa())}" th:text="${perfil.nit != null ? perfil.nit : '-'}">901234567</span>
                             <span th:unless="${perfil != null and (perfil.tipo == 'EMPRESA' or perfil.isEmpresa())}" th:text="${perfil.placa != null ? perfil.placa : '-'}">ABC-123</span>
                         </div>
@@ -884,7 +885,7 @@
                         <span style="font-size: 0.78rem; color: #6b7280; display: block; margin-bottom: 6px;">
                             <i class="fas fa-phone"></i> Contacto de ruta: <strong th:text="${perfil.telefonoContacto}">3001234567</strong>
                         </span>
-                        <span style="font-size: 0.75rem; color: #059669; font-weight: 600;" th:if="${perfil.verificado}">
+                        <span style="font-size: 0.75rem; color: #3d7a1e; font-weight: 600;" th:if="${perfil.verificado}">
                             <i class="fas fa-shield-check"></i> Transportista Verificado por Cultivus
                         </span>
                         <span style="font-size: 0.75rem; color: #d97706; font-weight: 600;" th:unless="${perfil.verificado}">

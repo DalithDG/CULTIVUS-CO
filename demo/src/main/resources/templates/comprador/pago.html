@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Finalizar Compra - Cultivus</title>
@@ -659,6 +660,15 @@
                         <span>Envío (departamental):</span>
                         <span>$<span id="displayEnvio" th:text="${#numbers.formatDecimal(costoEnvio, 0, 'COMMA', 0, 'POINT')}">0</span></span>
                     </div>
+                    <div id="desgloseEnvio" style="font-size:12px; color:#666; margin:4px 0 8px 0; padding-left:4px;" th:if="${desgloseEnvio != null and !desgloseEnvio.empty}">
+                        <div th:each="d : ${desgloseEnvio}" style="display:flex; justify-content:space-between; gap:8px;">
+                            <span th:text="${d.vendedorNombre} + ' - ' + (${d.ciudadOrigen} != null ? ${d.ciudadOrigen} : 'Origen') + ' (Zona ' + (${d.zonaOrigen} != null ? ${d.zonaOrigen} : '-') + ') -&gt; ' + (${d.ciudadDestino} != null ? ${d.ciudadDestino} : 'Destino') + ' (Zona ' + (${d.zonaDestino} != null ? ${d.zonaDestino} : '-') + ')' + (${d.tarifaPorDefecto} ? ' (Tarifa estandar)' : '')">Vendedor</span>
+                            <span>$<span th:text="${#numbers.formatDecimal(d.tarifaCentavos / 100.0, 0, 'COMMA', 0, 'POINT')}">0</span></span>
+                        </div>
+                    </div>
+                    <div style="font-size:12px; color:#888; margin-bottom:8px; padding-left:4px;">
+                        El costo de envio se calcula por cada vendedor segun la zona de recogida y tu zona de entrega.
+                    </div>
                     <div class="linea-total destacado">
                         <span>Total:</span>
                         <span>$<span id="displayTotal" th:text="${#numbers.formatDecimal(total, 0, 'COMMA', 0, 'POINT')}">0</span></span>
@@ -710,6 +720,19 @@
                             if (envioEl) envioEl.textContent = formato.format(data.costoEnvio);
                             if (totalEl) totalEl.textContent = formato.format(data.total);
                             if (btnTotalEl) btnTotalEl.textContent = formato.format(data.total);
+
+                            const desgloseEl = document.getElementById('desgloseEnvio');
+                            if (desgloseEl && Array.isArray(data.desglose)) {
+                                desgloseEl.innerHTML = data.desglose.map(d => {
+                                    const origen = (d.ciudadOrigen || 'Origen') + ' (Zona ' + (d.zonaOrigen || '-') + ')';
+                                    const destino = (d.ciudadDestino || 'Destino') + ' (Zona ' + (d.zonaDestino || '-') + ')';
+                                    const estandar = d.tarifaPorDefecto ? ' (Tarifa estandar)' : '';
+                                    return '<div style="display:flex;justify-content:space-between;gap:8px;">' +
+                                        '<span>' + d.vendedorNombre + ' - ' + origen + ' -&gt; ' + destino + estandar + '</span>' +
+                                        '<span>$' + formato.format(d.tarifaCentavos / 100) + '</span>' +
+                                        '</div>';
+                                }).join('');
+                            }
                         }
                     }
                 } catch (e) {

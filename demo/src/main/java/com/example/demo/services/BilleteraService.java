@@ -35,6 +35,9 @@ public class BilleteraService {
     public static final String CLAVE_COMISION = "COMISION_VENTA_PORCENTAJE";
     public static final double COMISION_POR_DEFECTO = 8.0;
 
+    public static final String CLAVE_COMISION_FLETE = "COMISION_FLETE_PORCENTAJE";
+    public static final double COMISION_FLETE_POR_DEFECTO = 0.0;
+
     private final BilleteraAlmacen almacen;
     private final AppConfigService configService;
 
@@ -49,6 +52,14 @@ public class BilleteraService {
         double pct = configService != null
                 ? configService.obtenerValorDouble(CLAVE_COMISION, COMISION_POR_DEFECTO)
                 : COMISION_POR_DEFECTO;
+        long bps = Math.round(pct * 100.0);
+        return (int) Math.max(0, Math.min(10_000, bps));
+    }
+
+    public int comisionFletePuntosBasicos() {
+        double pct = configService != null
+                ? configService.obtenerValorDouble(CLAVE_COMISION_FLETE, COMISION_FLETE_POR_DEFECTO)
+                : COMISION_FLETE_POR_DEFECTO;
         long bps = Math.round(pct * 100.0);
         return (int) Math.max(0, Math.min(10_000, bps));
     }
@@ -103,6 +114,43 @@ public class BilleteraService {
         }
     }
 
+    /**
+     * Abona al transportista el flete de un envío entregado. Idempotente por envío.
+     */
+    public void registrarFleteEntregado(com.example.demo.Model.Envio envio) {
+        if (envio == null || envio.getId() == null || envio.getTransportistaId() == null) {
+            return;
+        }
+        long flete = envio.getCostoTotalCentavos() != null ? envio.getCostoTotalCentavos() : 0L;
+        if (flete <= 0) {
+            return;
+        }
+        int bps = comisionFletePuntosBasicos();
+        long comision = flete * bps / 10_000L;
+        long abono = flete - comision;
+
+        String compraId = envio.getCompraId();
+        Billetera billetera = almacen.obtenerOCrear(envio.getTransportistaId(), Billetera.Rol.TRANSPORTISTA);
+
+        MovimientoBilletera movAbono = MovimientoBilletera.nuevo(billetera, MovimientoBilletera.Tipo.ABONO,
+                Billetera.EstadoSaldo.EN_RETENCION, abono, null, compraId,
+                "Flete de la compra #" + (compraId != null ? compraId : envio.getId()),
+                "FLETE:" + envio.getId());
+        if (almacen.insertarMovimiento(movAbono)) {
+            almacen.incrementarSaldo(billetera.getId(), Billetera.EstadoSaldo.EN_RETENCION, abono);
+        }
+
+        if (comision > 0) {
+            MovimientoBilletera movComision = MovimientoBilletera.nuevo(billetera, MovimientoBilletera.Tipo.COMISION,
+                    Billetera.EstadoSaldo.EN_RETENCION, -comision, null, compraId,
+                    "Comisión de plataforma del flete de la compra #" + (compraId != null ? compraId : envio.getId()),
+                    "COMISION_FLETE:" + envio.getId());
+            if (almacen.insertarMovimiento(movComision)) {
+                almacen.incrementarSaldo(billetera.getId(), Billetera.EstadoSaldo.EN_RETENCION, -comision);
+            }
+        }
+    }
+
     /** Subtotal de productos del sub-pedido en centavos (el envío nunca entra aquí). */
     static long subtotalProductosCentavos(Pedido pedido) {
         if (pedido.getSubtotalCentavos() != null) {
@@ -134,5 +182,19 @@ public class BilleteraService {
 
     public List<MovimientoBilletera> listarMovimientosVendedor(String vendedorId) {
         return almacen.listarMovimientos(vendedorId, Billetera.Rol.VENDEDOR);
+    }
+
+    // --- Transportista ---
+
+    public Optional<Billetera> obtenerBilleteraTransportista(String transportistaId) {
+        return almacen.buscar(transportistaId, Billetera.Rol.TRANSPORTISTA);
+    }
+
+    public Billetera obtenerOCrearBilleteraTransportista(String transportistaId) {
+        return almacen.obtenerOCrear(transportistaId, Billetera.Rol.TRANSPORTISTA);
+    }
+
+    public List<MovimientoBilletera> listarMovimientosTransportista(String transportistaId) {
+        return almacen.listarMovimientos(transportistaId, Billetera.Rol.TRANSPORTISTA);
     }
 }

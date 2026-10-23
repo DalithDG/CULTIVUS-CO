@@ -161,6 +161,7 @@ public class PagoController {
         model.addAttribute("currency", currency);
         model.addAttribute("subtotal", subtotal);
         model.addAttribute("costoEnvio", costoEnvio);
+        model.addAttribute("desgloseEnvio", calculoEnvio.desglose());
         model.addAttribute("ciudadPreseleccionada", ciudadDefault);
 
         model.addAttribute("usuario", usuario);
@@ -418,6 +419,17 @@ public class PagoController {
                     pedido.setCompraId(compra.getId());
                     pedido.setSubtotalCentavos(subtotalVendedorCentavos);
                     pedido.setEnvioCentavos(envioVendedorCentavos);
+                    pedido.setTarifaEnvioCentavos(envioVendedorCentavos);
+                    // Snapshot del tramo de envío
+                    for (com.example.demo.services.CalculoEnvioService.DesgloseEnvioVendedor dg : calculoEnvio.desglose()) {
+                        if (vendedorId.equals(dg.vendedorId())) {
+                            pedido.setCiudadOrigenEnvio(dg.ciudadOrigen());
+                            pedido.setCiudadDestinoEnvio(dg.ciudadDestino());
+                            pedido.setZonaOrigenEnvio(dg.zonaOrigen());
+                            pedido.setZonaDestinoEnvio(dg.zonaDestino());
+                            break;
+                        }
+                    }
                     pedido.setEstado("PENDIENTE");
                     pedido = pedidoRepository.save(pedido);
 
@@ -490,11 +502,25 @@ public class PagoController {
         double total = subtotal + costoEnvio;
         long totalCentavos = wompiService.convertirACentavos(subtotal) + res.totalCentavos();
 
+        java.util.List<java.util.Map<String, Object>> desgloseJson = new java.util.ArrayList<>();
+        for (com.example.demo.services.CalculoEnvioService.DesgloseEnvioVendedor d : res.desglose()) {
+            java.util.Map<String, Object> m = new java.util.LinkedHashMap<>();
+            m.put("vendedorId", d.vendedorId());
+            m.put("vendedorNombre", d.vendedorNombre());
+            m.put("ciudadOrigen", d.ciudadOrigen());
+            m.put("zonaOrigen", d.zonaOrigen());
+            m.put("ciudadDestino", d.ciudadDestino());
+            m.put("zonaDestino", d.zonaDestino());
+            m.put("tarifaCentavos", d.tarifaCentavos());
+            m.put("tarifaPorDefecto", d.tarifaPorDefecto());
+            desgloseJson.add(m);
+        }
         return org.springframework.http.ResponseEntity.ok(java.util.Map.of(
                 "ok", true,
                 "costoEnvio", costoEnvio,
                 "total", total,
-                "totalCentavos", totalCentavos
+                "totalCentavos", totalCentavos,
+                "desglose", desgloseJson
         ));
     }
 

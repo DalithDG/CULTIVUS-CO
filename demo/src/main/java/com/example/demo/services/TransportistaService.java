@@ -58,6 +58,9 @@ public class TransportistaService {
     private SecurityContextRefreshService securityContextRefreshService;
 
     @Autowired(required = false)
+    private BilleteraService billeteraService;
+
+    @Autowired(required = false)
     private AppConfigService appConfigService;
 
     // ──────────────────────────── DTOs para la vista ────────────────────────────
@@ -823,6 +826,15 @@ public class TransportistaService {
                     }
                 });
             }
+        }
+
+        // Abonar flete al transportista (idempotente; si falla no revierte la entrega)
+        try {
+            if (billeteraService != null) {
+                billeteraService.registrarFleteEntregado(guardado);
+            }
+        } catch (Exception e) {
+            log.warn("No se pudo abonar el flete al transportista para el envío {}: {}", envioId, e.getMessage());
         }
 
         return guardado;

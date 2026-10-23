@@ -4,33 +4,24 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    <div class="header-premium" id="mainHeader" style="background: linear-gradient(135deg, #134e4a, #065f46); color: #fff;">
+    <div class="header-premium" id="mainHeader" style="background: #ffffff; color: #1f2937; border-bottom: 1px solid #e5e7eb;">
         <div class="header-container" style="max-width: 1240px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 12px 20px;">
             
             <!-- Logo con Sello Logístico -->
             <div class="header-logo">
-                <a th:href="@{/transportista/inicio}" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: #fff;">
-                    <img th:src="@{/images/LogoCultivus.png}" alt="Cultivus" style="height: 42px; width: auto;">
-                    <div style="display: flex; flex-direction: column;">
-                        <span style="font-weight: 800; font-size: 1.25rem; letter-spacing: -0.5px;">Cultivus</span>
-                        <span style="font-size: 0.72rem; color: #a7f3d0; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
-                            <i class="fas fa-truck-fast"></i> Red Logística
-                        </span>
-                    </div>
+                <a th:href="@{/transportista/inicio}" style="display: flex; align-items: center; gap: 12px; text-decoration: none; color: #1f2937;">
+                    <img th:src="@{/images/imagotipo_transparente.png}" alt="Cultivus" style="height: 40px; width: auto;">
                 </a>
             </div>
 
             <!-- Navegación de Transportista -->
             <nav class="header-nav" style="display: flex; align-items: center; gap: 20px;">
-                <a th:href="@{/transportista/inicio}" class="nav-link" style="color: #fff; text-decoration: none; font-weight: 600; font-size: 0.92rem; display: flex; align-items: center; gap: 6px;">
-                    <i class="fas fa-route" style="color: #34d399;"></i>
+                <a th:href="@{/transportista/inicio}" class="nav-link" style="color: #1f2937; text-decoration: none; font-weight: 600; font-size: 0.92rem; display: flex; align-items: center; gap: 6px;">
+                    <i class="fas fa-route" style="color: #3d7a1e;"></i>
                     <span>Mis Rutas y Envíos</span>
                 </a>
 
-                <a th:href="@{/}" class="nav-link" style="color: #e5e7eb; text-decoration: none; font-size: 0.9rem; display: flex; align-items: center; gap: 6px;">
-                    <i class="fas fa-store"></i>
-                    <span>Ver Tienda</span>
-                </a>
+
             </nav>
 
             <!-- Acciones / Perfil -->
@@ -39,18 +30,59 @@
                 <!-- Badge de Disponibilidad -->
                 <div th:if="${session.usuarioLogueado != null and session.usuarioLogueado.perfilTransportista != null}" 
                      style="display: flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 9999px; font-size: 0.78rem; font-weight: 700;"
-                     th:styleappend="${session.usuarioLogueado.perfilTransportista.disponible} ? 'background:#064e3b; color:#6ee7b7; border: 1px solid #059669;' : 'background:#7f1d1d; color:#fca5a5; border: 1px solid #dc2626;'">
+                     th:styleappend="${session.usuarioLogueado.perfilTransportista.disponible} ? 'background:#064e3b; color:#6ee7b7; border: 1px solid #3d7a1e;' : 'background:#7f1d1d; color:#fca5a5; border: 1px solid #dc2626;'">
                     <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%;"
-                          th:styleappend="${session.usuarioLogueado.perfilTransportista.disponible} ? 'background:#34d399;' : 'background:#ef4444;'"></span>
+                          th:styleappend="${session.usuarioLogueado.perfilTransportista.disponible} ? 'background:#6ab733;' : 'background:#ef4444;'"></span>
                     <span th:text="${session.usuarioLogueado.perfilTransportista.disponible} ? 'DISPONIBLE' : 'EN RUTA'">DISPONIBLE</span>
                 </div>
 
-                <!-- Usuario y Logout -->
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <span style="font-weight: 600; font-size: 0.9rem; color: #fff;" th:text="${session.usuarioLogueado != null ? session.usuarioLogueado.nombre : 'Conductor'}">Transportista</span>
-                    <a th:href="@{/usuario/logout}" title="Cerrar sesión" style="color: #fca5a5; background: rgba(255,255,255,0.1); width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none;">
-                        <i class="fas fa-sign-out-alt"></i>
-                    </a>
+                                <!-- Menú desplegable de perfil -->
+                <div class="account-menu" id="accountMenu">
+                    <button class="btn-account" id="accountMenuBtn" type="button" aria-haspopup="true"
+                        aria-expanded="false" aria-controls="accountMenuPanel" aria-label="Menú de perfil de usuario">
+                        <div class="account-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="account-info">
+                            <span class="account-greeting">Hola,</span>
+                            <span class="account-name"
+                                th:text="${session.usuarioLogueado != null ? (session.usuarioLogueado.nombre != null ? session.usuarioLogueado.nombre : 'Usuario') : 'Usuario'}">Usuario</span>
+                        </div>
+                        <i class="fas fa-chevron-down account-caret" aria-hidden="true"></i>
+                    </button>
+
+                    <div class="account-menu__panel" id="accountMenuPanel" role="menu" aria-labelledby="accountMenuBtn">
+                        <div class="account-panel__user" th:if="${session.usuarioLogueado != null}">
+                            <div class="account-panel__user-icon">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                            <div class="account-panel__user-meta">
+                                <span class="account-panel__user-name"
+                                    th:text="${session.usuarioLogueado.nombre}">Usuario</span>
+                                <span class="account-panel__user-email" th:if="${session.usuarioLogueado.email != null}"
+                                    th:text="${session.usuarioLogueado.email}">email@ejemplo.com</span>
+                            </div>
+                        </div>
+
+                        <div class="account-panel__divider"></div>
+
+                        <a th:href="@{/usuario/perfil}" class="account-panel__link" role="menuitem">
+                            <span class="account-panel__icon-box"><i class="fas fa-user"></i></span>
+                            <span class="account-panel__text">Mi perfil</span>
+                        </a>
+
+                        <a th:href="@{/transportista/billetera}" class="account-panel__link" role="menuitem">
+                            <span class="account-panel__icon-box"><i class="fas fa-wallet"></i></span>
+                            <span class="account-panel__text">Billetera</span>
+                        </a>
+
+                        <div class="account-panel__divider"></div>
+
+                        <a th:href="@{/usuario/logout}" class="account-panel__link is-danger" role="menuitem">
+                            <span class="account-panel__icon-box"><i class="fas fa-sign-out-alt"></i></span>
+                            <span class="account-panel__text">Cerrar sesión</span>
+                        </a>
+                    </div>
                 </div>
             </div>
 

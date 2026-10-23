@@ -270,6 +270,9 @@ public class UsuarioController {
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("departamentos", ubicacionService.obtenerTodos());
+        if (usuario.hasRole(com.example.demo.Model.Role.TRANSPORTISTA)) {
+            return "transportista/perfil-transportista";
+        }
         return "comprador/perfil";
     }
 

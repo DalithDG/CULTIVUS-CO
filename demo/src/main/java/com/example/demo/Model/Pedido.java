@@ -50,6 +50,22 @@ public class Pedido {
     @Field("envio_centavos")
     private Long envioCentavos;
 
+    // Snapshot del tramo de envío (US: costo por zona)
+    @Field("ciudad_origen_envio")
+    private String ciudadOrigenEnvio;
+
+    @Field("ciudad_destino_envio")
+    private String ciudadDestinoEnvio;
+
+    @Field("zona_origen_envio")
+    private Integer zonaOrigenEnvio;
+
+    @Field("zona_destino_envio")
+    private Integer zonaDestinoEnvio;
+
+    @Field("tarifa_envio_centavos")
+    private Long tarifaEnvioCentavos;
+
     @Field("requiere_revision")
     private boolean requiereRevision;
 
@@ -189,6 +205,21 @@ public class Pedido {
     public double getEnvio() {
         return envioCentavos != null ? envioCentavos / 100.0 : 0.0;
     }
+
+    public String getCiudadOrigenEnvio() { return ciudadOrigenEnvio; }
+    public void setCiudadOrigenEnvio(String ciudadOrigenEnvio) { this.ciudadOrigenEnvio = ciudadOrigenEnvio; }
+
+    public String getCiudadDestinoEnvio() { return ciudadDestinoEnvio; }
+    public void setCiudadDestinoEnvio(String ciudadDestinoEnvio) { this.ciudadDestinoEnvio = ciudadDestinoEnvio; }
+
+    public Integer getZonaOrigenEnvio() { return zonaOrigenEnvio; }
+    public void setZonaOrigenEnvio(Integer zonaOrigenEnvio) { this.zonaOrigenEnvio = zonaOrigenEnvio; }
+
+    public Integer getZonaDestinoEnvio() { return zonaDestinoEnvio; }
+    public void setZonaDestinoEnvio(Integer zonaDestinoEnvio) { this.zonaDestinoEnvio = zonaDestinoEnvio; }
+
+    public Long getTarifaEnvioCentavos() { return tarifaEnvioCentavos; }
+    public void setTarifaEnvioCentavos(Long tarifaEnvioCentavos) { this.tarifaEnvioCentavos = tarifaEnvioCentavos; }
 
     public boolean isRequiereRevision() { return requiereRevision; }
     public void setRequiereRevision(boolean requiereRevision) { this.requiereRevision = requiereRevision; }

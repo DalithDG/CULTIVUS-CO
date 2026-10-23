@@ -34,6 +34,9 @@ public class CarritoController {
     @Autowired
     private ProductoCatalogoRepository catalogoRepository;
 
+    @Autowired
+    private com.example.demo.services.CalculoEnvioService calculoEnvioService;
+
     /**
      * Muestra el carrito del usuario
      */
@@ -77,11 +80,27 @@ public class CarritoController {
             itemsPorVendedor.computeIfAbsent(nombreVendedor, k -> new java.util.ArrayList<>()).add(item);
         }
 
+        // Envío estimado basado en la ciudad guardada del comprador
+        String ciudadComprador = (usuario.getUbicacion() != null && usuario.getUbicacion().getCiudad() != null
+                && !usuario.getUbicacion().getCiudad().isBlank())
+                ? usuario.getUbicacion().getCiudad().trim() : null;
+
+        com.example.demo.services.CalculoEnvioService.ResultadoCalculoEnvio calculoEnvio =
+                calculoEnvioService.calcularTarifaCarrito(carrito, ciudadComprador != null ? ciudadComprador : "");
+        double subtotal = carrito.getTotalEstimado();
+        double envioEstimado = (ciudadComprador != null) ? calculoEnvio.getTotalCop() : 0.0;
+        double totalEstimado = (ciudadComprador != null) ? subtotal + envioEstimado : subtotal;
+
         model.addAttribute("usuario", usuario);
         model.addAttribute("carrito", carrito);
         model.addAttribute("detalles", carrito.getItems());
         model.addAttribute("itemsPorVendedor", itemsPorVendedor);
-        model.addAttribute("total", carrito.getTotalEstimado());
+        model.addAttribute("subtotal", subtotal);
+        model.addAttribute("envioEstimado", envioEstimado);
+        model.addAttribute("tieneCiudad", ciudadComprador != null);
+        model.addAttribute("ciudadComprador", ciudadComprador);
+        model.addAttribute("desgloseEnvio", calculoEnvio.desglose());
+        model.addAttribute("total", totalEstimado);
 
         return "comprador/carrito";
     }

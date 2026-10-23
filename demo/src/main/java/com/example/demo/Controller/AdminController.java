@@ -1,6 +1,7 @@
 package com.example.demo.Controller;
 
 import com.example.demo.Model.OfertaVendedor;
+import com.example.demo.Model.Pedido;
 import com.example.demo.Model.Producto;
 import com.example.demo.Model.ProductoCatalogo;
 import com.example.demo.Model.Resena;
@@ -99,6 +100,10 @@ public class AdminController {
             model.addAttribute("resenas", adminService.obtenerResenasPaginadas(page, 50));
         } else if ("pedidos".equals(activePage) || "ordenes".equals(activePage)) {
             model.addAttribute("pedidos", adminService.obtenerPedidosPaginados(page, 50));
+            model.addAttribute("estadosPedido", Arrays.asList(
+                    Pedido.PENDIENTE, "PENDIENTE_PAGO", Pedido.CONFIRMADO, Pedido.EN_PROCESO,
+                    Pedido.LISTO_PARA_RECOGER, Pedido.ENVIADO, Pedido.ENTREGADO,
+                    Pedido.CANCELADO, Pedido.EN_REVISION));
         } else if ("verificacion-tiendas".equals(activePage)) {
             boolean verificado = "VERIFICADO".equals(filterParam);
             model.addAttribute("vendedores", adminService.obtenerVendedoresPorEstadoVerificacionPaginado(verificado, page, 50));
@@ -379,6 +384,45 @@ public class AdminController {
         model.addAttribute("activePage", "ordenes");
 
         return "admin/admin-dashboard";
+    }
+
+    @PostMapping("/pedidos/{id}/aceptar")
+    public String aceptarPedidoAdmin(@PathVariable String id,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        if (!verificarAdmin(session, redirectAttributes)) {
+            return "redirect:/usuario/login";
+        }
+
+        try {
+            adminService.aceptarPedidoAdmin(id);
+            redirectAttributes.addFlashAttribute("mensaje", "Pedido aceptado y pasado a CONFIRMADO");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al aceptar pedido: " + e.getMessage());
+        }
+
+        return "redirect:/admin/pedidos";
+    }
+
+    @PostMapping("/pedidos/{id}/actualizar-estado")
+    public String actualizarEstadoPedidoAdmin(@PathVariable String id,
+            @RequestParam("estado") String estado,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        if (!verificarAdmin(session, redirectAttributes)) {
+            return "redirect:/usuario/login";
+        }
+
+        try {
+            adminService.actualizarEstadoPedidoAdmin(id, estado);
+            redirectAttributes.addFlashAttribute("mensaje", "Estado del pedido actualizado correctamente");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al actualizar estado: " + e.getMessage());
+        }
+
+        return "redirect:/admin/pedidos";
     }
 
     // ==================== VERIFICACIÓN DE TIENDAS ====================

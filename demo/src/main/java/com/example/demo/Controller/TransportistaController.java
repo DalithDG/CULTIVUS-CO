@@ -2,6 +2,8 @@ package com.example.demo.Controller;
 
 import com.example.demo.Model.Role;
 import com.example.demo.Model.Usuario;
+import com.example.demo.Model.Billetera;
+import com.example.demo.Model.Envio;
 import com.example.demo.Model.embebidos.PerfilTransportista;
 import com.example.demo.services.TransportistaService;
 import com.example.demo.services.UbicacionService;
@@ -28,6 +30,12 @@ public class TransportistaController {
 
     @Autowired
     private com.example.demo.repository.UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private com.example.demo.repository.EnvioRepository envioRepository;
+
+    @Autowired(required = false)
+    private com.example.demo.services.BilleteraService billeteraService;
 
     /**
      * Pantalla de Login dedicada para transportistas.
@@ -229,6 +237,43 @@ public class TransportistaController {
         model.addAttribute("totalMisEnvios", misEnvios.size());
 
         return "transportista/inicio-transportista";
+    }
+
+    /**
+     * Billetera del transportista (vista informativa, sin lógica de negocio adicional).
+     */
+    @GetMapping("/billetera")
+    public String mostrarBilletera(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuario == null) {
+            redirectAttributes.addFlashAttribute("error", "Inicia sesión para ingresar al portal logístico");
+            return "redirect:/transportista/login";
+        }
+        if (!usuario.hasRole(Role.TRANSPORTISTA)) {
+            redirectAttributes.addFlashAttribute("error", "No tienes permisos de transportista");
+            return "redirect:/transportista/login";
+        }
+
+        Billetera billetera = null;
+        java.util.List<com.example.demo.Model.MovimientoBilletera> movimientos = java.util.Collections.emptyList();
+        if (billeteraService != null) {
+            billetera = billeteraService.obtenerOCrearBilleteraTransportista(usuario.getId());
+            movimientos = billeteraService.listarMovimientosTransportista(usuario.getId());
+        }
+
+        // Fletes en ruta (informativo): suma del costoTotalCentavos de envíos asignados no entregados
+        long fletesEnRuta = 0L;
+        for (Envio e : envioRepository.findByTransportistaId(usuario.getId())) {
+            if (!Envio.ENTREGADO.equalsIgnoreCase(e.getEstado()) && !Envio.CANCELADO.equalsIgnoreCase(e.getEstado())) {
+                fletesEnRuta += (e.getCostoTotalCentavos() != null ? e.getCostoTotalCentavos() : 0L);
+            }
+        }
+
+        model.addAttribute("usuario", usuario);
+        model.addAttribute("billetera", billetera);
+        model.addAttribute("movimientos", movimientos);
+        model.addAttribute("fletesEnRuta", fletesEnRuta);
+        return "transportista/billetera-transportista";
     }
 
     /**

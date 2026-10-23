@@ -1,5 +1,6 @@
 <!doctype html>
-<html lang="en"><head></head><body><h2>Add Facebook Login to your webpage</h2><!-- Set the element id for the JSON response --><p id="profile"></p><button onclick="loginWithFacebook()">Log in with Facebook</button><script>
+<html lang="en"><head>
+    <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}"></head><body><h2>Add Facebook Login to your webpage</h2><!-- Set the element id for the JSON response --><p id="profile"></p><button onclick="loginWithFacebook()">Log in with Facebook</button><script>
       // Initialize the Facebook JavaScript SDK, but wait till it's loaded
       window.fbAsyncInit = function () {
         FB.init({

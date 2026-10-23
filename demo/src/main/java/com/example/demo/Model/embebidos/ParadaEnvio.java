@@ -43,6 +43,11 @@ public class ParadaEnvio {
         return tarifaCentavos != null ? tarifaCentavos / 100.0 : 0.0;
     }
 
+    public String getTarifaFormateada() {
+        long centavos = tarifaCentavos != null ? tarifaCentavos : 0L;
+        return String.format(java.util.Locale.GERMANY, "$%,d COP", centavos / 100);
+    }
+
     public String getPedidoId() { return pedidoId; }
     public void setPedidoId(String pedidoId) { this.pedidoId = pedidoId; }
 

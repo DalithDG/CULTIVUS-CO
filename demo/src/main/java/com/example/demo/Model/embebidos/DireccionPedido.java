@@ -6,6 +6,7 @@ public class DireccionPedido {
     private String ciudad;
     private String departamento;
     private String destinatarioNombre;
+    private String destinatarioTelefono;
 
     public DireccionPedido() {
     }
@@ -36,6 +37,14 @@ public class DireccionPedido {
 
     public void setDestinatarioNombre(String destinatarioNombre) {
         this.destinatarioNombre = destinatarioNombre;
+    }
+
+    public String getDestinatarioTelefono() {
+        return destinatarioTelefono;
+    }
+
+    public void setDestinatarioTelefono(String destinatarioTelefono) {
+        this.destinatarioTelefono = destinatarioTelefono;
     }
 
     public String getDireccion() { return direccion; }

@@ -338,6 +338,63 @@ public class AdminService {
         return pedidoRepository.findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt")));
     }
 
+    public Optional<Pedido> obtenerPedidoPorId(String pedidoId) {
+        if (pedidoId == null) return Optional.empty();
+        return pedidoRepository.findById(pedidoId);
+    }
+
+    /**
+     * Permite al administrador cambiar el estado de un pedido sin las restricciones
+     * del vendedor/transportista. Valida que el estado sea uno de los permitidos.
+     */
+    public void actualizarEstadoPedidoAdmin(String pedidoId, String nuevoEstado) {
+        if (pedidoId == null || nuevoEstado == null || nuevoEstado.trim().isEmpty()) {
+            throw new IllegalArgumentException("El ID de pedido y el nuevo estado son obligatorios");
+        }
+        Pedido pedido = pedidoRepository.findById(pedidoId)
+                .orElseThrow(() -> new IllegalArgumentException("Pedido no encontrado: " + pedidoId));
+
+        String estadoDeseado = nuevoEstado.trim().toUpperCase();
+        List<String> estadosValidos = Arrays.asList(
+                Pedido.PENDIENTE, Pedido.PENDIENTE, "PENDIENTE_PAGO", Pedido.CONFIRMADO,
+                Pedido.EN_PROCESO, "PROCESANDO", Pedido.LISTO_PARA_RECOGER,
+                Pedido.ENVIADO, Pedido.ENTREGADO, "COMPLETADO", Pedido.CANCELADO,
+                Pedido.EN_REVISION);
+        if (!estadosValidos.contains(estadoDeseado)) {
+            throw new IllegalArgumentException("Estado no válido: " + nuevoEstado);
+        }
+
+        pedido.setEstado(estadoDeseado);
+        pedido.setUpdatedAt(LocalDateTime.now());
+        pedidoRepository.save(pedido);
+
+        // Notificar al comprador del cambio de estado
+        if (pedido.getComprador() != null && pedido.getComprador().getId() != null && notificacionService != null) {
+            try {
+                notificacionService.enviar(
+                        pedido.getComprador().getId(),
+                        "Estado de pedido actualizado",
+                        "Tu pedido " + pedido.getNumeroFactura() + " ahora está en estado: " + estadoDeseado,
+                        "INFO");
+            } catch (Exception ignored) {
+                // No bloquear el flujo por fallos de notificación
+            }
+        }
+    }
+
+    /**
+     * Acepta un pedido disponible (PENDIENTE) pasándolo a CONFIRMADO.
+     */
+    public void aceptarPedidoAdmin(String pedidoId) {
+        Pedido pedido = pedidoRepository.findById(pedidoId)
+                .orElseThrow(() -> new IllegalArgumentException("Pedido no encontrado: " + pedidoId));
+        String estadoActual = pedido.getEstado() != null ? pedido.getEstado().toUpperCase() : Pedido.PENDIENTE;
+        if (!Pedido.PENDIENTE.equals(estadoActual) && !"PENDIENTE_PAGO".equals(estadoActual)) {
+            throw new IllegalStateException("Solo se pueden aceptar pedidos disponibles (PENDIENTE). Estado actual: " + estadoActual);
+        }
+        actualizarEstadoPedidoAdmin(pedidoId, Pedido.CONFIRMADO);
+    }
+
     // ==================== ESTADÍSTICAS ====================
 
     /**
