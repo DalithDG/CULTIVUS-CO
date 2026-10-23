@@ -322,6 +322,7 @@ public class VendedorController {
         long enProceso = pedidos.stream()
                 .filter(p -> "CONFIRMADO".equalsIgnoreCase(p.getEstado())
                           || "EN_PROCESO".equalsIgnoreCase(p.getEstado())
+                          || "LISTO_PARA_RECOGER".equalsIgnoreCase(p.getEstado())
                           || "ENVIADO".equalsIgnoreCase(p.getEstado())).count();
         long completados = pedidos.stream()
                 .filter(p -> "ENTREGADO".equalsIgnoreCase(p.getEstado())).count();
@@ -391,17 +392,17 @@ public class VendedorController {
                 return "redirect:/vendedor/registro";
             }
 
-            vendedorService.actualizarEstadoPedido(pedidoId, nuevoEstado);
+            vendedorService.actualizarEstadoPedido(pedidoId, nuevoEstado, usuario.getId());
 
             redirectAttributes.addFlashAttribute("mensaje", "Estado actualizado exitosamente");
             return "redirect:/vendedor/ventas/pedido/" + pedidoId;
 
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalStateException | IllegalArgumentException | SecurityException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:/vendedor/ventas";
+            return "redirect:/vendedor/ventas/pedido/" + pedidoId;
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error al actualizar el estado");
-            return "redirect:/vendedor/ventas";
+            redirectAttributes.addFlashAttribute("error", "Error al actualizar el estado: " + e.getMessage());
+            return "redirect:/vendedor/ventas/pedido/" + pedidoId;
         }
     }
 }

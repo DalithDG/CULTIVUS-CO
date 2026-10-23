@@ -54,6 +54,9 @@ public class UsuarioController {
     @org.springframework.beans.factory.annotation.Autowired(required = false)
     private CompraRepository compraRepository;
 
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private com.example.demo.repository.EnvioRepository envioRepository;
+
     @org.springframework.beans.factory.annotation.Autowired
     public UsuarioController(UsuarioService usuarioService,
             UbicacionService ubicacionService,
@@ -195,8 +198,7 @@ public class UsuarioController {
 
 
     @GetMapping("/inicio")
-    public String mostrarInicio(@RequestParam(value = "modo", required = false) String modo,
-            HttpSession session, Model model,
+    public String mostrarInicio(HttpSession session, Model model,
             RedirectAttributes redirectAttributes) {
 
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
@@ -210,6 +212,17 @@ public class UsuarioController {
         if (usuarioActualizado != null) {
             usuario = usuarioActualizado;
             session.setAttribute("usuarioLogueado", usuario);
+        }
+
+        // Redirigir según rol propio (sin modos dinámicos)
+        if (usuario.hasRole(Role.VENDEDOR)) {
+            return "redirect:/vendedor/inicio";
+        }
+        if (usuario.hasRole(Role.TRANSPORTISTA)) {
+            return "redirect:/transportista/inicio";
+        }
+        if (usuario.hasRole(Role.ADMIN)) {
+            return "redirect:/admin/dashboard";
         }
 
         // Cargar productos del catálogo aprobados
@@ -232,19 +245,9 @@ public class UsuarioController {
                 .collect(Collectors.toList());
         model.addAttribute("ofertas", ofertasDestacadas);
 
-        // Estadísticas de comprador para el dashboard (independiente del rol actual)
+        // Estadísticas de comprador para el dashboard
         long totalPedidos = pedidoRepository.findByCompradorId(usuario.getId()).size();
         model.addAttribute("totalPedidos", totalPedidos);
-
-        // Redirigir según rol (priorizar vendedor para su inicio especial, pero ambos pueden comprar)
-        // Si se solicita explícitamente modo comprador, mostrar inicio-comprador
-        if ("comprador".equals(modo)) {
-            return "comprador/inicio-comprador";
-        }
-        
-        if (usuario.hasRole(Role.VENDEDOR)) {
-            return "redirect:/vendedor/inicio";
-        }
 
         return "comprador/inicio-comprador";
     }
@@ -369,6 +372,9 @@ public class UsuarioController {
                     if (p.getId() != null) {
                         subPedidoIds.add(p.getId());
                     }
+                }
+                if (envioRepository != null) {
+                    envioRepository.findByCompraId(c.getId()).ifPresent(c::setEnvioLogistica);
                 }
             }
         }

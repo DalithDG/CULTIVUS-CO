@@ -9,6 +9,7 @@ import com.example.demo.Model.Categoria;
 import com.example.demo.Model.Notificacion;
 import com.example.demo.Model.Mensaje;
 import com.example.demo.Model.embebidos.PerfilAdmin;
+import com.example.demo.Model.embebidos.PerfilTransportista;
 import com.example.demo.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -430,5 +431,33 @@ public class AdminService {
 
     public long obtenerCantidadVendedoresPendientes() {
         return usuarioRepository.findVendedoresPorEstadoVerificacion(false, PageRequest.of(0, 1)).getTotalElements();
+    }
+
+    // ==================== GESTIÓN DE TRANSPORTISTAS ====================
+
+    public List<Usuario> obtenerTodosLosTransportistas() {
+        return usuarioRepository.findByRolesContaining(Role.TRANSPORTISTA);
+    }
+
+    public long obtenerCantidadTransportistasPendientes() {
+        return usuarioRepository.findByRolesContaining(Role.TRANSPORTISTA).stream()
+                .filter(u -> u.getPerfilTransportista() != null && !u.getPerfilTransportista().isVerificado())
+                .count();
+    }
+
+    public Usuario verificarTransportista(String usuarioId, boolean verificado) {
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+        if (usuario.getPerfilTransportista() == null) {
+            usuario.setPerfilTransportista(new PerfilTransportista());
+        }
+        usuario.getPerfilTransportista().setVerificado(verificado);
+        Usuario guardado = usuarioRepository.save(usuario);
+        if (notificacionService != null) {
+            String msg = verificado ? "¡Tu cuenta de transportista ha sido verificada! Ya puedes aceptar compras disponibles."
+                    : "Tu cuenta de transportista ha dejado de estar verificada.";
+            notificacionService.enviar(usuarioId, "Verificación de Transportista", msg, verificado ? "SUCCESS" : "WARNING");
+        }
+        return guardado;
     }
 }

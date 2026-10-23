@@ -503,16 +503,64 @@
                                 <i class="fa-solid fa-city"></i> Ciudad / Municipio <span class="required">*</span>
                             </label>
                             <select id="ciudad" name="ciudad" class="form-select" required>
-                                <option value="Cartagena" selected>Cartagena</option>
-                                <option value="Turbaco">Turbaco</option>
-                                <option value="Arjona">Arjona</option>
-                                <option value="Turbana">Turbana</option>
-                                <option value="Magangué">Magangué</option>
-                                <option value="El Carmen de Bolívar">El Carmen de Bolívar</option>
-                                <option value="San Jacinto">San Jacinto</option>
-                                <option value="Santa Rosa">Santa Rosa</option>
-                                <option value="Santa Catalina">Santa Catalina</option>
-                                <option value="Villanueva">Villanueva</option>
+                                <optgroup label="Zona 1 - Dique">
+                                    <option value="Cartagena" selected>Cartagena</option>
+                                    <option value="Turbaco">Turbaco</option>
+                                    <option value="Arjona">Arjona</option>
+                                    <option value="Turbaná">Turbaná</option>
+                                    <option value="Santa Rosa">Santa Rosa</option>
+                                    <option value="Santa Catalina">Santa Catalina</option>
+                                    <option value="Villanueva">Villanueva</option>
+                                    <option value="Calamar">Calamar</option>
+                                    <option value="Mahates">Mahates</option>
+                                    <option value="San Cristóbal">San Cristóbal</option>
+                                    <option value="San Estanislao">San Estanislao</option>
+                                    <option value="Clemencia">Clemencia</option>
+                                    <option value="Arroyohondo">Arroyohondo</option>
+                                </optgroup>
+                                <optgroup label="Zona 2 - Montes de María">
+                                    <option value="El Carmen de Bolívar">El Carmen de Bolívar</option>
+                                    <option value="San Jacinto">San Jacinto</option>
+                                    <option value="San Juan Nepomuceno">San Juan Nepomuceno</option>
+                                    <option value="María la Baja">María la Baja</option>
+                                    <option value="El Guamo">El Guamo</option>
+                                    <option value="Soplaviento">Soplaviento</option>
+                                    <option value="Zambrano">Zambrano</option>
+                                </optgroup>
+                                <optgroup label="Zona 3 - Mojana">
+                                    <option value="Magangué">Magangué</option>
+                                    <option value="Achí">Achí</option>
+                                    <option value="Córdoba">Córdoba</option>
+                                    <option value="Montecristo">Montecristo</option>
+                                    <option value="Pinillos">Pinillos</option>
+                                    <option value="San Jacinto del Cauca">San Jacinto del Cauca</option>
+                                    <option value="Tiquisio">Tiquisio</option>
+                                </optgroup>
+                                <optgroup label="Zona 4 - Depresión Momposina">
+                                    <option value="Mompox">Mompox</option>
+                                    <option value="Cicuco">Cicuco</option>
+                                    <option value="Talaigua Nuevo">Talaigua Nuevo</option>
+                                    <option value="Hatillo de Loba">Hatillo de Loba</option>
+                                    <option value="Margarita">Margarita</option>
+                                    <option value="San Fernando">San Fernando</option>
+                                </optgroup>
+                                <optgroup label="Zona 5 - Loba">
+                                    <option value="Altos del Rosario">Altos del Rosario</option>
+                                    <option value="Barranco de Loba">Barranco de Loba</option>
+                                    <option value="El Peñón">El Peñón</option>
+                                    <option value="San Martín de Loba">San Martín de Loba</option>
+                                    <option value="Regidor">Regidor</option>
+                                    <option value="Río Viejo">Río Viejo</option>
+                                    <option value="Norosí">Norosí</option>
+                                </optgroup>
+                                <optgroup label="Zona 6 - Magdalena Medio">
+                                    <option value="Arenal">Arenal</option>
+                                    <option value="Cantagallo">Cantagallo</option>
+                                    <option value="Morales">Morales</option>
+                                    <option value="San Pablo">San Pablo</option>
+                                    <option value="Santa Rosa del Sur">Santa Rosa del Sur</option>
+                                    <option value="Simití">Simití</option>
+                                </optgroup>
                                 <option value="Otro municipio de Bolívar">Otro municipio de Bolívar</option>
                             </select>
                         </div>
@@ -570,7 +618,7 @@
 
                         <button type="button" id="btnPagar" class="btn-pagar">
                             <i class="fa-solid fa-lock"></i>
-                            Pagar con Wompi · $<span th:text="${#numbers.formatDecimal(total, 0, 'COMMA', 0, 'POINT')}">0</span> COP
+                            Pagar con Wompi · $<span id="btnPagarTotal" th:text="${#numbers.formatDecimal(total, 0, 'COMMA', 0, 'POINT')}">0</span> COP
                         </button>
                     </div>
                 </form>
@@ -609,11 +657,11 @@
                     </div>
                     <div class="linea-total">
                         <span>Envío (departamental):</span>
-                        <span>$<span th:text="${#numbers.formatDecimal(costoEnvio, 0, 'COMMA', 0, 'POINT')}">0</span></span>
+                        <span>$<span id="displayEnvio" th:text="${#numbers.formatDecimal(costoEnvio, 0, 'COMMA', 0, 'POINT')}">0</span></span>
                     </div>
                     <div class="linea-total destacado">
                         <span>Total:</span>
-                        <span>$<span th:text="${#numbers.formatDecimal(total, 0, 'COMMA', 0, 'POINT')}">0</span></span>
+                        <span>$<span id="displayTotal" th:text="${#numbers.formatDecimal(total, 0, 'COMMA', 0, 'POINT')}">0</span></span>
                     </div>
                 </div>
 
@@ -644,6 +692,30 @@
         function ocultarError() {
             const alertBox = document.getElementById('alertJs');
             alertBox.style.display = 'none';
+        }
+
+        const ciudadSelect = document.getElementById('ciudad');
+        if (ciudadSelect) {
+            ciudadSelect.addEventListener('change', async function () {
+                const ciudad = this.value;
+                try {
+                    const resp = await fetch('/pago/calcular-envio?ciudad=' + encodeURIComponent(ciudad));
+                    if (resp.ok) {
+                        const data = await resp.json();
+                        if (data.ok) {
+                            const formato = new Intl.NumberFormat('es-CO', { maximumFractionDigits: 0 });
+                            const envioEl = document.getElementById('displayEnvio');
+                            const totalEl = document.getElementById('displayTotal');
+                            const btnTotalEl = document.getElementById('btnPagarTotal');
+                            if (envioEl) envioEl.textContent = formato.format(data.costoEnvio);
+                            if (totalEl) totalEl.textContent = formato.format(data.total);
+                            if (btnTotalEl) btnTotalEl.textContent = formato.format(data.total);
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Error recalculando envío:', e);
+                }
+            });
         }
 
         document.getElementById('btnPagar').addEventListener('click', async function (e) {

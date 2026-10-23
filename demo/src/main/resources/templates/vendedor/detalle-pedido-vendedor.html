@@ -71,6 +71,17 @@
             color: #0c5460;
         }
 
+        .estado-listo {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+        }
+
+        .estado-enviado {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
         .estado-completado {
             background: #d4edda;
             color: #155724;
@@ -201,9 +212,11 @@
                         <strong>Estado:</strong>
                         <span class="estado-badge" 
                               th:classappend="${pedido.estado == 'PENDIENTE' ? 'estado-pendiente' : 
+                                             (pedido.estado == 'CONFIRMADO' ? 'estado-pendiente' : 
                                              (pedido.estado == 'EN_PROCESO' || pedido.estado == 'PROCESANDO' ? 'estado-proceso' : 
-                                             'estado-completado')}"
-                              th:text="${pedido.estado}">
+                                             (pedido.estado == 'LISTO_PARA_RECOGER' ? 'estado-listo' : 
+                                             (pedido.estado == 'ENVIADO' ? 'estado-enviado' : 'estado-completado'))))}"
+                              th:text="${pedido.estadoEtiqueta != null ? pedido.estadoEtiqueta : pedido.estado}">
                         </span>
                     </div>
                 </div>
@@ -238,20 +251,69 @@
             </div>
 
             <div class="acciones-section">
-                <h3 style="margin-bottom: 15px; color: #27ae60;">Actualizar Estado del Pedido</h3>
-                <form th:action="@{/vendedor/ventas/pedido/{id}/actualizar-estado(id=${pedido.id})}" method="post">
-                    <div class="form-group">
-                        <label for="estado">Nuevo Estado:</label>
-                        <select id="estado" name="estado" required>
-                            <option value="PENDIENTE" th:selected="${pedido.estado == 'PENDIENTE'}">Pendiente</option>
-                            <option value="EN_PROCESO" th:selected="${pedido.estado == 'EN_PROCESO' || pedido.estado == 'PROCESANDO'}">En Proceso</option>
-                            <option value="COMPLETADO" th:selected="${pedido.estado == 'COMPLETADO' || pedido.estado == 'ENTREGADO'}">Completado</option>
-                        </select>
+                <h3 style="margin-bottom: 15px; color: #27ae60;">Gestión del Pedido (Vendedor)</h3>
+
+                <!-- Acción cuando está CONFIRMADO -> Pasar a EN_PROCESO -->
+                <div th:if="${pedido.estado == 'CONFIRMADO'}" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px;">
+                    <p style="margin: 0 0 12px 0; color: #475569; font-size: 0.95rem;">
+                        El pedido fue pagado y confirmado. Puedes comenzar a preparar los productos en tu finca o bodega.
+                    </p>
+                    <form th:action="@{/vendedor/ventas/pedido/{id}/actualizar-estado(id=${pedido.id})}" method="post">
+                        <input type="hidden" name="estado" value="EN_PROCESO" />
+                        <button type="submit" class="btn-actualizar" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+                            <i class="fa-solid fa-play"></i> Comenzar a Preparar (En Proceso)
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Acción cuando está EN_PROCESO -> Pasar a LISTO_PARA_RECOGER -->
+                <div th:if="${pedido.estado == 'EN_PROCESO' || pedido.estado == 'PROCESANDO'}" style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 16px;">
+                    <p style="margin: 0 0 12px 0; color: #1e40af; font-size: 0.95rem;">
+                        Cuando hayas empacado los productos, márcalos como <strong>Listo para recoger</strong> para notificar al transportista asignado.
+                    </p>
+                    <form th:action="@{/vendedor/ventas/pedido/{id}/actualizar-estado(id=${pedido.id})}" method="post">
+                        <input type="hidden" name="estado" value="LISTO_PARA_RECOGER" />
+                        <button type="submit" class="btn-actualizar" style="background: linear-gradient(135deg, #10b981, #059669);">
+                            <i class="fa-solid fa-box-archive"></i> Marcar como Listo para Recoger
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Notificación cuando está LISTO_PARA_RECOGER -->
+                <div th:if="${pedido.estado == 'LISTO_PARA_RECOGER'}" style="background: #fef3c7; border: 1px solid #fde68a; border-radius: 10px; padding: 16px; color: #92400e; display: flex; align-items: center; gap: 12px;">
+                    <i class="fa-solid fa-clock-rotate-left" style="font-size: 1.5rem; color: #d97706;"></i>
+                    <div>
+                        <strong style="font-size: 1rem; display: block;">¡Pedido listo para recogida!</strong>
+                        <span style="font-size: 0.88rem;">Tu paquete está preparado. El transportista asignado pasará a tu dirección y registrará la recolección.</span>
                     </div>
-                    <button type="submit" class="btn-actualizar">
-                        <i class="fa-solid fa-save"></i> Actualizar Estado
-                    </button>
-                </form>
+                </div>
+
+                <!-- Notificación cuando está ENVIADO (operado por transportista) -->
+                <div th:if="${pedido.estado == 'ENVIADO'}" style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 16px; color: #166534; display: flex; align-items: center; gap: 12px;">
+                    <i class="fa-solid fa-truck-fast" style="font-size: 1.5rem; color: #16a34a;"></i>
+                    <div>
+                        <strong style="font-size: 1rem; display: block;">Pedido en camino</strong>
+                        <span style="font-size: 0.88rem;">El paquete fue recogido por el transportista y está en ruta hacia el comprador.</span>
+                    </div>
+                </div>
+
+                <!-- Notificación cuando está ENTREGADO -->
+                <div th:if="${pedido.estado == 'ENTREGADO' || pedido.estado == 'COMPLETADO'}" style="background: #ecfdf5; border: 1px solid #a7f3d0; border-radius: 10px; padding: 16px; color: #065f46; display: flex; align-items: center; gap: 12px;">
+                    <i class="fa-solid fa-circle-check" style="font-size: 1.5rem; color: #059669;"></i>
+                    <div>
+                        <strong style="font-size: 1rem; display: block;">Pedido Entregado con Éxito</strong>
+                        <span style="font-size: 0.88rem;">El comprador ya recibió sus productos a satisfacción.</span>
+                    </div>
+                </div>
+
+                <!-- Notificación cuando está CANCELADO -->
+                <div th:if="${pedido.estado == 'CANCELADO'}" style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; padding: 16px; color: #991b1b; display: flex; align-items: center; gap: 12px;">
+                    <i class="fa-solid fa-ban" style="font-size: 1.5rem; color: #dc2626;"></i>
+                    <div>
+                        <strong style="font-size: 1rem; display: block;">Pedido Cancelado</strong>
+                        <span style="font-size: 0.88rem;">Este pedido ha sido cancelado.</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

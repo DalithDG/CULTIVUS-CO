@@ -54,6 +54,10 @@
                             <i class="fas fa-hat-cowboy"></i>
                             <span>Vender en Cultivus</span>
                         </a>
+                        <a th:href="@{/transportista/registro}" class="ip-btn ip-btn--transport" id="heroTransportistaBtn">
+                            <i class="fas fa-truck-fast"></i>
+                            <span>Conviértete en Transportista</span>
+                        </a>
                     </div>
                 </div>
 
@@ -230,6 +234,20 @@
                 <p>Únete a Cultivus y lleva tus productos a miles de hogares en toda Colombia. Sin intermediarios, mejores precios, mayor alcance.</p>
                 <a th:href="@{/vendedor/registro}" class="ip-cta-vendor__btn" id="ctaVendedorBtn">
                     Comenzar a Vender <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+        </section>
+
+        <!-- 7. CTA TRANSPORTISTAS -->
+        <section class="ip-cta-transport">
+            <div class="ip-cta-transport__bg"></div>
+            <div class="ip-cta-transport__overlay"></div>
+            <div class="ip-cta-transport__inner">
+                <div class="ip-cta-transport__icon"><i class="fas fa-truck-fast"></i></div>
+                <h2>¿Tienes un Vehículo de Carga o Empresa Logística?</h2>
+                <p>Únete a la Red Logística de Cultivus. Conecta el campo con la ciudad en Bolívar y toda Colombia, optimiza tus rutas y genera ingresos transportando cosechas frescas con tarifas transparentes.</p>
+                <a th:href="@{/transportista/registro}" class="ip-cta-transport__btn" id="ctaTransportistaBtn">
+                    Conviértete en Transportista <i class="fas fa-arrow-right"></i>
                 </a>
             </div>
         </section>

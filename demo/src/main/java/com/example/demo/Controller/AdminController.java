@@ -75,6 +75,8 @@ public class AdminController {
         model.addAttribute("mensajesRecibidosCount", adminService.obtenerTotalMensajes());
         model.addAttribute("vendedoresPendientesCount", adminService.obtenerCantidadVendedoresPendientes());
         model.addAttribute("catalogoPendienteCount", catalogoService.obtenerCantidadCatalogoPendiente());
+        model.addAttribute("transportistasPendientesCount", adminService.obtenerCantidadTransportistasPendientes());
+        model.addAttribute("transportistas", adminService.obtenerTodosLosTransportistas());
 
         // Default empty pages to avoid NPE in Thymeleaf
         model.addAttribute("usuarios", org.springframework.data.domain.Page.empty());
@@ -85,6 +87,7 @@ public class AdminController {
         model.addAttribute("usuariosActivos", org.springframework.data.domain.Page.empty());
         model.addAttribute("notificacionesPaginadas", org.springframework.data.domain.Page.empty());
         model.addAttribute("mensajesPaginados", org.springframework.data.domain.Page.empty());
+        model.addAttribute("mensajesRecibidosPaginados", org.springframework.data.domain.Page.empty());
         model.addAttribute("catalogoPendiente", org.springframework.data.domain.Page.empty());
 
         // Paginación dinámica según la pestaña activa
@@ -92,9 +95,9 @@ public class AdminController {
             model.addAttribute("usuarios", adminService.obtenerUsuariosPaginados(page, 50, search, filterParam));
         } else if ("catalogo".equals(activePage)) {
             model.addAttribute("productos", adminService.obtenerProductosPaginados(page, 50, search, filterParam));
-        } else if ("resenas".equals(activePage)) {
+        } else if ("resenas".equals(activePage) || "actividad".equals(activePage)) {
             model.addAttribute("resenas", adminService.obtenerResenasPaginadas(page, 50));
-        } else if ("pedidos".equals(activePage)) {
+        } else if ("pedidos".equals(activePage) || "ordenes".equals(activePage)) {
             model.addAttribute("pedidos", adminService.obtenerPedidosPaginados(page, 50));
         } else if ("verificacion-tiendas".equals(activePage)) {
             boolean verificado = "VERIFICADO".equals(filterParam);
@@ -104,7 +107,9 @@ public class AdminController {
         } else if ("notificaciones".equals(activePage)) {
             model.addAttribute("notificacionesPaginadas", adminService.obtenerNotificacionesPaginadas(page, 50));
         } else if ("mensajes".equals(activePage)) {
-            model.addAttribute("mensajesPaginados", adminService.obtenerMensajesPaginados(page, 50));
+            org.springframework.data.domain.Page<?> msgs = adminService.obtenerMensajesPaginados(page, 50);
+            model.addAttribute("mensajesPaginados", msgs);
+            model.addAttribute("mensajesRecibidosPaginados", msgs);
         } else if ("moderacion".equals(activePage)) {
             model.addAttribute("catalogoPendiente", catalogoService.listarPendientesPaginados(page, 50));
         }
@@ -145,6 +150,48 @@ public class AdminController {
         model.addAttribute("activePage", "powerbi");
 
         return "admin/admin-dashboard";
+    }
+
+    // ==================== GESTIÓN DE TRANSPORTISTAS ====================
+
+    @GetMapping("/transportistas")
+    public String mostrarTransportistas(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(required = false) String search,
+            HttpSession session, Model model,
+            RedirectAttributes redirectAttributes) {
+
+        if (!verificarAdmin(session, redirectAttributes)) {
+            return "redirect:/usuario/login";
+        }
+
+        Usuario admin = (Usuario) session.getAttribute("usuarioLogueado");
+        cargarDatosDashboard(model, admin, "transportistas", page, search, null);
+        model.addAttribute("activePage", "transportistas");
+
+        return "admin/admin-dashboard";
+    }
+
+    @PostMapping("/transportistas/verificar/{usuarioId}")
+    public String verificarTransportista(
+            @PathVariable String usuarioId,
+            @RequestParam(value = "verificado", defaultValue = "true") boolean verificado,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        if (!verificarAdmin(session, redirectAttributes)) {
+            return "redirect:/usuario/login";
+        }
+
+        try {
+            adminService.verificarTransportista(usuarioId, verificado);
+            redirectAttributes.addFlashAttribute("mensaje",
+                    verificado ? "Transportista verificado correctamente. Ya puede aceptar envíos." : "Se revocó la verificación del transportista.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al verificar transportista: " + e.getMessage());
+        }
+
+        return "redirect:/admin/transportistas";
     }
 
     // ==================== GESTIÓN DE USUARIOS ====================

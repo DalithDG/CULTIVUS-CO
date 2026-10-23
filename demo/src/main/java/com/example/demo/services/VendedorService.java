@@ -28,6 +28,12 @@ public class VendedorService {
     @Autowired
     private SecurityContextRefreshService securityContextRefreshService;
 
+    @Autowired(required = false)
+    private com.example.demo.repository.EnvioRepository envioRepository;
+
+    @Autowired(required = false)
+    private TransportistaService transportistaService;
+
     /**
      * Crea un perfil de vendedor para un usuario existente
      */
@@ -158,22 +164,123 @@ public class VendedorService {
     }
 
     /**
-     * Actualiza el estado de un pedido
+     * Actualiza el estado de un pedido garantizando el ciclo de vida de única responsabilidad:
+     * El vendedor ÚNICAMENTE puede avanzar: CONFIRMADO -> EN_PROCESO -> LISTO_PARA_RECOGER.
+     * Los estados ENVIADO y ENTREGADO son exclusivos del transportista/sistema logístico.
      */
     public void actualizarEstadoPedido(String pedidoId, String nuevoEstado) {
-        Pedido pedido = pedidoRepository.findById(pedidoId)
-                .orElseThrow(() -> new IllegalArgumentException("Pedido no encontrado"));
+        actualizarEstadoPedido(pedidoId, nuevoEstado, null);
+    }
 
-        pedido.setEstado(nuevoEstado);
+    public void actualizarEstadoPedido(String pedidoId, String nuevoEstado, String vendedorId) {
+        if (pedidoId == null || nuevoEstado == null) {
+            throw new IllegalArgumentException("El ID de pedido y el nuevo estado son obligatorios");
+        }
+
+        Pedido pedido = pedidoRepository.findById(pedidoId)
+                .orElseThrow(() -> new IllegalArgumentException("Pedido no encontrado: " + pedidoId));
+
+        if (vendedorId != null && pedido.getVendedor() != null && pedido.getVendedor().getId() != null) {
+            if (!pedido.getVendedor().getId().equals(vendedorId)) {
+                throw new SecurityException("No tienes permiso para modificar este pedido");
+            }
+        }
+
+        String estadoActual = pedido.getEstado() != null ? pedido.getEstado().toUpperCase() : "PENDIENTE";
+        String estadoDeseado = nuevoEstado.trim().toUpperCase();
+
+        // Bloqueo explícito de estados reservados para la logística (carrier)
+        if (Pedido.ENVIADO.equals(estadoDeseado) || Pedido.ENTREGADO.equals(estadoDeseado) || "COMPLETADO".equals(estadoDeseado)) {
+            throw new IllegalStateException("El vendedor no puede marcar el pedido como enviado o entregado. Esta acción la realiza exclusivamente el transportista.");
+        }
+
+        // Regla estricta: CONFIRMADO -> EN_PROCESO -> LISTO_PARA_RECOGER
+        if (Pedido.CONFIRMADO.equals(estadoActual)) {
+            if (!Pedido.EN_PROCESO.equals(estadoDeseado) && !"PROCESANDO".equals(estadoDeseado)) {
+                throw new IllegalStateException("Desde 'Confirmado' solo se puede avanzar a 'En proceso'. Estado intentado: " + nuevoEstado);
+            }
+        } else if (Pedido.EN_PROCESO.equals(estadoActual) || "PROCESANDO".equals(estadoActual)) {
+            if (!Pedido.LISTO_PARA_RECOGER.equals(estadoDeseado)) {
+                throw new IllegalStateException("Desde 'En proceso' solo se puede avanzar a 'Listo para recoger'. Estado intentado: " + nuevoEstado);
+            }
+        } else {
+            throw new IllegalStateException("Transición no permitida para el vendedor desde el estado '" + estadoActual + "' hacia '" + nuevoEstado + "'. El flujo permitido es: CONFIRMADO -> EN_PROCESO -> LISTO_PARA_RECOGER.");
+        }
+
+        pedido.setEstado(estadoDeseado);
+        pedido.setUpdatedAt(java.time.LocalDateTime.now());
         pedidoRepository.save(pedido);
 
         // Notificar al Comprador
-        notificacionService.enviar(
-                pedido.getComprador().getId(),
-                "Actualización de Pedido",
-                "El estado de tu pedido #" + pedido.getId() + " ha cambiado a: " + nuevoEstado,
-                "INFO"
-        );
+        if (pedido.getComprador() != null && pedido.getComprador().getId() != null && notificacionService != null) {
+            if (Pedido.EN_PROCESO.equals(estadoDeseado) || "PROCESANDO".equals(estadoDeseado)) {
+                notificacionService.enviar(
+                        pedido.getComprador().getId(),
+                        "Pedido en Preparación",
+                        "El vendedor ha comenzado a preparar los productos de tu pedido #" + pedido.getNumeroFactura() + ".",
+                        "INFO"
+                );
+            } else if (Pedido.LISTO_PARA_RECOGER.equals(estadoDeseado)) {
+                notificacionService.enviar(
+                        pedido.getComprador().getId(),
+                        "Pedido Listo para Recoger",
+                        "Tu pedido #" + pedido.getNumeroFactura() + " está listo en finca para ser recogido por el transportista.",
+                        "SUCCESS"
+                );
+            }
+        }
+
+        // Si pasó a LISTO_PARA_RECOGER y ya hay transportista asignado al envío, notificarle
+        if (Pedido.LISTO_PARA_RECOGER.equals(estadoDeseado) && pedido.getCompraId() != null
+                && envioRepository != null && notificacionService != null) {
+            envioRepository.findByCompraId(pedido.getCompraId()).ifPresent(envio -> {
+                if (envio.getTransportistaId() != null) {
+                    String nombreTienda = pedido.getVendedor() != null && pedido.getVendedor().getNombre() != null
+                            ? pedido.getVendedor().getNombre() : "el vendedor agrícola";
+                    notificacionService.enviar(
+                            envio.getTransportistaId(),
+                            "Parada Lista para Recogida",
+                            "El vendedor " + nombreTienda + " tiene listo el paquete (Pedido #" + pedido.getNumeroFactura() + ") para tu recolección.",
+                            "INFO"
+                    );
+                }
+            });
+        }
+    }
+
+    /**
+     * Cancela un pedido del vendedor y ajusta la ruta del transportista recalculando el flete.
+     */
+    public void cancelarPedido(String pedidoId, String motivo, String vendedorId) {
+        Pedido pedido = pedidoRepository.findById(pedidoId)
+                .orElseThrow(() -> new IllegalArgumentException("Pedido no encontrado: " + pedidoId));
+
+        if (vendedorId != null && pedido.getVendedor() != null && pedido.getVendedor().getId() != null) {
+            if (!pedido.getVendedor().getId().equals(vendedorId)) {
+                throw new SecurityException("No tienes permiso para cancelar este pedido");
+            }
+        }
+
+        if (Pedido.ENVIADO.equalsIgnoreCase(pedido.getEstado()) || Pedido.ENTREGADO.equalsIgnoreCase(pedido.getEstado())) {
+            throw new IllegalStateException("No se puede cancelar un pedido que ya fue enviado o entregado.");
+        }
+
+        pedido.setEstado(Pedido.CANCELADO);
+        pedido.setUpdatedAt(java.time.LocalDateTime.now());
+        pedidoRepository.save(pedido);
+
+        if (transportistaService != null) {
+            transportistaService.removerParadaPorPedidoCancelado(pedidoId);
+        }
+
+        if (pedido.getComprador() != null && pedido.getComprador().getId() != null && notificacionService != null) {
+            notificacionService.enviar(
+                    pedido.getComprador().getId(),
+                    "Pedido Cancelado",
+                    "Tu pedido #" + pedido.getNumeroFactura() + " ha sido cancelado. Motivo: " + (motivo != null ? motivo : "Cancelación registrada"),
+                    "WARNING"
+            );
+        }
     }
 
     /**

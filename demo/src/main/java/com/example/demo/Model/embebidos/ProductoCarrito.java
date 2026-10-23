@@ -59,13 +59,17 @@ public class ProductoCarrito {
     public Double getPrecioUnitario() { return precioUnitario; }
     public void setPrecioUnitario(Double precioUnitario) {
         this.precioUnitario = precioUnitario;
-        this.subtotal = precioUnitario * this.cantidad;
+        if (precioUnitario != null && this.cantidad != null) {
+            this.subtotal = precioUnitario * this.cantidad;
+        }
     }
 
     public Double getCantidad() { return cantidad; }
     public void setCantidad(Double cantidad) {
         this.cantidad = cantidad;
-        this.subtotal = this.precioUnitario * cantidad;
+        if (this.precioUnitario != null && cantidad != null) {
+            this.subtotal = this.precioUnitario * cantidad;
+        }
     }
 
     public String getUnidadAbreviatura() { return unidadAbreviatura; }

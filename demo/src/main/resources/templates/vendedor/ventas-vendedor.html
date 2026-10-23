@@ -109,6 +109,12 @@
             color: #0c5460;
         }
 
+        .estado-listo {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fde68a;
+        }
+
         .estado-completado {
             background: #d4edda;
             color: #155724;
@@ -218,9 +224,10 @@
                         <span class="pedido-estado" 
                               th:classappend="${pedido.estado == 'PENDIENTE' ? 'estado-pendiente' : 
                                              (pedido.estado == 'CANCELADO' ? 'estado-cancelado' : 
+                                             (pedido.estado == 'LISTO_PARA_RECOGER' ? 'estado-listo' :
                                              (pedido.estado == 'CONFIRMADO' || pedido.estado == 'EN_PROCESO' || pedido.estado == 'PROCESANDO' || pedido.estado == 'ENVIADO' ? 'estado-proceso' : 
-                                             'estado-completado'))}"
-                              th:text="${pedido.estado}">
+                                             'estado-completado')))}"
+                              th:text="${pedido.estadoEtiqueta != null ? pedido.estadoEtiqueta : pedido.estado}">
                         </span>
                     </div>
                 </div>

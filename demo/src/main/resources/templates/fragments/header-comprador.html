@@ -60,13 +60,8 @@
             <!-- Acciones -->
             <div class="header-actions">
 
-                <!-- Botón Vender / Modo vendedor -->
+                <!-- Botón Vender -->
                 <th:block th:if="${session.usuarioLogueado != null and session.usuarioLogueado.rol != null}">
-                    <a th:if="${session.usuarioLogueado.rol.name() == 'VENDEDOR'}" th:href="@{/vendedor/inicio}"
-                        class="btn-sell highlight" title="Ir al panel de vendedor">
-                        <i class="fas fa-store"></i>
-                        <span>Modo vendedor</span>
-                    </a>
                     <a th:if="${session.usuarioLogueado.rol.name() == 'COMPRADOR'}" th:href="@{/vendedor/registro}"
                         class="btn-sell" title="Registrarse como vendedor">
                         <i class="fas fa-store"></i>
@@ -195,10 +190,10 @@
             <a th:href="@{/usuario/pedidos}"><i class="fas fa-box"></i> Mis pedidos</a>
 
             <th:block th:if="${session.usuarioLogueado != null and session.usuarioLogueado.rol != null}">
-                <a th:if="${session.usuarioLogueado.rol.name() == 'VENDEDOR'}" th:href="@{/vendedor/inicio}"
-                    class="mobile-highlight"><i class="fas fa-store"></i> Modo vendedor</a>
                 <a th:if="${session.usuarioLogueado.rol.name() == 'COMPRADOR'}" th:href="@{/vendedor/registro}"
                     class="mobile-highlight"><i class="fas fa-store"></i> Convertirse en vendedor</a>
+                <a th:if="${session.usuarioLogueado.rol.name() == 'COMPRADOR'}" th:href="@{/transportista/registro}"
+                    class="mobile-highlight"><i class="fas fa-truck-fast"></i> Conviértete en transportista</a>
             </th:block>
 
             <a th:href="@{/usuario/notificaciones}"><i class="fas fa-bell"></i> Notificaciones</a>

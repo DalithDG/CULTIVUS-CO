@@ -6,9 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Únete como Transportista | Cultivus Logística</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
+
     <link rel="stylesheet" th:href="@{/header.css}">
     <link rel="stylesheet" th:href="@{/registro-vendedor.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
@@ -17,6 +18,7 @@
         .transport-hero {
             background: linear-gradient(135deg, rgba(6, 78, 59, 0.95), rgba(15, 118, 110, 0.95)), url('/images/ImageIndex1.jpg') center/cover;
         }
+
         .transport-badge {
             background: rgba(52, 211, 153, 0.2);
             color: #34d399;
@@ -32,20 +34,56 @@
             letter-spacing: 0.5px;
             margin-bottom: 15px;
         }
+
         .form-grid-2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 16px;
         }
+
         @media (max-width: 600px) {
-            .form-grid-2 { grid-template-columns: 1fr; }
+            .form-grid-2 {
+                grid-template-columns: 1fr;
+            }
         }
+
+        .tipo-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .tipo-option-label {
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #fff;
+        }
+
+        .tipo-option-label:hover {
+            border-color: #059669;
+            background: #f0fdf4;
+        }
+
+        input[name="tipo"]:checked+.tipo-option-label {
+            border-color: #059669;
+            background: #ecfdf5;
+            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.2);
+        }
+
         .vehicle-type-select {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 10px;
             margin-top: 6px;
         }
+
         .vehicle-radio-label {
             border: 1px solid #d1d5db;
             border-radius: 8px;
@@ -60,15 +98,26 @@
             align-items: center;
             gap: 6px;
             color: #374151;
+            background: #fff;
         }
-        .vehicle-radio-label i { font-size: 1.3rem; color: #059669; }
-        .vehicle-radio-label:hover { border-color: #059669; background: #f0fdf4; }
-        input[type="radio"]:checked + .vehicle-radio-label {
+
+        .vehicle-radio-label i {
+            font-size: 1.3rem;
+            color: #059669;
+        }
+
+        .vehicle-radio-label:hover {
+            border-color: #059669;
+            background: #f0fdf4;
+        }
+
+        input[type="radio"]:checked+.vehicle-radio-label {
             border-color: #059669;
             background: #ecfdf5;
             color: #065f46;
             box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.2);
         }
+
         .custom-checkbox-row {
             display: flex;
             align-items: center;
@@ -80,10 +129,140 @@
             margin: 12px 0;
             cursor: pointer;
         }
+
         .custom-checkbox-row input {
             width: 18px;
             height: 18px;
             accent-color: #059669;
+        }
+
+        .zone-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 10px 14px;
+            margin-bottom: 8px;
+            transition: border-color 0.2s;
+        }
+
+        .zone-card:hover {
+            border-color: #10b981;
+        }
+
+        .zone-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .municipios-toggle-btn {
+            background: none;
+            border: none;
+            color: #059669;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 6px;
+            border-radius: 4px;
+        }
+
+        .municipios-toggle-btn:hover {
+            background: #f0fdf4;
+            text-decoration: underline;
+        }
+
+        .municipios-collapse {
+            display: none;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed #e5e7eb;
+            font-size: 0.78rem;
+            color: #4b5563;
+            line-height: 1.5;
+        }
+
+        .municipios-collapse.show {
+            display: block;
+        }
+
+        .muni-tag {
+            display: inline-block;
+            background: #f3f4f6;
+            color: #374151;
+            padding: 2px 7px;
+            border-radius: 4px;
+            margin: 2px 3px 2px 0;
+            font-size: 0.74rem;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(4px);
+            z-index: 9999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #fff;
+            border-radius: 12px;
+            max-width: 760px;
+            width: 100%;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+            animation: modalFadeIn 0.25s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal-header {
+            padding: 18px 24px;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-body {
+            padding: 20px 24px;
+            overflow-y: auto;
+        }
+
+        .modal-footer {
+            padding: 14px 24px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            background: #f9fafb;
         }
     </style>
 </head>
@@ -96,15 +275,17 @@
 
         <div class="register-content">
             <div class="register-grid">
-                
+
                 <!-- Columna Informativa Izquierda -->
                 <div class="info-side">
                     <div class="transport-badge">
                         <i class="fas fa-truck-fast"></i> Red Logística Agrícola
                     </div>
-                    <h1>Conecta el campo con la ciudad y <span class="highlight" style="color: #34d399;">genera ingresos</span></h1>
+                    <h1>Conecta el campo con la ciudad y <span class="highlight" style="color: #34d399;">genera
+                            ingresos</span></h1>
                     <p class="subtitle">
-                        Transporta cosechas frescas directamente desde las fincas campesinas hacia los hogares, restaurantes y comercios.
+                        Transporta cosechas frescas directamente desde las fincas campesinas de Bolívar hacia los
+                        compradores urbanos e institucionales.
                     </p>
 
                     <div class="benefits-list">
@@ -113,8 +294,9 @@
                                 <i class="fas fa-route"></i>
                             </div>
                             <div class="benefit-text">
-                                <h3>Rutas Directas</h3>
-                                <p>Cargas consolidadas y trazabilidad punto a punto.</p>
+                                <h3>Rutas Consolidadas por Compra</h3>
+                                <p>Un solo envío agrupa todas las paradas de recolección de los campesinos hacia el
+                                    destino final.</p>
                             </div>
                         </div>
 
@@ -123,26 +305,31 @@
                                 <i class="fas fa-hand-holding-dollar"></i>
                             </div>
                             <div class="benefit-text">
-                                <h3>Fletes Garantizados</h3>
-                                <p>Pagos puntuales y seguros directo a tu cuenta bancaria.</p>
+                                <h3>Tarifas Reguladas por Zona</h3>
+                                <p>Fletes transparentes calculados según la matriz de las 6 zonas logísticas de Bolívar.
+                                </p>
                             </div>
                         </div>
 
                         <div class="benefit-item">
                             <div class="benefit-icon" style="background: rgba(52, 211, 153, 0.2); color: #34d399;">
-                                <i class="fas fa-toggle-on"></i>
+                                <i class="fas fa-building"></i>
                             </div>
                             <div class="benefit-text">
-                                <h3>Tú Decides Cuándo</h3>
-                                <p>Activa o pausa tu disponibilidad de transporte cuando lo desees.</p>
+                                <h3>Independientes o Empresas</h3>
+                                <p>Aceptamos conductores con vehículo propio y empresas de logística con NIT y flota.
+                                </p>
                             </div>
                         </div>
                     </div>
 
-                    <div style="margin-top: 30px; padding: 18px; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                    <div
+                        style="margin-top: 30px; padding: 18px; background: rgba(0,0,0,0.3); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
                         <p style="margin: 0; font-size: 0.9rem; color: #d1fae5;">
-                            ¿Ya tienes cuenta de transportista? 
-                            <a th:href="@{/transportista/login}" style="color: #34d399; font-weight: 700; text-decoration: underline;">Inicia sesión aquí</a>
+                            ¿Ya tienes cuenta de transportista?
+                            <a th:href="@{/transportista/login}"
+                                style="color: #34d399; font-weight: 700; text-decoration: underline;">Inicia sesión
+                                aquí</a>
                         </p>
                     </div>
                 </div>
@@ -150,74 +337,138 @@
                 <!-- Columna Formulario Derecha -->
                 <div class="form-side">
                     <div class="form-card">
-                        
+
                         <div class="form-header">
                             <h2>Registro de Transportista</h2>
-                            <p>Completa los datos de tu vehículo y zonas de operación</p>
+                            <p>Elige tu modalidad y selecciona tus zonas de cobertura</p>
                         </div>
 
                         <!-- Alertas de Error / Éxito -->
-                        <div th:if="${error}" class="alert alert-error" style="background: #fef2f2; color: #dc2626; padding: 12px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #fecaca; display: flex; align-items: center; gap: 8px;">
+                        <div th:if="${error}" class="alert alert-error"
+                            style="background: #fef2f2; color: #dc2626; padding: 12px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #fecaca; display: flex; align-items: center; gap: 8px;">
                             <i class="fas fa-exclamation-circle"></i>
                             <span th:text="${error}"></span>
                         </div>
 
-                        <div th:if="${mensaje}" class="alert alert-success" style="background: #ecfdf5; color: #059669; padding: 12px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #a7f3d0; display: flex; align-items: center; gap: 8px;">
+                        <div th:if="${mensaje}" class="alert alert-success"
+                            style="background: #ecfdf5; color: #059669; padding: 12px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #a7f3d0; display: flex; align-items: center; gap: 8px;">
                             <i class="fas fa-check-circle"></i>
                             <span th:text="${mensaje}"></span>
                         </div>
 
-                        <form th:action="@{/transportista/guardar}" method="post">
-                            
-                            <!-- Datos del Conductor si no está logueado -->
+                        <form th:action="@{/transportista/guardar}" method="post" id="formRegistroTransportista">
+
+                            <!-- Modalidad: Independiente vs Empresa -->
+                            <div style="margin-bottom: 18px;">
+                                <label
+                                    style="font-size: 0.88rem; font-weight: 700; color: #065f46; display: block; margin-bottom: 8px;">
+                                    <i class="fas fa-id-badge"></i> Modalidad de Transporte:
+                                </label>
+                                <div class="tipo-selector">
+                                    <div>
+                                        <input type="radio" id="tipoIndependiente" name="tipo" value="INDEPENDIENTE"
+                                            checked style="display:none;" onchange="toggleTipoTransportista()">
+                                        <label for="tipoIndependiente" class="tipo-option-label">
+                                            <i class="fas fa-motorcycle" style="font-size: 1.4rem; color: #059669;"></i>
+                                            <div>
+                                                <div style="font-size: 0.85rem; font-weight: 700; color: #1f2937;">
+                                                    Independiente</div>
+                                                <div style="font-size: 0.72rem; color: #6b7280;">Vehículo propio /
+                                                    Conductor</div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                    <div>
+                                        <input type="radio" id="tipoEmpresa" name="tipo" value="EMPRESA"
+                                            style="display:none;" onchange="toggleTipoTransportista()">
+                                        <label for="tipoEmpresa" class="tipo-option-label">
+                                            <i class="fas fa-building" style="font-size: 1.4rem; color: #2563eb;"></i>
+                                            <div>
+                                                <div style="font-size: 0.85rem; font-weight: 700; color: #1f2937;">
+                                                    Empresa</div>
+                                                <div style="font-size: 0.72rem; color: #6b7280;">Razón Social / NIT /
+                                                    Flota</div>
+                                            </div>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Datos del Conductor / Representante si no está logueado -->
                             <th:block th:if="${session.usuarioLogueado == null}">
                                 <div style="margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 15px;">
                                     <h4 style="color: #065f46; margin: 0 0 12px; font-size: 0.95rem; font-weight: 700;">
-                                        <i class="fas fa-user"></i> Datos Personales
+                                        <i class="fas fa-user"></i> Datos de Acceso y Contacto
                                     </h4>
-                                    
+
                                     <div class="input-group" style="margin-bottom: 12px;">
-                                        <label for="nombre">Nombre completo:</label>
-                                        <input type="text" id="nombre" name="nombre" placeholder="Ej. Carlos Mendoza" required>
+                                        <label for="nombre">Nombre completo del representante o conductor:</label>
+                                        <input type="text" id="nombre" name="nombre" placeholder="Ej. Carlos Mendoza"
+                                            required>
                                     </div>
 
                                     <div class="form-grid-2">
                                         <div class="input-group">
                                             <label for="email">Correo electrónico:</label>
-                                            <input type="email" id="email" name="email" placeholder="carlos@correo.com" required>
+                                            <input type="email" id="email" name="email" placeholder="carlos@correo.com"
+                                                required>
                                         </div>
                                         <div class="input-group">
                                             <label for="contrasena">Contraseña:</label>
-                                            <input type="password" id="contrasena" name="contrasena" placeholder="Mínimo 6 caracteres" required minlength="6">
+                                            <input type="password" id="contrasena" name="contrasena"
+                                                placeholder="Mínimo 6 caracteres" required minlength="6">
                                         </div>
                                     </div>
                                 </div>
                             </th:block>
 
-                            <!-- Datos del Vehículo -->
+                            <!-- Sección Exclusiva: EMPRESA (NIT y Razón Social) -->
+                            <div id="seccionEmpresa"
+                                style="display: none; margin-bottom: 20px; background: #eff6ff; padding: 14px; border-radius: 8px; border: 1px solid #bfdbfe;">
+                                <h4 style="color: #1e40af; margin: 0 0 12px; font-size: 0.95rem; font-weight: 700;">
+                                    <i class="fas fa-building"></i> Información Corporativa
+                                </h4>
+                                <div class="form-grid-2">
+                                    <div class="input-group">
+                                        <label for="nit">NIT de la Empresa:</label>
+                                        <input type="text" id="nit" name="nit" placeholder="Ej. 901.234.567-8">
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="razonSocial">Razón Social:</label>
+                                        <input type="text" id="razonSocial" name="razonSocial"
+                                            placeholder="Ej. Logística y Envíos del Caribe S.A.S.">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Sección Operativa: Vehículo y Licencia -->
                             <div style="margin-bottom: 20px;">
                                 <h4 style="color: #065f46; margin: 0 0 12px; font-size: 0.95rem; font-weight: 700;">
-                                    <i class="fas fa-truck"></i> Datos del Vehículo
+                                    <i class="fas fa-truck"></i> Vehículo y Capacidad
                                 </h4>
 
-                                <label style="font-size: 0.85rem; font-weight: 600; color: #374151;">Tipo de Vehículo:</label>
+                                <label style="font-size: 0.85rem; font-weight: 600; color: #374151;">Tipo de Vehículo /
+                                    Flota:</label>
                                 <div class="vehicle-type-select" style="margin-bottom: 15px;">
                                     <div>
-                                        <input type="radio" id="vehiculoCamioneta" name="tipoVehiculo" value="Camioneta Pick-up" checked style="display:none;">
+                                        <input type="radio" id="vehiculoCamioneta" name="tipoVehiculo"
+                                            value="Camioneta Pick-up" checked style="display:none;">
                                         <label for="vehiculoCamioneta" class="vehicle-radio-label">
                                             <i class="fas fa-truck-pickup"></i>
                                             <span>Pick-up</span>
                                         </label>
                                     </div>
                                     <div>
-                                        <input type="radio" id="vehiculoTurbo" name="tipoVehiculo" value="Furgón Turbo" style="display:none;">
+                                        <input type="radio" id="vehiculoTurbo" name="tipoVehiculo" value="Furgón Turbo"
+                                            style="display:none;">
                                         <label for="vehiculoTurbo" class="vehicle-radio-label">
                                             <i class="fas fa-truck"></i>
                                             <span>Turbo / Furgón</span>
                                         </label>
                                     </div>
                                     <div>
-                                        <input type="radio" id="vehiculoCamion" name="tipoVehiculo" value="Camión Pesado" style="display:none;">
+                                        <input type="radio" id="vehiculoCamion" name="tipoVehiculo"
+                                            value="Camión Pesado" style="display:none;">
                                         <label for="vehiculoCamion" class="vehicle-radio-label">
                                             <i class="fas fa-truck-moving"></i>
                                             <span>Camión C2/C3</span>
@@ -226,81 +477,125 @@
                                 </div>
 
                                 <div class="form-grid-2">
-                                    <div class="input-group">
+                                    <!-- Campos para Independiente -->
+                                    <div class="input-group" id="grupoPlaca">
                                         <label for="placa">Placa del vehículo:</label>
-                                        <input type="text" id="placa" name="placa" placeholder="Ej. ABC-123" required style="text-transform: uppercase;">
+                                        <input type="text" id="placa" name="placa" placeholder="Ej. ABC-123"
+                                            style="text-transform: uppercase;">
                                     </div>
+                                    <div class="input-group" id="grupoLicencia">
+                                        <label for="licenciaConduccion">Licencia de Conducción:</label>
+                                        <input type="text" id="licenciaConduccion" name="licenciaConduccion"
+                                            placeholder="Categoría C1, C2 o C3">
+                                    </div>
+                                </div>
+
+                                <div class="form-grid-2" style="margin-top: 10px;">
                                     <div class="input-group">
                                         <label for="capacidadCargaKg">Capacidad de carga (Kg):</label>
-                                        <input type="number" id="capacidadCargaKg" name="capacidadCargaKg" placeholder="Ej. 1500" required min="50" step="50">
+                                        <input type="number" id="capacidadCargaKg" name="capacidadCargaKg"
+                                            placeholder="Ej. 1500" required min="50" step="50" value="1000">
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="telefonoContacto">Teléfono / WhatsApp de Ruta:</label>
+                                        <input type="tel" id="telefonoContacto" name="telefonoContacto"
+                                            placeholder="Ej. 3001234567" required>
                                     </div>
                                 </div>
 
                                 <label class="custom-checkbox-row">
                                     <input type="checkbox" name="refrigerado" value="true">
                                     <span style="font-size: 0.88rem; font-weight: 600; color: #1f2937;">
-                                        <i class="fas fa-snowflake" style="color: #0284c7;"></i> Cuenta con sistema de refrigeración / Cadena de frío
+                                        <i class="fas fa-snowflake" style="color: #0284c7;"></i> Cuenta con sistema de
+                                        refrigeración / Cadena de frío
                                     </span>
                                 </label>
                             </div>
 
-                            <!-- Datos de Conducción y Cobertura -->
-                            <div style="margin-bottom: 20px;">
-                                <h4 style="color: #065f46; margin: 0 0 12px; font-size: 0.95rem; font-weight: 700;">
-                                    <i class="fas fa-id-card"></i> Licencia y Operación
-                                </h4>
-
-                                <div class="form-grid-2">
-                                    <div class="input-group">
-                                        <label for="licenciaConduccion">Licencia de Conducción:</label>
-                                        <input type="text" id="licenciaConduccion" name="licenciaConduccion" placeholder="Categoría C1, C2 o C3" required>
-                                    </div>
-                                    <div class="input-group">
-                                        <label for="telefonoContacto">Teléfono WhatsApp de Ruta:</label>
-                                        <input type="tel" id="telefonoContacto" name="telefonoContacto" placeholder="Ej. 3001234567" required>
-                                    </div>
+                            <!-- ZONAS DE COBERTURA EN BOLÍVAR -->
+                            <div
+                                style="margin-bottom: 24px; background: #fafafa; border: 1px solid #e5e7eb; border-radius: 10px; padding: 16px;">
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+                                    <h4 style="color: #065f46; margin: 0; font-size: 0.95rem; font-weight: 700;">
+                                        <i class="fas fa-map-location-dot"></i> Zonas de Cobertura en Bolívar
+                                    </h4>
+                                    <button type="button" onclick="abrirModalZonas()"
+                                        style="background: none; border: none; color: #0284c7; font-size: 0.82rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                                        <i class="fas fa-circle-question"></i> ¿No conoces tus zonas?
+                                    </button>
                                 </div>
+                                <p style="font-size: 0.78rem; color: #6b7280; margin: 0 0 12px;">
+                                    Selecciona las zonas logísticas de Bolívar donde estás disponible para realizar
+                                    recolecciones y entregas:
+                                </p>
 
-                                <div class="form-grid-2">
-                                    <div class="input-group">
-                                        <label for="departamentoBase">Departamento Base:</label>
-                                        <select id="departamentoBase" name="departamentoBase">
-                                            <option value="">Seleccionar Departamento</option>
-                                            <th:block th:each="dep : ${departamentos}">
-                                                <option th:value="${dep.nombre}" th:text="${dep.nombre}">Cundinamarca</option>
-                                            </th:block>
-                                        </select>
+                                <!-- Checkbox Maestro: Todas las Zonas -->
+                                <label class="custom-checkbox-row"
+                                    style="background: #ecfdf5; border-color: #a7f3d0; margin-top: 0; margin-bottom: 14px;">
+                                    <input type="checkbox" id="todasLasZonas" name="todasLasZonas" value="true"
+                                        onchange="toggleTodasLasZonas(this)">
+                                    <div>
+                                        <strong style="color: #065f46; font-size: 0.9rem;">Todas las zonas de
+                                            Bolívar</strong>
+                                        <div style="font-size: 0.75rem; color: #047857;">Cubre los 46 municipios (Dique,
+                                            Montes de María, Mojana, Momposina, Loba y Magdalena Medio)</div>
                                     </div>
-                                    <div class="input-group">
-                                        <label for="ciudadBase">Ciudad / Municipio Base:</label>
-                                        <input type="text" id="ciudadBase" name="ciudadBase" placeholder="Ej. Bogotá, Tunja, Villavicencio">
-                                    </div>
-                                </div>
+                                </label>
 
-                                <div class="input-group" style="margin-top: 10px;">
-                                    <label for="zonasCobertura">Zonas o Corredores de Cobertura:</label>
-                                    <input type="text" id="zonasCobertura" name="zonasCobertura" placeholder="Ej. Sabana de Bogotá, Boyacá, Meta, Tolima" required>
+                                <!-- Listado de 6 Zonas con Desplegable -->
+                                <div class="zonas-list" id="zonasList">
+                                    <div th:each="zona : ${zonasCatalogo}" class="zone-card">
+                                        <div class="zone-card-header">
+                                            <label
+                                                style="display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1;">
+                                                <input type="checkbox" name="zonasCoberturaIds" th:value="${zona.id}"
+                                                    class="zona-checkbox" onchange="onZonaIndividualChange()">
+                                                <span style="font-size: 0.86rem; font-weight: 600; color: #1f2937;">
+                                                    Zona <span th:text="${zona.id}">1</span>: <span
+                                                        th:text="${zona.nombre}">Dique</span>
+                                                </span>
+                                                <span
+                                                    style="font-size: 0.72rem; color: #6b7280; background: #f3f4f6; padding: 2px 6px; border-radius: 10px;">
+                                                    <span th:text="${zona.municipios.size()}">13</span> municipios
+                                                </span>
+                                            </label>
+                                            <button type="button" class="municipios-toggle-btn"
+                                                th:data-target="'#muni-collapse-' + ${zona.id}"
+                                                onclick="toggleMunicipios(this)">
+                                                <span>Ver municipios</span>
+                                                <i class="fas fa-chevron-down"></i>
+                                            </button>
+                                        </div>
+                                        <div th:id="'muni-collapse-' + ${zona.id}" class="municipios-collapse">
+                                            <span th:each="muni : ${zona.municipios}" class="muni-tag"
+                                                th:text="${muni}">Cartagena</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <!-- Datos Bancarios -->
+                            <!-- Datos Bancarios (Opcional) -->
                             <div style="margin-bottom: 20px;">
                                 <h4 style="color: #065f46; margin: 0 0 12px; font-size: 0.95rem; font-weight: 700;">
-                                    <i class="fas fa-building-columns"></i> Pagos de Fletes (Opcional)
+                                    <i class="fas fa-building-columns"></i> Cuenta para Pagos de Fletes (Opcional)
                                 </h4>
                                 <div class="form-grid-2">
                                     <div class="input-group">
                                         <label for="banco">Entidad Bancaria:</label>
-                                        <input type="text" id="banco" name="banco" placeholder="Bancolombia, Nequi, Davivienda...">
+                                        <input type="text" id="banco" name="banco"
+                                            placeholder="Bancolombia, Nequi, Davivienda...">
                                     </div>
                                     <div class="input-group">
                                         <label for="cuentaBancaria">Número de Cuenta:</label>
-                                        <input type="text" id="cuentaBancaria" name="cuentaBancaria" placeholder="Ahorros o Corriente">
+                                        <input type="text" id="cuentaBancaria" name="cuentaBancaria"
+                                            placeholder="Ahorros o Corriente">
                                     </div>
                                 </div>
                             </div>
 
-                            <button type="submit" class="btn-submit" style="background: linear-gradient(135deg, #059669, #047857); color: #fff; width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                            <button type="submit" class="btn-submit"
+                                style="background: linear-gradient(135deg, #059669, #047857); color: #fff; width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 6px -1px rgba(5, 150, 105, 0.4);">
                                 <i class="fas fa-truck-fast"></i> Registrarme como Transportista
                             </button>
 
@@ -313,7 +608,191 @@
         </div>
     </main>
 
+    <!-- Modal ¿No conoces tus zonas? -->
+    <div class="modal-overlay" id="modalZonas" onclick="cerrarModalSiClickAfuera(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div>
+                    <h3 style="margin: 0; color: #065f46; font-size: 1.15rem; font-weight: 700;">
+                        <i class="fas fa-map-marked-alt"></i> Zonas Logísticas de Bolívar
+                    </h3>
+                    <p style="margin: 4px 0 0; font-size: 0.8rem; color: #6b7280;">
+                        Identifica en cuál de las 6 subregiones opera tu vehículo o flota.
+                    </p>
+                </div>
+                <button type="button" onclick="cerrarModalZonas()"
+                    style="background: none; border: none; font-size: 1.3rem; color: #9ca3af; cursor: pointer; padding: 4px;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Buscador rápido de municipios -->
+                <div style="position: relative; margin-bottom: 16px;">
+                    <i class="fas fa-search"
+                        style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #9ca3af;"></i>
+                    <input type="text" id="buscadorModal" oninput="filtrarMunicipiosModal()"
+                        placeholder="Busca tu municipio (ej. Magangué, Carmen de Bolívar, Arjona...)"
+                        style="width: 100%; padding: 10px 12px 10px 36px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 0.9rem; box-sizing: border-box;">
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;"
+                    id="modalGridZonas">
+                    <div th:each="zona : ${zonasCatalogo}" class="modal-zona-box" th:data-zona-id="${zona.id}"
+                        style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px;">
+                            <strong style="color: #065f46; font-size: 0.92rem;">
+                                Zona <span th:text="${zona.id}">1</span>: <span th:text="${zona.nombre}">Dique</span>
+                            </strong>
+                            <span style="font-size: 0.72rem; color: #6b7280;"
+                                th:text="${zona.municipios.size()} + ' municipios'">13</span>
+                        </div>
+                        <div class="modal-zona-munis" style="display: flex; flex-wrap: wrap; gap: 4px;">
+                            <span th:each="muni : ${zona.municipios}" class="muni-tag modal-muni-item"
+                                th:data-muni="${#strings.toLowerCase(muni)}" th:text="${muni}">Cartagena</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" onclick="cerrarModalZonas()"
+                    style="background: #059669; color: white; border: none; padding: 9px 18px; border-radius: 6px; font-weight: 600; cursor: pointer;">
+                    Entendido, volver al formulario
+                </button>
+            </div>
+        </div>
+    </div>
+
     <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
+
+    <script>
+        function toggleTipoTransportista() {
+            const esEmpresa = document.getElementById('tipoEmpresa').checked;
+            const seccionEmpresa = document.getElementById('seccionEmpresa');
+            const nit = document.getElementById('nit');
+            const razonSocial = document.getElementById('razonSocial');
+            const placa = document.getElementById('placa');
+            const licencia = document.getElementById('licenciaConduccion');
+
+            if (esEmpresa) {
+                seccionEmpresa.style.display = 'block';
+                nit.required = true;
+                razonSocial.required = true;
+                placa.required = false;
+                licencia.required = false;
+            } else {
+                seccionEmpresa.style.display = 'none';
+                nit.required = false;
+                razonSocial.required = false;
+                placa.required = true;
+                licencia.required = true;
+            }
+        }
+
+        function toggleTodasLasZonas(masterCheckbox) {
+            const checkboxes = document.querySelectorAll('.zona-checkbox');
+            checkboxes.forEach(cb => {
+                cb.checked = masterCheckbox.checked;
+            });
+        }
+
+        function onZonaIndividualChange() {
+            const masterCheckbox = document.getElementById('todasLasZonas');
+            const checkboxes = Array.from(document.querySelectorAll('.zona-checkbox'));
+            const allChecked = checkboxes.length > 0 && checkboxes.every(cb => cb.checked);
+            masterCheckbox.checked = allChecked;
+        }
+
+        function toggleMunicipios(btn) {
+            const targetSelector = btn.getAttribute('data-target');
+            const target = document.querySelector(targetSelector);
+            const icon = btn.querySelector('i');
+            const span = btn.querySelector('span');
+
+            if (target) {
+                target.classList.toggle('show');
+                if (target.classList.contains('show')) {
+                    icon.classList.remove('fa-chevron-down');
+                    icon.classList.add('fa-chevron-up');
+                    span.textContent = 'Ocultar municipios';
+                } else {
+                    icon.classList.remove('fa-chevron-up');
+                    icon.classList.add('fa-chevron-down');
+                    span.textContent = 'Ver municipios';
+                }
+            }
+        }
+
+        // Modal Controls
+        function abrirModalZonas() {
+            document.getElementById('modalZonas').classList.add('active');
+            document.getElementById('buscadorModal').focus();
+        }
+
+        function cerrarModalZonas() {
+            document.getElementById('modalZonas').classList.remove('active');
+        }
+
+        function cerrarModalSiClickAfuera(e) {
+            if (e.target.id === 'modalZonas') {
+                cerrarModalZonas();
+            }
+        }
+
+        function filtrarMunicipiosModal() {
+            const query = document.getElementById('buscadorModal').value.trim().toLowerCase();
+            const zonaBoxes = document.querySelectorAll('.modal-zona-box');
+
+            zonaBoxes.forEach(box => {
+                let matchesInZone = 0;
+                const muniItems = box.querySelectorAll('.modal-muni-item');
+
+                muniItems.forEach(item => {
+                    const text = item.getAttribute('data-muni') || item.textContent.toLowerCase();
+                    if (!query || text.includes(query)) {
+                        item.style.display = 'inline-block';
+                        if (query && text.includes(query)) {
+                            item.style.background = '#fef08a';
+                            item.style.color = '#854d0e';
+                            item.style.fontWeight = '700';
+                        } else {
+                            item.style.background = '#f3f4f6';
+                            item.style.color = '#374151';
+                            item.style.fontWeight = 'normal';
+                        }
+                        matchesInZone++;
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+
+                if (!query || matchesInZone > 0) {
+                    box.style.display = 'block';
+                } else {
+                    box.style.display = 'none';
+                }
+            });
+        }
+
+        // Validación al enviar
+        document.getElementById('formRegistroTransportista').addEventListener('submit', function (e) {
+            const todasChecked = document.getElementById('todasLasZonas').checked;
+            const anyZoneChecked = Array.from(document.querySelectorAll('.zona-checkbox')).some(cb => cb.checked);
+
+            if (!todasChecked && !anyZoneChecked) {
+                e.preventDefault();
+                alert('Debes seleccionar al menos una zona de cobertura en Bolívar.');
+                return false;
+            }
+        });
+
+        // Inicializar estado del formulario
+        document.addEventListener('DOMContentLoaded', function () {
+            toggleTipoTransportista();
+        });
+    </script>
 </body>
 
 </html>

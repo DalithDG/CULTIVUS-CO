@@ -1,13 +1,14 @@
 package com.example.demo.Controller;
 
-import com.example.demo.Model.Pedido;
 import com.example.demo.Model.Role;
 import com.example.demo.Model.Usuario;
 import com.example.demo.Model.embebidos.PerfilTransportista;
 import com.example.demo.services.TransportistaService;
 import com.example.demo.services.UbicacionService;
+import com.example.demo.services.ZonasLogistica;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -24,6 +25,9 @@ public class TransportistaController {
 
     @Autowired
     private UbicacionService ubicacionService;
+
+    @Autowired
+    private com.example.demo.repository.UsuarioRepository usuarioRepository;
 
     /**
      * Pantalla de Login dedicada para transportistas.
@@ -49,25 +53,39 @@ public class TransportistaController {
 
         model.addAttribute("usuario", usuario != null ? usuario : new Usuario());
         model.addAttribute("departamentos", ubicacionService.obtenerTodos());
+        model.addAttribute("zonasCatalogo", ZonasLogistica.ZONAS);
         return "transportista/registro-transportista";
     }
 
     /**
-     * Procesa el formulario de registro de transportista.
+     * Endpoint API para la ventana modal "¿No conoces tus zonas?".
+     */
+    @GetMapping("/api/zonas-municipios")
+    @ResponseBody
+    public ResponseEntity<?> obtenerCatalogoZonasMunicipios() {
+        return ResponseEntity.ok(ZonasLogistica.ZONAS);
+    }
+
+    /**
+     * Procesa el formulario de registro de transportista (Independiente o Empresa).
      */
     @PostMapping("/guardar")
     public String guardarTransportista(
             @RequestParam(value = "nombre", required = false) String nombre,
             @RequestParam(value = "email", required = false) String email,
             @RequestParam(value = "contrasena", required = false) String contrasena,
-            @RequestParam("tipoVehiculo") String tipoVehiculo,
-            @RequestParam("placa") String placa,
-            @RequestParam("capacidadCargaKg") Double capacidadCargaKg,
-            @RequestParam("licenciaConduccion") String licenciaConduccion,
+            @RequestParam(value = "tipo", defaultValue = "INDEPENDIENTE") String tipo,
+            @RequestParam(value = "nit", required = false) String nit,
+            @RequestParam(value = "razonSocial", required = false) String razonSocial,
+            @RequestParam(value = "tipoVehiculo", required = false) String tipoVehiculo,
+            @RequestParam(value = "placa", required = false) String placa,
+            @RequestParam(value = "capacidadCargaKg", required = false, defaultValue = "1000") Double capacidadCargaKg,
+            @RequestParam(value = "licenciaConduccion", required = false) String licenciaConduccion,
             @RequestParam("telefonoContacto") String telefonoContacto,
             @RequestParam(value = "ciudadBase", required = false) String ciudadBase,
             @RequestParam(value = "departamentoBase", required = false) String departamentoBase,
-            @RequestParam("zonasCobertura") String zonasCobertura,
+            @RequestParam(value = "zonasCoberturaIds", required = false) List<Integer> zonasCoberturaIds,
+            @RequestParam(value = "todasLasZonas", defaultValue = "false") boolean todasLasZonas,
             @RequestParam(value = "refrigerado", defaultValue = "false") boolean refrigerado,
             @RequestParam(value = "empresa", required = false) String empresa,
             @RequestParam(value = "banco", required = false) String banco,
@@ -76,15 +94,34 @@ public class TransportistaController {
             RedirectAttributes redirectAttributes) {
 
         try {
-            // Validaciones básicas de vehículo y contacto
-            if (placa == null || placa.trim().length() < 5) {
-                redirectAttributes.addFlashAttribute("error", "La placa del vehículo debe ser válida (ej. ABC-123)");
+            boolean esEmpresa = PerfilTransportista.TIPO_EMPRESA.equalsIgnoreCase(tipo);
+
+            // Validaciones según el tipo
+            if (esEmpresa) {
+                if (nit == null || nit.trim().isEmpty()) {
+                    redirectAttributes.addFlashAttribute("error", "El NIT es obligatorio para empresas");
+                    return "redirect:/transportista/registro";
+                }
+                if (razonSocial == null || razonSocial.trim().isEmpty()) {
+                    redirectAttributes.addFlashAttribute("error", "La razón social es obligatoria para empresas");
+                    return "redirect:/transportista/registro";
+                }
+            } else {
+                if (placa == null || placa.trim().length() < 5) {
+                    redirectAttributes.addFlashAttribute("error", "La placa del vehículo es obligatoria para independientes (ej. ABC-123)");
+                    return "redirect:/transportista/registro";
+                }
+                if (licenciaConduccion == null || licenciaConduccion.trim().isEmpty()) {
+                    redirectAttributes.addFlashAttribute("error", "La licencia de conducción es obligatoria para independientes");
+                    return "redirect:/transportista/registro";
+                }
+            }
+
+            if (!todasLasZonas && (zonasCoberturaIds == null || zonasCoberturaIds.isEmpty())) {
+                redirectAttributes.addFlashAttribute("error", "Debes seleccionar al menos una zona de cobertura");
                 return "redirect:/transportista/registro";
             }
-            if (capacidadCargaKg == null || capacidadCargaKg <= 0) {
-                redirectAttributes.addFlashAttribute("error", "Indica una capacidad de carga válida en Kilogramos");
-                return "redirect:/transportista/registro";
-            }
+
             if (telefonoContacto == null || telefonoContacto.trim().length() < 7) {
                 redirectAttributes.addFlashAttribute("error", "El teléfono de contacto es obligatorio y debe tener al menos 7 dígitos");
                 return "redirect:/transportista/registro";
@@ -96,6 +133,9 @@ public class TransportistaController {
                 // Usuario autenticado que solicita convertirse en transportista
                 Usuario actualizado = transportistaService.crearPerfilTransportista(
                         usuarioSesion.getId(),
+                        tipo,
+                        nit,
+                        razonSocial,
                         tipoVehiculo,
                         placa,
                         capacidadCargaKg,
@@ -103,14 +143,15 @@ public class TransportistaController {
                         telefonoContacto,
                         ciudadBase,
                         departamentoBase,
-                        zonasCobertura,
+                        zonasCoberturaIds,
+                        todasLasZonas,
                         refrigerado,
                         empresa,
                         banco,
                         cuentaBancaria
                 );
                 session.setAttribute("usuarioLogueado", actualizado);
-                redirectAttributes.addFlashAttribute("mensaje", "¡Bienvenido a la red logística de Cultivus! Tu perfil de transportista está activo.");
+                redirectAttributes.addFlashAttribute("mensaje", "¡Bienvenido a la red logística de Cultivus! Tu solicitud fue registrada. Tu perfil está pendiente de verificación por el administrador.");
                 return "redirect:/transportista/inicio";
             } else {
                 // Registro de nuevo usuario directamente como transportista
@@ -119,10 +160,13 @@ public class TransportistaController {
                     return "redirect:/transportista/registro";
                 }
 
-                Usuario nuevo = transportistaService.registrarNuevoTransportista(
+                transportistaService.registrarNuevoTransportista(
                         nombre,
                         email,
                         contrasena,
+                        tipo,
+                        nit,
+                        razonSocial,
                         tipoVehiculo,
                         placa,
                         capacidadCargaKg,
@@ -130,7 +174,8 @@ public class TransportistaController {
                         telefonoContacto,
                         ciudadBase,
                         departamentoBase,
-                        zonasCobertura,
+                        zonasCoberturaIds,
+                        todasLasZonas,
                         refrigerado,
                         empresa,
                         banco,
@@ -152,6 +197,7 @@ public class TransportistaController {
 
     /**
      * Dashboard / Vista MAIN del Transportista.
+     * Muestra las "Rutas disponibles" ordenadas por zona y "Mis envíos".
      */
     @GetMapping({"/inicio", "/dashboard", "/main"})
     public String mostrarDashboard(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
@@ -161,20 +207,74 @@ public class TransportistaController {
             return "redirect:/transportista/login";
         }
 
+        // Recargar datos actualizados de la BD para reflejar verificación del admin en tiempo real
+        Usuario usuarioActualizado = usuarioRepository.findById(usuario.getId()).orElse(usuario);
+        usuario = usuarioActualizado;
+        session.setAttribute("usuarioLogueado", usuario);
+
         if (!usuario.hasRole(Role.TRANSPORTISTA)) {
             redirectAttributes.addFlashAttribute("error", "Debes tener perfil de transportista para acceder");
             return "redirect:/transportista/registro";
         }
 
         PerfilTransportista perfil = usuario.getPerfilTransportista();
-        List<Pedido> pedidosDisponibles = transportistaService.obtenerPedidosDisponiblesParaEnvio();
+        List<TransportistaService.RutaDisponibleDTO> rutasDisponibles = transportistaService.obtenerRutasDisponibles(usuario.getId());
+        List<TransportistaService.MiEnvioDetalleDTO> misEnvios = transportistaService.obtenerMisEnviosDetallados(usuario.getId());
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("perfil", perfil);
-        model.addAttribute("pedidos", pedidosDisponibles);
-        model.addAttribute("totalPedidosDisponibles", pedidosDisponibles.size());
+        model.addAttribute("rutas", rutasDisponibles);
+        model.addAttribute("totalRutasDisponibles", rutasDisponibles.size());
+        model.addAttribute("misEnvios", misEnvios);
+        model.addAttribute("totalMisEnvios", misEnvios.size());
 
         return "transportista/inicio-transportista";
+    }
+
+    /**
+     * Aceptar compra / ruta disponible.
+     * Utiliza findAndModify con control de concurrencia.
+     */
+    @PostMapping("/aceptar/{envioId}")
+    public String aceptarEnvio(@PathVariable String envioId, HttpSession session, RedirectAttributes redirectAttributes) {
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuario == null || !usuario.hasRole(Role.TRANSPORTISTA)) {
+            redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión como transportista");
+            return "redirect:/transportista/login";
+        }
+
+        try {
+            transportistaService.aceptarEnvio(envioId, usuario.getId());
+            redirectAttributes.addFlashAttribute("mensaje", "¡Compra aceptada exitosamente! Ya se encuentra en 'Mis Envíos'. Se ha notificado al comprador y a los vendedores.");
+        } catch (IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al aceptar la compra: " + e.getMessage());
+        }
+
+        return "redirect:/transportista/inicio";
+    }
+
+    /**
+     * Liberar ruta asignada.
+     * Solo el dueño y si ninguna parada fue recogida.
+     */
+    @PostMapping("/liberar/{envioId}")
+    public String liberarEnvio(@PathVariable String envioId, HttpSession session, RedirectAttributes redirectAttributes) {
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuario == null || !usuario.hasRole(Role.TRANSPORTISTA)) {
+            redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión como transportista");
+            return "redirect:/transportista/login";
+        }
+
+        try {
+            transportistaService.liberarEnvio(envioId, usuario.getId());
+            redirectAttributes.addFlashAttribute("mensaje", "El envío ha sido liberado exitosamente y vuelve a estar disponible en Rutas Disponibles.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+
+        return "redirect:/transportista/inicio";
     }
 
     /**
@@ -190,8 +290,65 @@ public class TransportistaController {
         if (usuario != null && usuario.hasRole(Role.TRANSPORTISTA)) {
             Usuario actualizado = transportistaService.actualizarDisponibilidad(usuario.getId(), disponible);
             session.setAttribute("usuarioLogueado", actualizado);
-            redirectAttributes.addFlashAttribute("mensaje", disponible ? "Ahora estás DISPONIBLE para recibir asignación de envíos." : "Estado cambiado a EN RUTA / NO DISPONIBLE.");
+            redirectAttributes.addFlashAttribute("mensaje", disponible ? "Ahora estás DISPONIBLE para recibir asignación de envíos." : "Estado cambiado a NO DISPONIBLE.");
         }
+        return "redirect:/transportista/inicio";
+    }
+
+    /**
+     * Marcar una parada individual como recogida por el transportista.
+     * Requiere que el sub-pedido esté en LISTO_PARA_RECOGER.
+     */
+    @PostMapping("/parada/{envioId}/{pedidoId}/recoger")
+    public String marcarParadaRecogida(
+            @PathVariable String envioId,
+            @PathVariable String pedidoId,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuario == null || !usuario.hasRole(Role.TRANSPORTISTA)) {
+            redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión como transportista");
+            return "redirect:/transportista/login";
+        }
+
+        try {
+            transportistaService.marcarParadaRecogida(envioId, pedidoId, usuario.getId());
+            redirectAttributes.addFlashAttribute("mensaje", "¡Parada marcada como recogida! El pedido ha pasado a estado ENVIADO y el comprador ha sido notificado.");
+        } catch (IllegalStateException | IllegalArgumentException | SecurityException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al registrar la recogida: " + e.getMessage());
+        }
+
+        return "redirect:/transportista/inicio";
+    }
+
+    /**
+     * Marcar entrega final al comprador.
+     * Requiere que TODAS las paradas de recogida hayan sido completadas.
+     */
+    @PostMapping("/envio/{envioId}/entregar")
+    public String marcarEnvioEntregado(
+            @PathVariable String envioId,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuario == null || !usuario.hasRole(Role.TRANSPORTISTA)) {
+            redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión como transportista");
+            return "redirect:/transportista/login";
+        }
+
+        try {
+            transportistaService.marcarEnvioEntregado(envioId, usuario.getId());
+            redirectAttributes.addFlashAttribute("mensaje", "¡Excelente trabajo! Has completado la entrega de la compra. Todos los pedidos han sido marcados como ENTREGADOS.");
+        } catch (IllegalStateException | IllegalArgumentException | SecurityException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al registrar la entrega: " + e.getMessage());
+        }
+
         return "redirect:/transportista/inicio";
     }
 }
