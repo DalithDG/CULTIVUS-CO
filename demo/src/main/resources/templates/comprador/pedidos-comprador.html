@@ -719,7 +719,7 @@
             <th:block th:if="${compras != null and !compras.isEmpty()}">
                 <div th:each="compra : ${compras}"
                      class="mp-card"
-                     th:data-estado="${compra.estado}">
+                     th:data-estado="${compra.estadoFiltro}">
 
                     <!-- Card top bar -->
                     <div class="mp-card__top" style="background: linear-gradient(135deg, #f8fafc, #f1f5f9);">
@@ -765,17 +765,19 @@
                             </div>
                             <div>
                                 <!-- Caso 1: Asignado, en recogida o en entrega -->
-                                <div th:if="${compra.envioLogistica != null and (compra.envioLogistica.estado == 'ASIGNADO' or compra.envioLogistica.estado == 'EN_RECOGIDA' or compra.envioLogistica.estado == 'EN_ENTREGA')}">
-                                    <span style="font-weight: 800;">Transportista asignado:</span>
-                                    <strong th:text="${compra.envioLogistica.transportista != null ? compra.envioLogistica.transportista.nombreCompleto : 'Conductor'}">Carlos Mendoza</strong>
-                                    <span th:if="${compra.envioLogistica.transportista != null and compra.envioLogistica.transportista.telefonoContacto != null}">
-                                        · Tel: <a th:href="'tel:' + ${compra.envioLogistica.transportista.telefonoContacto}" style="font-weight: 700; color: inherit; text-decoration: underline;" th:text="${compra.envioLogistica.transportista.telefonoContacto}">3101234567</a>
-                                    </span>
-                                    <span th:if="${compra.envioLogistica.transportista != null and compra.envioLogistica.transportista.placaVehiculo != null}"
-                                          th:text="'(' + ${compra.envioLogistica.transportista.tipoVehiculo != null ? compra.envioLogistica.transportista.tipoVehiculo + ' ' : ''} + ${compra.envioLogistica.transportista.placaVehiculo} + ')'">
-                                        (TRA-789)
-                                    </span>
-                                </div>
+                                 <div th:if="${compra.envioLogistica != null and (compra.envioLogistica.estado == 'ASIGNADO' or compra.envioLogistica.estado == 'EN_RECOGIDA' or compra.envioLogistica.estado == 'EN_ENTREGA')}"
+                                      th:with="t=${compra.envioLogistica.transportista}">
+                                     <span style="font-weight: 800;">Transportista asignado</span><span th:if="${t != null and t.nombreMostrar != null}">:</span>
+                                     <strong th:if="${t != null and t.nombreMostrar != null}" th:text="${t.nombreMostrar}">Carlos Mendoza</strong>
+                                     <span th:if="${t != null and t.telefonoLimpio != null}">
+                                         · <i class="fa-solid fa-phone" style="font-size: .75rem;"></i>
+                                         <a th:href="'tel:' + ${t.telefonoLimpio}" style="font-weight: 700; color: inherit; text-decoration: underline;" th:text="${t.telefonoLimpio}">3101234567</a>
+                                     </span>
+                                     <span th:if="${t != null and t.vehiculoMostrar != null}">
+                                         · <i class="fa-solid fa-motorcycle" style="font-size: .75rem;"></i>
+                                         <span th:text="${t.vehiculoMostrar}">Moto TRA-789</span>
+                                     </span>
+                                 </div>
 
                                 <!-- Caso 2: Entregado -->
                                 <div th:if="${compra.envioLogistica != null and compra.envioLogistica.estado == 'ENTREGADO'}">
@@ -903,8 +905,26 @@
                                     </div>
                                 </div>
 
+                                 <!-- Desglose de envío de este vendedor -->
+                                 <div th:if="${sub.envioCentavos != null and sub.envioCentavos > 0}"
+                                      style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; font-size: 0.82rem; color: #475569; background: #f1f5f9; border-radius: 8px; padding: 8px 12px;">
+                                     <span>
+                                         <i class="fa-solid fa-route" style="color: #16a34a;"></i>
+                                         Envío:
+                                         <strong th:text="${sub.zonaOrigenEnvio != null ? 'Zona ' + sub.zonaOrigenEnvio : (sub.ciudadOrigenEnvio != null ? sub.ciudadOrigenEnvio : 'Recogida')}">Zona 1</strong>
+                                         <i class="fa-solid fa-arrow-right" style="font-size: .7rem;"></i>
+                                         <strong th:text="${sub.zonaDestinoEnvio != null ? 'Zona ' + sub.zonaDestinoEnvio : (sub.ciudadDestinoEnvio != null ? sub.ciudadDestinoEnvio : 'Entrega')}">Zona 2</strong>
+                                     </span>
+                                     <strong style="color: #15803d;">$<span th:text="${#numbers.formatDecimal(sub.envio, 0, 'COMMA', 0, 'POINT')}">0</span></strong>
+                                 </div>
+
                             </div>
                         </div>
+                         <div th:if="${compra.envioCentavos != null and compra.envioCentavos > 0}"
+                              style="display: flex; justify-content: flex-end; gap: 18px; flex-wrap: wrap; margin-top: 14px; padding-top: 12px; border-top: 1px dashed #cbd5e1; font-size: 0.88rem; color: #475569;">
+                             <span>Productos: <strong>$<span th:text="${#numbers.formatDecimal(compra.subtotal, 0, 'COMMA', 0, 'POINT')}">0</span></strong></span>
+                             <span><i class="fa-solid fa-truck-fast" style="color: #16a34a;"></i> Envío total: <strong>$<span th:text="${#numbers.formatDecimal(compra.envio, 0, 'COMMA', 0, 'POINT')}">0</span></strong></span>
+                         </div>
                     </div>
                 </div>
             </th:block>
@@ -1255,7 +1275,7 @@
         const tabMap = {
             todos:      () => true,
             entregados: s => s === 'COMPLETADO' || s === 'ENTREGADO',
-            proceso:    s => s === 'CONFIRMADO' || s === 'PAGADA' || s === 'EN_PROCESO' || s === 'PROCESANDO' || s === 'ENVIADO' || s === 'EN_REVISION' || s === 'REVISION',
+            proceso:    s => s === 'PROCESO' || s === 'CONFIRMADO' || s === 'PAGADA' || s === 'EN_PROCESO' || s === 'PROCESANDO' || s === 'ENVIADO' || s === 'EN_REVISION' || s === 'REVISION',
             pendiente:  s => s === 'PENDIENTE',
         };
 

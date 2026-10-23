@@ -181,6 +181,22 @@ public class Compra {
     public Envio getEnvioLogistica() { return envioLogistica; }
     public void setEnvioLogistica(Envio envioLogistica) { this.envioLogistica = envioLogistica; }
 
+    /**
+     * Clave para las pestañas de "Mis Pedidos": ENTREGADO, PROCESO, PENDIENTE o RECHAZADA.
+     * Una compra pagada con envío asignado/en curso queda en PROCESO; entregada, en ENTREGADO.
+     */
+    public String getEstadoFiltro() {
+        if (RECHAZADA.equals(estado)) return RECHAZADA;
+        if (!PAGADA.equals(estado)) return PENDIENTE;
+        if (envioLogistica != null && Envio.ENTREGADO.equals(envioLogistica.getEstado())) return "ENTREGADO";
+        if (subPedidos != null && !subPedidos.isEmpty()
+                && subPedidos.stream().allMatch(p -> p.getEstado() != null
+                        && ("ENTREGADO".equalsIgnoreCase(p.getEstado()) || "COMPLETADO".equalsIgnoreCase(p.getEstado())))) {
+            return "ENTREGADO";
+        }
+        return "PROCESO";
+    }
+
     public boolean isTieneSubPedidoListoParaRecoger() {
         if (subPedidos == null) return false;
         return subPedidos.stream()

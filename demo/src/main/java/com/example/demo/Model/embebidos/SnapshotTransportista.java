@@ -27,6 +27,33 @@ public class SnapshotTransportista {
         this.tipoVehiculo = tipoVehiculo;
     }
 
+    // ── Helpers de vista (null-safe; no se persisten) ──
+
+    private static String limpio(String s) {
+        return (s == null || s.isBlank() || "null".equalsIgnoreCase(s.trim())) ? null : s.trim();
+    }
+
+    /** Nombre a mostrar: razón social (+ conductor) si es EMPRESA; si no, el nombre. Null si no hay datos. */
+    public String getNombreMostrar() {
+        String n = limpio(nombre);
+        String rs = limpio(razonSocial);
+        if ("EMPRESA".equalsIgnoreCase(tipo) && rs != null) {
+            return n != null ? rs + " (" + n + ")" : rs;
+        }
+        return n != null ? n : rs;
+    }
+
+    /** Teléfono limpio o null. */
+    public String getTelefonoLimpio() { return limpio(telefono); }
+
+    /** "Moto ABC123", "ABC123" o "Moto"; null si no hay datos de vehículo. */
+    public String getVehiculoMostrar() {
+        String tv = limpio(tipoVehiculo);
+        String pl = limpio(placa);
+        if (tv != null && pl != null) return tv + " " + pl;
+        return tv != null ? tv : pl;
+    }
+
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
