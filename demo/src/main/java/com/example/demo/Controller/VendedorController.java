@@ -367,25 +367,23 @@ public class VendedorController {
             return "redirect:/vendedor/registro";
         }
 
-        List<Pedido> pedidos = vendedorService.obtenerPedidosDelVendedor(usuario.getId());
-        double totalVentas = vendedorService.calcularTotalVentas(usuario.getId());
+        // Solo ventas reales (pagadas/confirmadas); se excluyen PENDIENTE y CANCELADO
+        List<Pedido> todasLasVentas = vendedorService.obtenerVentasDelVendedor(usuario.getId());
 
-        long pendientes = pedidos.stream()
-                .filter(p -> "PENDIENTE".equalsIgnoreCase(p.getEstado())).count();
-        long enProceso = pedidos.stream()
-                .filter(p -> "CONFIRMADO".equalsIgnoreCase(p.getEstado())
-                        || "EN_PROCESO".equalsIgnoreCase(p.getEstado())
-                        || "ENVIADO".equalsIgnoreCase(p.getEstado()))
-                .count();
-        long completados = pedidos.stream()
-                .filter(p -> "ENTREGADO".equalsIgnoreCase(p.getEstado())).count();
+        String filtro = (estado == null || estado.isBlank()) ? "todas" : estado.trim().toLowerCase();
+        String texto = (busqueda == null) ? "" : busqueda.trim().toLowerCase();
+
+        List<Pedido> pedidos = todasLasVentas.stream()
+                .filter(p -> coincideFiltroEstado(p, filtro))
+                .filter(p -> coincideBusqueda(p, texto))
+                .collect(java.util.stream.Collectors.toList());
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("pedidos", pedidos);
         model.addAttribute("totalVentas", vendedorService.calcularTotalVentas(usuario.getId()));
         model.addAttribute("totalVentasCount", todasLasVentas.size());
         model.addAttribute("porPreparar", contarEstados(todasLasVentas, "CONFIRMADO"));
-        model.addAttribute("enProceso", contarEstados(todasLasVentas, "EN_PROCESO", "PROCESANDO"));
+        model.addAttribute("enProceso", contarEstados(todasLasVentas, "EN_PROCESO", "PROCESANDO", Pedido.LISTO_PARA_RECOGER));
         model.addAttribute("enCamino", contarEstados(todasLasVentas, "ENVIADO"));
         model.addAttribute("entregados", contarEstados(todasLasVentas, "ENTREGADO", "COMPLETADO"));
         model.addAttribute("enRevision", contarEstados(todasLasVentas, Pedido.EN_REVISION));
@@ -461,7 +459,7 @@ public class VendedorController {
                 return "redirect:/vendedor/registro";
             }
 
-            vendedorService.actualizarEstadoPedido(pedidoId, nuevoEstado);
+            vendedorService.actualizarEstadoPedido(pedidoId, nuevoEstado, usuario.getId());
 
             redirectAttributes.addFlashAttribute("mensaje", "Estado actualizado correctamente");
             return "redirect:/vendedor/ventas/pedido/" + pedidoId;
@@ -487,7 +485,8 @@ public class VendedorController {
         String estado = pedido.getEstado() == null ? "" : pedido.getEstado().trim().toUpperCase();
         return switch (filtro) {
             case "preparar" -> "CONFIRMADO".equals(estado);
-            case "proceso" -> "EN_PROCESO".equals(estado) || "PROCESANDO".equals(estado);
+            case "proceso" -> "EN_PROCESO".equals(estado) || "PROCESANDO".equals(estado)
+                    || Pedido.LISTO_PARA_RECOGER.equals(estado);
             case "enviado" -> "ENVIADO".equals(estado);
             case "entregado" -> "ENTREGADO".equals(estado) || "COMPLETADO".equals(estado);
             case "revision" -> Pedido.EN_REVISION.equals(estado);

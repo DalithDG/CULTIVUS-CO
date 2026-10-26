@@ -24,12 +24,7 @@ import com.example.demo.Model.Pedido;
 import com.example.demo.Model.Compra;
 import com.example.demo.Model.Notificacion;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ArrayList;
@@ -247,17 +242,6 @@ public class UsuarioController {
         // Estadísticas de comprador para el dashboard
         long totalPedidos = pedidoRepository.findByCompradorId(usuario.getId()).size();
         model.addAttribute("totalPedidos", totalPedidos);
-
-        // Redirigir según rol (priorizar vendedor para su inicio especial, pero ambos
-        // pueden comprar)
-        // Si se solicita explícitamente modo comprador, mostrar inicio-comprador
-        if ("comprador".equals(modo)) {
-            return "comprador/inicio-comprador";
-        }
-
-        if (usuario.hasRole(Role.VENDEDOR)) {
-            return "redirect:/vendedor/inicio";
-        }
 
         return "comprador/inicio-comprador";
     }
