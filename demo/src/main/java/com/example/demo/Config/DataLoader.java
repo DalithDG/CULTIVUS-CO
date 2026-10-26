@@ -4,14 +4,26 @@ import com.example.demo.Model.Role;
 import com.example.demo.Model.Usuario;
 import com.example.demo.Model.embebidos.PerfilAdmin;
 import com.example.demo.Model.embebidos.PerfilTransportista;
+import com.example.demo.Model.TarifaEnvio;
+import com.example.demo.Model.ZonaMunicipio;
+import com.example.demo.Model.embebidos.CiudadUbicacion;
+import com.example.demo.repository.TarifaEnvioRepository;
+import com.example.demo.repository.UbicacionRepository;
 import com.example.demo.repository.UsuarioRepository;
+import com.example.demo.repository.ZonaMunicipioRepository;
 import com.example.demo.services.AppConfigService;
+import com.example.demo.services.ZonasLogistica;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Component
 @Order(1)
@@ -22,12 +34,19 @@ public class DataLoader implements CommandLineRunner {
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder passwordEncoder;
     private final AppConfigService configService;
+    private final ZonaMunicipioRepository zonaMunicipioRepository;
+    private final TarifaEnvioRepository tarifaEnvioRepository;
+    private final UbicacionRepository ubicacionRepository;
 
     public DataLoader(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder,
-            AppConfigService configService) {
+            AppConfigService configService, ZonaMunicipioRepository zonaMunicipioRepository,
+            TarifaEnvioRepository tarifaEnvioRepository, UbicacionRepository ubicacionRepository) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
         this.configService = configService;
+        this.zonaMunicipioRepository = zonaMunicipioRepository;
+        this.tarifaEnvioRepository = tarifaEnvioRepository;
+        this.ubicacionRepository = ubicacionRepository;
     }
 
     private static final String ADMIN_EMAIL = "admin1@demo.com";
@@ -45,6 +64,8 @@ public class DataLoader implements CommandLineRunner {
             crearTransportistaDemoSiNoExiste();
 
             inicializarConfiguracion();
+
+            inicializarZonasYTarifas();
 
             logger.info("✅ DataLoader finalizado correctamente");
 
@@ -114,14 +135,17 @@ public class DataLoader implements CommandLineRunner {
                     1500.0,
                     "C2",
                     "3101234567",
-                    "Bogotá D.C.",
-                    "Cundinamarca",
-                    "Bogotá, Sabana, Boyacá, Cundinamarca",
+                    "Cartagena",
+                    "Bolívar",
+                    "Dique, Montes de María",
                     true,
                     "Transportes del Campo S.A.S.",
                     "Bancolombia",
                     "123-456789-00"
             );
+            perfil.setTipo(PerfilTransportista.TIPO_INDEPENDIENTE);
+            perfil.setZonasCoberturaIds(List.of(1, 2));
+            perfil.setTodasLasZonas(false);
             perfil.setVerificado(true);
             perfil.setDisponible(true);
 
@@ -154,7 +178,53 @@ public class DataLoader implements CommandLineRunner {
                 "Porcentaje de comisión que cobra la plataforma sobre los productos de cada venta, sin envío (%)", "NUMBER");
         configService.guardarConfig("MENSAJE_BIENVENIDA", "¡Bienvenido a Cultivus! Del campo a tu mesa.",
                 "Mensaje que se muestra en el inicio", "STRING");
+        configService.guardarConfig("TARIFA_ENVIO_DEFECTO", "15000",
+                "Tarifa de envío por defecto (COP) si falta ciudad o zona", "NUMBER");
+        configService.guardarConfig("HORAS_MAX_SIN_TRANSPORTISTA", "24",
+                "Horas máximas para que un envío consiga transportista antes de pasar a SIN_TRANSPORTISTA", "NUMBER");
 
         logger.info("✅ Parámetros de configuración inicializados.");
+    }
+
+    private void inicializarZonasYTarifas() {
+        if (zonaMunicipioRepository.count() == 0) {
+            logger.info("🗺️ Cargando catálogo de zonas y municipios de Bolívar...");
+            Map<String, String> nombresUbicaciones = new HashMap<>();
+            if (ubicacionRepository != null) {
+                ubicacionRepository.findByNombre("Bolívar").ifPresent(depto -> {
+                    if (depto.getCiudades() != null) {
+                        for (CiudadUbicacion c : depto.getCiudades()) {
+                            if (c.getNombre() != null) {
+                                nombresUbicaciones.put(ZonasLogistica.normalizar(c.getNombre()), c.getNombre().trim());
+                            }
+                        }
+                    }
+                });
+            }
+
+            List<ZonaMunicipio> listaZonas = new ArrayList<>();
+            for (ZonasLogistica.ZonaDef def : ZonasLogistica.ZONAS) {
+                for (String muni : def.municipios()) {
+                    String normalizado = ZonasLogistica.normalizar(muni);
+                    String display = nombresUbicaciones.getOrDefault(normalizado, muni.trim());
+                    listaZonas.add(new ZonaMunicipio(display, normalizado, "Bolívar", def.id(), def.nombre()));
+                }
+            }
+            zonaMunicipioRepository.saveAll(listaZonas);
+            logger.info("✅ {} municipios asignados a zonas logísticas.", listaZonas.size());
+        }
+
+        if (tarifaEnvioRepository.count() == 0) {
+            logger.info("💲 Cargando matriz de tarifas por zonas...");
+            List<TarifaEnvio> tarifas = new ArrayList<>();
+            for (int origen = 1; origen <= 6; origen++) {
+                for (int destino = 1; destino <= 6; destino++) {
+                    long centavos = ZonasLogistica.tarifaEjemploCentavos(origen, destino);
+                    tarifas.add(new TarifaEnvio(origen, destino, centavos));
+                }
+            }
+            tarifaEnvioRepository.saveAll(tarifas);
+            logger.info("✅ Matriz de 36 tarifas de envío guardada exitosamente.");
+        }
     }
 }

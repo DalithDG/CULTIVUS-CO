@@ -64,6 +64,9 @@ public class PagoController {
     @Autowired
     private PagoConfirmacionService pagoConfirmacionService;
 
+    @Autowired
+    private com.example.demo.services.CalculoEnvioService calculoEnvioService;
+
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(PagoController.class);
 
     /**
@@ -129,11 +132,18 @@ public class PagoController {
             }
         }
 
-        // Cálculo seguro de Wompi en el servidor
+        // Cálculo seguro de envío por zonas y Wompi en el servidor
         double subtotal = carrito.getTotalEstimado();
-        double costoEnvio = wompiService.obtenerCostoEnvioProvisional();
+        String ciudadDefault = (usuario.getUbicacion() != null && usuario.getUbicacion().getCiudad() != null && !usuario.getUbicacion().getCiudad().isBlank())
+                ? usuario.getUbicacion().getCiudad().trim()
+                : "Cartagena";
+
+        com.example.demo.services.CalculoEnvioService.ResultadoCalculoEnvio calculoEnvio =
+                calculoEnvioService.calcularTarifaCarrito(carrito, ciudadDefault);
+        double costoEnvio = calculoEnvio.getTotalCop();
         double totalConEnvio = subtotal + costoEnvio;
-        long amountInCents = wompiService.calcularTotalCentavos(subtotal, costoEnvio);
+        long amountInCents = wompiService.convertirACentavos(subtotal) + calculoEnvio.totalCentavos();
+
         String reference = wompiService.generarReferenciaUnica();
         String currency = wompiService.getCurrency();
         String signatureIntegrity = "";
@@ -151,6 +161,8 @@ public class PagoController {
         model.addAttribute("currency", currency);
         model.addAttribute("subtotal", subtotal);
         model.addAttribute("costoEnvio", costoEnvio);
+        model.addAttribute("desgloseEnvio", calculoEnvio.desglose());
+        model.addAttribute("ciudadPreseleccionada", ciudadDefault);
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("carrito", carrito);
@@ -277,38 +289,6 @@ public class PagoController {
                 }
             }
 
-            // Cálculo seguro del total en centavos enteros
-            double subtotal = carrito.getTotalEstimado();
-            double costoEnvio = wompiService.obtenerCostoEnvioProvisional();
-            long subtotalCentavos = wompiService.convertirACentavos(subtotal);
-            long envioCentavos = wompiService.convertirACentavos(costoEnvio);
-            long amountInCents = wompiService.calcularTotalCentavos(subtotal, costoEnvio);
-
-            // Reutilizar referencia del frontend o generar una nueva
-            String reference = (payload != null
-                    && payload.containsKey("reference")
-                    && payload.get("reference") != null
-                    && !payload.get("reference").trim().isEmpty())
-                            ? payload.get("reference").trim()
-                            : wompiService.generarReferenciaUnica();
-
-            // Si la referencia ya existe y es de otro comprador, generar una nueva
-            List<Pedido> existentes = pedidoRepository.findByPago_Referencia(reference);
-            java.util.Optional<Compra> optCompraExistente = compraRepository.findByReferenciaPago(reference);
-
-            boolean pedidosPropios = existentes.isEmpty() || existentes.stream().allMatch(
-                    p -> p.getComprador() != null && usuario.getId().equals(p.getComprador().getId()));
-            boolean compraPropia = optCompraExistente.isEmpty() || (optCompraExistente.get().getComprador() != null
-                    && usuario.getId().equals(optCompraExistente.get().getComprador().getId()));
-
-            if (!pedidosPropios || !compraPropia) {
-                reference = wompiService.generarReferenciaUnica();
-                existentes = new ArrayList<>();
-                optCompraExistente = java.util.Optional.empty();
-            }
-
-            String currency = wompiService.getCurrency();
-            String signatureIntegrity = wompiService.generarFirmaIntegridad(reference, amountInCents, currency);
             String receptor = payload != null ? payload.getOrDefault("receptor", "").trim() : "";
             String direccionTexto = payload != null ? payload.getOrDefault("direccion", "").trim() : "";
             String ciudad = payload != null ? payload.getOrDefault("ciudad", "").trim() : "";
@@ -340,6 +320,41 @@ public class PagoController {
             String direccionFinal = dirBuilder.length() > 0 ? dirBuilder.toString() : "Entrega en domicilio";
             String ciudadFinal = !ciudad.isEmpty() ? ciudad : (usuario.getUbicacion() != null && usuario.getUbicacion().getCiudad() != null ? usuario.getUbicacion().getCiudad() : "Cartagena");
             String deptoFinal = !departamento.isEmpty() ? departamento : "Bolívar";
+
+            // Cálculo seguro del total en centavos enteros usando la ciudad de entrega final
+            double subtotal = carrito.getTotalEstimado();
+            long subtotalCentavos = wompiService.convertirACentavos(subtotal);
+
+            com.example.demo.services.CalculoEnvioService.ResultadoCalculoEnvio calculoEnvio =
+                    calculoEnvioService.calcularTarifaCarrito(carrito, ciudadFinal);
+            long envioCentavos = calculoEnvio.totalCentavos();
+            long amountInCents = subtotalCentavos + envioCentavos;
+
+            // Reutilizar referencia del frontend o generar una nueva
+            String reference = (payload != null
+                    && payload.containsKey("reference")
+                    && payload.get("reference") != null
+                    && !payload.get("reference").trim().isEmpty())
+                            ? payload.get("reference").trim()
+                            : wompiService.generarReferenciaUnica();
+
+            // Si la referencia ya existe y es de otro comprador, generar una nueva
+            List<Pedido> existentes = pedidoRepository.findByPago_Referencia(reference);
+            java.util.Optional<Compra> optCompraExistente = compraRepository.findByReferenciaPago(reference);
+
+            boolean pedidosPropios = existentes.isEmpty() || existentes.stream().allMatch(
+                    p -> p.getComprador() != null && usuario.getId().equals(p.getComprador().getId()));
+            boolean compraPropia = optCompraExistente.isEmpty() || (optCompraExistente.get().getComprador() != null
+                    && usuario.getId().equals(optCompraExistente.get().getComprador().getId()));
+
+            if (!pedidosPropios || !compraPropia) {
+                reference = wompiService.generarReferenciaUnica();
+                existentes = new ArrayList<>();
+                optCompraExistente = java.util.Optional.empty();
+            }
+
+            String currency = wompiService.getCurrency();
+            String signatureIntegrity = wompiService.generarFirmaIntegridad(reference, amountInCents, currency);
 
             // Crear Compra y sus sub-pedidos PENDIENTE si aún no existen para esta referencia
             if (existentes.isEmpty() && optCompraExistente.isEmpty()) {
@@ -383,23 +398,38 @@ public class PagoController {
 
                 // 1. Crear y persistir Compra
                 Compra compra = new Compra(comprador, reference, subtotalCentavos, envioCentavos);
+                compra.setTotalCentavos(amountInCents);
                 compra = compraRepository.save(compra);
 
-                // 2. Crear un sub-pedido por vendedor, vinculando su compraId
+                // 2. Crear un sub-pedido por vendedor, vinculando su compraId y envioCentavos
                 List<String> pedidoIdsGenerados = new ArrayList<>();
                 for (java.util.Map.Entry<String, List<ProductoPedido>> entry : itemsPorVendedor.entrySet()) {
+                    String vendedorId = entry.getKey();
                     double subtotalVendedor = entry.getValue().stream().mapToDouble(ProductoPedido::getSubtotal).sum();
                     long subtotalVendedorCentavos = wompiService.convertirACentavos(subtotalVendedor);
+                    long envioVendedorCentavos = calculoEnvio.obtenerTarifaVendedor(vendedorId);
 
                     DatosPago datosPago = new DatosPago("WOMPI", subtotalVendedor);
                     datosPago.setEstado("PENDIENTE");
                     datosPago.setReferencia(reference);
                     datosPago.setMontoCentavosFirmado(amountInCents);
 
-                    Pedido pedido = new Pedido(comprador, snapshotsVendedores.get(entry.getKey()), direccion,
+                    Pedido pedido = new Pedido(comprador, snapshotsVendedores.get(vendedorId), direccion,
                             entry.getValue(), datosPago);
                     pedido.setCompraId(compra.getId());
                     pedido.setSubtotalCentavos(subtotalVendedorCentavos);
+                    pedido.setEnvioCentavos(envioVendedorCentavos);
+                    pedido.setTarifaEnvioCentavos(envioVendedorCentavos);
+                    // Snapshot del tramo de envío
+                    for (com.example.demo.services.CalculoEnvioService.DesgloseEnvioVendedor dg : calculoEnvio.desglose()) {
+                        if (vendedorId.equals(dg.vendedorId())) {
+                            pedido.setCiudadOrigenEnvio(dg.ciudadOrigen());
+                            pedido.setCiudadDestinoEnvio(dg.ciudadDestino());
+                            pedido.setZonaOrigenEnvio(dg.zonaOrigen());
+                            pedido.setZonaDestinoEnvio(dg.zonaDestino());
+                            break;
+                        }
+                    }
                     pedido.setEstado("PENDIENTE");
                     pedido = pedidoRepository.save(pedido);
 
@@ -424,8 +454,11 @@ public class PagoController {
                     DatosPago pagoExistente = existente.getPago();
                     if (pagoExistente != null && !PagoConfirmacionService.esFinal(pagoExistente.getEstado())) {
                         pagoExistente.setMontoCentavosFirmado(amountInCents);
-                        pedidoRepository.save(existente);
                     }
+                    if (existente.getVendedor() != null) {
+                        existente.setEnvioCentavos(calculoEnvio.obtenerTarifaVendedor(existente.getVendedor().getId()));
+                    }
+                    pedidoRepository.save(existente);
                 }
             }
 
@@ -441,6 +474,54 @@ public class PagoController {
             return org.springframework.http.ResponseEntity.badRequest().body(
                     java.util.Map.of("ok", false, "error", "Error al iniciar pago: " + e.getMessage()));
         }
+    }
+
+    /**
+     * API: Recalcula dinámicamente el costo de envío al cambiar la ciudad de entrega en el formulario.
+     */
+    @GetMapping("/calcular-envio")
+    @ResponseBody
+    public org.springframework.http.ResponseEntity<?> calcularEnvio(
+            @RequestParam(value = "ciudad", required = false) String ciudad,
+            HttpSession session) {
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuario == null) {
+            return org.springframework.http.ResponseEntity.status(401).body(
+                    java.util.Map.of("ok", false, "error", "No autenticado"));
+        }
+        Carrito carrito = carritoRepository.findByUsuarioId(usuario.getId()).orElse(null);
+        if (carrito == null) {
+            return org.springframework.http.ResponseEntity.badRequest().body(
+                    java.util.Map.of("ok", false, "error", "Carrito no encontrado"));
+        }
+        String ciudadFinal = (ciudad != null && !ciudad.isBlank()) ? ciudad.trim() : "Cartagena";
+        com.example.demo.services.CalculoEnvioService.ResultadoCalculoEnvio res =
+                calculoEnvioService.calcularTarifaCarrito(carrito, ciudadFinal);
+        double subtotal = carrito.getTotalEstimado();
+        double costoEnvio = res.getTotalCop();
+        double total = subtotal + costoEnvio;
+        long totalCentavos = wompiService.convertirACentavos(subtotal) + res.totalCentavos();
+
+        java.util.List<java.util.Map<String, Object>> desgloseJson = new java.util.ArrayList<>();
+        for (com.example.demo.services.CalculoEnvioService.DesgloseEnvioVendedor d : res.desglose()) {
+            java.util.Map<String, Object> m = new java.util.LinkedHashMap<>();
+            m.put("vendedorId", d.vendedorId());
+            m.put("vendedorNombre", d.vendedorNombre());
+            m.put("ciudadOrigen", d.ciudadOrigen());
+            m.put("zonaOrigen", d.zonaOrigen());
+            m.put("ciudadDestino", d.ciudadDestino());
+            m.put("zonaDestino", d.zonaDestino());
+            m.put("tarifaCentavos", d.tarifaCentavos());
+            m.put("tarifaPorDefecto", d.tarifaPorDefecto());
+            desgloseJson.add(m);
+        }
+        return org.springframework.http.ResponseEntity.ok(java.util.Map.of(
+                "ok", true,
+                "costoEnvio", costoEnvio,
+                "total", total,
+                "totalCentavos", totalCentavos,
+                "desglose", desgloseJson
+        ));
     }
 
     /**

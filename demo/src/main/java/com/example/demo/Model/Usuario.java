@@ -182,4 +182,14 @@ public class Usuario {
     public void setPerfilTransportista(PerfilTransportista perfilTransportista) {
         this.perfilTransportista = perfilTransportista;
     }
+
+    public String getTelefono() {
+        if (perfilTransportista != null && perfilTransportista.getTelefonoContacto() != null) {
+            return perfilTransportista.getTelefonoContacto();
+        }
+        if (perfilVendedor != null && perfilVendedor.getTelefonoContacto() != null) {
+            return perfilVendedor.getTelefonoContacto();
+        }
+        return null;
+    }
 }

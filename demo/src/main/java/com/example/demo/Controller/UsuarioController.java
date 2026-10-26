@@ -54,6 +54,9 @@ public class UsuarioController {
     @org.springframework.beans.factory.annotation.Autowired(required = false)
     private CompraRepository compraRepository;
 
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private com.example.demo.repository.EnvioRepository envioRepository;
+
     @org.springframework.beans.factory.annotation.Autowired
     public UsuarioController(UsuarioService usuarioService,
             UbicacionService ubicacionService,
@@ -193,10 +196,8 @@ public class UsuarioController {
         return "auth/login";
     }
 
-
     @GetMapping("/inicio")
-    public String mostrarInicio(@RequestParam(value = "modo", required = false) String modo,
-            HttpSession session, Model model,
+    public String mostrarInicio(HttpSession session, Model model,
             RedirectAttributes redirectAttributes) {
 
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
@@ -210,6 +211,17 @@ public class UsuarioController {
         if (usuarioActualizado != null) {
             usuario = usuarioActualizado;
             session.setAttribute("usuarioLogueado", usuario);
+        }
+
+        // Redirigir según rol propio (sin modos dinámicos)
+        if (usuario.hasRole(Role.VENDEDOR)) {
+            return "redirect:/vendedor/inicio";
+        }
+        if (usuario.hasRole(Role.TRANSPORTISTA)) {
+            return "redirect:/transportista/inicio";
+        }
+        if (usuario.hasRole(Role.ADMIN)) {
+            return "redirect:/admin/dashboard";
         }
 
         // Cargar productos del catálogo aprobados
@@ -232,18 +244,19 @@ public class UsuarioController {
                 .collect(Collectors.toList());
         model.addAttribute("ofertas", ofertasDestacadas);
 
-        // Estadísticas de comprador para el dashboard (independiente del rol actual)
+        // Estadísticas de comprador para el dashboard
         long totalPedidos = pedidoRepository.findByCompradorId(usuario.getId()).size();
         model.addAttribute("totalPedidos", totalPedidos);
 
-        // Redirigir según rol (priorizar vendedor para su inicio especial, pero ambos pueden comprar)
+        // Redirigir según rol (priorizar vendedor para su inicio especial, pero ambos
+        // pueden comprar)
         // Si se solicita explícitamente modo comprador, mostrar inicio-comprador
         if ("comprador".equals(modo)) {
             return "comprador/inicio-comprador";
         }
-        
+
         if (usuario.hasRole(Role.VENDEDOR)) {
-            return "redirect:/vendedor/dashboard";
+            return "redirect:/vendedor/inicio";
         }
 
         return "comprador/inicio-comprador";
@@ -267,6 +280,9 @@ public class UsuarioController {
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("departamentos", ubicacionService.obtenerTodos());
+        if (usuario.hasRole(com.example.demo.Model.Role.TRANSPORTISTA)) {
+            return "transportista/perfil-transportista";
+        }
         return "comprador/perfil";
     }
 
@@ -343,7 +359,6 @@ public class UsuarioController {
         }
     }
 
-
     // --- SECCIÓN DE PEDIDOS DEL COMPRADOR ---
 
     @GetMapping("/pedidos")
@@ -355,8 +370,10 @@ public class UsuarioController {
             return "redirect:/usuario/login";
         }
 
-        // Una compra PENDIENTE solo se muestra mientras el pago está en curso. Los intentos
-        // abandonados dejan de aparecer en el historial para no confundirlos con pedidos reales.
+        // Una compra PENDIENTE solo se muestra mientras el pago está en curso. Los
+        // intentos
+        // abandonados dejan de aparecer en el historial para no confundirlos con
+        // pedidos reales.
         LocalDateTime limitePagoEnCurso = LocalDateTime.now().minusMinutes(30);
 
         List<Compra> compras = new ArrayList<>();
@@ -377,6 +394,9 @@ public class UsuarioController {
                     if (p.getId() != null) {
                         subPedidoIds.add(p.getId());
                     }
+                }
+                if (envioRepository != null) {
+                    envioRepository.findByCompraId(c.getId()).ifPresent(c::setEnvioLogistica);
                 }
             }
         }
@@ -425,7 +445,8 @@ public class UsuarioController {
 
     /**
      * Valida la fortaleza de una contraseña según los requisitos de seguridad.
-     * Retorna null si la contraseña es válida, o un mensaje de error en caso contrario.
+     * Retorna null si la contraseña es válida, o un mensaje de error en caso
+     * contrario.
      */
     private String validarContrasena(String contrasena) {
         if (contrasena.length() < 8) {
@@ -469,18 +490,19 @@ public class UsuarioController {
             return "redirect:/usuario/login";
         }
 
-        List<Notificacion> notificaciones = new ArrayList<>(notificacionRepository.findByUsuarioIdOrderByFechaDesc(usuario.getId()));
-        
+        List<Notificacion> notificaciones = new ArrayList<>(
+                notificacionRepository.findByUsuarioIdOrderByFechaDesc(usuario.getId()));
+
         // También incluir notificaciones generales (sin usuarioId)
         List<Notificacion> generales = notificacionRepository.findByUsuarioIdIsNullOrderByFechaDesc();
         notificaciones.addAll(generales);
-        
+
         // Ordenar por fecha descendente
         notificaciones.sort((n1, n2) -> n2.getFecha().compareTo(n1.getFecha()));
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("notificaciones", notificaciones);
-        
+
         // Marcar como leídas (simplificado)
         notificaciones.forEach(n -> {
             if (n.getUsuarioId() != null && n.getUsuarioId().equals(usuario.getId())) {
@@ -488,7 +510,7 @@ public class UsuarioController {
                 notificacionRepository.save(n);
             }
         });
-        
+
         session.setAttribute("notificacionesCount", 0);
 
         return "public/notificaciones";
@@ -507,8 +529,8 @@ public class UsuarioController {
         if (vendedorService.esVendedor(usuario.getId())) {
             return "redirect:/vendedor/billetera";
         }
-        redirectAttributes.addFlashAttribute("info", "La billetera está disponible para vendedores y productores locales. Regístrate como vendedor para activarla.");
+        redirectAttributes.addFlashAttribute("info",
+                "La billetera está disponible para vendedores y productores locales. Regístrate como vendedor para activarla.");
         return "redirect:/vendedor/registro";
     }
 }
-

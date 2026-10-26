@@ -2,6 +2,7 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
+    <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cultivus - Mis Pedidos</title>
@@ -90,6 +91,161 @@
         .mp-badge--revision::before { background: #ef4444; }
         .mp-badge--enviado { background: #eff6ff; color: #1d4ed8; }
         .mp-badge--enviado::before { background: #3b82f6; }
+        .mp-badge--listo { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+        .mp-badge--listo::before { background: #f59e0b; }
+
+        /* Top Logistics Card */
+        .mp-logistics-card {
+            padding: 12px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            font-size: 0.86rem;
+            transition: all .2s ease;
+        }
+        .mp-logistics-card--searching {
+            background: #f0f9ff;
+            border-left: 5px solid #0284c7;
+            color: #0369a1;
+        }
+        .mp-logistics-card--waiting {
+            background: #fffbeb;
+            border-left: 5px solid #d97706;
+            color: #92400e;
+        }
+        .mp-logistics-card--assigned {
+            background: #ecfdf5;
+            border-left: 5px solid #059669;
+            color: #065f46;
+        }
+        .mp-logistics-card--delivered {
+            background: #f0fdf4;
+            border-left: 5px solid #16a34a;
+            color: #166534;
+        }
+        .mp-logistics-card--expired {
+            background: #fef2f2;
+            border-left: 5px solid #dc2626;
+            color: #991b1b;
+        }
+
+        /* Per-Vendor Stepper Timeline */
+        .mp-timeline {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #eef2f6;
+            width: 100%;
+        }
+        .mp-timeline__title {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            color: #64748b;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .mp-stepper {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            position: relative;
+            gap: 4px;
+        }
+        .mp-stepper::before {
+            content: '';
+            position: absolute;
+            top: 13px;
+            left: 8%;
+            right: 8%;
+            height: 3px;
+            background: #e2e8f0;
+            z-index: 1;
+        }
+        .mp-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+        .mp-step__dot {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #fff;
+            border: 2px solid #cbd5e1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.72rem;
+            color: #94a3b8;
+            margin-bottom: 5px;
+            transition: all .25s ease;
+        }
+        .mp-step__label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: #94a3b8;
+            line-height: 1.2;
+            letter-spacing: .2px;
+            max-width: 85px;
+        }
+        .mp-step.completed .mp-step__dot {
+            background: #10b981;
+            border-color: #10b981;
+            color: #fff;
+        }
+        .mp-step.completed .mp-step__label {
+            color: #047857;
+            font-weight: 700;
+        }
+        .mp-step.active .mp-step__dot {
+            background: #059669;
+            border-color: #059669;
+            color: #fff;
+            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.25);
+            animation: stepPulse 2s infinite;
+        }
+        .mp-step.active .mp-step__label {
+            color: #065f46;
+            font-weight: 800;
+        }
+        @keyframes stepPulse {
+            0%, 100% { box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25); }
+            50% { box-shadow: 0 0 0 7px rgba(16, 185, 129, 0.1); }
+        }
+        @media (max-width: 680px) {
+            .mp-stepper {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+                padding-left: 6px;
+            }
+            .mp-stepper::before {
+                top: 12px;
+                bottom: 12px;
+                left: 19px;
+                right: auto;
+                width: 3px;
+                height: auto;
+            }
+            .mp-step {
+                flex-direction: row;
+                gap: 12px;
+                text-align: left;
+            }
+            .mp-step__label {
+                max-width: none;
+                font-size: 0.72rem;
+            }
+        }
 
         /* Card body */
         .mp-card__body { padding: 18px 22px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
@@ -563,7 +719,7 @@
             <th:block th:if="${compras != null and !compras.isEmpty()}">
                 <div th:each="compra : ${compras}"
                      class="mp-card"
-                     th:data-estado="${compra.estado}">
+                     th:data-estado="${compra.estadoFiltro}">
 
                     <!-- Card top bar -->
                     <div class="mp-card__top" style="background: linear-gradient(135deg, #f8fafc, #f1f5f9);">
@@ -595,6 +751,68 @@
                         </div>
                     </div>
 
+                    <!-- Top Logistics Transport Card (Fase 2) -->
+                    <div class="mp-logistics-card"
+                         th:classappend="${compra.envioLogistica != null ? 
+                                         (compra.envioLogistica.estado == 'ENTREGADO' ? 'mp-logistics-card--delivered' : 
+                                         (compra.envioLogistica.estado == 'SIN_TRANSPORTISTA' ? 'mp-logistics-card--expired' : 
+                                         (compra.envioLogistica.estado == 'ASIGNADO' || compra.envioLogistica.estado == 'EN_RECOGIDA' || compra.envioLogistica.estado == 'EN_ENTREGA' ? 'mp-logistics-card--assigned' : 
+                                         (compra.tieneSubPedidoListoParaRecoger ? 'mp-logistics-card--waiting' : 'mp-logistics-card--searching')))) : 'mp-logistics-card--searching'}">
+
+                        <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 260px;">
+                            <div style="width: 38px; height: 38px; border-radius: 9px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.06); font-size: 1.15rem; flex-shrink: 0;">
+                                <i class="fa-solid fa-truck-fast"></i>
+                            </div>
+                            <div>
+                                <!-- Caso 1: Asignado, en recogida o en entrega -->
+                                 <div th:if="${compra.envioLogistica != null and (compra.envioLogistica.estado == 'ASIGNADO' or compra.envioLogistica.estado == 'EN_RECOGIDA' or compra.envioLogistica.estado == 'EN_ENTREGA')}"
+                                      th:with="t=${compra.envioLogistica.transportista}">
+                                     <span style="font-weight: 800;">Transportista asignado</span><span th:if="${t != null and t.nombreMostrar != null}">:</span>
+                                     <strong th:if="${t != null and t.nombreMostrar != null}" th:text="${t.nombreMostrar}">Carlos Mendoza</strong>
+                                     <span th:if="${t != null and t.telefonoLimpio != null}">
+                                         · <i class="fa-solid fa-phone" style="font-size: .75rem;"></i>
+                                         <a th:href="'tel:' + ${t.telefonoLimpio}" style="font-weight: 700; color: inherit; text-decoration: underline;" th:text="${t.telefonoLimpio}">3101234567</a>
+                                     </span>
+                                     <span th:if="${t != null and t.vehiculoMostrar != null}">
+                                         · <i class="fa-solid fa-motorcycle" style="font-size: .75rem;"></i>
+                                         <span th:text="${t.vehiculoMostrar}">Moto TRA-789</span>
+                                     </span>
+                                 </div>
+
+                                <!-- Caso 2: Entregado -->
+                                <div th:if="${compra.envioLogistica != null and compra.envioLogistica.estado == 'ENTREGADO'}">
+                                    <strong style="color: #15803d;"><i class="fa-solid fa-circle-check"></i> ¡Envío Entregado!</strong>
+                                    <span>Todos los productos de tu compra han llegado a tu dirección.</span>
+                                </div>
+
+                                <!-- Caso 3: Sin transportista (Expirado) -->
+                                <div th:if="${compra.envioLogistica != null and compra.envioLogistica.estado == 'SIN_TRANSPORTISTA'}">
+                                    <strong style="color: #b91c1c;"><i class="fa-solid fa-triangle-exclamation"></i> Sin transportista asignado:</strong>
+                                    <span>El envío no pudo coordinarse a tiempo. El equipo de soporte gestionará tu reembolso manual.</span>
+                                </div>
+
+                                <!-- Caso 4: Buscando o esperando transportista -->
+                                <div th:if="${compra.envioLogistica == null or (compra.envioLogistica.estado == 'PENDIENTE_ASIGNACION')}">
+                                    <span th:if="${compra.tieneSubPedidoListoParaRecoger}">
+                                        <strong><i class="fa-solid fa-clock"></i> Esperando transportista:</strong> El agricultor ya tiene tu pedido listo en finca para recogida.
+                                    </span>
+                                    <span th:unless="${compra.tieneSubPedidoListoParaRecoger}">
+                                        <strong><i class="fa-solid fa-route"></i> Buscando transportista:</strong> Asignando conductor óptimo para recoger tus productos.
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Badge de estado logístico a la derecha -->
+                        <div style="margin-left: auto; flex-shrink: 0;">
+                            <span class="mp-badge"
+                                  th:classappend="${compra.envioLogistica != null ? 'mp-badge--' + compra.envioLogistica.estadoCss : 'mp-badge--pendiente'}"
+                                  th:text="${compra.envioLogistica != null ? compra.envioLogistica.estadoEtiqueta : 'Buscando transportista'}">
+                                Buscando transportista
+                            </span>
+                        </div>
+                    </div>
+
                     <!-- Sub-pedidos -->
                     <div style="padding: 16px 20px; background: #ffffff;">
                         <div style="font-size: 0.78rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
@@ -602,49 +820,111 @@
                             Sub-pedidos por Agricultor (<span th:text="${compra.subPedidos != null ? compra.subPedidos.size() : 0}">0</span>)
                         </div>
 
-                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <div style="display: flex; flex-direction: column; gap: 14px;">
                             <div th:each="sub : ${compra.subPedidos}"
-                                 style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 16px; background: #fbfcfd; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                                 style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; background: #fbfcfd; display: flex; flex-direction: column; gap: 10px;">
 
-                                <div style="display: flex; align-items: center; gap: 14px; min-width: 220px; flex: 1;">
-                                    <div class="mp-card__images">
-                                        <th:block th:each="item, iter : ${sub.items}" th:if="${iter.index < 2}">
-                                            <div class="mp-card__img" style="width: 44px; height: 44px;">
-                                                <th:block th:if="${item.imagenSnapshot != null and item.imagenSnapshot != ''}">
-                                                    <img th:src="${item.imagenSnapshot}"
-                                                         th:alt="${item.nombreSnapshot}"
-                                                         onerror="this.parentElement.innerHTML='<i class=\'fa-solid fa-leaf\'></i>'">
-                                                </th:block>
-                                                <th:block th:if="${item.imagenSnapshot == null or item.imagenSnapshot == ''}">
-                                                    <i class="fa-solid fa-leaf"></i>
-                                                </th:block>
+                                <!-- Fila superior del sub-pedido -->
+                                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                                    <div style="display: flex; align-items: center; gap: 14px; min-width: 220px; flex: 1;">
+                                        <div class="mp-card__images">
+                                            <th:block th:each="item, iter : ${sub.items}" th:if="${iter.index < 2}">
+                                                <div class="mp-card__img" style="width: 44px; height: 44px;">
+                                                    <th:block th:if="${item.imagenSnapshot != null and item.imagenSnapshot != ''}">
+                                                        <img th:src="${item.imagenSnapshot}"
+                                                             th:alt="${item.nombreSnapshot}"
+                                                             onerror="this.parentElement.innerHTML='<i class=\'fa-solid fa-leaf\'></i>'">
+                                                    </th:block>
+                                                    <th:block th:if="${item.imagenSnapshot == null or item.imagenSnapshot == ''}">
+                                                        <i class="fa-solid fa-leaf"></i>
+                                                    </th:block>
+                                                </div>
+                                            </th:block>
+                                        </div>
+                                        <div>
+                                            <div style="font-weight: 700; color: #1e293b; font-size: 0.92rem;">
+                                                <span th:text="${sub.vendedor != null and sub.vendedor.razonSocial != null ? sub.vendedor.razonSocial : (sub.vendedor != null and sub.vendedor.nombre != null ? sub.vendedor.nombre : 'Productor Local')}">Tienda</span>
+                                                <span style="font-size: 0.78rem; color: #64748b; font-weight: normal; margin-left: 6px;" th:text="'(' + ${sub.numeroFactura} + ')'">(CLT-000)</span>
                                             </div>
-                                        </th:block>
-                                    </div>
-                                    <div>
-                                        <div style="font-weight: 700; color: #1e293b; font-size: 0.92rem;">
-                                            <span th:text="${sub.vendedor != null and sub.vendedor.razonSocial != null ? sub.vendedor.razonSocial : (sub.vendedor != null and sub.vendedor.nombre != null ? sub.vendedor.nombre : 'Productor Local')}">Tienda</span>
-                                            <span style="font-size: 0.78rem; color: #64748b; font-weight: normal; margin-left: 6px;" th:text="'(' + ${sub.numeroFactura} + ')'">(CLT-000)</span>
+                                            <div style="font-size: 0.8rem; color: #64748b; margin-top: 2px;">
+                                                <span th:text="${sub.items != null ? sub.items.size() : 0}">0</span> artículo(s) · Subtotal: <strong style="color: #15803d;">$<span th:text="${#numbers.formatDecimal(sub.total, 0, 'COMMA', 0, 'POINT')}">0</span></strong>
+                                            </div>
                                         </div>
-                                        <div style="font-size: 0.8rem; color: #64748b; margin-top: 2px;">
-                                            <span th:text="${sub.items != null ? sub.items.size() : 0}">0</span> artículo(s) · Subtotal: <strong style="color: #15803d;">$<span th:text="${#numbers.formatDecimal(sub.total, 0, 'COMMA', 0, 'POINT')}">0</span></strong>
+                                    </div>
+
+                                    <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+                                        <span class="mp-badge"
+                                              th:classappend="'mp-badge--' + ${sub.estadoCss}"
+                                              th:text="${sub.estadoEtiqueta}">
+                                            Confirmado
+                                        </span>
+                                        <button type="button" class="mp-btn mp-btn--outline" style="padding: 7px 14px; font-size: 0.8rem;"
+                                                th:attr="data-modal-target='pedidoModal-' + ${sub.id}">
+                                            <i class="fa-solid fa-eye"></i> Ver detalle
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Stepper Timeline de 6 pasos por vendedor -->
+                                <div class="mp-timeline">
+                                    <div class="mp-timeline__title">
+                                        <i class="fa-solid fa-timeline"></i>
+                                        <span>Seguimiento de preparación y entrega</span>
+                                    </div>
+                                    <div class="mp-stepper">
+                                        <!-- 1. Pagado -->
+                                        <div class="mp-step" th:classappend="${sub.pasoTracking > 1 ? 'completed' : (sub.pasoTracking == 1 ? 'active' : '')}">
+                                            <div class="mp-step__dot"><i th:class="${sub.pasoTracking > 1 ? 'fa-solid fa-check' : 'fa-solid fa-credit-card'}"></i></div>
+                                            <div class="mp-step__label">PAGADO</div>
+                                        </div>
+                                        <!-- 2. Confirmado -->
+                                        <div class="mp-step" th:classappend="${sub.pasoTracking > 2 ? 'completed' : (sub.pasoTracking == 2 ? 'active' : '')}">
+                                            <div class="mp-step__dot"><i th:class="${sub.pasoTracking > 2 ? 'fa-solid fa-check' : 'fa-solid fa-circle-check'}"></i></div>
+                                            <div class="mp-step__label">CONFIRMADO</div>
+                                        </div>
+                                        <!-- 3. Preparando -->
+                                        <div class="mp-step" th:classappend="${sub.pasoTracking > 3 ? 'completed' : (sub.pasoTracking == 3 ? 'active' : '')}">
+                                            <div class="mp-step__dot"><i th:class="${sub.pasoTracking > 3 ? 'fa-solid fa-check' : 'fa-solid fa-box-open'}"></i></div>
+                                            <div class="mp-step__label">PREPARANDO</div>
+                                        </div>
+                                        <!-- 4. Listo para recoger -->
+                                        <div class="mp-step" th:classappend="${sub.pasoTracking > 4 ? 'completed' : (sub.pasoTracking == 4 ? 'active' : '')}">
+                                            <div class="mp-step__dot"><i th:class="${sub.pasoTracking > 4 ? 'fa-solid fa-check' : 'fa-solid fa-box-archive'}"></i></div>
+                                            <div class="mp-step__label">LISTO PARA RECOGER</div>
+                                        </div>
+                                        <!-- 5. En camino -->
+                                        <div class="mp-step" th:classappend="${sub.pasoTracking > 5 ? 'completed' : (sub.pasoTracking == 5 ? 'active' : '')}">
+                                            <div class="mp-step__dot"><i th:class="${sub.pasoTracking > 5 ? 'fa-solid fa-check' : 'fa-solid fa-truck-fast'}"></i></div>
+                                            <div class="mp-step__label">EN CAMINO</div>
+                                        </div>
+                                        <!-- 6. Entregado -->
+                                        <div class="mp-step" th:classappend="${sub.pasoTracking >= 6 ? 'completed' : ''}">
+                                            <div class="mp-step__dot"><i class="fa-solid fa-house-chimney"></i></div>
+                                            <div class="mp-step__label">ENTREGADO</div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
-                                    <span class="mp-badge"
-                                          th:classappend="'mp-badge--' + ${sub.estadoCss}"
-                                          th:text="${sub.estadoEtiqueta}">
-                                        Confirmado
-                                    </span>
-                                    <button type="button" class="mp-btn mp-btn--outline" style="padding: 7px 14px; font-size: 0.8rem;"
-                                            th:attr="data-modal-target='pedidoModal-' + ${sub.id}">
-                                        <i class="fa-solid fa-eye"></i> Ver detalle
-                                    </button>
-                                </div>
+                                 <!-- Desglose de envío de este vendedor -->
+                                 <div th:if="${sub.envioCentavos != null and sub.envioCentavos > 0}"
+                                      style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; font-size: 0.82rem; color: #475569; background: #f1f5f9; border-radius: 8px; padding: 8px 12px;">
+                                     <span>
+                                         <i class="fa-solid fa-route" style="color: #16a34a;"></i>
+                                         Envío:
+                                         <strong th:text="${sub.zonaOrigenEnvio != null ? 'Zona ' + sub.zonaOrigenEnvio : (sub.ciudadOrigenEnvio != null ? sub.ciudadOrigenEnvio : 'Recogida')}">Zona 1</strong>
+                                         <i class="fa-solid fa-arrow-right" style="font-size: .7rem;"></i>
+                                         <strong th:text="${sub.zonaDestinoEnvio != null ? 'Zona ' + sub.zonaDestinoEnvio : (sub.ciudadDestinoEnvio != null ? sub.ciudadDestinoEnvio : 'Entrega')}">Zona 2</strong>
+                                     </span>
+                                     <strong style="color: #15803d;">$<span th:text="${#numbers.formatDecimal(sub.envio, 0, 'COMMA', 0, 'POINT')}">0</span></strong>
+                                 </div>
+
                             </div>
                         </div>
+                         <div th:if="${compra.envioCentavos != null and compra.envioCentavos > 0}"
+                              style="display: flex; justify-content: flex-end; gap: 18px; flex-wrap: wrap; margin-top: 14px; padding-top: 12px; border-top: 1px dashed #cbd5e1; font-size: 0.88rem; color: #475569;">
+                             <span>Productos: <strong>$<span th:text="${#numbers.formatDecimal(compra.subtotal, 0, 'COMMA', 0, 'POINT')}">0</span></strong></span>
+                             <span><i class="fa-solid fa-truck-fast" style="color: #16a34a;"></i> Envío total: <strong>$<span th:text="${#numbers.formatDecimal(compra.envio, 0, 'COMMA', 0, 'POINT')}">0</span></strong></span>
+                         </div>
                     </div>
                 </div>
             </th:block>
@@ -857,6 +1137,43 @@
                                 </div>
                             </div>
 
+                            <!-- Stepper Timeline inside modal -->
+                            <div class="modal-section-title">Progreso del Pedido</div>
+                            <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px 14px; margin-bottom: 22px;">
+                                <div class="mp-stepper">
+                                    <!-- 1. Pagado -->
+                                    <div class="mp-step" th:classappend="${pedido.pasoTracking > 1 ? 'completed' : (pedido.pasoTracking == 1 ? 'active' : '')}">
+                                        <div class="mp-step__dot"><i th:class="${pedido.pasoTracking > 1 ? 'fa-solid fa-check' : 'fa-solid fa-credit-card'}"></i></div>
+                                        <div class="mp-step__label">PAGADO</div>
+                                    </div>
+                                    <!-- 2. Confirmado -->
+                                    <div class="mp-step" th:classappend="${pedido.pasoTracking > 2 ? 'completed' : (pedido.pasoTracking == 2 ? 'active' : '')}">
+                                        <div class="mp-step__dot"><i th:class="${pedido.pasoTracking > 2 ? 'fa-solid fa-check' : 'fa-solid fa-circle-check'}"></i></div>
+                                        <div class="mp-step__label">CONFIRMADO</div>
+                                    </div>
+                                    <!-- 3. Preparando -->
+                                    <div class="mp-step" th:classappend="${pedido.pasoTracking > 3 ? 'completed' : (pedido.pasoTracking == 3 ? 'active' : '')}">
+                                        <div class="mp-step__dot"><i th:class="${pedido.pasoTracking > 3 ? 'fa-solid fa-check' : 'fa-solid fa-box-open'}"></i></div>
+                                        <div class="mp-step__label">PREPARANDO</div>
+                                    </div>
+                                    <!-- 4. Listo para recoger -->
+                                    <div class="mp-step" th:classappend="${pedido.pasoTracking > 4 ? 'completed' : (pedido.pasoTracking == 4 ? 'active' : '')}">
+                                        <div class="mp-step__dot"><i th:class="${pedido.pasoTracking > 4 ? 'fa-solid fa-check' : 'fa-solid fa-box-archive'}"></i></div>
+                                        <div class="mp-step__label">LISTO PARA RECOGER</div>
+                                    </div>
+                                    <!-- 5. En camino -->
+                                    <div class="mp-step" th:classappend="${pedido.pasoTracking > 5 ? 'completed' : (pedido.pasoTracking == 5 ? 'active' : '')}">
+                                        <div class="mp-step__dot"><i th:class="${pedido.pasoTracking > 5 ? 'fa-solid fa-check' : 'fa-solid fa-truck-fast'}"></i></div>
+                                        <div class="mp-step__label">EN CAMINO</div>
+                                    </div>
+                                    <!-- 6. Entregado -->
+                                    <div class="mp-step" th:classappend="${pedido.pasoTracking >= 6 ? 'completed' : ''}">
+                                        <div class="mp-step__dot"><i class="fa-solid fa-house-chimney"></i></div>
+                                        <div class="mp-step__label">ENTREGADO</div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Products table -->
                             <div class="modal-section-title">Detalle de productos</div>
                             <div class="order-modal__table-wrap" th:if="${pedido.items != null and !pedido.items.isEmpty()}">
@@ -958,7 +1275,7 @@
         const tabMap = {
             todos:      () => true,
             entregados: s => s === 'COMPLETADO' || s === 'ENTREGADO',
-            proceso:    s => s === 'CONFIRMADO' || s === 'PAGADA' || s === 'EN_PROCESO' || s === 'PROCESANDO' || s === 'ENVIADO' || s === 'EN_REVISION' || s === 'REVISION',
+            proceso:    s => s === 'PROCESO' || s === 'CONFIRMADO' || s === 'PAGADA' || s === 'EN_PROCESO' || s === 'PROCESANDO' || s === 'ENVIADO' || s === 'EN_REVISION' || s === 'REVISION',
             pendiente:  s => s === 'PENDIENTE',
         };
 

@@ -2,6 +2,7 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
+    <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carrito de Compras - Cultivus</title>
@@ -308,11 +309,17 @@
                 <div class="resumen-item">
                     <span>Subtotal:</span>
                     <span>$<span th:text="${#numbers.formatDecimal(
-                        total, 0, 'COMMA', 0, 'POINT')}">0</span></span>
+                        subtotal, 0, 'COMMA', 0, 'POINT')}">0</span></span>
                 </div>
                 <div class="resumen-item">
                     <span>Envío:</span>
-                    <span>Gratis</span>
+                    <span th:if="${tieneCiudad}">
+                        $<span th:text="${#numbers.formatDecimal(envioEstimado, 0, 'COMMA', 0, 'POINT')}">0</span>
+                        <small style="color:#888;">(estimado)</small>
+                    </span>
+                    <span th:unless="${tieneCiudad}" style="color:#888; font-size:13px;">
+                        Se calcula al ingresar tu direccion
+                    </span>
                 </div>
                 <div class="resumen-total">
                     <span>Total:</span>

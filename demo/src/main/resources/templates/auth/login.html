@@ -2,6 +2,7 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
+    <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Inicia sesion en Cultivus - La plataforma que conecta el campo con tu mesa">
@@ -22,7 +23,7 @@
         <div class="panel-left">
             <div class="brand-top">
                 <div class="brand-logo-box">
-                    <img th:src="@{/images/LogoCultivus.png}" src="/images/LogoCultivus.png" alt="Logo Cultivus"
+                    <img th:src="@{/images/imagotipo_transparente.png}" src="/images/imagotipo_transparente.png" alt="Logo Cultivus"
                         class="brand-logo-img">
                 </div>
                 <div class="brand-text-group">
@@ -72,6 +73,11 @@
         <!-- ===== PANEL DERECHO: formulario de login ===== -->
         <div class="panel-right">
             <div class="form-container">
+
+                <!-- Isotipo centrado -->
+                <div style="text-align:center; margin-bottom:16px;">
+                    <img th:src="@{/images/isotipo_transparente.png}" alt="Cultivus" style="height:64px; width:auto;">
+                </div>
 
                 <!-- Encabezado -->
                 <div class="form-header">

@@ -23,8 +23,8 @@ import java.time.LocalDateTime;
 public class Billetera {
 
     public enum Rol {
-        VENDEDOR
-        // TRANSPORTISTA: se agrega aquí cuando llegue su historia (sin migración).
+        VENDEDOR,
+        TRANSPORTISTA
     }
 
     public enum EstadoSaldo {

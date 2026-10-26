@@ -2,12 +2,175 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
+    <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Detalle y gestión de una venta de tu tienda en Cultivus.">
-    <title>Detalle de Venta - Cultivus</title>
+    <title>Cultivus - Detalle del Pedido</title>
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        integrity="sha512-RXf+QSDCUQs6Q0p2U2uD2OeR5xw8n5T6vCJ7/3zvK3YyEdSpYohhjFExz04szsP1CZq0w0C+YyXWZP8y+e2xUg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        .detalle-container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .pedido-card {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .pedido-header {
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+
+        .pedido-id {
+            font-size: 24px;
+            font-weight: bold;
+            color: #27ae60;
+            margin-bottom: 10px;
+        }
+
+        .pedido-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .info-item {
+            color: #666;
+        }
+
+        .info-item strong {
+            color: #333;
+        }
+
+        .estado-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .estado-pendiente {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .estado-proceso {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .estado-completado {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .productos-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .productos-table th,
+        .productos-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .productos-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .productos-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .total-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #27ae60;
+            text-align: right;
+        }
+
+        .total-amount {
+            font-size: 24px;
+            font-weight: bold;
+            color: #27ae60;
+        }
+
+        .acciones-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .btn-actualizar {
+            background: #27ae60;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+
+        .btn-actualizar:hover {
+            background: #1ef378;
+        }
+
+        .btn-volver {
+            background: #6c757d;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-bottom: 20px;
+            transition: background 0.3s;
+        }
+
+        .btn-volver:hover {
+            background: #5a6268;
+        }
+    </style>
     <link rel="stylesheet" th:href="@{/header.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
     <link rel="stylesheet" th:href="@{/vendedor-panel.css}">
@@ -30,8 +193,7 @@
             <span th:text="${error}"></span>
         </div>
 
-        <div th:if="${pedido.estado == 'EN_REVISION'}"
-             class="vp-alert vp-alert--warning">
+        <div th:if="${pedido.estado == 'EN_REVISION'}" class="vp-alert vp-alert--warning">
             <i class="fas fa-triangle-exclamation"></i>
             <div>
                 <strong>Pedido en revisión.</strong>
@@ -48,225 +210,133 @@
                             <h1 th:text="${pedido.numeroFactura}">CLT-000000</h1>
                             <p>
                                 <i class="fas fa-calendar-day"></i>
-                                <span th:text="${pedido.fechaPedido != null ? #temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm') : '—'}">—</span>
+                                <span
+                                    th:text="${pedido.fechaPedido != null ? #temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm') : '—'}">—</span>
                                 <span class="vp-muted"> · ID interno </span>
                                 <span th:text="${pedido.id}">id</span>
                             </p>
                         </div>
-                        <span class="vp-badge"
-                              th:classappend="'vp-badge--' + ${pedido.estadoCss}"
-                              th:text="${pedido.estadoEtiqueta}">Confirmado</span>
+                        <span class="vp-badge" th:classappend="'vp-badge--' + ${pedido.estadoCss}"
+                            th:text="${pedido.estadoEtiqueta}">Confirmado</span>
                     </div>
-
-                    <div class="vp-card__body" th:if="${pedido.estado != 'EN_REVISION'}">
-                        <div class="vp-timeline" aria-label="Progreso del pedido">
-                            <div class="vp-timeline__step is-done">
-                                <span class="vp-timeline__dot"><i class="fas fa-check"></i></span>
-                                <div>
-                                    <strong>Pago confirmado</strong><br>
-                                    <span class="vp-muted">El comprador completó el pago.</span>
-                                </div>
-                            </div>
-                            <div class="vp-timeline__step"
-                                 th:classappend="${(pedido.estado == 'EN_PROCESO' or pedido.estado == 'PROCESANDO' or pedido.estado == 'ENVIADO' or pedido.estado == 'ENTREGADO' or pedido.estado == 'COMPLETADO') ? 'is-done' : ''}">
-                                <span class="vp-timeline__dot"><i class="fas fa-box-open"></i></span>
-                                <div>
-                                    <strong>En preparación</strong><br>
-                                    <span class="vp-muted">Alista los productos y coordina el despacho.</span>
-                                </div>
-                            </div>
-                            <div class="vp-timeline__step"
-                                 th:classappend="${(pedido.estado == 'ENVIADO' or pedido.estado == 'ENTREGADO' or pedido.estado == 'COMPLETADO') ? 'is-done' : ''}">
-                                <span class="vp-timeline__dot"><i class="fas fa-truck-fast"></i></span>
-                                <div>
-                                    <strong>Enviado</strong><br>
-                                    <span class="vp-muted">El pedido va en camino al comprador.</span>
-                                </div>
-                            </div>
-                            <div class="vp-timeline__step"
-                                 th:classappend="${(pedido.estado == 'ENTREGADO' or pedido.estado == 'COMPLETADO') ? 'is-done' : ''}">
-                                <span class="vp-timeline__dot"><i class="fas fa-circle-check"></i></span>
-                                <div>
-                                    <strong>Entregado</strong><br>
-                                    <span class="vp-muted">La venta quedó completada.</span>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="info-item">
+                        <strong>Fecha:</strong>
+                        <span th:text="${#temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm')}"></span>
                     </div>
-
-                    <div class="vp-card__head" style="border-top: 1px solid var(--vp-line);">
-                        <h2 class="vp-card__title"><i class="fas fa-seedling"></i> Productos de esta venta</h2>
+                    <div class="info-item">
+                        <strong>Cliente:</strong>
+                        <span th:text="${pedido.comprador.nombre}"></span>
                     </div>
-
-                    <div class="vp-table-wrap">
-                        <table class="vp-items">
-                            <thead>
-                                <tr>
-                                    <th>Producto</th>
-                                    <th>Cantidad</th>
-                                    <th>Precio unitario</th>
-                                    <th>Subtotal</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr th:each="detalle : ${detalles}">
-                                    <td>
-                                        <div class="vp-product">
-                                            <div class="vp-product__image">
-                                                <img th:if="${detalle.imagenSnapshot != null and !detalle.imagenSnapshot.isEmpty()}"
-                                                     th:src="${detalle.imagenSnapshot}"
-                                                     th:alt="${detalle.nombreSnapshot}"
-                                                     loading="lazy"
-                                                     onerror="this.style.display='none';">
-                                                <i th:if="${detalle.imagenSnapshot == null or detalle.imagenSnapshot.isEmpty()}"
-                                                   class="fas fa-seedling"></i>
-                                            </div>
-                                            <span class="vp-product__name" th:text="${detalle.nombreSnapshot}">Producto</span>
-                                        </div>
-                                    </td>
-                                    <td class="vp-nowrap">
-                                        <span th:text="${detalle.cantidad}">0</span>
-                                        <span class="vp-muted" th:text="${detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : 'unid'}">unid</span>
-                                    </td>
-                                    <td class="vp-nowrap">
-                                        $<span th:text="${#numbers.formatDecimal(detalle.precioUnitario, 0, 'COMMA', 0, 'POINT')}">0</span>
-                                    </td>
-                                    <td class="vp-amount vp-nowrap">
-                                        $<span th:text="${#numbers.formatDecimal(detalle.subtotal, 0, 'COMMA', 0, 'POINT')}">0</span>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                    <div class="info-item">
+                        <strong>Estado:</strong>
+                        <span class="estado-badge" th:classappend="${pedido.estado == 'PENDIENTE' ? 'estado-pendiente' : 
+                                             (pedido.estado == 'EN_PROCESO' || pedido.estado == 'PROCESANDO' ? 'estado-proceso' : 
+                                             'estado-completado')}" th:text="${pedido.estado}">
+                        </span>
                     </div>
-
-                    <div class="vp-summary">
-                        <div class="vp-summary__row">
-                            <span>Productos</span>
-                            <span th:text="${pedido.items != null ? pedido.items.size() : 0} + ' ítem(s)'">0 ítem(s)</span>
-                        </div>
-                        <div class="vp-summary__row vp-summary__row--total">
-                            <span>Total de la venta</span>
-                            <strong>
-                                $<span th:text="${#numbers.formatDecimal(pedido.total, 0, 'COMMA', 0, 'POINT')}">0</span>
-                            </strong>
-                        </div>
-                    </div>
-                </section>
             </div>
+        </div>
 
-            <aside class="vp-stack">
-                <section class="vp-card">
-                    <div class="vp-card__head">
-                        <h2 class="vp-card__title"><i class="fas fa-user"></i> Comprador</h2>
-                    </div>
-                    <div class="vp-card__body">
-                        <dl class="vp-info-list">
-                            <div class="vp-info-row">
-                                <dt>Nombre</dt>
-                                <dd th:text="${pedido.comprador != null ? pedido.comprador.nombre : 'Cliente'}">Cliente</dd>
-                            </div>
-                            <div class="vp-info-row" th:if="${compradorEmail != null}">
-                                <dt>Correo</dt>
-                                <dd th:text="${compradorEmail}">correo@ejemplo.com</dd>
-                            </div>
-                        </dl>
-                    </div>
-                </section>
+        <div class="vp-card__head" style="border-top: 1px solid var(--vp-line);">
+            <h2 class="vp-card__title"><i class="fas fa-seedling"></i> Productos de esta venta</h2>
+        </div>
 
-                <section class="vp-card">
-                    <div class="vp-card__head">
-                        <h2 class="vp-card__title"><i class="fas fa-location-dot"></i> Entrega</h2>
-                    </div>
-                    <div class="vp-card__body">
-                        <dl class="vp-info-list" th:if="${pedido.direccionEntrega != null}">
-                            <div class="vp-info-row">
-                                <dt>Dirección</dt>
-                                <dd th:text="${pedido.direccionEntrega.direccion != null ? pedido.direccionEntrega.direccion : 'No registrada'}">Dirección</dd>
+        <div class="vp-table-wrap">
+            <table class="vp-items">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Precio unitario</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="detalle : ${detalles}">
+                        <td>
+                            <div class="vp-product">
+                                <div class="vp-product__image">
+                                    <img th:if="${detalle.imagenSnapshot != null and !detalle.imagenSnapshot.isEmpty()}"
+                                        th:src="${detalle.imagenSnapshot}" th:alt="${detalle.nombreSnapshot}"
+                                        loading="lazy" onerror="this.style.display='none';">
+                                    <i th:if="${detalle.imagenSnapshot == null or detalle.imagenSnapshot.isEmpty()}"
+                                        class="fas fa-seedling"></i>
+                                </div>
+                                <span class="vp-product__name" th:text="${detalle.nombreSnapshot}">Producto</span>
                             </div>
-                            <div class="vp-info-row">
-                                <dt>Ciudad</dt>
-                                <dd th:text="${pedido.direccionEntrega.ciudad != null ? pedido.direccionEntrega.ciudad : 'No registrada'}">Ciudad</dd>
-                            </div>
-                            <div class="vp-info-row">
-                                <dt>Departamento</dt>
-                                <dd th:text="${pedido.direccionEntrega.departamento != null ? pedido.direccionEntrega.departamento : 'No registrado'}">Departamento</dd>
-                            </div>
-                        </dl>
-                        <p th:if="${pedido.direccionEntrega == null}" class="vp-muted" style="margin: 0; font-size: 0.86rem;">
-                            Este pedido no tiene una dirección de entrega registrada.
-                        </p>
-                    </div>
-                </section>
+                        </td>
+                        <td class="vp-nowrap">
+                            <span th:text="${detalle.cantidad}">0</span>
+                            <span class="vp-muted"
+                                th:text="${detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : 'unid'}">unid</span>
+                        </td>
+                        <td class="vp-nowrap">
+                            $<span
+                                th:text="${#numbers.formatDecimal(detalle.precioUnitario, 0, 'COMMA', 0, 'POINT')}">0</span>
+                        </td>
+                        <td class="vp-amount vp-nowrap">
+                            $<span
+                                th:text="${#numbers.formatDecimal(detalle.subtotal, 0, 'COMMA', 0, 'POINT')}">0</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
 
-                <section class="vp-card">
-                    <div class="vp-card__head">
-                        <h2 class="vp-card__title"><i class="fas fa-credit-card"></i> Pago</h2>
-                    </div>
-                    <div class="vp-card__body">
-                        <dl class="vp-info-list" th:if="${pedido.pago != null}">
-                            <div class="vp-info-row">
-                                <dt>Estado</dt>
-                                <dd>
-                                    <span class="vp-badge"
-                                          th:classappend="${pedido.pago.estado == 'COMPLETADO' ? 'vp-badge--completado' : (pedido.pago.estado == 'FALLIDO' ? 'vp-badge--cancelado' : 'vp-badge--revision')}"
-                                          th:text="${pedido.pago.estado}">COMPLETADO</span>
-                                </dd>
-                            </div>
-                            <div class="vp-info-row" th:if="${pedido.pago.metodo != null}">
-                                <dt>Método</dt>
-                                <dd th:text="${pedido.pago.metodo}">WOMPI</dd>
-                            </div>
-                            <div class="vp-info-row" th:if="${pedido.pago.referencia != null}">
-                                <dt>Referencia</dt>
-                                <dd th:text="${pedido.pago.referencia}" style="word-break: break-all;">CUL-000</dd>
-                            </div>
-                        </dl>
-                        <p th:if="${pedido.pago == null}" class="vp-muted" style="margin: 0; font-size: 0.86rem;">
-                            No hay información de pago asociada.
-                        </p>
-                    </div>
-                </section>
+        <div class="vp-summary">
+            <div class="vp-summary__row">
+                <span>Productos</span>
+                <span th:text="${pedido.items != null ? pedido.items.size() : 0} + ' ítem(s)'">0 ítem(s)</span>
+            </div>
+            <div class="vp-summary__row vp-summary__row--total">
+                <span>Total de la venta</span>
+                <strong>
+                    $<span th:text="${#numbers.formatDecimal(pedido.total, 0, 'COMMA', 0, 'POINT')}">0</span>
+                </strong>
+            </div>
+        </div>
+        </section>
+        </div>
 
-                <section class="vp-card">
-                    <div class="vp-card__head">
-                        <h2 class="vp-card__title"><i class="fas fa-list-check"></i> Siguiente paso</h2>
-                    </div>
+        <div class="acciones-section">
+            <h3 style="margin-bottom: 15px; color: #27ae60;">Actualizar Estado del Pedido</h3>
+            <form th:action="@{/vendedor/ventas/pedido/{id}/actualizar-estado(id=${pedido.id})}" method="post">
+                <div class="form-group">
+                    <label for="estado">Nuevo Estado:</label>
+                    <select id="estado" name="estado" required>
+                        <option value="PENDIENTE" th:selected="${pedido.estado == 'PENDIENTE'}">Pendiente</option>
+                        <option value="EN_PROCESO"
+                            th:selected="${pedido.estado == 'EN_PROCESO' || pedido.estado == 'PROCESANDO'}">En Proceso
+                        </option>
+                        <option value="COMPLETADO"
+                            th:selected="${pedido.estado == 'COMPLETADO' || pedido.estado == 'ENTREGADO'}">Completado
+                        </option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-actualizar">
+                    <i class="fa-solid fa-save"></i> Actualizar Estado
+                </button>
+            </form>
+        </div>
+        </div>
+        </div>
 
-                    <div class="vp-action-box" th:if="${puedeActualizar}">
-                        <p>
-                            <strong th:text="${pedido.estadoEtiqueta}">Confirmado</strong>.
-                            Al continuar, el comprador recibirá una notificación con el nuevo estado.
-                        </p>
-                        <form th:action="@{/vendedor/ventas/pedido/{id}/actualizar-estado(id=${pedido.id})}"
-                              method="post">
-                            <input type="hidden" name="estado" th:value="${siguienteEstado}">
-                            <button type="submit" class="vp-btn">
-                                <i class="fas fa-arrow-right"></i>
-                                <span th:text="${accionSiguiente}">Actualizar estado</span>
-                            </button>
-                        </form>
-                        <div class="vp-note">
-                            <i class="fas fa-circle-info"></i>
-                            <span>Los estados avanzan en orden: preparación, envío y entrega.</span>
-                        </div>
-                    </div>
+        <div class="vp-action-box" th:if="${!puedeActualizar and pedido.estado != 'EN_REVISION'}">
+            <p style="margin-bottom: 0;">
+                <i class="fas fa-circle-check" style="color: var(--vp-green);"></i>
+                Este pedido ya no requiere acciones. La venta está
+                <strong th:text="${pedido.estadoEtiqueta}">Entregado</strong>.
+            </p>
+        </div>
 
-                    <div class="vp-action-box" th:if="${!puedeActualizar and pedido.estado != 'EN_REVISION'}">
-                        <p style="margin-bottom: 0;">
-                            <i class="fas fa-circle-check" style="color: var(--vp-green);"></i>
-                            Este pedido ya no requiere acciones. La venta está
-                            <strong th:text="${pedido.estadoEtiqueta}">Entregado</strong>.
-                        </p>
-                    </div>
-
-                    <div class="vp-action-box" th:if="${pedido.estado == 'EN_REVISION'}">
-                        <p style="margin-bottom: 0;">
-                            <i class="fas fa-triangle-exclamation" style="color: var(--vp-amber);"></i>
-                            No despaches este pedido. El equipo administrativo está gestionando el reembolso.
-                        </p>
-                    </div>
-                </section>
-            </aside>
+        <div class="vp-action-box" th:if="${pedido.estado == 'EN_REVISION'}">
+            <p style="margin-bottom: 0;">
+                <i class="fas fa-triangle-exclamation" style="color: var(--vp-amber);"></i>
+                No despaches este pedido. El equipo administrativo está gestionando el reembolso.
+            </p>
+        </div>
+        </section>
+        </aside>
         </div>
         <footer class="vs-footer">
             <div class="vs-footer__brand">
@@ -281,4 +351,3 @@
 </body>
 
 </html>
-

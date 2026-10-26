@@ -2,6 +2,7 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
+    <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Administrador - Cultivus</title>
@@ -24,7 +25,7 @@
 
         <nav class="menu">
             <!-- Dashboard -->
-            <div class="menu-item">
+            <div class="menu-item" th:classappend="${activePage == null or activePage == 'dashboard' ? 'active' : ''}">
                 <a th:href="@{/admin/dashboard}" class="menu-link" data-page="dashboard">
                     <i class="fas fa-home"></i>
                     <span class="menu-text">Dashboard</span>
@@ -32,7 +33,7 @@
             </div>
 
             <!-- Analíticas Power BI -->
-            <div class="menu-item">
+            <div class="menu-item" th:classappend="${activePage == 'powerbi' ? 'active' : ''}">
                 <a th:href="@{/admin/powerbi}" class="menu-link" data-page="powerbi">
                     <i class="fas fa-chart-pie"></i>
                     <span class="menu-text">Power BI</span>
@@ -40,29 +41,29 @@
             </div>
 
             <!-- Usuarios - Desplegable -->
-            <div class="menu-item has-submenu">
+            <div class="menu-item has-submenu" th:classappend="${activePage == 'usuarios' or activePage == 'actividad' or activePage == 'resenas' ? 'open active' : ''}">
                 <a href="#" class="menu-link" data-submenu="usuarios">
                     <i class="fas fa-users"></i>
                     <span class="menu-text">Usuarios</span>
                     <i class="fas fa-chevron-down submenu-icon"></i>
                 </a>
                 <div class="submenu" id="usuarios-submenu">
-                    <a th:href="@{/admin/usuarios}" class="submenu-link" data-page="usuarios">Gestionar Usuarios</a>
-                    <a th:href="@{/admin/resenas}" class="submenu-link" data-page="actividad">Actividad y Reseñas</a>
+                    <a th:href="@{/admin/usuarios}" class="submenu-link" th:classappend="${activePage == 'usuarios' ? 'active' : ''}" data-page="usuarios">Gestionar Usuarios</a>
+                    <a th:href="@{/admin/resenas}" class="submenu-link" th:classappend="${activePage == 'actividad' or activePage == 'resenas' ? 'active' : ''}" data-page="actividad">Actividad y Reseñas</a>
                 </div>
             </div>
 
             <!-- Productos - Desplegable -->
-            <div class="menu-item has-submenu">
+            <div class="menu-item has-submenu" th:classappend="${activePage == 'catalogo' or activePage == 'ofertas' or activePage == 'moderacion' ? 'open active' : ''}">
                 <a href="#" class="menu-link" data-submenu="productos">
                     <i class="fas fa-box"></i>
                     <span class="menu-text">Productos</span>
                     <i class="fas fa-chevron-down submenu-icon"></i>
                 </a>
                 <div class="submenu" id="productos-submenu">
-                    <a th:href="@{/admin/productos}" class="submenu-link" data-page="catalogo">Catálogo Completo</a>
-                    <a th:href="@{/admin/ofertas}" class="submenu-link" data-page="ofertas">Ofertas Globales</a>
-                    <a th:href="@{/admin/moderacion}" class="submenu-link" data-page="moderacion">
+                    <a th:href="@{/admin/productos}" class="submenu-link" th:classappend="${activePage == 'catalogo' ? 'active' : ''}" data-page="catalogo">Catálogo Completo</a>
+                    <a th:href="@{/admin/ofertas}" class="submenu-link" th:classappend="${activePage == 'ofertas' ? 'active' : ''}" data-page="ofertas">Ofertas Globales</a>
+                    <a th:href="@{/admin/moderacion}" class="submenu-link" th:classappend="${activePage == 'moderacion' ? 'active' : ''}" data-page="moderacion">
                         Moderación
                         <span class="badge-menu"
                             th:if="${catalogoPendienteCount != null and catalogoPendienteCount > 0}"
@@ -73,7 +74,7 @@
             </div>
 
             <!-- Pedidos -->
-            <div class="menu-item">
+            <div class="menu-item" th:classappend="${activePage == 'ordenes' or activePage == 'pedidos' ? 'active' : ''}">
                 <a th:href="@{/admin/pedidos}" class="menu-link" data-page="ordenes">
                     <i class="fas fa-shopping-bag"></i>
                     <span class="menu-text">Pedidos</span>
@@ -81,22 +82,20 @@
             </div>
 
             <!-- Configuración - Desplegable -->
-            <div class="menu-item has-submenu">
+            <div class="menu-item has-submenu" th:classappend="${activePage == 'configuracion' ? 'open active' : ''}">
                 <a href="#" class="menu-link" data-submenu="configuracion">
                     <i class="fas fa-cog"></i>
                     <span class="menu-text">Configuración</span>
                     <i class="fas fa-chevron-down submenu-icon"></i>
                 </a>
                 <div class="submenu" id="configuracion-submenu">
-                    <a th:href="@{/admin/configuracion}" class="submenu-link" data-page="configuracion">Límites y
+                    <a th:href="@{/admin/configuracion}" class="submenu-link" th:classappend="${activePage == 'configuracion' ? 'active' : ''}" data-page="configuracion">Límites y
                         Parámetros</a>
                 </div>
             </div>
 
-
-
             <!-- Verificación de Tiendas -->
-            <div class="menu-item">
+            <div class="menu-item" th:classappend="${activePage == 'verificacion-tiendas' ? 'active' : ''}">
                 <a th:href="@{/admin/verificacion-tiendas}" class="menu-link" data-page="verificacion-tiendas">
                     <i class="fas fa-store"></i>
                     <span class="menu-text">Verificar Tiendas</span>
@@ -107,8 +106,20 @@
                 </a>
             </div>
 
+            <!-- Transportistas -->
+            <div class="menu-item" th:classappend="${activePage == 'transportistas' ? 'active' : ''}">
+                <a th:href="@{/admin/transportistas}" class="menu-link" data-page="transportistas">
+                    <i class="fas fa-truck"></i>
+                    <span class="menu-text">Transportistas</span>
+                    <span class="badge-menu"
+                        th:if="${transportistasPendientesCount != null and transportistasPendientesCount > 0}"
+                        th:text="${transportistasPendientesCount}"
+                        style="background:#FF9800;color:white;border-radius:50%;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-left:auto;"></span>
+                </a>
+            </div>
+
             <!-- Sesiones Activas -->
-            <div class="menu-item">
+            <div class="menu-item" th:classappend="${activePage == 'sesiones' ? 'active' : ''}">
                 <a th:href="@{/admin/sesiones}" class="menu-link" data-page="sesiones">
                     <i class="fas fa-user-clock"></i>
                     <span class="menu-text">Sesiones</span>
@@ -116,7 +127,7 @@
             </div>
 
             <!-- Notificaciones -->
-            <div class="menu-item">
+            <div class="menu-item" th:classappend="${activePage == 'notificaciones' ? 'active' : ''}">
                 <a th:href="@{/admin/notificaciones}" class="menu-link" data-page="notificaciones">
                     <i class="fas fa-bell"></i>
                     <span class="menu-text">Notificaciones</span>
@@ -124,7 +135,7 @@
             </div>
 
             <!-- Mensajes -->
-            <div class="menu-item">
+            <div class="menu-item" th:classappend="${activePage == 'mensajes' ? 'active' : ''}">
                 <a th:href="@{/admin/mensajes}" class="menu-link" data-page="mensajes">
                     <i class="fas fa-envelope"></i>
                     <span class="menu-text">Mensajes</span>
@@ -148,11 +159,11 @@
     </div>
 
     <!-- MAIN CONTENT -->
-    <div class="main-content" id="mainContent">
+    <div class="main-content" id="mainContent" th:data-active-page="${activePage ?: 'dashboard'}">
         <!-- Top Bar -->
         <div class="topbar">
             <div class="topbar-left">
-                <h2 id="page-title">Bienvenido al Panel Administrador</h2>
+                <h2 id="page-title" th:text="${activePage == 'ordenes' or activePage == 'pedidos' ? 'Gestión de Pedidos' : (activePage == 'transportistas' ? 'Gestión de Transportistas' : (activePage == 'usuarios' ? 'Gestionar Usuarios' : (activePage == 'verificacion-tiendas' ? 'Verificación de Tiendas' : (activePage == 'catalogo' ? 'Catálogo de Productos' : (activePage == 'powerbi' ? 'Inteligencia de Negocios (Power BI)' : (activePage == 'actividad' or activePage == 'resenas' ? 'Actividad y Reseñas' : (activePage == 'ofertas' ? 'Ofertas Globales' : (activePage == 'sesiones' ? 'Sesiones Activas' : (activePage == 'notificaciones' ? 'Gestión de Notificaciones' : (activePage == 'mensajes' ? 'Centro de Mensajes' : (activePage == 'configuracion' ? 'Configuración del Sistema' : (activePage == 'moderacion' ? 'Moderar Ofertas y Catálogo' : 'Bienvenido al Panel Administrador'))))))))))))}">Bienvenido al Panel Administrador</h2>
             </div>
             <div class="topbar-right">
                 <div class="topbar-icons">
@@ -174,8 +185,14 @@
 
         <!-- Content Area -->
         <div class="content">
+            <div th:if="${mensaje != null}" style="background:#E8F5E9; color:#2E7D32; padding:12px 16px; border-radius:8px; margin-bottom:16px; border:1px solid #C8E6C9;">
+                <i class="fas fa-check-circle"></i> <span th:text="${mensaje}">Mensaje</span>
+            </div>
+            <div th:if="${error != null}" style="background:#FFEBEE; color:#C62828; padding:12px 16px; border-radius:8px; margin-bottom:16px; border:1px solid #FFCDD2;">
+                <i class="fas fa-exclamation-circle"></i> <span th:text="${error}">Error</span>
+            </div>
             <!-- DASHBOARD PAGE -->
-            <div class="page" id="dashboard-page">
+            <div class="page" id="dashboard-page" th:style="${activePage == null or activePage == 'dashboard' ? 'display: block;' : 'display: none;'}">
                 <div class="welcome-card">
                     <h1>Hola, Administrador</h1>
                     <p>Bienvenido a tu panel de control. Aquí puedes gestionar todos los aspectos de tu aplicación
@@ -226,7 +243,7 @@
             </div>
 
             <!-- POWER BI PAGE -->
-            <div class="page" id="powerbi-page" style="display: none;">
+            <div class="page" id="powerbi-page" th:style="${activePage == 'powerbi' ? 'display: block;' : 'display: none;'}">
                 <div class="page-card"
                     style="padding: 0; overflow: hidden; display: flex; flex-direction: column; height: calc(100vh - 120px);">
                     <div
@@ -249,7 +266,7 @@
             </div>
 
             <!-- USUARIOS PAGE -->
-            <div class="page" id="usuarios-page" style="display: none;">
+            <div class="page" id="usuarios-page" th:style="${activePage == 'usuarios' ? 'display: block;' : 'display: none;'}">
                 <div class="page-card">
                     <div
                         style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
@@ -363,7 +380,7 @@
             </div>
 
             <!-- ROLES PAGE -->
-            <div class="page" id="roles-page" style="display: none;">
+            <div class="page" id="roles-page" th:style="${activePage == 'roles' ? 'display: block;' : 'display: none;'}">
                 <div class="page-card">
                     <h2><i class="fas fa-shield-alt"></i> Roles y Permisos</h2>
                     <div class="roles-container">
@@ -390,7 +407,7 @@
             </div>
 
             <!-- ACTIVIDAD PAGE -->
-            <div class="page" id="actividad-page" style="display: none;">
+            <div class="page" id="actividad-page" th:style="${activePage == 'actividad' or activePage == 'resenas' ? 'display: block;' : 'display: none;'}">
                 <div class="page-card">
                     <h2><i class="fas fa-history"></i> Registro de Actividad</h2>
                     <div th:if="${resenas != null and !resenas.empty}">
@@ -408,7 +425,7 @@
                                         style="display:inline;">
                                         <button type="submit"
                                             style="color:red; background:none; border:none; cursor:pointer;"><i
-                                                class="fas fa-trash"></i></button>
+                                                 class="fas fa-trash"></i></button>
                                     </form>
                                 </div>
                             </div>
@@ -455,7 +472,7 @@
             </div>
 
             <!-- CATALOGO PAGE -->
-            <div class="page" id="catalogo-page" style="display: none;">
+            <div class="page" id="catalogo-page" th:style="${activePage == 'catalogo' ? 'display: block;' : 'display: none;'}">
                 <div class="page-card">
                     <div
                         style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
@@ -544,6 +561,83 @@
                         <p style="font-size:18px;">No se encontraron productos.</p>
                     </div>
 
+                </div>
+            </div>
+
+            <!-- OFERTAS GLOBALES PAGE -->
+            <div class="page" id="ofertas-page" th:style="${activePage == 'ofertas' ? 'display: block;' : 'display: none;'}">
+                <div class="page-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2><i class="fas fa-tags"></i> Ofertas Globales de Vendedores</h2>
+                    </div>
+
+                    <div th:if="${ofertas != null and !ofertas.empty}">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Vendedor</th>
+                                    <th>Precio</th>
+                                    <th>Stock</th>
+                                    <th>Compra Mínima</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="o : ${ofertas.content}">
+                                    <td>
+                                        <div style="font-weight:600;" th:text="${o.nombreProducto != null ? o.nombreProducto : 'Producto'}">Producto</div>
+                                        <div style="font-size:12px; color:#666;" th:text="${o.descripcionPaquete != null ? o.descripcionPaquete : ''}">Presentación</div>
+                                    </td>
+                                    <td th:text="${o.vendedor != null ? o.vendedor.nombre : 'Vendedor'}">Vendedor</td>
+                                    <td>
+                                        <strong th:text="${'$' + #numbers.formatDecimal(o.precio, 0, 'COMMA', 0, 'POINT')}">$0</strong>
+                                    </td>
+                                    <td th:text="${(o.stock != null ? o.stock : 0) + ' unidades'}">0 unidades</td>
+                                    <td th:text="${o.compraMinima != null ? o.compraMinima : 1}">1</td>
+                                    <td>
+                                        <span class="badge" th:classappend="${o.disponible ? 'badge-success' : 'badge-warning'}"
+                                              th:text="${o.disponible ? 'Disponible' : 'Agotada'}">Disponible</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Paginación Ofertas -->
+                        <div th:if="${ofertas.totalPages > 1}" class="paginacion-container"
+                            style="display:flex; justify-content:center; align-items:center; gap:15px; margin-top:30px; padding:20px 0;">
+                            <a th:href="@{/admin/ofertas(page=${ofertas.number - 1})}" th:if="${ofertas.hasPrevious()}"
+                                style="padding:8px 16px; border:1px solid #ccc; border-radius:5px; background:white; cursor:pointer; text-decoration:none; color:#333;">
+                                <i class="fas fa-chevron-left"></i> Anterior
+                            </a>
+                            <button th:unless="${ofertas.hasPrevious()}" disabled
+                                style="padding:8px 16px; border:1px solid #eee; border-radius:5px; background:#f9f9f9; color:#aaa; cursor:not-allowed;">
+                                <i class="fas fa-chevron-left"></i> Anterior
+                            </button>
+                            <div style="display:flex; gap:5px;">
+                                <span th:each="i : ${#numbers.sequence(0, ofertas.totalPages - 1)}"
+                                    th:if="${i >= ofertas.number - 2 and i <= ofertas.number + 2}">
+                                    <a th:href="@{/admin/ofertas(page=${i})}" th:text="${i + 1}"
+                                        th:style="${i == ofertas.number ? 'background:#4facfe; color:white; border:1px solid #4facfe;' : 'background:white; color:#333; border:1px solid #ccc;'}"
+                                        style="padding:8px 14px; border-radius:5px; text-decoration:none; font-weight:600; cursor:pointer; transition: 0.3s;">
+                                    </a>
+                                </span>
+                            </div>
+                            <a th:href="@{/admin/ofertas(page=${ofertas.number + 1})}" th:if="${ofertas.hasNext()}"
+                                style="padding:8px 16px; border:1px solid #ccc; border-radius:5px; background:white; cursor:pointer; text-decoration:none; color:#333;">
+                                Siguiente <i class="fas fa-chevron-right"></i>
+                            </a>
+                            <button th:unless="${ofertas.hasNext()}" disabled
+                                style="padding:8px 16px; border:1px solid #eee; border-radius:5px; background:#f9f9f9; color:#aaa; cursor:not-allowed;">
+                                Siguiente <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div th:if="${ofertas == null or ofertas.empty}" style="text-align:center; padding:40px; color:#999;">
+                        <i class="fas fa-tags" style="font-size:48px; color:#ccc; margin-bottom:15px; display:block;"></i>
+                        <p style="font-size:18px;">No hay ofertas registradas actualmente.</p>
+                    </div>
                 </div>
             </div>
 
@@ -873,7 +967,7 @@
             </div>
 
             <!-- ORDENES PAGE -->
-            <div class="page" id="ordenes-page" style="display: none;">
+            <div class="page" id="ordenes-page" th:style="${activePage == 'ordenes' or activePage == 'pedidos' ? 'display: block;' : 'display: none;'}">
                 <div class="page-card">
                     <h2><i class="fas fa-shopping-bag"></i> Órdenes</h2>
                     <div th:if="${pedidos != null and !pedidos.empty}">
@@ -902,7 +996,28 @@
                                             th:classappend="${pedido.estado == 'ENTREGADO' ? 'badge-success' : 'badge-warning'}"
                                             th:text="${pedido.estado}">Estado</span>
                                     </td>
-                                    <td><button class="btn-action">Ver</button></td>
+                                    <td style="white-space:nowrap;">
+                                        <form th:if="${pedido.estado == 'PENDIENTE' or pedido.estado == 'PENDIENTE_PAGO'}"
+                                              th:action="@{/admin/pedidos/{id}/aceptar(id=${pedido.id})}"
+                                              method="post" style="display:inline;">
+                                            <button type="submit" class="btn-action"
+                                                    style="background:#2E7D32; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:600;">
+                                                <i class="fas fa-check"></i> Aceptar
+                                            </button>
+                                        </form>
+                                        <form th:action="@{/admin/pedidos/{id}/actualizar-estado(id=${pedido.id})}"
+                                              method="post" style="display:inline-flex; gap:4px; align-items:center; margin-left:4px;">
+                                            <select name="estado"
+                                                    style="padding:4px 6px; border:1px solid #ccc; border-radius:4px; font-size:12px;">
+                                                <option th:each="est : ${estadosPedido}" th:value="${est}" th:text="${est}"
+                                                        th:selected="${est == pedido.estado}"></option>
+                                            </select>
+                                            <button type="submit" class="btn-action"
+                                                    style="background:#4facfe; color:white; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; font-weight:600;">
+                                                <i class="fas fa-sync-alt"></i> Actualizar
+                                            </button>
+                                        </form>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1158,7 +1273,7 @@
             </div>
 
             <!-- VERIFICACIÓN DE TIENDAS PAGE -->
-            <div class="page" id="verificacion-tiendas-page" style="display:none;">
+            <div class="page" id="verificacion-tiendas-page" th:style="${activePage == 'verificacion-tiendas' ? 'display: block;' : 'display: none;'}">
                 <div class="page-card">
                     <div
                         style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:15px;">
@@ -1288,8 +1403,125 @@
                 </div>
             </div>
 
+            <!-- TRANSPORTISTAS PAGE -->
+            <div class="page" id="transportistas-page" th:style="${activePage == 'transportistas' ? 'display: block;' : 'display: none;'}">
+                <div class="page-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
+                        <div>
+                            <h2><i class="fas fa-truck"></i> Gestión y Verificación de Transportistas</h2>
+                            <p style="color:#777; margin-top:4px;">Revisa y verifica transportistas independientes y empresas de transporte para habilitar su operación.</p>
+                        </div>
+                        <div style="display:flex; gap:10px;">
+                            <span class="badge" style="background:#FFF3E0; color:#E65100; border:1px solid #FFE0B2; padding:6px 14px; font-weight:600;">
+                                <i class="fas fa-clock"></i> <span th:text="${transportistasPendientesCount != null ? transportistasPendientesCount : 0}">0</span> pendientes
+                            </span>
+                            <span class="badge" style="background:#E8F5E9; color:#2E7D32; border:1px solid #C8E6C9; padding:6px 14px; font-weight:600;">
+                                <i class="fas fa-users"></i> <span th:text="${transportistas != null ? transportistas.size() : 0}">0</span> registrados
+                            </span>
+                        </div>
+                    </div>
+
+                    <div th:if="${transportistas != null and !transportistas.empty}" class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Transportista</th>
+                                    <th>Tipo</th>
+                                    <th>Datos Operativos</th>
+                                    <th>Zonas Cobertura</th>
+                                    <th>Estado</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="t : ${transportistas}">
+                                    <td>
+                                        <div style="font-weight:600; color:#2c3e50;" th:text="${t.nombre != null ? t.nombre : 'Sin nombre'}">Nombre</div>
+                                        <div style="font-size:12px; color:#888;">
+                                            <i class="fas fa-envelope"></i> <span th:text="${t.email}">email</span>
+                                        </div>
+                                        <div style="font-size:12px; color:#888;" th:if="${t.telefono != null}">
+                                            <i class="fas fa-phone"></i> <span th:text="${t.telefono}">tel</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span th:if="${t.perfilTransportista != null and t.perfilTransportista.tipo == 'EMPRESA'}"
+                                              class="badge" style="background:#E3F2FD; color:#1565C0; font-weight:600; padding:5px 10px; border-radius:12px;">
+                                            <i class="fas fa-building"></i> EMPRESA
+                                        </span>
+                                        <span th:unless="${t.perfilTransportista != null and t.perfilTransportista.tipo == 'EMPRESA'}"
+                                              class="badge" style="background:#EDE7F6; color:#512DA8; font-weight:600; padding:5px 10px; border-radius:12px;">
+                                            <i class="fas fa-truck"></i> INDEPENDIENTE
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div th:if="${t.perfilTransportista != null and t.perfilTransportista.tipo == 'EMPRESA'}">
+                                            <div style="font-weight:600; font-size:13px;" th:text="${t.perfilTransportista.razonSocial != null ? t.perfilTransportista.razonSocial : 'Sin Razón Social'}">Razón Social</div>
+                                            <div style="font-size:12px; color:#666;">NIT: <span th:text="${t.perfilTransportista.nit != null ? t.perfilTransportista.nit : '-'}">-</span></div>
+                                            <div style="font-size:12px; color:#666;">Vehículo: <span th:text="${t.perfilTransportista.tipoVehiculo != null ? t.perfilTransportista.tipoVehiculo : 'General'}">-</span></div>
+                                        </div>
+                                        <div th:unless="${t.perfilTransportista != null and t.perfilTransportista.tipo == 'EMPRESA'}">
+                                            <div style="font-size:13px; font-weight:500;">
+                                                <i class="fas fa-truck-moving"></i> <span th:text="${t.perfilTransportista != null and t.perfilTransportista.tipoVehiculo != null ? t.perfilTransportista.tipoVehiculo : 'Vehículo'}">Vehículo</span>
+                                            </div>
+                                            <div style="font-size:12px; color:#666;">Placa: <strong th:text="${t.perfilTransportista != null and t.perfilTransportista.placa != null ? t.perfilTransportista.placa : '-'}">-</strong></div>
+                                            <div style="font-size:12px; color:#666;">Licencia: <span th:text="${t.perfilTransportista != null and t.perfilTransportista.licenciaConduccion != null ? t.perfilTransportista.licenciaConduccion : '-'}">-</span></div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div th:if="${t.perfilTransportista != null and t.perfilTransportista.todasLasZonas}" style="display:inline-block; padding:4px 8px; background:#E8F5E9; color:#2E7D32; border-radius:12px; font-size:12px; font-weight:600;">
+                                            <i class="fas fa-globe-americas"></i> Todas las zonas (6)
+                                        </div>
+                                        <div th:unless="${t.perfilTransportista != null and t.perfilTransportista.todasLasZonas}">
+                                            <span style="font-size:12px; color:#333;" th:text="${t.perfilTransportista != null and t.perfilTransportista.zonasCobertura != null ? t.perfilTransportista.zonasCobertura : 'Sin zonas configuradas'}">Zonas</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge" th:if="${t.perfilTransportista != null and t.perfilTransportista.verificado}"
+                                              style="background:#E8F5E9; color:#2E7D32; font-weight:600; padding:6px 12px; border-radius:20px;">
+                                            <i class="fas fa-check-circle"></i> Verificado
+                                        </span>
+                                        <span class="badge" th:unless="${t.perfilTransportista != null and t.perfilTransportista.verificado}"
+                                              style="background:#FFF3E0; color:#E65100; font-weight:600; padding:6px 12px; border-radius:20px;">
+                                            <i class="fas fa-clock"></i> Pendiente
+                                        </span>
+                                    </td>
+                                    <td style="white-space:nowrap;">
+                                        <!-- Botón para verificar si está pendiente -->
+                                        <form th:if="${t.perfilTransportista == null or !t.perfilTransportista.verificado}"
+                                              th:action="@{/admin/transportistas/verificar/{usuarioId}(usuarioId=${t.id})}"
+                                              method="post" style="display:inline;">
+                                            <input type="hidden" name="verificado" value="true" />
+                                            <button type="submit" class="btn-action" style="background:#2E7D32; color:white; border:none; padding:7px 14px; border-radius:6px; cursor:pointer; font-weight:600; display:inline-flex; align-items:center; gap:5px;">
+                                                <i class="fas fa-check"></i> Verificar
+                                            </button>
+                                        </form>
+
+                                        <!-- Botón para revocar si ya está verificado -->
+                                        <form th:if="${t.perfilTransportista != null and t.perfilTransportista.verificado}"
+                                              th:action="@{/admin/transportistas/verificar/{usuarioId}(usuarioId=${t.id})}"
+                                              method="post" style="display:inline;"
+                                              onsubmit="return confirm('¿Deseas revocar la verificación de este transportista? No podrá tomar nuevos envíos.')">
+                                            <input type="hidden" name="verificado" value="false" />
+                                            <button type="submit" class="btn-action" style="background:#FF9800; color:white; border:none; padding:7px 14px; border-radius:6px; cursor:pointer; font-weight:600; display:inline-flex; align-items:center; gap:5px;">
+                                                <i class="fas fa-ban"></i> Revocar
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div th:if="${transportistas == null or transportistas.empty}" style="text-align:center; padding:40px 20px; color:#777;">
+                        <i class="fas fa-truck" style="font-size:42px; color:#ccc; margin-bottom:12px;"></i>
+                        <p style="font-size:15px; margin:0;">No hay transportistas registrados en la plataforma.</p>
+                    </div>
+                </div>
+            </div>
+
             <!-- SESIONES PAGE -->
-            <div class="page" id="sesiones-page" style="display:none;">
+            <div class="page" id="sesiones-page" th:style="${activePage == 'sesiones' ? 'display: block;' : 'display: none;'}">
                 <div class="page-card">
                     <h2><i class="fas fa-user-clock"></i> Sesiones Activas (Últimas 24h)</h2>
                     <p style="color:#999;margin-bottom:16px;">Usuarios que han interactuado con la plataforma
@@ -1366,7 +1598,7 @@
             </div>
 
             <!-- NOTIFICACIONES PAGE -->
-            <div class="page" id="notificaciones-page" style="display:none;">
+            <div class="page" id="notificaciones-page" th:style="${activePage == 'notificaciones' ? 'display: block;' : 'display: none;'}">
                 <div class="page-card" style="margin-bottom:24px;">
                     <h2><i class="fas fa-paper-plane"></i> Enviar Notificación del Sistema</h2>
                     <form th:action="@{/admin/notificaciones/enviar}" method="post" class="form-container">
@@ -1471,7 +1703,7 @@
             </div>
 
             <!-- MENSAJES PAGE -->
-            <div class="page" id="mensajes-page" style="display:none;">
+            <div class="page" id="mensajes-page" th:style="${activePage == 'mensajes' ? 'display: block;' : 'display: none;'}">
                 <div class="page-card">
                     <h2><i class="fas fa-envelope-open-text"></i> Centro de Mensajes</h2>
                     <div th:if="${mensajesRecibidosPaginados != null and !mensajesRecibidosPaginados.empty}">
@@ -1537,7 +1769,7 @@
             </div>
 
             <!-- CONFIGURACION PAGE -->
-            <div class="page" id="configuracion-page" style="display:none;">
+            <div class="page" id="configuracion-page" th:style="${activePage == 'configuracion' ? 'display: block;' : 'display: none;'}">
                 <div class="page-card">
                     <h2><i class="fas fa-tools"></i> Límites y Parámetros del Sistema</h2>
                     <p style="color:#999;margin-bottom:20px;">Ajusta los parámetros operativos de la plataforma. Los
@@ -1568,7 +1800,7 @@
             </div>
 
             <!-- MODERACIÓN DE CATÁLOGO PAGE -->
-            <div class="page" id="moderacion-page" style="display: none;">
+            <div class="page" id="moderacion-page" th:style="${activePage == 'moderacion' ? 'display: block;' : 'display: none;'}">
                 <div class="page-card">
                     <h2><i class="fas fa-gavel"></i> Moderación de Catálogo</h2>
                     <p style="color:#999;margin-bottom:16px;">Sugerencias de productos enviadas por vendedores para el
@@ -1670,12 +1902,12 @@
     <script th:src="@{/js/admin-panel.js}"></script>
     <script th:inline="javascript">
         /*<![CDATA[*/
-        document.addEventListener('DOMContentLoaded', function () {
-            const activePage = /*[[${activePage}]]*/ 'dashboard';
-            if (typeof navigateToPage === 'function') {
-                navigateToPage(activePage);
+        (function() {
+            var activePage = /*[[${activePage}]]*/ 'dashboard';
+            if (window.navigateToPage) {
+                window.navigateToPage(activePage);
             }
-        });
+        })();
         /*]]>*/
     </script>
 </body>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - Transportista - Cultivus</title>
+    <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
+    <link rel="stylesheet" th:href="@{/perfil.css}">
+    <link rel="stylesheet" th:href="@{/header.css}">
+    <link rel="stylesheet" th:href="@{/footer.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <header th:replace="~{fragments/header-transportista :: siteHeader}"></header>
+
+    <div class="profile-container">
+        <div class="profile-card">
+            <div class="profile-header">
+                <div class="profile-icon">
+                    <i class="fa-solid fa-truck"></i>
+                </div>
+                <h1>Mi Perfil</h1>
+                <p class="profile-subtitle">Gestiona tu información personal</p>
+            </div>
+
+            <div th:if="${mensaje}" class="alert alert-success">
+                <i class="fa-solid fa-check-circle"></i>
+                <span th:text="${mensaje}"></span>
+            </div>
+            <div th:if="${error}" class="alert alert-error">
+                <i class="fa-solid fa-exclamation-circle"></i>
+                <span th:text="${error}"></span>
+            </div>
+
+            <div class="info-section">
+                <h2><i class="fa-solid fa-info-circle"></i> Información Actual</h2>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Nombre:</label>
+                        <p th:text="${usuario.nombre}">Nombre</p>
+                    </div>
+                    <div class="info-item">
+                        <label>Email:</label>
+                        <p th:text="${usuario.email}">email@ejemplo.com</p>
+                    </div>
+                    <div class="info-item">
+                        <label>Zona que cubre:</label>
+                        <p th:text="${usuario.perfilTransportista != null ? usuario.perfilTransportista.zonasCobertura : 'No especificada'}">Zona</p>
+                    </div>
+                    <div class="info-item">
+                        <label>Rol:</label>
+                        <p th:text="${usuario.rol != null ? usuario.rol : 'TRANSPORTISTA'}">TRANSPORTISTA</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="edit-section">
+                <h2><i class="fa-solid fa-edit"></i> Editar Información</h2>
+                <form th:action="@{/usuario/perfil/actualizar}" method="post" class="edit-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="nombre"><i class="fa-solid fa-user"></i> Nombre Completo</label>
+                            <input type="text" id="nombre" name="nombre" th:value="${usuario.nombre}" required placeholder="Ingrese su nombre completo">
+                        </div>
+                        <div class="form-group">
+                            <label for="email"><i class="fa-solid fa-envelope"></i> Correo Electrónico</label>
+                            <input type="email" id="email" name="email" th:value="${usuario.email}" required placeholder="correo@ejemplo.com">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="departamento"><i class="fa-solid fa-map-marked-alt"></i> Departamento</label>
+                            <select id="departamento" name="departamento" required>
+                                <option value="">Seleccione un departamento</option>
+                                <option th:each="dept : ${departamentos}" th:value="${dept.nombre}" th:text="${dept.nombre}"
+                                    th:selected="${usuario.ubicacion != null and usuario.ubicacion.departamento == dept.nombre}"></option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="ciudad"><i class="fa-solid fa-city"></i> Ciudad</label>
+                            <select id="ciudad" name="ciudad" required>
+                                <option value="">Seleccione una ciudad</option>
+                                <option th:if="${usuario.ubicacion != null}" th:value="${usuario.ubicacion.ciudad}" th:text="${usuario.ubicacion.ciudad}" selected></option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Guardar Cambios</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
+</body>
+</html>

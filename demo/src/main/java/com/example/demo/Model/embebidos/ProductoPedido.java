@@ -42,6 +42,12 @@ public class ProductoPedido {
     public String getUnidadAbreviatura() { return unidadAbreviatura; }
     public void setUnidadAbreviatura(String unidadAbreviatura) { this.unidadAbreviatura = unidadAbreviatura; }
 
+    public String getNombre() { return nombreSnapshot; }
+    public void setNombre(String nombre) { this.nombreSnapshot = nombre; }
+
+    public String getUnidadMedida() { return unidadAbreviatura; }
+    public void setUnidadMedida(String unidadMedida) { this.unidadAbreviatura = unidadMedida; }
+
     public Double getSubtotal() { return subtotal; }
     public void setSubtotal(Double subtotal) { this.subtotal = subtotal; }
 }

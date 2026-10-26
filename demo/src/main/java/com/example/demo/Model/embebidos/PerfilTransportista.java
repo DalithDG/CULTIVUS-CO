@@ -1,6 +1,16 @@
 package com.example.demo.Model.embebidos;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class PerfilTransportista {
+
+    public static final String TIPO_INDEPENDIENTE = "INDEPENDIENTE";
+    public static final String TIPO_EMPRESA = "EMPRESA";
+
+    private String tipo = TIPO_INDEPENDIENTE; // INDEPENDIENTE | EMPRESA
+    private String nit;
+    private String razonSocial;
 
     private String tipoVehiculo;          // Camión, Camioneta, Furgón, Turbo, etc.
     private String placa;                 // Placa del vehículo
@@ -9,7 +19,12 @@ public class PerfilTransportista {
     private String telefonoContacto;
     private String ciudadBase;
     private String departamentoBase;
-    private String zonasCobertura;        // Municipios o departamentos donde opera
+
+    // Zonas de cobertura estructuradas
+    private List<Integer> zonasCoberturaIds = new ArrayList<>();
+    private boolean todasLasZonas = false;
+    private String zonasCobertura;        // Texto legible para mostrar únicamente
+
     private boolean refrigerado = false;  // Cuenta con furgón refrigerado / cadena de frío
     private boolean disponible = true;    // Listo para aceptar envíos
     private boolean verificado = false;   // Validado por administración
@@ -20,16 +35,19 @@ public class PerfilTransportista {
     private Integer totalEntregas = 0;
 
     public PerfilTransportista() {
+        this.tipo = TIPO_INDEPENDIENTE;
         this.disponible = true;
         this.verificado = false;
         this.calificacion = 5.0;
         this.totalEntregas = 0;
+        this.zonasCoberturaIds = new ArrayList<>();
     }
 
     public PerfilTransportista(String tipoVehiculo, String placa, Double capacidadCargaKg,
                                String licenciaConduccion, String telefonoContacto, String ciudadBase,
                                String departamentoBase, String zonasCobertura, boolean refrigerado,
                                String empresa, String banco, String cuentaBancaria) {
+        this();
         this.tipoVehiculo = tipoVehiculo;
         this.placa = placa;
         this.capacidadCargaKg = capacidadCargaKg;
@@ -42,13 +60,35 @@ public class PerfilTransportista {
         this.empresa = empresa;
         this.banco = banco;
         this.cuentaBancaria = cuentaBancaria;
-        this.disponible = true;
-        this.verificado = false;
-        this.calificacion = 5.0;
-        this.totalEntregas = 0;
+    }
+
+    public boolean operaEnZona(Integer zonaId) {
+        if (todasLasZonas) return true;
+        if (zonaId == null || zonasCoberturaIds == null) return false;
+        return zonasCoberturaIds.contains(zonaId);
     }
 
     // Getters y Setters
+
+    public String getTipo() { return tipo; }
+    public void setTipo(String tipo) { this.tipo = tipo; }
+
+    public String getNit() { return nit; }
+    public void setNit(String nit) { this.nit = nit; }
+
+    public String getRazonSocial() { return razonSocial; }
+    public void setRazonSocial(String razonSocial) { this.razonSocial = razonSocial; }
+
+    public List<Integer> getZonasCoberturaIds() {
+        if (zonasCoberturaIds == null) zonasCoberturaIds = new ArrayList<>();
+        return zonasCoberturaIds;
+    }
+    public void setZonasCoberturaIds(List<Integer> zonasCoberturaIds) {
+        this.zonasCoberturaIds = zonasCoberturaIds != null ? zonasCoberturaIds : new ArrayList<>();
+    }
+
+    public boolean isTodasLasZonas() { return todasLasZonas; }
+    public void setTodasLasZonas(boolean todasLasZonas) { this.todasLasZonas = todasLasZonas; }
 
     public String getTipoVehiculo() { return tipoVehiculo; }
     public void setTipoVehiculo(String tipoVehiculo) { this.tipoVehiculo = tipoVehiculo; }
@@ -97,4 +137,16 @@ public class PerfilTransportista {
 
     public Integer getTotalEntregas() { return totalEntregas; }
     public void setTotalEntregas(Integer totalEntregas) { this.totalEntregas = totalEntregas; }
+
+    public boolean isEmpresa() {
+        return TIPO_EMPRESA.equalsIgnoreCase(this.tipo);
+    }
+
+    public String getPlacaVehiculo() {
+        return placa;
+    }
+
+    public String getLicenciaConducir() {
+        return licenciaConduccion;
+    }
 }

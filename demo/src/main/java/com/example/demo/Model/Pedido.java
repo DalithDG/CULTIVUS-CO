@@ -17,6 +17,13 @@ import java.util.List;
 @Document(collection = "pedidos")
 public class Pedido {
 
+    public static final String PENDIENTE = "PENDIENTE";
+    public static final String CONFIRMADO = "CONFIRMADO";
+    public static final String EN_PROCESO = "EN_PROCESO";
+    public static final String LISTO_PARA_RECOGER = "LISTO_PARA_RECOGER";
+    public static final String ENVIADO = "ENVIADO";
+    public static final String ENTREGADO = "ENTREGADO";
+    public static final String CANCELADO = "CANCELADO";
     public static final String EN_REVISION = "EN_REVISION";
 
     @Id
@@ -38,6 +45,26 @@ public class Pedido {
     // Subtotal de productos de este sub-pedido en centavos (base para abonar al vendedor en US-22)
     @Field("subtotal_centavos")
     private Long subtotalCentavos;
+
+    // Desglose de costo de envío asignado a este sub-pedido en centavos
+    @Field("envio_centavos")
+    private Long envioCentavos;
+
+    // Snapshot del tramo de envío (US: costo por zona)
+    @Field("ciudad_origen_envio")
+    private String ciudadOrigenEnvio;
+
+    @Field("ciudad_destino_envio")
+    private String ciudadDestinoEnvio;
+
+    @Field("zona_origen_envio")
+    private Integer zonaOrigenEnvio;
+
+    @Field("zona_destino_envio")
+    private Integer zonaDestinoEnvio;
+
+    @Field("tarifa_envio_centavos")
+    private Long tarifaEnvioCentavos;
 
     @Field("requiere_revision")
     private boolean requiereRevision;
@@ -119,6 +146,7 @@ public class Pedido {
             case "CONFIRMADO": return "Confirmado";
             case "EN_PROCESO":
             case "PROCESANDO": return "En preparación";
+            case LISTO_PARA_RECOGER: return "Listo para recoger";
             case "ENVIADO": return "Enviado";
             case "ENTREGADO":
             case "COMPLETADO": return "Entregado";
@@ -128,19 +156,36 @@ public class Pedido {
         }
     }
 
-    /** Sufijo CSS del estado: pendiente, confirmado, proceso, enviado, completado, cancelado, revision. */
+    /** Sufijo CSS del estado: pendiente, confirmado, proceso, listo, enviado, completado, cancelado, revision. */
     public String getEstadoCss() {
         String e = estado == null ? "" : estado.toUpperCase();
         switch (e) {
             case "CONFIRMADO": return "confirmado";
             case "EN_PROCESO":
             case "PROCESANDO": return "proceso";
+            case LISTO_PARA_RECOGER: return "listo";
             case "ENVIADO": return "enviado";
             case "ENTREGADO":
             case "COMPLETADO": return "completado";
             case "CANCELADO": return "cancelado";
             case EN_REVISION: return "revision";
             default: return "pendiente";
+        }
+    }
+
+    /** Retorna el índice de progreso (1 a 6) para el stepper de tracking del comprador. */
+    public int getPasoTracking() {
+        if (estado == null) return 1;
+        switch (estado.toUpperCase()) {
+            case "PENDIENTE": return 1;
+            case "CONFIRMADO": return 2;
+            case "EN_PROCESO":
+            case "PROCESANDO": return 3;
+            case LISTO_PARA_RECOGER: return 4;
+            case "ENVIADO": return 5;
+            case "ENTREGADO":
+            case "COMPLETADO": return 6;
+            default: return 1;
         }
     }
 
@@ -153,6 +198,28 @@ public class Pedido {
 
     public Long getSubtotalCentavos() { return subtotalCentavos; }
     public void setSubtotalCentavos(Long subtotalCentavos) { this.subtotalCentavos = subtotalCentavos; }
+
+    public Long getEnvioCentavos() { return envioCentavos; }
+    public void setEnvioCentavos(Long envioCentavos) { this.envioCentavos = envioCentavos; }
+
+    public double getEnvio() {
+        return envioCentavos != null ? envioCentavos / 100.0 : 0.0;
+    }
+
+    public String getCiudadOrigenEnvio() { return ciudadOrigenEnvio; }
+    public void setCiudadOrigenEnvio(String ciudadOrigenEnvio) { this.ciudadOrigenEnvio = ciudadOrigenEnvio; }
+
+    public String getCiudadDestinoEnvio() { return ciudadDestinoEnvio; }
+    public void setCiudadDestinoEnvio(String ciudadDestinoEnvio) { this.ciudadDestinoEnvio = ciudadDestinoEnvio; }
+
+    public Integer getZonaOrigenEnvio() { return zonaOrigenEnvio; }
+    public void setZonaOrigenEnvio(Integer zonaOrigenEnvio) { this.zonaOrigenEnvio = zonaOrigenEnvio; }
+
+    public Integer getZonaDestinoEnvio() { return zonaDestinoEnvio; }
+    public void setZonaDestinoEnvio(Integer zonaDestinoEnvio) { this.zonaDestinoEnvio = zonaDestinoEnvio; }
+
+    public Long getTarifaEnvioCentavos() { return tarifaEnvioCentavos; }
+    public void setTarifaEnvioCentavos(Long tarifaEnvioCentavos) { this.tarifaEnvioCentavos = tarifaEnvioCentavos; }
 
     public boolean isRequiereRevision() { return requiereRevision; }
     public void setRequiereRevision(boolean requiereRevision) { this.requiereRevision = requiereRevision; }

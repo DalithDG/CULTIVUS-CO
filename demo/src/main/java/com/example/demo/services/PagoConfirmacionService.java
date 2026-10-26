@@ -1,9 +1,13 @@
 package com.example.demo.services;
 
 import com.example.demo.Model.Compra;
+import com.example.demo.Model.Envio;
 import com.example.demo.Model.OfertaVendedor;
 import com.example.demo.Model.Pedido;
+import com.example.demo.Model.Usuario;
 import com.example.demo.Model.embebidos.DatosPago;
+import com.example.demo.Model.embebidos.DireccionPedido;
+import com.example.demo.Model.embebidos.ParadaEnvio;
 import com.example.demo.Model.embebidos.ProductoPedido;
 import com.example.demo.repository.CarritoRepository;
 import com.example.demo.repository.CompraRepository;
@@ -16,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Pieza compartida por el webhook de Wompi y por el retorno del comprador
@@ -72,12 +77,33 @@ public class PagoConfirmacionService {
     @Autowired(required = false)
     private BilleteraService billeteraService;
 
+    @Autowired(required = false)
+    private com.example.demo.repository.EnvioRepository envioRepository;
+
+    @Autowired(required = false)
+    private com.example.demo.repository.UsuarioRepository usuarioRepository;
+
+    @Autowired(required = false)
+    private CalculoEnvioService calculoEnvioService;
+
     public PagoConfirmacionService() {
     }
 
     /** Para pruebas: inyecta el servicio de billetera (US-22). */
     public void setBilleteraService(BilleteraService billeteraService) {
         this.billeteraService = billeteraService;
+    }
+
+    public void setEnvioRepository(com.example.demo.repository.EnvioRepository envioRepository) {
+        this.envioRepository = envioRepository;
+    }
+
+    public void setUsuarioRepository(com.example.demo.repository.UsuarioRepository usuarioRepository) {
+        this.usuarioRepository = usuarioRepository;
+    }
+
+    public void setCalculoEnvioService(CalculoEnvioService calculoEnvioService) {
+        this.calculoEnvioService = calculoEnvioService;
     }
 
     public PagoConfirmacionService(PedidoRepository pedidoRepository) {
@@ -364,6 +390,18 @@ public class PagoConfirmacionService {
                 compraRepository.save(compra);
             }
 
+            // 9. Crear Envio logístico en PENDIENTE_ASIGNACION (uno por compra, con una parada por pedido confirmado)
+            try {
+                crearEnvioParaCompra(compra, pedidosAprobados);
+            } catch (Exception ex) {
+                log.error("Error al crear Envio para compra {}: {}", refLimpia, ex.getMessage(), ex);
+                if (notificacionService != null) {
+                    notificacionService.enviarAAdmins(
+                            "Error en logística: Compra " + refLimpia,
+                            "El pago fue aprobado pero ocurrió un error al generar el envío logístico: " + ex.getMessage(),
+                            "DANGER");
+                }
+            }
 
         } else if (FALLIDO.equals(destino)) {
             // US-03 Item 3: En pago fallido, cada pedido se cancela sin tocar stock,
@@ -397,6 +435,113 @@ public class PagoConfirmacionService {
         }
 
         return Resultado.APLICADO;
+    }
+
+    /**
+     * FASE 1 Logística: crea el Envio agrupado para la compra en estado PENDIENTE_ASIGNACION.
+     * Idempotente: si ya existe para este compraId, no duplica.
+     * Solo incluye paradas para pedidos confirmados (excluye EN_REVISION).
+     */
+    protected void crearEnvioParaCompra(Compra compra, List<Pedido> pedidosAprobados) {
+        if (envioRepository == null || pedidosAprobados == null || pedidosAprobados.isEmpty()) {
+            return;
+        }
+
+        String compraId = (compra != null && compra.getId() != null)
+                ? compra.getId()
+                : pedidosAprobados.get(0).getCompraId();
+
+        if (compraId == null || compraId.isBlank()) {
+            log.warn("No se pudo determinar compraId para crear Envio.");
+            return;
+        }
+
+        if (envioRepository.existsByCompraId(compraId)) {
+            log.info("Envio ya existe para compraId {}, se omite duplicado.", compraId);
+            return;
+        }
+
+        List<ParadaEnvio> paradas = new ArrayList<>();
+        long costoTotalCentavos = 0L;
+        DireccionPedido puntoEntrega = null;
+
+        for (Pedido p : pedidosAprobados) {
+            if (puntoEntrega == null && p.getDireccionEntrega() != null) {
+                puntoEntrega = new DireccionPedido(
+                        p.getDireccionEntrega().getDireccion(),
+                        p.getDireccionEntrega().getCiudad(),
+                        p.getDireccionEntrega().getDepartamento());
+            }
+
+            String vendedorId = p.getVendedor() != null ? p.getVendedor().getId() : null;
+            String nombreVendedor = (p.getVendedor() != null)
+                    ? (p.getVendedor().getRazonSocial() != null && !p.getVendedor().getRazonSocial().isBlank()
+                            ? p.getVendedor().getRazonSocial()
+                            : p.getVendedor().getNombre())
+                    : "Vendedor";
+
+            String ciudadRecogida = "Cartagena";
+            String direccionRecogida = "Cartagena, Bolívar";
+
+            if (vendedorId != null && usuarioRepository != null) {
+                Usuario vUser = usuarioRepository.findById(vendedorId).orElse(null);
+                if (vUser != null) {
+                    if (vUser.getUbicacion() != null && vUser.getUbicacion().getCiudad() != null && !vUser.getUbicacion().getCiudad().isBlank()) {
+                        ciudadRecogida = vUser.getUbicacion().getCiudad().trim();
+                    }
+                    if (vUser.getPerfilVendedor() != null && vUser.getPerfilVendedor().getDireccionNegocio() != null
+                            && !vUser.getPerfilVendedor().getDireccionNegocio().isBlank()) {
+                        direccionRecogida = vUser.getPerfilVendedor().getDireccionNegocio().trim();
+                    } else {
+                        direccionRecogida = ciudadRecogida + ", Bolívar";
+                    }
+                }
+            }
+
+            Integer zona = null;
+            if (calculoEnvioService != null) {
+                zona = calculoEnvioService.obtenerZonaPorCiudad(ciudadRecogida).orElse(null);
+            }
+
+            long tarifaCentavos = p.getEnvioCentavos() != null ? p.getEnvioCentavos() : 0L;
+            costoTotalCentavos += tarifaCentavos;
+
+            ParadaEnvio parada = new ParadaEnvio(
+                    p.getId(),
+                    vendedorId,
+                    nombreVendedor,
+                    direccionRecogida,
+                    ciudadRecogida,
+                    zona,
+                    tarifaCentavos
+            );
+
+            if (p.getItems() != null) {
+                List<String> itemsResumen = p.getItems().stream()
+                        .map(i -> {
+                            String cant = (i.getCantidad() != null && i.getCantidad() % 1 == 0)
+                                    ? String.format(java.util.Locale.US, "%.0f", i.getCantidad())
+                                    : String.valueOf(i.getCantidad());
+                            String unidad = i.getUnidadMedida() != null ? (" " + i.getUnidadMedida()) : "";
+                            String nom = i.getNombreSnapshot() != null ? i.getNombreSnapshot() : "Producto";
+                            return cant + unidad + " " + nom;
+                        })
+                        .collect(Collectors.toList());
+                parada.setItemsResumen(itemsResumen);
+            }
+
+            paradas.add(parada);
+        }
+
+        if (compra != null && compra.getEnvioCentavos() != null && compra.getEnvioCentavos() > 0) {
+            costoTotalCentavos = compra.getEnvioCentavos();
+        }
+
+        Envio envio = new Envio(compraId, paradas, puntoEntrega, costoTotalCentavos);
+        envio.setEstado(Envio.PENDIENTE_ASIGNACION);
+        envioRepository.save(envio);
+        log.info("✅ Envio creado exitosamente para compraId {} con {} paradas y costo total {} centavos.",
+                compraId, paradas.size(), costoTotalCentavos);
     }
 
     /**

@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- Imagotipo reutilizable -->
+    <img th:fragment="imagotipo (alt, height)" th:src="@{/images/imagotipo_transparente.png}"
+         th:alt="${alt != null ? alt : 'Cultivus'}"
+         th:style="'height:' + (${height} != null ? ${height} : '40px') + '; width: auto;'" />
+
+    <!-- Isotipo reutilizable -->
+    <img th:fragment="isotipo (alt, height)" th:src="@{/images/isotipo_transparente.png}"
+         th:alt="${alt != null ? alt : 'Cultivus'}"
+         th:style="'height:' + (${height} != null ? ${height} : '32px') + '; width: auto;'" />
+</body>
+</html>

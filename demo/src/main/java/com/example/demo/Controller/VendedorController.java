@@ -59,9 +59,11 @@ public class VendedorController {
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("billetera", billeteraService != null
-                ? billeteraService.obtenerOCrearBilleteraVendedor(usuario.getId()) : null);
+                ? billeteraService.obtenerOCrearBilleteraVendedor(usuario.getId())
+                : null);
         model.addAttribute("movimientos", billeteraService != null
-                ? billeteraService.listarMovimientosVendedor(usuario.getId()) : java.util.List.of());
+                ? billeteraService.listarMovimientosVendedor(usuario.getId())
+                : java.util.List.of());
         return "vendedor/billetera-vendedor";
     }
 
@@ -171,7 +173,7 @@ public class VendedorController {
     /**
      * Redirige inicio al panel principal del vendedor (Dashboard)
      */
-    @GetMapping({"", "/", "/inicio"})
+    @GetMapping({ "", "/", "/inicio" })
     public String mostrarInicioVendedor(HttpSession session, RedirectAttributes redirectAttributes) {
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
         if (usuario == null) {
@@ -187,7 +189,8 @@ public class VendedorController {
     }
 
     /**
-     * Panel principal del vendedor: resumen de ventas, pedidos y estado del inventario.
+     * Panel principal del vendedor: resumen de ventas, pedidos y estado del
+     * inventario.
      */
     @GetMapping("/dashboard")
     public String mostrarDashboard(HttpSession session, Model model,
@@ -364,15 +367,18 @@ public class VendedorController {
             return "redirect:/vendedor/registro";
         }
 
-        List<Pedido> todasLasVentas = vendedorService.obtenerVentasDelVendedor(usuario.getId());
-        String filtro = estado == null || estado.isBlank() ? "todas" : estado.trim().toLowerCase();
-        String texto = busqueda == null ? "" : busqueda.trim();
-        String textoBusqueda = texto.toLowerCase();
+        List<Pedido> pedidos = vendedorService.obtenerPedidosDelVendedor(usuario.getId());
+        double totalVentas = vendedorService.calcularTotalVentas(usuario.getId());
 
-        List<Pedido> pedidos = todasLasVentas.stream()
-                .filter(p -> coincideFiltroEstado(p, filtro))
-                .filter(p -> coincideBusqueda(p, textoBusqueda))
-                .toList();
+        long pendientes = pedidos.stream()
+                .filter(p -> "PENDIENTE".equalsIgnoreCase(p.getEstado())).count();
+        long enProceso = pedidos.stream()
+                .filter(p -> "CONFIRMADO".equalsIgnoreCase(p.getEstado())
+                        || "EN_PROCESO".equalsIgnoreCase(p.getEstado())
+                        || "ENVIADO".equalsIgnoreCase(p.getEstado()))
+                .count();
+        long completados = pedidos.stream()
+                .filter(p -> "ENTREGADO".equalsIgnoreCase(p.getEstado())).count();
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("pedidos", pedidos);
@@ -436,7 +442,8 @@ public class VendedorController {
     }
 
     /**
-     * Actualiza el estado de una venta. El servicio valida propiedad y transiciones permitidas.
+     * Actualiza el estado de una venta. El servicio valida propiedad y transiciones
+     * permitidas.
      */
     @PostMapping("/ventas/pedido/{pedidoId}/actualizar-estado")
     public String actualizarEstadoPedido(@PathVariable String pedidoId,
@@ -454,17 +461,17 @@ public class VendedorController {
                 return "redirect:/vendedor/registro";
             }
 
-            vendedorService.actualizarEstadoPedido(pedidoId, usuario.getId(), nuevoEstado);
+            vendedorService.actualizarEstadoPedido(pedidoId, nuevoEstado);
 
             redirectAttributes.addFlashAttribute("mensaje", "Estado actualizado correctamente");
             return "redirect:/vendedor/ventas/pedido/" + pedidoId;
 
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalStateException | IllegalArgumentException | SecurityException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/vendedor/ventas/pedido/" + pedidoId;
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "No se pudo actualizar el estado del pedido");
-            return "redirect:/vendedor/ventas/pedido/" + pedidoId;
+            redirectAttributes.addFlashAttribute("error", "Error al actualizar el estado");
+            return "redirect:/vendedor/ventas";
         }
     }
 

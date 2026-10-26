@@ -2,6 +2,7 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
+    <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Consulta y gestiona las ventas confirmadas de tu tienda en Cultivus.">
@@ -82,50 +83,44 @@
         <section class="vp-card" style="margin-top: 24px;">
             <div class="vp-toolbar">
                 <nav class="vp-tabs" aria-label="Filtrar ventas por estado">
-                    <a th:href="@{/vendedor/ventas(estado='todas')}"
-                       class="vp-tab"
-                       th:classappend="${filtroActivo == 'todas' ? 'is-active' : ''}">
+                    <a th:href="@{/vendedor/ventas(estado='todas')}" class="vp-tab"
+                        th:classappend="${filtroActivo == 'todas' ? 'is-active' : ''}">
                         Todas <span class="vp-tab__count" th:text="${totalVentasCount}">0</span>
                     </a>
-                    <a th:href="@{/vendedor/ventas(estado='preparar')}"
-                       class="vp-tab"
-                       th:classappend="${filtroActivo == 'preparar' ? 'is-active' : ''}">
+                    <a th:href="@{/vendedor/ventas(estado='preparar')}" class="vp-tab"
+                        th:classappend="${filtroActivo == 'preparar' ? 'is-active' : ''}">
                         Por preparar <span class="vp-tab__count" th:text="${porPreparar}">0</span>
                     </a>
-                    <a th:href="@{/vendedor/ventas(estado='proceso')}"
-                       class="vp-tab"
-                       th:classappend="${filtroActivo == 'proceso' ? 'is-active' : ''}">
+                    <a th:href="@{/vendedor/ventas(estado='proceso')}" class="vp-tab"
+                        th:classappend="${filtroActivo == 'proceso' ? 'is-active' : ''}">
                         En preparación <span class="vp-tab__count" th:text="${enProceso}">0</span>
                     </a>
-                    <a th:href="@{/vendedor/ventas(estado='enviado')}"
-                       class="vp-tab"
-                       th:classappend="${filtroActivo == 'enviado' ? 'is-active' : ''}">
+                    <a th:href="@{/vendedor/ventas(estado='enviado')}" class="vp-tab"
+                        th:classappend="${filtroActivo == 'enviado' ? 'is-active' : ''}">
                         Enviados <span class="vp-tab__count" th:text="${enCamino}">0</span>
                     </a>
-                    <a th:href="@{/vendedor/ventas(estado='entregado')}"
-                       class="vp-tab"
-                       th:classappend="${filtroActivo == 'entregado' ? 'is-active' : ''}">
+                    <a th:href="@{/vendedor/ventas(estado='entregado')}" class="vp-tab"
+                        th:classappend="${filtroActivo == 'entregado' ? 'is-active' : ''}">
                         Entregados <span class="vp-tab__count" th:text="${entregados}">0</span>
                     </a>
-                    <a th:if="${enRevision > 0}"
-                       th:href="@{/vendedor/ventas(estado='revision')}"
-                       class="vp-tab"
-                       th:classappend="${filtroActivo == 'revision' ? 'is-active' : ''}">
+                    <a th:if="${enRevision > 0}" th:href="@{/vendedor/ventas(estado='revision')}" class="vp-tab"
+                        th:classappend="${filtroActivo == 'revision' ? 'is-active' : ''}">
                         En revisión <span class="vp-tab__count" th:text="${enRevision}">0</span>
                     </a>
                 </nav>
 
                 <form th:action="@{/vendedor/ventas}" method="get" class="vp-search" role="search">
                     <i class="fas fa-magnifying-glass"></i>
-                    <input type="search" name="q" th:value="${busqueda}"
-                           placeholder="Buscar por factura o cliente" aria-label="Buscar ventas">
+                    <input type="search" name="q" th:value="${busqueda}" placeholder="Buscar por factura o cliente"
+                        aria-label="Buscar ventas">
                     <input type="hidden" name="estado" th:value="${filtroActivo}">
                 </form>
             </div>
 
             <div th:if="${pedidos == null or pedidos.isEmpty()}" class="vp-empty">
                 <i class="fas fa-receipt"></i>
-                <h3 th:text="${(busqueda != null and !busqueda.isEmpty()) ? 'No encontramos ventas con esa búsqueda' : (filtroActivo != 'todas' ? 'No hay ventas en este estado' : 'Aún no tienes ventas confirmadas')}">
+                <h3
+                    th:text="${(busqueda != null and !busqueda.isEmpty()) ? 'No encontramos ventas con esa búsqueda' : (filtroActivo != 'todas' ? 'No hay ventas en este estado' : 'Aún no tienes ventas confirmadas')}">
                     Aún no tienes ventas confirmadas
                 </h3>
                 <p>
@@ -153,27 +148,28 @@
                     <tbody>
                         <tr th:each="pedido : ${pedidos}">
                             <td>
-                                <a th:href="@{/vendedor/ventas/pedido/{id}(id=${pedido.id})}"
-                                   class="vp-invoice" th:text="${pedido.numeroFactura}">CLT-000000</a>
+                                <a th:href="@{/vendedor/ventas/pedido/{id}(id=${pedido.id})}" class="vp-invoice"
+                                    th:text="${pedido.numeroFactura}">CLT-000000</a>
                             </td>
                             <td th:text="${pedido.comprador != null ? pedido.comprador.nombre : 'Cliente'}">Cliente</td>
                             <td class="vp-nowrap vp-muted"
-                                th:text="${pedido.fechaPedido != null ? #temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm') : '—'}">—</td>
+                                th:text="${pedido.fechaPedido != null ? #temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm') : '—'}">
+                                —</td>
                             <td class="vp-nowrap">
                                 <span th:text="${pedido.items != null ? pedido.items.size() : 0}">0</span>
                                 <span class="vp-muted">ítem(s)</span>
                             </td>
                             <td class="vp-amount">
-                                $<span th:text="${#numbers.formatDecimal(pedido.total, 0, 'COMMA', 0, 'POINT')}">0</span>
+                                $<span
+                                    th:text="${#numbers.formatDecimal(pedido.total, 0, 'COMMA', 0, 'POINT')}">0</span>
                             </td>
                             <td>
-                                <span class="vp-badge"
-                                      th:classappend="'vp-badge--' + ${pedido.estadoCss}"
-                                      th:text="${pedido.estadoEtiqueta}">Confirmado</span>
+                                <span class="vp-badge" th:classappend="'vp-badge--' + ${pedido.estadoCss}"
+                                    th:text="${pedido.estadoEtiqueta}">Confirmado</span>
                             </td>
                             <td class="vp-nowrap">
                                 <a th:href="@{/vendedor/ventas/pedido/{id}(id=${pedido.id})}"
-                                   class="vp-btn vp-btn--outline vp-btn--sm">
+                                    class="vp-btn vp-btn--outline vp-btn--sm">
                                     <i class="fas fa-arrow-right"></i> Gestionar
                                 </a>
                             </td>
@@ -185,7 +181,8 @@
 
         <div class="vp-note" style="margin-top: 18px;">
             <i class="fas fa-circle-info"></i>
-            <span>Los pedidos con pago pendiente o rechazado no se muestran como ventas. Así tu panel refleja únicamente ingresos confirmados.</span>
+            <span>Los pedidos con pago pendiente o rechazado no se muestran como ventas. Así tu panel refleja únicamente
+                ingresos confirmados.</span>
         </div>
         <footer class="vs-footer">
             <div class="vs-footer__brand">
@@ -200,4 +197,3 @@
 </body>
 
 </html>
-

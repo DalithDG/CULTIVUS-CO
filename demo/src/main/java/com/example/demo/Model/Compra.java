@@ -75,6 +75,10 @@ public class Compra {
     @Transient
     private List<Pedido> subPedidos = new ArrayList<>();
 
+    /** Envío asociado para visualización logística en el tracking del comprador. */
+    @Transient
+    private Envio envioLogistica;
+
     public Compra() {
         this.fecha = LocalDateTime.now();
         this.estado = PENDIENTE;
@@ -130,6 +134,9 @@ public class Compra {
     public String getReferenciaPago() { return referenciaPago; }
     public void setReferenciaPago(String referenciaPago) { this.referenciaPago = referenciaPago; }
 
+    public String getCodigoReferencia() { return referenciaPago; }
+    public void setCodigoReferencia(String codigoReferencia) { this.referenciaPago = codigoReferencia; }
+
     public Long getSubtotalCentavos() { return subtotalCentavos; }
     public void setSubtotalCentavos(Long subtotalCentavos) { this.subtotalCentavos = subtotalCentavos; }
 
@@ -169,5 +176,30 @@ public class Compra {
     }
     public void setSubPedidos(List<Pedido> subPedidos) {
         this.subPedidos = subPedidos != null ? subPedidos : new ArrayList<>();
+    }
+
+    public Envio getEnvioLogistica() { return envioLogistica; }
+    public void setEnvioLogistica(Envio envioLogistica) { this.envioLogistica = envioLogistica; }
+
+    /**
+     * Clave para las pestañas de "Mis Pedidos": ENTREGADO, PROCESO, PENDIENTE o RECHAZADA.
+     * Una compra pagada con envío asignado/en curso queda en PROCESO; entregada, en ENTREGADO.
+     */
+    public String getEstadoFiltro() {
+        if (RECHAZADA.equals(estado)) return RECHAZADA;
+        if (!PAGADA.equals(estado)) return PENDIENTE;
+        if (envioLogistica != null && Envio.ENTREGADO.equals(envioLogistica.getEstado())) return "ENTREGADO";
+        if (subPedidos != null && !subPedidos.isEmpty()
+                && subPedidos.stream().allMatch(p -> p.getEstado() != null
+                        && ("ENTREGADO".equalsIgnoreCase(p.getEstado()) || "COMPLETADO".equalsIgnoreCase(p.getEstado())))) {
+            return "ENTREGADO";
+        }
+        return "PROCESO";
+    }
+
+    public boolean isTieneSubPedidoListoParaRecoger() {
+        if (subPedidos == null) return false;
+        return subPedidos.stream()
+                .anyMatch(p -> Pedido.LISTO_PARA_RECOGER.equalsIgnoreCase(p.getEstado()));
     }
 }
