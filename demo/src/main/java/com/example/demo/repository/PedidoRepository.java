@@ -5,7 +5,9 @@ import org.springframework.stereotype.Repository;
 
 import com.example.demo.Model.Pedido;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface PedidoRepository extends MongoRepository<Pedido, String> {
@@ -24,6 +26,15 @@ public interface PedidoRepository extends MongoRepository<Pedido, String> {
 
     // Buscar pedidos de un vendedor por estado
     List<Pedido> findByVendedor_IdAndEstado(String vendedorId, String estado);
+
+    // Ventas del vendedor, más recientes primero
+    List<Pedido> findByVendedor_IdOrderByFechaPedidoDesc(String vendedorId);
+
+    // Buscar un pedido garantizando que pertenece al vendedor autenticado
+    Optional<Pedido> findByIdAndVendedor_Id(String pedidoId, String vendedorId);
+
+    // Contar pedidos del comprador para el resumen de actividad cruzada
+    long countByCompradorId(String compradorId);
 
     // Buscar pedidos por referencia de pago (Wompi)
     List<Pedido> findByPago_Referencia(String referencia);

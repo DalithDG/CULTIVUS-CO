@@ -4,246 +4,200 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cultivus - Mis Ventas</title>
+    <meta name="description" content="Consulta y gestiona las ventas confirmadas de tu tienda en Cultivus.">
+    <title>Mis Ventas - Cultivus</title>
 
-    <link rel="stylesheet" th:href="@{/style.css}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-        integrity="sha512-RXf+QSDCUQs6Q0p2U2uD2OeR5xw8n5T6vCJ7/3zvK3YyEdSpYohhjFExz04szsP1CZq0w0C+YyXWZP8y+e2xUg=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <style>
-        .ventas-container {
-            max-width: 1200px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
-
-        .stats-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, #27ae60 0%, #1ef378 100%);
-            color: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        .stat-card h3 {
-            margin: 0 0 10px 0;
-            font-size: 14px;
-            opacity: 0.9;
-        }
-
-        .stat-card .value {
-            font-size: 32px;
-            font-weight: bold;
-            margin: 0;
-        }
-
-        .pedidos-section {
-            background: white;
-            border-radius: 10px;
-            padding: 30px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .pedidos-section h2 {
-            color: #27ae60;
-            margin-bottom: 20px;
-        }
-
-        .pedido-item {
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 15px;
-            transition: all 0.3s ease;
-        }
-
-        .pedido-item:hover {
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            transform: translateY(-2px);
-        }
-
-        .pedido-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .pedido-info {
-            flex: 1;
-        }
-
-        .pedido-id {
-            font-weight: bold;
-            color: #27ae60;
-            font-size: 18px;
-        }
-
-        .pedido-fecha {
-            color: #666;
-            font-size: 14px;
-            margin-top: 5px;
-        }
-
-        .pedido-estado {
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .estado-pendiente {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .estado-proceso {
-            background: #d1ecf1;
-            color: #0c5460;
-        }
-
-        .estado-completado {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .estado-cancelado {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        .pedido-cliente {
-            margin-top: 10px;
-            color: #333;
-        }
-
-        .pedido-total {
-            font-size: 20px;
-            font-weight: bold;
-            color: #27ae60;
-            margin-top: 10px;
-        }
-
-        .btn-ver-detalle {
-            background: #27ae60;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            transition: background 0.3s;
-        }
-
-        .btn-ver-detalle:hover {
-            background: #1ef378;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #666;
-        }
-
-        .empty-state i {
-            font-size: 64px;
-            color: #ccc;
-            margin-bottom: 20px;
-        }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" th:href="@{/header.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
+    <link rel="stylesheet" th:href="@{/vendedor-panel.css}">
 </head>
 
-<body>
-    <header th:replace="fragments/header-vendedor :: siteHeader"></header>
+<body class="vs-layout">
+    <header th:replace="~{fragments/header-vendedor :: siteHeader}"></header>
 
-    <div class="ventas-container">
-        <h1 style="color: #27ae60; margin-bottom: 30px;">
-            <i class="fa-solid fa-chart-line"></i> Mis Ventas
-        </h1>
-
-        <!-- Estadísticas -->
-        <div class="stats-cards">
-            <div class="stat-card">
-                <h3><i class="fa-solid fa-dollar-sign"></i> Total de Ventas</h3>
-                <p class="value" th:text="${#numbers.formatDecimal(totalVentas, 0, 'COMMA', 2, 'POINT')}">$0.00</p>
-            </div>
-            <div class="stat-card">
-                <h3><i class="fa-solid fa-clock"></i> Pendientes</h3>
-                <p class="value" th:text="${pendientes}">0</p>
-            </div>
-            <div class="stat-card">
-                <h3><i class="fa-solid fa-spinner"></i> En Proceso</h3>
-                <p class="value" th:text="${enProceso}">0</p>
-            </div>
-            <div class="stat-card">
-                <h3><i class="fa-solid fa-check-circle"></i> Completados</h3>
-                <p class="value" th:text="${completados}">0</p>
-            </div>
+    <main class="vs-main">
+        <div th:if="${mensaje}" class="vp-alert vp-alert--success">
+            <i class="fas fa-check-circle"></i>
+            <span th:text="${mensaje}"></span>
+        </div>
+        <div th:if="${error}" class="vp-alert vp-alert--error">
+            <i class="fas fa-exclamation-circle"></i>
+            <span th:text="${error}"></span>
         </div>
 
-        <!-- Lista de Pedidos -->
-        <div class="pedidos-section">
-            <h2><i class="fa-solid fa-shopping-bag"></i> Pedidos</h2>
-
-            <div th:if="${pedidos == null || pedidos.isEmpty()}" class="empty-state">
-                <i class="fa-solid fa-inbox"></i>
-                <h3>No tienes ventas aún</h3>
-                <p>Cuando los clientes compren tus productos, aparecerán aquí.</p>
-            </div>
-
-            <div th:each="pedido : ${pedidos}" class="pedido-item">
-                <div class="pedido-header">
-                    <div class="pedido-info">
-                        <div class="pedido-id" th:text="${pedido.numeroFactura}">Pedido #CLT-XXXXXX</div>
-                        <div class="pedido-fecha">
-                            <i class="fa-solid fa-calendar"></i>
-                            <span th:text="${#temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm')}"></span>
-                        </div>
-                        <div class="pedido-cliente">
-                            <i class="fa-solid fa-user"></i>
-                            Cliente: <span th:text="${pedido.comprador.nombre}"></span>
-                        </div>
-                    </div>
-                    <div>
-                        <span class="pedido-estado" 
-                              th:classappend="${pedido.estado == 'PENDIENTE' ? 'estado-pendiente' : 
-                                             (pedido.estado == 'CANCELADO' ? 'estado-cancelado' : 
-                                             (pedido.estado == 'CONFIRMADO' || pedido.estado == 'EN_PROCESO' || pedido.estado == 'PROCESANDO' || pedido.estado == 'ENVIADO' ? 'estado-proceso' : 
-                                             'estado-completado'))}"
-                              th:text="${pedido.estado}">
-                        </span>
-                    </div>
-                </div>
-
-                <div style="margin-top: 15px;">
-                    <a th:href="@{/vendedor/ventas/pedido/{id}(id=${pedido.id})}" 
-                       class="btn-ver-detalle">
-                        <i class="fa-solid fa-eye"></i> Ver Detalles
+        <section class="vp-hero">
+            <div class="vp-hero__content">
+                <span class="vp-kicker"><i class="fas fa-chart-line"></i> Ventas confirmadas</span>
+                <h1>Mis ventas</h1>
+                <p>
+                    Aquí solo aparecen pedidos con pago confirmado. Prepara, despacha y entrega cada pedido
+                    para que el comprador reciba el aviso en cada etapa.
+                </p>
+                <div class="vp-hero__actions">
+                    <a th:href="@{/vendedor/dashboard}" class="vp-btn vp-btn--ghost">
+                        <i class="fas fa-arrow-left"></i> Volver al panel
+                    </a>
+                    <a th:href="@{/vendedor/mis-productos}" class="vp-btn vp-btn--light">
+                        <i class="fas fa-box"></i> Ver inventario
                     </a>
                 </div>
             </div>
+        </section>
+
+        <section class="vp-stats" aria-label="Resumen de ventas">
+            <article class="vp-stat">
+                <div class="vp-stat__icon"><i class="fas fa-sack-dollar"></i></div>
+                <p class="vp-stat__label">Total vendido</p>
+                <p class="vp-stat__value">
+                    $<span th:text="${#numbers.formatDecimal(totalVentas, 0, 'COMMA', 0, 'POINT')}">0</span>
+                </p>
+                <p class="vp-stat__hint">
+                    <span th:text="${totalVentasCount}">0</span> ventas confirmadas
+                </p>
+            </article>
+
+            <article class="vp-stat vp-stat--amber">
+                <div class="vp-stat__icon"><i class="fas fa-box-open"></i></div>
+                <p class="vp-stat__label">Por preparar</p>
+                <p class="vp-stat__value" th:text="${porPreparar}">0</p>
+                <p class="vp-stat__hint">Pedidos que esperan tu despacho</p>
+            </article>
+
+            <article class="vp-stat vp-stat--blue">
+                <div class="vp-stat__icon"><i class="fas fa-spinner"></i></div>
+                <p class="vp-stat__label">En preparación</p>
+                <p class="vp-stat__value" th:text="${enProceso}">0</p>
+                <p class="vp-stat__hint">Pedidos que estás alistando</p>
+            </article>
+
+            <article class="vp-stat">
+                <div class="vp-stat__icon"><i class="fas fa-circle-check"></i></div>
+                <p class="vp-stat__label">Entregados</p>
+                <p class="vp-stat__value" th:text="${entregados}">0</p>
+                <p class="vp-stat__hint">Ventas finalizadas correctamente</p>
+            </article>
+        </section>
+
+        <section class="vp-card" style="margin-top: 24px;">
+            <div class="vp-toolbar">
+                <nav class="vp-tabs" aria-label="Filtrar ventas por estado">
+                    <a th:href="@{/vendedor/ventas(estado='todas')}"
+                       class="vp-tab"
+                       th:classappend="${filtroActivo == 'todas' ? 'is-active' : ''}">
+                        Todas <span class="vp-tab__count" th:text="${totalVentasCount}">0</span>
+                    </a>
+                    <a th:href="@{/vendedor/ventas(estado='preparar')}"
+                       class="vp-tab"
+                       th:classappend="${filtroActivo == 'preparar' ? 'is-active' : ''}">
+                        Por preparar <span class="vp-tab__count" th:text="${porPreparar}">0</span>
+                    </a>
+                    <a th:href="@{/vendedor/ventas(estado='proceso')}"
+                       class="vp-tab"
+                       th:classappend="${filtroActivo == 'proceso' ? 'is-active' : ''}">
+                        En preparación <span class="vp-tab__count" th:text="${enProceso}">0</span>
+                    </a>
+                    <a th:href="@{/vendedor/ventas(estado='enviado')}"
+                       class="vp-tab"
+                       th:classappend="${filtroActivo == 'enviado' ? 'is-active' : ''}">
+                        Enviados <span class="vp-tab__count" th:text="${enCamino}">0</span>
+                    </a>
+                    <a th:href="@{/vendedor/ventas(estado='entregado')}"
+                       class="vp-tab"
+                       th:classappend="${filtroActivo == 'entregado' ? 'is-active' : ''}">
+                        Entregados <span class="vp-tab__count" th:text="${entregados}">0</span>
+                    </a>
+                    <a th:if="${enRevision > 0}"
+                       th:href="@{/vendedor/ventas(estado='revision')}"
+                       class="vp-tab"
+                       th:classappend="${filtroActivo == 'revision' ? 'is-active' : ''}">
+                        En revisión <span class="vp-tab__count" th:text="${enRevision}">0</span>
+                    </a>
+                </nav>
+
+                <form th:action="@{/vendedor/ventas}" method="get" class="vp-search" role="search">
+                    <i class="fas fa-magnifying-glass"></i>
+                    <input type="search" name="q" th:value="${busqueda}"
+                           placeholder="Buscar por factura o cliente" aria-label="Buscar ventas">
+                    <input type="hidden" name="estado" th:value="${filtroActivo}">
+                </form>
+            </div>
+
+            <div th:if="${pedidos == null or pedidos.isEmpty()}" class="vp-empty">
+                <i class="fas fa-receipt"></i>
+                <h3 th:text="${(busqueda != null and !busqueda.isEmpty()) ? 'No encontramos ventas con esa búsqueda' : (filtroActivo != 'todas' ? 'No hay ventas en este estado' : 'Aún no tienes ventas confirmadas')}">
+                    Aún no tienes ventas confirmadas
+                </h3>
+                <p>
+                    Los pedidos aparecen aquí únicamente cuando el comprador completa el pago.
+                    Si acabas de iniciar una compra, espera la confirmación de Wompi.
+                </p>
+                <a th:href="@{/vendedor/ventas(estado='todas')}" class="vp-btn vp-btn--outline vp-btn--sm">
+                    <i class="fas fa-rotate-left"></i> Ver todas las ventas
+                </a>
+            </div>
+
+            <div th:if="${pedidos != null and !pedidos.isEmpty()}" class="vp-table-wrap">
+                <table class="vp-table">
+                    <thead>
+                        <tr>
+                            <th>Pedido</th>
+                            <th>Cliente</th>
+                            <th>Fecha</th>
+                            <th>Productos</th>
+                            <th>Total</th>
+                            <th>Estado</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="pedido : ${pedidos}">
+                            <td>
+                                <a th:href="@{/vendedor/ventas/pedido/{id}(id=${pedido.id})}"
+                                   class="vp-invoice" th:text="${pedido.numeroFactura}">CLT-000000</a>
+                            </td>
+                            <td th:text="${pedido.comprador != null ? pedido.comprador.nombre : 'Cliente'}">Cliente</td>
+                            <td class="vp-nowrap vp-muted"
+                                th:text="${pedido.fechaPedido != null ? #temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm') : '—'}">—</td>
+                            <td class="vp-nowrap">
+                                <span th:text="${pedido.items != null ? pedido.items.size() : 0}">0</span>
+                                <span class="vp-muted">ítem(s)</span>
+                            </td>
+                            <td class="vp-amount">
+                                $<span th:text="${#numbers.formatDecimal(pedido.total, 0, 'COMMA', 0, 'POINT')}">0</span>
+                            </td>
+                            <td>
+                                <span class="vp-badge"
+                                      th:classappend="'vp-badge--' + ${pedido.estadoCss}"
+                                      th:text="${pedido.estadoEtiqueta}">Confirmado</span>
+                            </td>
+                            <td class="vp-nowrap">
+                                <a th:href="@{/vendedor/ventas/pedido/{id}(id=${pedido.id})}"
+                                   class="vp-btn vp-btn--outline vp-btn--sm">
+                                    <i class="fas fa-arrow-right"></i> Gestionar
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <div class="vp-note" style="margin-top: 18px;">
+            <i class="fas fa-circle-info"></i>
+            <span>Los pedidos con pago pendiente o rechazado no se muestran como ventas. Así tu panel refleja únicamente ingresos confirmados.</span>
         </div>
-    </div>
-
-    <!-- Mensajes Flash -->
-    <div th:if="${mensaje}" style="position: fixed; top: 100px; right: 20px; background: #d4edda; color: #155724; padding: 15px; border-radius: 5px; z-index: 1000;">
-        <span th:text="${mensaje}"></span>
-    </div>
-    <div th:if="${error}" style="position: fixed; top: 100px; right: 20px; background: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px; z-index: 1000;">
-        <span th:text="${error}"></span>
-    </div>
-
-<footer th:replace="~{fragments/footer :: siteFooter}"></footer>
+        <footer class="vs-footer">
+            <div class="vs-footer__brand">
+                <i class="fas fa-seedling" style="color: var(--vs-green);"></i>
+                <span>Cultivus Colombia · Gestión de Ventas</span>
+            </div>
+            <div class="vs-footer__links">
+                <span>&copy; 2025 Cultivus. Todos los derechos reservados.</span>
+            </div>
+        </footer>
+    </main>
 </body>
+
 </html>
 

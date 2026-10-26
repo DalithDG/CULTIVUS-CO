@@ -12,6 +12,7 @@
     
     <link rel="stylesheet" th:href="@{/header.css}">
     <link rel="stylesheet" th:href="@{/carulla-exito.css}">
+    <link rel="stylesheet" th:href="@{/paginas-publicas.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
 </head>
 <body>
@@ -149,7 +150,7 @@
                 <div>
                     <h2 class="exito-section-title">
                         <i class="fas fa-boxes-stacked" style="color: #f26822;"></i>
-                        Productos disponibles (<span th:text="${ofertas != null ? ofertas.size() : 0}">0</span>)
+                        Productos disponibles (<span th:text="${totalOfertas != null ? totalOfertas : 0}">0</span>)
                     </h2>
                     <p class="exito-section-subtitle">
                         Elige directamente el producto de tu preferencia y agrégalo de inmediato a tu carrito.
@@ -239,6 +240,51 @@
 
             </div>
 
+            <!-- Paginación de ofertas -->
+            <nav class="pub-pagination" th:if="${totalPages != null and totalPages > 1}"
+                 aria-label="Paginación de vendedores">
+                <a class="pub-page-btn"
+                   th:classappend="${currentPage <= 0 ? 'is-disabled' : ''}"
+                   th:href="@{/producto/{id}(id=${producto.id}, page=${currentPage - 1}, size=${size})} + '#productos-disponibles'"
+                   th:attr="aria-disabled=${currentPage <= 0 ? 'true' : null}"
+                   rel="prev">
+                    <i class="fas fa-chevron-left"></i> Anterior
+                </a>
+
+                <div class="pub-page-numbers">
+                    <a th:if="${startPage > 0}" class="pub-page-num"
+                       th:href="@{/producto/{id}(id=${producto.id}, page=0, size=${size})} + '#productos-disponibles'"
+                       th:text="1">1</a>
+                    <span th:if="${startPage > 1}" class="pub-page-ellipsis" aria-hidden="true">…</span>
+
+                    <a th:each="p : ${#numbers.sequence(startPage, endPage)}"
+                       class="pub-page-num"
+                       th:classappend="${p == currentPage ? 'is-active' : ''}"
+                       th:href="@{/producto/{id}(id=${producto.id}, page=${p}, size=${size})} + '#productos-disponibles'"
+                       th:attr="aria-current=${p == currentPage ? 'page' : null}"
+                       th:text="${p + 1}">1</a>
+
+                    <span th:if="${endPage < totalPages - 2}" class="pub-page-ellipsis" aria-hidden="true">…</span>
+                    <a th:if="${endPage < totalPages - 1}" class="pub-page-num"
+                       th:href="@{/producto/{id}(id=${producto.id}, page=${totalPages - 1}, size=${size})} + '#productos-disponibles'"
+                       th:text="${totalPages}">1</a>
+                </div>
+
+                <a class="pub-page-btn"
+                   th:classappend="${currentPage + 1 >= totalPages ? 'is-disabled' : ''}"
+                   th:href="@{/producto/{id}(id=${producto.id}, page=${currentPage + 1}, size=${size})} + '#productos-disponibles'"
+                   th:attr="aria-disabled=${currentPage + 1 >= totalPages ? 'true' : null}"
+                   rel="next">
+                    Siguiente <i class="fas fa-chevron-right"></i>
+                </a>
+
+                <p class="pub-pagination__summary">
+                    Mostrando <strong th:text="${mostrandoDesde}">1</strong>–<strong
+                        th:text="${mostrandoHasta}">8</strong> de <strong th:text="${totalOfertas}">0</strong>
+                    vendedores
+                </p>
+            </nav>
+
             <!-- Estado si no hay ofertas disponibles -->
             <div th:if="${ofertas == null or ofertas.isEmpty()}" style="background:#fff; border-radius:16px; padding:50px 20px; text-align:center; box-shadow:var(--shadow-card);">
                 <i class="fas fa-store-slash" style="font-size:3rem; color:#d1d5db; margin-bottom:15px;"></i>
@@ -252,6 +298,45 @@
             </div>
 
         </section>
+
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <!-- NAVEGACIÓN ENTRE PRODUCTOS (Anterior / Siguiente)             -->
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <nav class="prod-nav-strip" aria-label="Navegar entre productos" th:if="${productoAnterior != null or productoSiguiente != null}">
+            <a class="prod-nav-btn prod-nav-btn--prev"
+               th:if="${productoAnterior != null}"
+               th:href="@{/producto/{id}(id=${productoAnterior.id})}">
+                <span class="prod-nav-arrow"><i class="fas fa-chevron-left"></i></span>
+                <span class="prod-nav-content">
+                    <small>Producto anterior</small>
+                    <strong th:text="${productoAnterior.nombre}">Nombre</strong>
+                </span>
+            </a>
+            <a class="prod-nav-btn prod-nav-btn--placeholder" th:if="${productoAnterior == null}"
+               th:href="@{/category}" style="opacity:0.4; pointer-events:none;">
+                <span class="prod-nav-arrow"><i class="fas fa-chevron-left"></i></span>
+                <span class="prod-nav-content"><small>Primer producto</small></span>
+            </a>
+
+            <a class="prod-nav-center" th:href="@{/category}">
+                <i class="fas fa-th-large"></i> Ver catálogo completo
+            </a>
+
+            <a class="prod-nav-btn prod-nav-btn--next"
+               th:if="${productoSiguiente != null}"
+               th:href="@{/producto/{id}(id=${productoSiguiente.id})}">
+                <span class="prod-nav-content" style="text-align:right;">
+                    <small>Producto siguiente</small>
+                    <strong th:text="${productoSiguiente.nombre}">Nombre</strong>
+                </span>
+                <span class="prod-nav-arrow"><i class="fas fa-chevron-right"></i></span>
+            </a>
+            <a class="prod-nav-btn prod-nav-btn--placeholder" th:if="${productoSiguiente == null}"
+               th:href="@{/category}" style="opacity:0.4; pointer-events:none;">
+                <span class="prod-nav-content" style="text-align:right;"><small>Último producto</small></span>
+                <span class="prod-nav-arrow"><i class="fas fa-chevron-right"></i></span>
+            </a>
+        </nav>
 
         <!-- ══════════════════════════════════════════════════════════════ -->
         <!-- ACORDEÓN: DETALLES DEL PRODUCTO (Image 1)                      -->

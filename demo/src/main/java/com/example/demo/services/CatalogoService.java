@@ -140,6 +140,86 @@ public class CatalogoService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Obtiene las ofertas aprobadas y disponibles para un producto con paginación.
+     */
+    public Page<OfertaVendedor> obtenerOfertasAprobadasPaginadas(String productoCatalogoId, int page, int size) {
+        List<OfertaVendedor> todas = obtenerOfertasAprobadas(productoCatalogoId);
+        int total = todas.size();
+        int tamano = Math.min(48, Math.max(1, size));
+        int totalPages = total > 0 ? (int) Math.ceil((double) total / tamano) : 1;
+        int pagina = Math.max(0, page);
+        if (pagina >= totalPages) {
+            pagina = Math.max(0, totalPages - 1);
+        }
+
+        int fromIndex = Math.min(pagina * tamano, total);
+        int toIndex = Math.min(fromIndex + tamano, total);
+        List<OfertaVendedor> sublist = todas.subList(fromIndex, toIndex);
+
+        return new org.springframework.data.domain.PageImpl<>(sublist, PageRequest.of(pagina, tamano), total);
+    }
+
+    /**
+     * Obtiene el producto anterior en el catálogo (prioriza productos de la misma categoría).
+     */
+    public ProductoCatalogo obtenerProductoAnterior(ProductoCatalogo actual) {
+        if (actual == null || actual.getId() == null) {
+            return null;
+        }
+        List<ProductoCatalogo> lista = null;
+        if (actual.getCategoria() != null && actual.getCategoria().getId() != null) {
+            lista = listarPorCategoria(actual.getCategoria().getId());
+        }
+        if (lista == null || lista.size() <= 1) {
+            lista = listarCatalogo();
+        }
+        if (lista == null || lista.isEmpty()) {
+            return null;
+        }
+
+        for (int i = 0; i < lista.size(); i++) {
+            if (actual.getId().equals(lista.get(i).getId())) {
+                if (i > 0) {
+                    return lista.get(i - 1);
+                } else {
+                    return null;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Obtiene el producto siguiente en el catálogo (prioriza productos de la misma categoría).
+     */
+    public ProductoCatalogo obtenerProductoSiguiente(ProductoCatalogo actual) {
+        if (actual == null || actual.getId() == null) {
+            return null;
+        }
+        List<ProductoCatalogo> lista = null;
+        if (actual.getCategoria() != null && actual.getCategoria().getId() != null) {
+            lista = listarPorCategoria(actual.getCategoria().getId());
+        }
+        if (lista == null || lista.size() <= 1) {
+            lista = listarCatalogo();
+        }
+        if (lista == null || lista.isEmpty()) {
+            return null;
+        }
+
+        for (int i = 0; i < lista.size(); i++) {
+            if (actual.getId().equals(lista.get(i).getId())) {
+                if (i < lista.size() - 1) {
+                    return lista.get(i + 1);
+                } else {
+                    return null;
+                }
+            }
+        }
+        return null;
+    }
+
     // ══════════════════════════════════════════════════════════
     // Gestión del catálogo (admin / vendedor con moderación)
     // ══════════════════════════════════════════════════════════

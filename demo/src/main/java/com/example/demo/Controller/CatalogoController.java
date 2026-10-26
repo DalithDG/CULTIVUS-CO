@@ -10,6 +10,7 @@ import com.example.demo.services.CatalogoService;
 import com.example.demo.services.ResenaService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -76,10 +77,13 @@ public class CatalogoController {
     }
 
     /**
-     * Muestra el detalle de un producto del catálogo con la lista de vendedores.
+     * Muestra el detalle de un producto del catálogo con la lista de vendedores paginada
+     * y navegación al producto anterior y siguiente.
      */
     @GetMapping("/producto/{id}")
     public String verDetalleProducto(@PathVariable String id,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "8") int size,
             Model model,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
@@ -89,8 +93,28 @@ public class CatalogoController {
                 throw new IllegalArgumentException("Producto no encontrado");
             }
 
-            // Obtener ofertas aprobadas y disponibles, ordenadas por precio
-            List<OfertaVendedor> ofertas = catalogoService.obtenerOfertasAprobadas(id);
+            // Validar parámetros de paginación
+            if (size < 1) size = 1;
+            if (size > 48) size = 48;
+            if (page < 0) page = 0;
+
+            // Obtener ofertas aprobadas y disponibles con paginación
+            Page<OfertaVendedor> paginaOfertas = catalogoService.obtenerOfertasAprobadasPaginadas(id, page, size);
+            List<OfertaVendedor> ofertas = paginaOfertas.getContent();
+            int currentPage = paginaOfertas.getNumber();
+            int totalPages = paginaOfertas.getTotalPages() > 0 ? paginaOfertas.getTotalPages() : 1;
+            long totalOfertas = paginaOfertas.getTotalElements();
+
+            // Paginación numérica (startPage y endPage para mostrar ventana de botones)
+            int startPage = Math.max(0, currentPage - 2);
+            int endPage = Math.min(totalPages - 1, currentPage + 2);
+
+            int mostrandoDesde = totalOfertas > 0 ? (currentPage * size) + 1 : 0;
+            int mostrandoHasta = (int) Math.min((long) (currentPage + 1) * size, totalOfertas);
+
+            // Navegación producto anterior y siguiente
+            ProductoCatalogo productoAnterior = catalogoService.obtenerProductoAnterior(producto);
+            ProductoCatalogo productoSiguiente = catalogoService.obtenerProductoSiguiente(producto);
 
             Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
 
@@ -101,6 +125,18 @@ public class CatalogoController {
 
             model.addAttribute("producto", producto);
             model.addAttribute("ofertas", ofertas);
+            model.addAttribute("currentPage", currentPage);
+            model.addAttribute("totalPages", totalPages);
+            model.addAttribute("totalOfertas", totalOfertas);
+            model.addAttribute("size", size);
+            model.addAttribute("startPage", startPage);
+            model.addAttribute("endPage", endPage);
+            model.addAttribute("mostrandoDesde", mostrandoDesde);
+            model.addAttribute("mostrandoHasta", mostrandoHasta);
+
+            model.addAttribute("productoAnterior", productoAnterior);
+            model.addAttribute("productoSiguiente", productoSiguiente);
+
             model.addAttribute("usuario", usuario);
             model.addAttribute("resenas", resenas);
             model.addAttribute("promedioCalificacion", promedioCalificacion);

@@ -10,11 +10,35 @@ import com.example.demo.security.SecurityContextRefreshService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class VendedorService {
+
+    /**
+     * Estados que representan una venta real para el vendedor.
+     * PENDIENTE (pago sin terminar) y CANCELADO (pago rechazado) no deben aparecer en su panel.
+     */
+    public static final Set<String> ESTADOS_VENTA_VISIBLES = Set.of(
+            "CONFIRMADO",
+            "EN_PROCESO",
+            "PROCESANDO",
+            "ENVIADO",
+            "ENTREGADO",
+            "COMPLETADO",
+            Pedido.EN_REVISION);
+
+    private static final Map<String, String> SIGUIENTE_ESTADO = Map.of(
+            "CONFIRMADO", "EN_PROCESO",
+            "EN_PROCESO", "ENVIADO",
+            "PROCESANDO", "ENVIADO",
+            "ENVIADO", "ENTREGADO");
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -144,10 +168,28 @@ public class VendedorService {
     }
 
     /**
-     * Obtiene todos los pedidos del vendedor
+     * Obtiene todos los pedidos del vendedor, incluidos los que no son ventas reales.
+     * Se conserva para tareas administrativas; las vistas deben usar {@link #obtenerVentasDelVendedor(String)}.
      */
     public List<Pedido> obtenerPedidosDelVendedor(String vendedorId) {
         return pedidoRepository.findByVendedor_Id(vendedorId);
+    }
+
+    /**
+     * Ventas visibles en el panel del vendedor: solo pedidos pagados/confirmados.
+     * Los pedidos PENDIENTE de un pago abandonado y los CANCELADO nunca se muestran como ventas.
+     */
+    public List<Pedido> obtenerVentasDelVendedor(String vendedorId) {
+        if (vendedorId == null || vendedorId.isBlank()) {
+            return List.of();
+        }
+        return pedidoRepository.findByVendedor_IdOrderByFechaPedidoDesc(vendedorId)
+                .stream()
+                .filter(this::esVentaVisible)
+                .sorted(Comparator
+                        .comparing(Pedido::getFechaPedido, Comparator.nullsLast(Comparator.naturalOrder()))
+                        .reversed())
+                .toList();
     }
 
     /**
@@ -158,32 +200,122 @@ public class VendedorService {
     }
 
     /**
-     * Actualiza el estado de un pedido
+     * Busca una venta del vendedor validando la propiedad del pedido.
+     * Evita que un vendedor consulte o modifique pedidos de otra tienda por ID.
      */
-    public void actualizarEstadoPedido(String pedidoId, String nuevoEstado) {
-        Pedido pedido = pedidoRepository.findById(pedidoId)
-                .orElseThrow(() -> new IllegalArgumentException("Pedido no encontrado"));
+    public Optional<Pedido> obtenerVentaDelVendedor(String pedidoId, String vendedorId) {
+        if (pedidoId == null || vendedorId == null) {
+            return Optional.empty();
+        }
+        return pedidoRepository.findByIdAndVendedor_Id(pedidoId, vendedorId)
+                .filter(this::esVentaVisible);
+    }
 
-        pedido.setEstado(nuevoEstado);
-        pedidoRepository.save(pedido);
-
-        // Notificar al Comprador
-        notificacionService.enviar(
-                pedido.getComprador().getId(),
-                "Actualización de Pedido",
-                "El estado de tu pedido #" + pedido.getId() + " ha cambiado a: " + nuevoEstado,
-                "INFO"
-        );
+    public boolean esVentaVisible(Pedido pedido) {
+        if (pedido == null || pedido.getEstado() == null) {
+            return false;
+        }
+        return ESTADOS_VENTA_VISIBLES.contains(normalizarEstado(pedido.getEstado()));
     }
 
     /**
-     * Calcula el total de ventas del vendedor
+     * Siguiente estado permitido para el vendedor. Un pedido entregado o en revisión no se modifica.
+     */
+    public Optional<String> obtenerSiguienteEstado(String estadoActual) {
+        return Optional.ofNullable(SIGUIENTE_ESTADO.get(normalizarEstado(estadoActual)));
+    }
+
+    public String etiquetaAccionSiguiente(String estadoActual) {
+        String siguiente = SIGUIENTE_ESTADO.get(normalizarEstado(estadoActual));
+        if (siguiente == null) {
+            return null;
+        }
+        return switch (siguiente) {
+            case "EN_PROCESO" -> "Comenzar preparación";
+            case "ENVIADO" -> "Marcar como enviado";
+            case "ENTREGADO" -> "Confirmar entrega";
+            default -> "Actualizar estado";
+        };
+    }
+
+    /**
+     * Actualiza el estado de un pedido aplicando reglas de negocio:
+     * el pedido debe pertenecer al vendedor, estar pagado y avanzar solo al estado inmediato permitido.
+     */
+    public Pedido actualizarEstadoPedido(String pedidoId, String vendedorId, String nuevoEstado) {
+        Pedido pedido = pedidoRepository.findByIdAndVendedor_Id(pedidoId, vendedorId)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Pedido no encontrado o no pertenece a tu tienda"));
+
+        if (!esVentaVisible(pedido)) {
+            throw new IllegalArgumentException(
+                    "Este pedido todavía no tiene un pago confirmado y no se puede actualizar");
+        }
+
+        String estadoActual = normalizarEstado(pedido.getEstado());
+        String estadoDestino = normalizarEstado(nuevoEstado);
+        String estadoEsperado = SIGUIENTE_ESTADO.get(estadoActual);
+
+        if (estadoEsperado == null) {
+            throw new IllegalArgumentException(
+                    "Este pedido ya no requiere cambios de estado (" + pedido.getEstadoEtiqueta() + ")");
+        }
+        if (!estadoEsperado.equals(estadoDestino)) {
+            throw new IllegalArgumentException(
+                    "Cambio de estado no permitido: de " + pedido.getEstadoEtiqueta()
+                            + " a " + etiquetaEstado(estadoDestino));
+        }
+
+        pedido.setEstado(estadoDestino);
+        pedido.setUpdatedAt(LocalDateTime.now());
+        Pedido guardado = pedidoRepository.save(pedido);
+
+        if (notificacionService != null
+                && pedido.getComprador() != null
+                && pedido.getComprador().getId() != null) {
+            notificacionService.enviar(
+                    pedido.getComprador().getId(),
+                    "Actualización de Pedido",
+                    "El estado de tu pedido #" + pedido.getNumeroFactura()
+                            + " cambió a: " + guardado.getEstadoEtiqueta(),
+                    "INFO");
+        }
+
+        return guardado;
+    }
+
+    /**
+     * Calcula el total de ventas confirmadas del vendedor.
      */
     public double calcularTotalVentas(String vendedorId) {
-        List<Pedido> pedidos = pedidoRepository.findByVendedor_Id(vendedorId);
-        return pedidos.stream()
-                .filter(p -> !"CANCELADO".equalsIgnoreCase(p.getEstado()) && !"PENDIENTE".equalsIgnoreCase(p.getEstado())) // Solo ventas confirmadas o en curso
-                .mapToDouble(Pedido::getTotal)
+        return obtenerVentasDelVendedor(vendedorId).stream()
+                .map(Pedido::getTotal)
+                .filter(Objects::nonNull)
+                .mapToDouble(Double::doubleValue)
                 .sum();
+    }
+
+    public long contarVentasPorEstados(String vendedorId, String... estados) {
+        Set<String> buscados = Set.of(estados);
+        return obtenerVentasDelVendedor(vendedorId).stream()
+                .filter(p -> buscados.contains(normalizarEstado(p.getEstado())))
+                .count();
+    }
+
+    private static String normalizarEstado(String estado) {
+        return estado == null ? "" : estado.trim().toUpperCase();
+    }
+
+    private static String etiquetaEstado(String estado) {
+        return switch (normalizarEstado(estado)) {
+            case "PENDIENTE" -> "Pendiente de pago";
+            case "CONFIRMADO" -> "Confirmado";
+            case "EN_PROCESO", "PROCESANDO" -> "En preparación";
+            case "ENVIADO" -> "Enviado";
+            case "ENTREGADO", "COMPLETADO" -> "Entregado";
+            case "CANCELADO" -> "Cancelado";
+            case Pedido.EN_REVISION -> "En revisión";
+            default -> estado;
+        };
     }
 }

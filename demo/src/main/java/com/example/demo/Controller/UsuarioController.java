@@ -243,7 +243,7 @@ public class UsuarioController {
         }
         
         if (usuario.hasRole(Role.VENDEDOR)) {
-            return "redirect:/vendedor/inicio";
+            return "redirect:/vendedor/dashboard";
         }
 
         return "comprador/inicio-comprador";
@@ -355,10 +355,18 @@ public class UsuarioController {
             return "redirect:/usuario/login";
         }
 
+        // Una compra PENDIENTE solo se muestra mientras el pago está en curso. Los intentos
+        // abandonados dejan de aparecer en el historial para no confundirlos con pedidos reales.
+        LocalDateTime limitePagoEnCurso = LocalDateTime.now().minusMinutes(30);
+
         List<Compra> compras = new ArrayList<>();
         java.util.Set<String> subPedidoIds = new java.util.HashSet<>();
         if (compraRepository != null) {
-            compras = compraRepository.findByComprador_IdOrderByFechaDesc(usuario.getId());
+            compras = compraRepository.findByComprador_IdOrderByFechaDesc(usuario.getId())
+                    .stream()
+                    .filter(c -> !"PENDIENTE".equalsIgnoreCase(c.getEstado())
+                            || (c.getFecha() != null && c.getFecha().isAfter(limitePagoEnCurso)))
+                    .collect(Collectors.toList());
             for (Compra c : compras) {
                 List<Pedido> subs = pedidoRepository.findByCompraId(c.getId());
                 if (subs.isEmpty() && c.getPedidoIds() != null && !c.getPedidoIds().isEmpty()) {
@@ -373,7 +381,11 @@ public class UsuarioController {
             }
         }
 
-        List<Pedido> misPedidos = pedidoRepository.findByCompradorId(usuario.getId());
+        List<Pedido> misPedidos = pedidoRepository.findByCompradorId(usuario.getId())
+                .stream()
+                .filter(p -> !"PENDIENTE".equalsIgnoreCase(p.getEstado())
+                        || (p.getFechaPedido() != null && p.getFechaPedido().isAfter(limitePagoEnCurso)))
+                .collect(Collectors.toList());
         List<Pedido> pedidosSinCompra = misPedidos.stream()
                 .filter(p -> p.getCompraId() == null && !subPedidoIds.contains(p.getId()))
                 .collect(Collectors.toList());
@@ -398,7 +410,8 @@ public class UsuarioController {
 
         Pedido pedido = pedidoRepository.findById(id).orElse(null);
 
-        if (pedido == null || !pedido.getComprador().getId().equals(usuario.getId())) {
+        if (pedido == null || pedido.getComprador() == null
+                || !usuario.getId().equals(pedido.getComprador().getId())) {
             redirectAttributes.addFlashAttribute("error", "No tienes acceso a este pedido");
             return "redirect:/usuario/pedidos";
         }

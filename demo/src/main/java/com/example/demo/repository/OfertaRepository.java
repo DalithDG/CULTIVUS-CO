@@ -1,6 +1,8 @@
 package com.example.demo.repository;
 
 import com.example.demo.Model.OfertaVendedor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
@@ -9,6 +11,9 @@ import java.util.Optional;
 
 @Repository
 public interface OfertaRepository extends MongoRepository<OfertaVendedor, String> {
+
+    /** Ofertas visibles en el catálogo público, paginadas desde la base de datos */
+    Page<OfertaVendedor> findByDisponibleTrueAndPrecioNotNull(Pageable pageable);
 
     /** Ofertas aprobadas y disponibles para un producto del catálogo (vista pública) */
     List<OfertaVendedor> findByProductoCatalogoIdAndDisponibleTrue(

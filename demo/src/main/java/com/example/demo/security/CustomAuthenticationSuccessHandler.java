@@ -65,7 +65,7 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                     getRedirectStrategy().sendRedirect(request, response, "/transportista/inicio");
                     return;
                 } else if (usuario.hasRole(Role.VENDEDOR)) {
-                    getRedirectStrategy().sendRedirect(request, response, "/vendedor/inicio");
+                    getRedirectStrategy().sendRedirect(request, response, "/vendedor/dashboard");
                     return;
                 } else {
                     getRedirectStrategy().sendRedirect(request, response, "/usuario/inicio");

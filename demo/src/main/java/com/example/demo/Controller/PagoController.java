@@ -531,6 +531,71 @@ public class PagoController {
     }
 
     /**
+     * Cancela la compra pre-registrada cuando el comprador cierra el widget de Wompi sin
+     * crear una transacción. Evita que un pago abandonado quede como pedido pendiente.
+     *
+     * Es idempotente y solo elimina registros que nunca llegaron a tener transacción.
+     */
+    @PostMapping("/cancelar-iniciado")
+    @ResponseBody
+    public org.springframework.http.ResponseEntity<?> cancelarPagoIniciado(
+            @RequestBody(required = false) java.util.Map<String, String> payload,
+            HttpSession session) {
+        try {
+            Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+            if (usuario == null) {
+                return org.springframework.http.ResponseEntity.status(401).body(
+                        java.util.Map.of("ok", false, "error", "Debe iniciar sesión"));
+            }
+
+            String reference = payload != null && payload.get("reference") != null
+                    ? payload.get("reference").trim()
+                    : "";
+            if (reference.isEmpty()) {
+                return org.springframework.http.ResponseEntity.badRequest().body(
+                        java.util.Map.of("ok", false, "error", "Referencia de pago requerida"));
+            }
+
+            java.util.Optional<Compra> optCompra = compraRepository.findByReferenciaPago(reference);
+            if (optCompra.isEmpty()) {
+                return org.springframework.http.ResponseEntity.ok(java.util.Map.of("ok", true));
+            }
+
+            Compra compra = optCompra.get();
+            if (compra.getComprador() == null
+                    || !usuario.getId().equals(compra.getComprador().getId())) {
+                return org.springframework.http.ResponseEntity.status(403).body(
+                        java.util.Map.of("ok", false, "error", "La compra no pertenece al usuario"));
+            }
+
+            // Si ya hay una transacción o un estado final, no se toca: el webhook manda.
+            if (compra.esFinal() || compra.getTransaccionId() != null) {
+                return org.springframework.http.ResponseEntity.status(409).body(
+                        java.util.Map.of("ok", false, "error", "La compra ya fue procesada"));
+            }
+
+            List<Pedido> pedidos = pedidoRepository.findByCompraId(compra.getId());
+            boolean tieneTransaccion = pedidos.stream().anyMatch(p ->
+                    p.getPago() != null
+                            && (p.getPago().getTransaccionId() != null
+                                    || PagoConfirmacionService.esFinal(p.getPago().getEstado())));
+            if (tieneTransaccion) {
+                return org.springframework.http.ResponseEntity.status(409).body(
+                        java.util.Map.of("ok", false, "error", "La compra ya tiene una transacción asociada"));
+            }
+
+            pedidoRepository.deleteAll(pedidos);
+            compraRepository.delete(compra);
+            return org.springframework.http.ResponseEntity.ok(java.util.Map.of("ok", true));
+
+        } catch (Exception e) {
+            log.warn("No se pudo cancelar la compra iniciada: {}", e.getMessage());
+            return org.springframework.http.ResponseEntity.badRequest().body(
+                    java.util.Map.of("ok", false, "error", "No se pudo cancelar la compra iniciada"));
+        }
+    }
+
+    /**
      * Página de prueba mínima del widget de Wompi.
      */
     @GetMapping("/test-wompi")

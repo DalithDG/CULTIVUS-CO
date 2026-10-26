@@ -189,7 +189,6 @@ body {
   margin-top: 32px;
   flex-wrap: wrap;
 }
-
 .pub-page-btn {
   display: inline-flex;
   align-items: center;
@@ -222,6 +221,124 @@ body {
 
 .pub-page-info strong {
   color: #4d5c1f;
+}
+
+/* Números de página (listado de ofertas) */
+.pub-page-numbers {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.pub-page-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 38px;
+  height: 38px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 2px solid #dfe5cf;
+  background: #fff;
+  color: #4d5c1f;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.pub-page-num:hover {
+  border-color: #6b7c2e;
+  background: #f1f7ea;
+}
+
+.pub-page-num.is-active {
+  background: #1e8449;
+  border-color: #1e8449;
+  color: #fff;
+  pointer-events: none;
+}
+
+.pub-page-ellipsis {
+  color: #8a97a3;
+  padding: 0 2px;
+}
+
+.pub-pagination__summary {
+  flex-basis: 100%;
+  text-align: center;
+  font-size: 13px;
+  color: #6c7a89;
+  margin: 0;
+}
+
+.pub-pagination__summary strong {
+  color: #4d5c1f;
+}
+
+/* ═══ Página de Ofertas ═══ */
+#lista-ofertas {
+  scroll-margin-top: 90px;
+}
+
+.ofertas-hero {
+  background: linear-gradient(135deg, #1e8449, #27ae60);
+  padding: 45px 20px;
+}
+
+.ofertas-container {
+  max-width: 1240px;
+  padding-top: 35px;
+  padding-bottom: 35px;
+}
+
+.ofertas-empty {
+  background: #fff;
+  border-radius: 16px;
+  padding: 60px 20px;
+  text-align: center;
+  box-shadow: var(--shadow-card);
+}
+
+.ofertas-empty i {
+  font-size: 3rem;
+  color: #d1d5db;
+  margin-bottom: 15px;
+}
+
+.ofertas-empty h3 {
+  color: #1f2937;
+  margin: 0 0 8px;
+}
+
+.ofertas-empty p {
+  color: #6b7280;
+  max-width: 480px;
+  margin: 0 auto 20px;
+}
+
+.ofertas-empty .carulla-btn-primary {
+  display: inline-flex;
+  width: auto;
+  text-decoration: none;
+}
+
+@media (max-width: 600px) {
+  .pub-pagination {
+    gap: 12px;
+  }
+
+  .pub-page-btn {
+    padding: 9px 14px;
+    font-size: 13px;
+  }
+
+  .pub-page-num {
+    min-width: 34px;
+    height: 34px;
+    font-size: 13px;
+  }
 }
 
 /* Tarjetas de oferta */

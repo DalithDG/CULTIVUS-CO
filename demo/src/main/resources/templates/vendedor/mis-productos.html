@@ -21,7 +21,7 @@
 
         .dashboard-container {
             max-width: 1200px;
-            margin: 2.5rem auto;
+            margin: 0 auto;
             padding: 0 1.5rem;
             animation: fadeIn 0.6s ease-out;
         }
@@ -251,8 +251,9 @@
     <link rel="stylesheet" th:href="@{/footer.css}">
 </head>
 
-<body>
+<body class="vs-layout">
     <header th:replace="fragments/header-vendedor :: siteHeader"></header>
+    <main class="vs-main">
 
     <div class="dashboard-container">
         <div class="dashboard-header">
@@ -330,6 +331,15 @@
             </div>
         </div>
     </div>
-<footer th:replace="~{fragments/footer :: siteFooter}"></footer>
+        <footer class="vs-footer">
+            <div class="vs-footer__brand">
+                <i class="fas fa-seedling" style="color: var(--vs-green);"></i>
+                <span>Cultivus Colombia · Mi Catálogo de Productos</span>
+            </div>
+            <div class="vs-footer__links">
+                <span>&copy; 2025 Cultivus. Todos los derechos reservados.</span>
+            </div>
+        </footer>
+    </main>
 </body>
 </html>

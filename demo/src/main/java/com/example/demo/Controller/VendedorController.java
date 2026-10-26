@@ -1,9 +1,14 @@
 package com.example.demo.Controller;
 
+import com.example.demo.Model.Billetera;
+import com.example.demo.Model.OfertaVendedor;
 import com.example.demo.Model.Pedido;
 import com.example.demo.Model.Usuario;
 import com.example.demo.Model.embebidos.PerfilVendedor;
+import com.example.demo.repository.PedidoRepository;
 import com.example.demo.repository.UsuarioRepository;
+import com.example.demo.services.BilleteraService;
+import com.example.demo.services.OfertaService;
 import com.example.demo.services.VendedorService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +17,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Controller
@@ -25,10 +31,13 @@ public class VendedorController {
     private UsuarioRepository usuarioRepository;
 
     @Autowired
-    private com.example.demo.services.OfertaService ofertaService;
+    private PedidoRepository pedidoRepository;
+
+    @Autowired
+    private OfertaService ofertaService;
 
     @Autowired(required = false)
-    private com.example.demo.services.BilleteraService billeteraService;
+    private BilleteraService billeteraService;
 
     /**
      * US-22: saldos por estado y movimientos de la billetera del vendedor.
@@ -148,7 +157,7 @@ public class VendedorController {
 
             redirectAttributes.addFlashAttribute("mensaje",
                     "Tu solicitud ha sido enviada. Tu perfil de vendedor está ahora en proceso de validación por un administrador.");
-            return "redirect:/vendedor/inicio";
+            return "redirect:/vendedor/dashboard";
 
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
@@ -160,12 +169,10 @@ public class VendedorController {
     }
 
     /**
-     * Página de inicio para vendedores
+     * Redirige inicio al panel principal del vendedor (Dashboard)
      */
-    @GetMapping("/inicio")
-    public String mostrarInicioVendedor(HttpSession session, Model model,
-            RedirectAttributes redirectAttributes) {
-
+    @GetMapping({"", "/", "/inicio"})
+    public String mostrarInicioVendedor(HttpSession session, RedirectAttributes redirectAttributes) {
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
         if (usuario == null) {
             redirectAttributes.addFlashAttribute("error", "Debe iniciar sesión primero");
@@ -176,12 +183,11 @@ public class VendedorController {
             return "redirect:/vendedor/registro";
         }
 
-        model.addAttribute("usuario", usuario);
-        return "vendedor/inicio-vendedor";
+        return "redirect:/vendedor/dashboard";
     }
 
     /**
-     * Dashboard del vendedor
+     * Panel principal del vendedor: resumen de ventas, pedidos y estado del inventario.
      */
     @GetMapping("/dashboard")
     public String mostrarDashboard(HttpSession session, Model model,
@@ -197,13 +203,54 @@ public class VendedorController {
             return "redirect:/vendedor/registro";
         }
 
-        // Cargar ofertas del vendedor para el dashboard
-        List<com.example.demo.Model.OfertaVendedor> ofertas = ofertaService.listarOfertasVendedor(usuario.getId());
-        model.addAttribute("ofertas", ofertas);
-        
-        model.addAttribute("perfilVendedor", usuario.getPerfilVendedor());
+        List<OfertaVendedor> ofertas = ofertaService.listarOfertasVendedor(usuario.getId());
+        List<Pedido> ventas = vendedorService.obtenerVentasDelVendedor(usuario.getId());
+        Billetera billetera = billeteraService != null
+                ? billeteraService.obtenerOCrearBilleteraVendedor(usuario.getId())
+                : null;
+
+        long porPreparar = contarEstados(ventas, "CONFIRMADO");
+        long enProceso = contarEstados(ventas, "EN_PROCESO", "PROCESANDO");
+        long enCamino = contarEstados(ventas, "ENVIADO");
+        long entregados = contarEstados(ventas, "ENTREGADO", "COMPLETADO");
+        long enRevision = contarEstados(ventas, Pedido.EN_REVISION);
+        List<Pedido> pedidosAtencion = ventas.stream()
+                .filter(p -> {
+                    String estado = p.getEstado() == null ? "" : p.getEstado().trim().toUpperCase();
+                    return "CONFIRMADO".equals(estado)
+                            || "EN_PROCESO".equals(estado)
+                            || "PROCESANDO".equals(estado);
+                })
+                .limit(3)
+                .toList();
+        long ofertasActivas = ofertas.stream().filter(OfertaVendedor::isDisponible).count();
+        long stockBajo = ofertas.stream()
+                .filter(o -> o.getStock() != null && o.getStock() > 0 && o.getStock() <= 5)
+                .count();
+        long agotadas = ofertas.stream()
+                .filter(o -> o.getStock() == null || o.getStock() <= 0)
+                .count();
+
         model.addAttribute("usuario", usuario);
-        return "vendedor/mis-productos";
+        model.addAttribute("perfilVendedor", usuario.getPerfilVendedor());
+        model.addAttribute("ofertas", ofertas);
+        model.addAttribute("totalVentas", vendedorService.calcularTotalVentas(usuario.getId()));
+        model.addAttribute("totalPedidosVenta", ventas.size());
+        model.addAttribute("porPreparar", porPreparar);
+        model.addAttribute("enProceso", enProceso);
+        model.addAttribute("enCamino", enCamino);
+        model.addAttribute("entregados", entregados);
+        model.addAttribute("enRevision", enRevision);
+        model.addAttribute("pedidosAtencion", pedidosAtencion);
+        model.addAttribute("tareasPendientes", porPreparar + enProceso);
+        model.addAttribute("ofertasActivas", ofertasActivas);
+        model.addAttribute("stockBajo", stockBajo);
+        model.addAttribute("agotadas", agotadas);
+        model.addAttribute("ultimosPedidos", ventas.stream().limit(5).toList());
+        model.addAttribute("billetera", billetera);
+        model.addAttribute("totalPedidosComprador", pedidoRepository.countByCompradorId(usuario.getId()));
+
+        return "vendedor/dashboard-vendedor";
     }
 
     /**
@@ -298,10 +345,13 @@ public class VendedorController {
     }
 
     /**
-     * Ventas del vendedor
+     * Ventas del vendedor. Solo se muestran pedidos pagados/confirmados.
      */
     @GetMapping("/ventas")
-    public String mostrarVentas(HttpSession session, Model model,
+    public String mostrarVentas(
+            @RequestParam(value = "estado", required = false) String estado,
+            @RequestParam(value = "q", required = false) String busqueda,
+            HttpSession session, Model model,
             RedirectAttributes redirectAttributes) {
 
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
@@ -314,30 +364,33 @@ public class VendedorController {
             return "redirect:/vendedor/registro";
         }
 
-        List<Pedido> pedidos = vendedorService.obtenerPedidosDelVendedor(usuario.getId());
-        double totalVentas = vendedorService.calcularTotalVentas(usuario.getId());
+        List<Pedido> todasLasVentas = vendedorService.obtenerVentasDelVendedor(usuario.getId());
+        String filtro = estado == null || estado.isBlank() ? "todas" : estado.trim().toLowerCase();
+        String texto = busqueda == null ? "" : busqueda.trim();
+        String textoBusqueda = texto.toLowerCase();
 
-        long pendientes = pedidos.stream()
-                .filter(p -> "PENDIENTE".equalsIgnoreCase(p.getEstado())).count();
-        long enProceso = pedidos.stream()
-                .filter(p -> "CONFIRMADO".equalsIgnoreCase(p.getEstado())
-                          || "EN_PROCESO".equalsIgnoreCase(p.getEstado())
-                          || "ENVIADO".equalsIgnoreCase(p.getEstado())).count();
-        long completados = pedidos.stream()
-                .filter(p -> "ENTREGADO".equalsIgnoreCase(p.getEstado())).count();
+        List<Pedido> pedidos = todasLasVentas.stream()
+                .filter(p -> coincideFiltroEstado(p, filtro))
+                .filter(p -> coincideBusqueda(p, textoBusqueda))
+                .toList();
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("pedidos", pedidos);
-        model.addAttribute("totalVentas", totalVentas);
-        model.addAttribute("pendientes", pendientes);
-        model.addAttribute("enProceso", enProceso);
-        model.addAttribute("completados", completados);
+        model.addAttribute("totalVentas", vendedorService.calcularTotalVentas(usuario.getId()));
+        model.addAttribute("totalVentasCount", todasLasVentas.size());
+        model.addAttribute("porPreparar", contarEstados(todasLasVentas, "CONFIRMADO"));
+        model.addAttribute("enProceso", contarEstados(todasLasVentas, "EN_PROCESO", "PROCESANDO"));
+        model.addAttribute("enCamino", contarEstados(todasLasVentas, "ENVIADO"));
+        model.addAttribute("entregados", contarEstados(todasLasVentas, "ENTREGADO", "COMPLETADO"));
+        model.addAttribute("enRevision", contarEstados(todasLasVentas, Pedido.EN_REVISION));
+        model.addAttribute("filtroActivo", filtro);
+        model.addAttribute("busqueda", texto);
 
         return "vendedor/ventas-vendedor";
     }
 
     /**
-     * Detalle de un pedido específico
+     * Detalle de una venta del vendedor autenticado.
      */
     @GetMapping("/ventas/pedido/{pedidoId}")
     public String mostrarDetallePedido(@PathVariable String pedidoId,
@@ -354,26 +407,36 @@ public class VendedorController {
             return "redirect:/vendedor/registro";
         }
 
-        // El pedido completo tiene los items embebidos
-        Pedido pedido = vendedorService.obtenerPedidosDelVendedor(usuario.getId())
-                .stream()
-                .filter(p -> p.getId().equals(pedidoId))
-                .findFirst()
+        Pedido pedido = vendedorService.obtenerVentaDelVendedor(pedidoId, usuario.getId())
                 .orElse(null);
 
         if (pedido == null) {
-            redirectAttributes.addFlashAttribute("error", "No tienes productos en este pedido");
+            redirectAttributes.addFlashAttribute("error",
+                    "La venta no existe, no está pagada o no pertenece a tu tienda");
             return "redirect:/vendedor/ventas";
         }
+
+        String compradorEmail = null;
+        if (pedido.getComprador() != null && pedido.getComprador().getId() != null) {
+            compradorEmail = usuarioRepository.findById(pedido.getComprador().getId())
+                    .map(Usuario::getEmail)
+                    .orElse(null);
+        }
+
+        String siguienteEstado = vendedorService.obtenerSiguienteEstado(pedido.getEstado()).orElse(null);
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("pedido", pedido);
         model.addAttribute("detalles", pedido.getItems());
+        model.addAttribute("compradorEmail", compradorEmail);
+        model.addAttribute("siguienteEstado", siguienteEstado);
+        model.addAttribute("accionSiguiente", vendedorService.etiquetaAccionSiguiente(pedido.getEstado()));
+        model.addAttribute("puedeActualizar", siguienteEstado != null);
         return "vendedor/detalle-pedido-vendedor";
     }
 
     /**
-     * Actualiza el estado de un pedido
+     * Actualiza el estado de una venta. El servicio valida propiedad y transiciones permitidas.
      */
     @PostMapping("/ventas/pedido/{pedidoId}/actualizar-estado")
     public String actualizarEstadoPedido(@PathVariable String pedidoId,
@@ -391,17 +454,49 @@ public class VendedorController {
                 return "redirect:/vendedor/registro";
             }
 
-            vendedorService.actualizarEstadoPedido(pedidoId, nuevoEstado);
+            vendedorService.actualizarEstadoPedido(pedidoId, usuario.getId(), nuevoEstado);
 
-            redirectAttributes.addFlashAttribute("mensaje", "Estado actualizado exitosamente");
+            redirectAttributes.addFlashAttribute("mensaje", "Estado actualizado correctamente");
             return "redirect:/vendedor/ventas/pedido/" + pedidoId;
 
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
-            return "redirect:/vendedor/ventas";
+            return "redirect:/vendedor/ventas/pedido/" + pedidoId;
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error al actualizar el estado");
-            return "redirect:/vendedor/ventas";
+            redirectAttributes.addFlashAttribute("error", "No se pudo actualizar el estado del pedido");
+            return "redirect:/vendedor/ventas/pedido/" + pedidoId;
         }
+    }
+
+    private long contarEstados(List<Pedido> pedidos, String... estados) {
+        java.util.Set<String> buscados = java.util.Set.of(estados);
+        return pedidos.stream()
+                .filter(p -> p.getEstado() != null
+                        && buscados.contains(p.getEstado().trim().toUpperCase()))
+                .count();
+    }
+
+    private boolean coincideFiltroEstado(Pedido pedido, String filtro) {
+        String estado = pedido.getEstado() == null ? "" : pedido.getEstado().trim().toUpperCase();
+        return switch (filtro) {
+            case "preparar" -> "CONFIRMADO".equals(estado);
+            case "proceso" -> "EN_PROCESO".equals(estado) || "PROCESANDO".equals(estado);
+            case "enviado" -> "ENVIADO".equals(estado);
+            case "entregado" -> "ENTREGADO".equals(estado) || "COMPLETADO".equals(estado);
+            case "revision" -> Pedido.EN_REVISION.equals(estado);
+            default -> true;
+        };
+    }
+
+    private boolean coincideBusqueda(Pedido pedido, String texto) {
+        if (texto == null || texto.isBlank()) {
+            return true;
+        }
+        String factura = pedido.getNumeroFactura() == null ? "" : pedido.getNumeroFactura().toLowerCase();
+        String cliente = pedido.getComprador() != null && pedido.getComprador().getNombre() != null
+                ? pedido.getComprador().getNombre().toLowerCase()
+                : "";
+        return factura.contains(texto) || cliente.contains(texto)
+                || (pedido.getId() != null && pedido.getId().toLowerCase().contains(texto));
     }
 }

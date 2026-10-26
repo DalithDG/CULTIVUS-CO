@@ -741,7 +741,7 @@
                 // Paso 3: Abrir Widget de Wompi
                 const checkout = new WidgetCheckout(configWidget);
 
-                checkout.open(function (result) {
+                checkout.open(async function (result) {
                     const transaction = result.transaction;
                     console.log('[Wompi] Transacción finalizada:', transaction);
 
@@ -752,7 +752,18 @@
                             + encodeURIComponent(data.reference)
                             + '&id=' + encodeURIComponent(transaction.id);
                     } else {
-                        // El usuario cerró la ventana sin pagar
+                        // El usuario cerró la ventana sin pagar: se elimina la compra pre-registrada
+                        // para que no quede un pedido pendiente en "Mis pedidos".
+                        try {
+                            await fetch('/pago/cancelar-iniciado', {
+                                method: 'POST',
+                                headers: headers,
+                                body: JSON.stringify({ reference: data.reference }),
+                                keepalive: true
+                            });
+                        } catch (cancelError) {
+                            console.warn('[Wompi] No se pudo limpiar la compra abandonada:', cancelError);
+                        }
                         btn.disabled = false;
                         btn.innerHTML = originalBtnHtml;
                     }

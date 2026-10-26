@@ -6,19 +6,21 @@ import com.example.demo.Model.Usuario;
 import com.example.demo.repository.OfertaRepository;
 import com.example.demo.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Páginas públicas informativas: "Nosotros / Productores" y "Ofertas".
@@ -26,6 +28,10 @@ import java.util.stream.Collectors;
  */
 @Controller
 public class PublicoController {
+
+    /** Ofertas por página en el listado público. */
+    private static final int OFERTAS_POR_PAGINA = 12;
+    private static final int OFERTAS_MAX_POR_PAGINA = 48;
 
     @Autowired
     private OfertaRepository ofertaRepository;
@@ -125,16 +131,49 @@ public class PublicoController {
         return "public/nosotros";
     }
 
-    /** Listado público de ofertas disponibles, las más recientes primero. */
+    /** Listado público de ofertas disponibles, paginado y ordenado por fecha de creación. */
     @GetMapping("/ofertas")
-    public String ofertas(Model model) {
-        List<OfertaVendedor> ofertas = ofertaRepository.findAll().stream()
-                .filter(o -> o.isDisponible() && o.getPrecio() != null)
-                .sorted(Comparator.comparing(
-                        (OfertaVendedor o) -> o.getCreatedAt() != null ? o.getCreatedAt() : LocalDateTime.MIN)
-                        .reversed())
-                .collect(Collectors.toList());
-        model.addAttribute("ofertas", ofertas);
+    public String ofertas(
+            @RequestParam(value = "page", required = false, defaultValue = "0") int page,
+            @RequestParam(value = "size", required = false, defaultValue = "" + OFERTAS_POR_PAGINA) int size,
+            Model model) {
+
+        // Limitar parámetros para evitar consultas costosas o valores inválidos
+        size = Math.max(1, Math.min(size, OFERTAS_MAX_POR_PAGINA));
+        int pageSolicitada = Math.max(0, page);
+
+        Pageable pageable = PageRequest.of(pageSolicitada, size,
+                Sort.by(Sort.Direction.DESC, "createdAt"));
+        Page<OfertaVendedor> resultado = ofertaRepository.findByDisponibleTrueAndPrecioNotNull(pageable);
+
+        int totalPages = Math.max(resultado.getTotalPages(), 1);
+
+        // Si la página solicitada quedó fuera de rango (p. ej. se eliminaron ofertas),
+        // volver a consultar la última página válida.
+        if (pageSolicitada >= totalPages) {
+            pageable = PageRequest.of(totalPages - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+            resultado = ofertaRepository.findByDisponibleTrueAndPrecioNotNull(pageable);
+        }
+
+        int paginaActual = resultado.getNumber();
+        long totalItems = resultado.getTotalElements();
+        int desde = totalItems == 0 ? 0 : paginaActual * size + 1;
+        int hasta = (int) Math.min((long) (paginaActual + 1) * size, totalItems);
+
+        // Ventana de 5 números de página centrada en la página actual
+        int startPage = Math.max(0, paginaActual - 2);
+        int endPage = Math.min(totalPages - 1, startPage + 4);
+        startPage = Math.max(0, endPage - 4);
+
+        model.addAttribute("ofertas", resultado.getContent());
+        model.addAttribute("page", paginaActual);
+        model.addAttribute("size", size);
+        model.addAttribute("totalItems", totalItems);
+        model.addAttribute("totalPages", totalPages);
+        model.addAttribute("startPage", startPage);
+        model.addAttribute("endPage", endPage);
+        model.addAttribute("mostrandoDesde", desde);
+        model.addAttribute("mostrandoHasta", hasta);
         return "public/ofertas";
     }
 

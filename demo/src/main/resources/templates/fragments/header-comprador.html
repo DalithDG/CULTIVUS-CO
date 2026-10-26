@@ -9,14 +9,14 @@
 
             <!-- Logo con slogan -->
             <div class="header-logo">
-                <a th:href="@{/}">
+                <a th:href="@{/usuario/inicio}">
                     <img th:src="@{/images/ImagotipoCultivus.png}" alt="Cultivus">
                 </a>
             </div>
 
             <!-- Navegación principal: Inicio, Categorías, Productos -->
             <nav class="header-nav">
-                <a th:href="@{/}" class="nav-link active">
+                <a th:href="@{/usuario/inicio}" class="nav-link active">
                     <i class="fas fa-home"></i>
                     <span>Inicio</span>
                 </a>
@@ -62,7 +62,7 @@
 
                 <!-- Botón Vender / Modo vendedor -->
                 <th:block th:if="${session.usuarioLogueado != null and session.usuarioLogueado.rol != null}">
-                    <a th:if="${session.usuarioLogueado.rol.name() == 'VENDEDOR'}" th:href="@{/vendedor/inicio}"
+                    <a th:if="${session.usuarioLogueado.rol.name() == 'VENDEDOR'}" th:href="@{/vendedor/dashboard}"
                         class="btn-sell highlight" title="Ir al panel de vendedor">
                         <i class="fas fa-store"></i>
                         <span>Modo vendedor</span>
@@ -195,7 +195,7 @@
             <a th:href="@{/usuario/pedidos}"><i class="fas fa-box"></i> Mis pedidos</a>
 
             <th:block th:if="${session.usuarioLogueado != null and session.usuarioLogueado.rol != null}">
-                <a th:if="${session.usuarioLogueado.rol.name() == 'VENDEDOR'}" th:href="@{/vendedor/inicio}"
+                <a th:if="${session.usuarioLogueado.rol.name() == 'VENDEDOR'}" th:href="@{/vendedor/dashboard}"
                     class="mobile-highlight"><i class="fas fa-store"></i> Modo vendedor</a>
                 <a th:if="${session.usuarioLogueado.rol.name() == 'COMPRADOR'}" th:href="@{/vendedor/registro}"
                     class="mobile-highlight"><i class="fas fa-store"></i> Convertirse en vendedor</a>

@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Panel de vendedor Cultivus: ventas, pedidos, inventario y predicción semanal.">
+    <title>Panel del Vendedor - Cultivus</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body class="vs-layout">
+
+    <!-- Header = Topbar + Sidebar juntos -->
+    <header th:replace="~{fragments/header-vendedor :: siteHeader}"></header>
+
+    <!-- ══════════════════ CONTENIDO PRINCIPAL ══════════════════ -->
+    <main class="vs-main">
+
+        <!-- Alertas -->
+        <div th:if="${mensaje}" class="vs-alert vs-alert--success">
+            <i class="fas fa-check-circle"></i>
+            <span th:text="${mensaje}"></span>
+        </div>
+        <div th:if="${error}" class="vs-alert vs-alert--error">
+            <i class="fas fa-exclamation-circle"></i>
+            <span th:text="${error}"></span>
+        </div>
+        <div th:if="${perfilVendedor != null and !perfilVendedor.verificado}"
+             class="vs-alert vs-alert--warning">
+            <i class="fas fa-clock"></i>
+            <div>
+                <strong>Tu tienda está en validación.</strong>
+                Estamos revisando tus datos. Puedes preparar tus productos, pero
+                todavía no serán visibles para los compradores.
+            </div>
+        </div>
+
+        <!-- ── Banner de bienvenida ─────────────────────── -->
+        <div class="vs-welcome">
+            <div class="vs-mode-switch" role="group" aria-label="Nivel de detalle">
+                <button type="button" class="vs-mode-btn is-active" data-vista="facil">
+                    <i class="fas fa-hand"></i> Vista fácil
+                </button>
+                <button type="button" class="vs-mode-btn" data-vista="avanzada">
+                    <i class="fas fa-chart-simple"></i> Vista avanzada
+                </button>
+            </div>
+
+            <div class="vs-welcome__kicker">
+                <i class="fas fa-seedling"></i> Panel de vendedor
+            </div>
+
+            <h1>
+                Hola,
+                <span th:text="${usuario.nombre != null ? usuario.nombre : 'vendedor'}">vendedor</span>.
+            </h1>
+            <p>¿Qué necesitas hacer hoy? Elige una opción. Todo está pensado para que sea rápido y sencillo.</p>
+
+            <div class="vs-welcome__actions">
+                <a th:href="@{/vendedor/ventas(estado='preparar')}" class="vs-welcome__btn vs-welcome__btn--solid">
+                    <i class="fas fa-box-open"></i>
+                    <span th:text="${tareasPendientes > 0 ? 'Ver pedidos (' + tareasPendientes + ')' : 'Ver mis ventas'}">Ver mis ventas</span>
+                </a>
+                <a th:href="@{/vendedor/productos/nuevo}" class="vs-welcome__btn vs-welcome__btn--outline">
+                    <i class="fas fa-plus"></i> Publicar producto
+                </a>
+            </div>
+        </div>
+
+        <!-- ══════════════════ VISTA FÁCIL ══════════════════ -->
+        <div class="vs-easy">
+            <!-- Números grandes -->
+            <div class="vs-easy-numbers">
+                <div class="vs-easy-number">
+                    <span class="vs-easy-number__value" th:text="${tareasPendientes}">0</span>
+                    <span class="vs-easy-number__label">Pedidos por atender</span>
+                </div>
+                <div class="vs-easy-number">
+                    <span class="vs-easy-number__value" th:text="${enCamino}">0</span>
+                    <span class="vs-easy-number__label">Pedidos en camino</span>
+                </div>
+                <div class="vs-easy-number">
+                    <span class="vs-easy-number__value" th:text="${ofertasActivas}">0</span>
+                    <span class="vs-easy-number__label">Productos activos</span>
+                </div>
+            </div>
+
+            <!-- Accesos rápidos -->
+            <div class="vs-quick-actions">
+                <a th:href="@{/vendedor/ventas}" class="vs-quick-action">
+                    <span class="vs-quick-action__icon"><i class="fas fa-receipt"></i></span>
+                    <span class="vs-quick-action__text">
+                        <strong>Mis ventas</strong>
+                        <small>
+                            <span th:text="${tareasPendientes}">0</span>
+                            <span th:text="${tareasPendientes == 1 ? 'pedido por atender' : 'pedidos por atender'}">pedidos por atender</span>
+                        </small>
+                    </span>
+                    <i class="fas fa-chevron-right vs-quick-action__arrow"></i>
+                </a>
+
+                <a th:href="@{/vendedor/mis-productos}" class="vs-quick-action">
+                    <span class="vs-quick-action__icon"><i class="fas fa-box"></i></span>
+                    <span class="vs-quick-action__text">
+                        <strong>Mis productos</strong>
+                        <small>
+                            <span th:text="${ofertasActivas}">0</span>
+                            <span th:text="${ofertasActivas == 1 ? 'producto activo' : 'productos activos'}">productos activos</span>
+                        </small>
+                    </span>
+                    <i class="fas fa-chevron-right vs-quick-action__arrow"></i>
+                </a>
+
+                <a th:href="@{/vendedor/billetera}" class="vs-quick-action">
+                    <span class="vs-quick-action__icon"><i class="fas fa-wallet"></i></span>
+                    <span class="vs-quick-action__text">
+                        <strong>Mi billetera</strong>
+                        <small>Consulta tu saldo y movimientos</small>
+                    </span>
+                    <i class="fas fa-chevron-right vs-quick-action__arrow"></i>
+                </a>
+
+                <a th:href="@{/usuario/perfil}" class="vs-quick-action">
+                    <span class="vs-quick-action__icon"><i class="fas fa-user"></i></span>
+                    <span class="vs-quick-action__text">
+                        <strong>Mi perfil</strong>
+                        <small>Actualiza tus datos personales</small>
+                    </span>
+                    <i class="fas fa-chevron-right vs-quick-action__arrow"></i>
+                </a>
+            </div>
+
+            <!-- Pedidos que necesitan atención -->
+            <div class="vs-card" style="margin-bottom:20px;">
+                <div class="vs-card__head">
+                    <h2 class="vs-card__title"><i class="fas fa-bell"></i> Pedidos que necesitan tu atención</h2>
+                    <a th:href="@{/vendedor/ventas}" class="vs-card__action">Ver todos <i class="fas fa-arrow-right"></i></a>
+                </div>
+
+                <div th:if="${pedidosAtencion == null or pedidosAtencion.isEmpty()}" class="vs-empty">
+                    <i class="fas fa-circle-check"></i>
+                    <h3>No tienes pedidos pendientes</h3>
+                    <p>Cuando recibas una venta, aparecerá aquí para que la prepares con calma.</p>
+                </div>
+
+                <div th:if="${pedidosAtencion != null and !pedidosAtencion.isEmpty()}" class="vs-order-list">
+                    <a th:each="pedido : ${pedidosAtencion}"
+                       th:href="@{/vendedor/ventas/pedido/{id}(id=${pedido.id})}"
+                       class="vs-order-row">
+                        <span class="vs-order-row__main">
+                            <span class="vs-invoice" th:text="${pedido.numeroFactura}">CLT-000000</span>
+                            <span class="vs-order-row__meta">
+                                <span th:text="${pedido.comprador != null ? pedido.comprador.nombre : 'Cliente'}">Cliente</span>
+                                &nbsp;·&nbsp;
+                                <span th:text="${pedido.fechaPedido != null ? #temporals.format(pedido.fechaPedido,'dd/MM/yyyy') : '—'}">—</span>
+                            </span>
+                        </span>
+                        <span class="vs-badge"
+                              th:classappend="'vs-badge--' + ${pedido.estadoCss}"
+                              th:text="${pedido.estadoEtiqueta}">Confirmado</span>
+                        <span class="vs-amount">
+                            $<span th:text="${#numbers.formatDecimal(pedido.total,0,'COMMA',0,'POINT')}">0</span>
+                        </span>
+                        <span class="vs-btn vs-btn--secondary vs-btn--sm">
+                            Ver pedido <i class="fas fa-arrow-right"></i>
+                        </span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Carta de ayuda -->
+            <div class="vs-card vs-help-card">
+                <div class="vs-card__body vs-help-card__body">
+                    <div class="vs-help-card__icon"><i class="fas fa-hands-helping"></i></div>
+                    <div>
+                        <h2 style="font-size:1rem;font-weight:700;margin-bottom:6px;">¿La letra está muy pequeña?</h2>
+                        <p style="font-size:0.84rem;color:#647568;line-height:1.55;margin-bottom:12px;">
+                            Usa el botón <strong>Letra grande</strong> en la barra superior.
+                            También puedes cambiar entre la vista fácil y la vista avanzada cuando quieras.
+                        </p>
+                        <button type="button" class="vs-btn vs-btn--secondary vs-btn--sm" onclick="toggleTextoGrande()">
+                            <i class="fas fa-text-height"></i> Cambiar tamaño de letra
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ══════════════════ VISTA AVANZADA ══════════════════ -->
+        <div class="vs-advanced">
+            <!-- Stats -->
+            <div class="vs-stats">
+                <div class="vs-stat">
+                    <div class="vs-stat__icon"><i class="fas fa-sack-dollar"></i></div>
+                    <p class="vs-stat__label">Ventas confirmadas</p>
+                    <p class="vs-stat__value">
+                        $<span th:text="${#numbers.formatDecimal(totalVentas,0,'COMMA',0,'POINT')}">0</span>
+                    </p>
+                    <p class="vs-stat__hint">
+                        <span th:text="${totalPedidosVenta}">0</span> pedidos pagados en total
+                    </p>
+                </div>
+
+                <div class="vs-stat vs-stat--amber">
+                    <div class="vs-stat__icon"><i class="fas fa-box-open"></i></div>
+                    <p class="vs-stat__label">Por preparar</p>
+                    <p class="vs-stat__value" th:text="${porPreparar}">0</p>
+                    <p class="vs-stat__hint">Pedidos confirmados que esperan tu despacho</p>
+                </div>
+
+                <div class="vs-stat vs-stat--blue">
+                    <div class="vs-stat__icon"><i class="fas fa-truck-fast"></i></div>
+                    <p class="vs-stat__label">En camino</p>
+                    <p class="vs-stat__value" th:text="${enCamino}">0</p>
+                    <p class="vs-stat__hint">Pedidos enviados y pendientes de entrega</p>
+                </div>
+
+                <div class="vs-stat">
+                    <div class="vs-stat__icon"><i class="fas fa-circle-check"></i></div>
+                    <p class="vs-stat__label">Entregados</p>
+                    <p class="vs-stat__value" th:text="${entregados}">0</p>
+                    <p class="vs-stat__hint">Ventas completadas correctamente</p>
+                </div>
+            </div>
+
+            <!-- Alerta revisión -->
+            <div th:if="${enRevision > 0}" class="vs-alert vs-alert--warning">
+                <i class="fas fa-triangle-exclamation"></i>
+                <div>
+                    Tienes <strong th:text="${enRevision}">0</strong> pedido(s) en revisión por stock.
+                    El equipo administrativo gestionará el reembolso correspondiente.
+                </div>
+            </div>
+
+            <!-- Grid: tabla + columna derecha -->
+            <div class="vs-grid-2">
+                <!-- Últimas ventas -->
+                <div class="vs-card">
+                    <div class="vs-card__head">
+                        <h2 class="vs-card__title"><i class="fas fa-clock-rotate-left"></i> Últimas ventas</h2>
+                        <a th:href="@{/vendedor/ventas}" class="vs-card__action">
+                            Ver todas <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+
+                    <div th:if="${ultimosPedidos == null or ultimosPedidos.isEmpty()}" class="vs-empty">
+                        <i class="fas fa-inbox"></i>
+                        <h3>Aún no tienes ventas confirmadas</h3>
+                        <p>Cuando un comprador complete el pago, el pedido aparecerá aquí.</p>
+                        <a th:href="@{/vendedor/mis-productos}" class="vs-btn vs-btn--secondary vs-btn--sm">
+                            <i class="fas fa-box"></i> Revisar mi inventario
+                        </a>
+                    </div>
+
+                    <div th:if="${ultimosPedidos != null and !ultimosPedidos.isEmpty()}" class="vs-table-wrap">
+                        <table class="vs-table">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Pedido</th>
+                                    <th>Cliente</th>
+                                    <th>Fecha</th>
+                                    <th>Estado</th>
+                                    <th>Total</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="pedido : ${ultimosPedidos}">
+                                    <td><input type="checkbox" class="vs-checkbox"></td>
+                                    <td>
+                                        <a th:href="@{/vendedor/ventas/pedido/{id}(id=${pedido.id})}"
+                                           class="vs-invoice"
+                                           th:text="${pedido.numeroFactura}">CLT-000000</a>
+                                    </td>
+                                    <td th:text="${pedido.comprador != null ? pedido.comprador.nombre : 'Cliente'}">Cliente</td>
+                                    <td class="vs-muted vs-nowrap"
+                                        th:text="${pedido.fechaPedido != null ? #temporals.format(pedido.fechaPedido,'dd/MM/yyyy') : '—'}">—</td>
+                                    <td>
+                                        <span class="vs-badge"
+                                              th:classappend="'vs-badge--' + ${pedido.estadoCss}"
+                                              th:text="${pedido.estadoEtiqueta}">Confirmado</span>
+                                    </td>
+                                    <td class="vs-amount">
+                                        $<span th:text="${#numbers.formatDecimal(pedido.total,0,'COMMA',0,'POINT')}">0</span>
+                                    </td>
+                                    <td>
+                                        <a th:href="@{/vendedor/ventas/pedido/{id}(id=${pedido.id})}"
+                                           class="vs-btn vs-btn--secondary vs-btn--sm">Detalle</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Columna derecha -->
+                <div class="vs-stack">
+                    <!-- Inventario -->
+                    <div class="vs-card">
+                        <div class="vs-card__head">
+                            <h2 class="vs-card__title"><i class="fas fa-boxes-stacked"></i> Inventario</h2>
+                            <a th:href="@{/vendedor/mis-productos}" class="vs-card__action">Gestionar</a>
+                        </div>
+                        <div class="vs-card__body">
+                            <div class="vs-inventory">
+                                <div class="vs-inventory__item">
+                                    <span class="vs-inventory__value" th:text="${ofertasActivas}">0</span>
+                                    <span class="vs-inventory__label">Activos</span>
+                                </div>
+                                <div class="vs-inventory__item">
+                                    <span class="vs-inventory__value" th:text="${stockBajo}">0</span>
+                                    <span class="vs-inventory__label">Stock bajo</span>
+                                </div>
+                                <div class="vs-inventory__item">
+                                    <span class="vs-inventory__value" th:text="${agotadas}">0</span>
+                                    <span class="vs-inventory__label">Agotados</span>
+                                </div>
+                            </div>
+
+                            <div class="vs-alert vs-alert--warning"
+                                 th:if="${stockBajo > 0 or agotadas > 0}"
+                                 style="margin:0 0 12px;">
+                                <i class="fas fa-triangle-exclamation"></i>
+                                <span>Revisa los productos con stock bajo o agotado.</span>
+                            </div>
+
+                            <a th:href="@{/vendedor/productos/nuevo}" class="vs-quick-link">
+                                <span><i class="fas fa-plus-circle"></i> Publicar un producto</span>
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                            <a th:href="@{/vendedor/mis-productos}" class="vs-quick-link">
+                                <span><i class="fas fa-pen-to-square"></i> Editar mis ofertas</span>
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Billetera -->
+                    <div class="vs-card">
+                        <div class="vs-card__head">
+                            <h2 class="vs-card__title"><i class="fas fa-wallet"></i> Mi billetera</h2>
+                            <a th:href="@{/vendedor/billetera}" class="vs-card__action">Ver movimientos</a>
+                        </div>
+                        <div class="vs-card__body">
+                            <div th:if="${billetera != null}">
+                                <p class="vs-muted" style="font-size:0.78rem;margin-bottom:4px;">Saldo disponible</p>
+                                <p class="vs-wallet-balance">
+                                    $<span th:text="${#numbers.formatDecimal(billetera.saldoDisponible,0,'COMMA',0,'POINT')}">0</span>
+                                </p>
+                                <p class="vs-wallet-retention">
+                                    En retención: $<span th:text="${#numbers.formatDecimal(billetera.saldoRetencion,0,'COMMA',0,'POINT')}">0</span>
+                                </p>
+                            </div>
+                            <p th:if="${billetera == null}" class="vs-muted" style="font-size:0.84rem;">
+                                La información de tu billetera estará disponible cuando recibas tu primera venta.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Consejos para tu tienda -->
+                    <div class="vs-card">
+                        <div class="vs-card__head">
+                            <h2 class="vs-card__title"><i class="fas fa-lightbulb"></i> Consejos de venta</h2>
+                        </div>
+                        <div class="vs-card__body">
+                            <p style="font-size:0.84rem;color:#647568;margin-bottom:12px;line-height:1.55;">
+                                Mantén actualizados tus precios y despacha a tiempo para mejorar la calificación de tu tienda agrícola.
+                            </p>
+                            <a th:href="@{/vendedor/productos/nuevo}" class="vs-quick-link">
+                                <span><i class="fas fa-circle-plus"></i> Publicar nueva oferta</span>
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                            <a th:href="@{/vendedor/billetera}" class="vs-quick-link">
+                                <span><i class="fas fa-wallet"></i> Ver estado de pagos</span>
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Predicción semanal -->
+            <div class="vs-card" id="prediccionSemanal" style="margin-top:20px;">
+                <div class="vs-card__head">
+                    <h2 class="vs-card__title"><i class="fas fa-wand-magic-sparkles"></i> Predicción de la próxima semana</h2>
+                    <span class="vs-badge vs-badge--revision"><i class="fas fa-flask"></i> Vista previa</span>
+                </div>
+                <div class="vs-card__body">
+                    <p style="font-size:0.84rem;color:#647568;line-height:1.55;margin-bottom:14px;">
+                        Muy pronto sabrás qué productos se venderán más en tu ciudad durante la próxima semana.
+                    </p>
+
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+                        <label for="ciudadPrediccion" style="font-size:0.84rem;font-weight:600;">Elige tu ciudad</label>
+                        <select id="ciudadPrediccion" class="vs-select">
+                            <option value="bogota">Bogotá</option>
+                            <option value="medellin">Medellín</option>
+                            <option value="cali">Cali</option>
+                            <option value="barranquilla">Barranquilla</option>
+                            <option value="bucaramanga">Bucaramanga</option>
+                            <option value="pasto">Pasto</option>
+                        </select>
+                    </div>
+
+                    <div id="prediccionLista" aria-live="polite"></div>
+
+                    <div class="vs-note">
+                        <i class="fas fa-circle-info"></i>
+                        <span>Estos datos son un ejemplo. Se activará cuando Cultivus tenga suficientes ventas registradas en tu ciudad.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer del panel de vendedor -->
+        <footer class="vs-footer">
+            <div class="vs-footer__brand">
+                <i class="fas fa-seedling" style="color: var(--vs-green);"></i>
+                <span>Cultivus Colombia · Panel de Control del Vendedor</span>
+            </div>
+            <div class="vs-footer__links">
+                <span>&copy; 2025 Cultivus. Todos los derechos reservados.</span>
+            </div>
+        </footer>
+    </main>
+
+    <script>
+        (function () {
+            // ── Vista fácil / avanzada ──────────────────────────────
+            var CLAVE_VISTA = 'cultivus-vista-vendedor';
+            var botones = document.querySelectorAll('[data-vista]');
+
+            function aplicarVista(vista) {
+                var avanzada = vista === 'avanzada';
+                document.body.classList.toggle('vista-avanzada', avanzada);
+                botones.forEach(function (b) {
+                    var activo = b.getAttribute('data-vista') === vista;
+                    b.classList.toggle('is-active', activo);
+                    b.setAttribute('aria-pressed', String(activo));
+                });
+                localStorage.setItem(CLAVE_VISTA, vista);
+
+                // Actualizar breadcrumb
+                var bc = document.getElementById('vsBreadcrumbCurrent');
+                if (bc) bc.textContent = avanzada ? 'Vista avanzada' : 'Vista fácil';
+            }
+
+            botones.forEach(function (b) {
+                b.addEventListener('click', function () { aplicarVista(b.getAttribute('data-vista')); });
+            });
+
+            aplicarVista(localStorage.getItem(CLAVE_VISTA) === 'avanzada' ? 'avanzada' : 'facil');
+
+            // ── Predicción ──────────────────────────────────────────
+            var predicciones = {
+                bogota:       [{ producto:'Papa criolla',      icono:'fa-seedling',    demanda:'Muy alta', cambio:'+34%' }, { producto:'Fresa',           icono:'fa-heart',       demanda:'Alta',     cambio:'+27%' }, { producto:'Lechuga Batavia', icono:'fa-leaf',        demanda:'Alta',     cambio:'+21%' }],
+                medellin:     [{ producto:'Plátano maduro',    icono:'fa-seedling',    demanda:'Muy alta', cambio:'+31%' }, { producto:'Tomate chonto',   icono:'fa-apple-whole', demanda:'Alta',     cambio:'+25%' }, { producto:'Cilantro',        icono:'fa-leaf',        demanda:'Alta',     cambio:'+19%' }],
+                cali:         [{ producto:'Mango',             icono:'fa-apple-whole', demanda:'Muy alta', cambio:'+38%' }, { producto:'Piña',            icono:'fa-seedling',    demanda:'Alta',     cambio:'+24%' }, { producto:'Cebolla larga',   icono:'fa-leaf',        demanda:'Media',    cambio:'+16%' }],
+                barranquilla: [{ producto:'Yuca',              icono:'fa-seedling',    demanda:'Muy alta', cambio:'+33%' }, { producto:'Ñame',            icono:'fa-apple-whole', demanda:'Alta',     cambio:'+22%' }, { producto:'Coco',            icono:'fa-circle',      demanda:'Alta',     cambio:'+18%' }],
+                bucaramanga:  [{ producto:'Frijol cargamanto', icono:'fa-seedling',    demanda:'Muy alta', cambio:'+29%' }, { producto:'Aguacate',        icono:'fa-apple-whole', demanda:'Alta',     cambio:'+26%' }, { producto:'Maíz',            icono:'fa-seedling',    demanda:'Media',    cambio:'+15%' }],
+                pasto:        [{ producto:'Papa pastusa',      icono:'fa-seedling',    demanda:'Muy alta', cambio:'+36%' }, { producto:'Quinoa',          icono:'fa-leaf',        demanda:'Alta',     cambio:'+23%' }, { producto:'Habas',           icono:'fa-circle',      demanda:'Media',    cambio:'+17%' }]
+            };
+
+            var selector = document.getElementById('ciudadPrediccion');
+            var lista    = document.getElementById('prediccionLista');
+
+            function pintarPrediccion(ciudad) {
+                if (!lista) return;
+                var datos = predicciones[ciudad] || predicciones.bogota;
+                lista.innerHTML = '';
+                datos.forEach(function (item, i) {
+                    var fila   = document.createElement('div');  fila.className = 'vs-pred-item';
+                    var rank   = document.createElement('span'); rank.className = 'vs-pred-item__rank';   rank.textContent = i + 1;
+                    var ico    = document.createElement('span'); ico.className  = 'vs-pred-item__icon';   ico.innerHTML = '<i class="fas ' + item.icono + '"></i>';
+                    var nombre = document.createElement('span'); nombre.className = 'vs-pred-item__name'; nombre.textContent = item.producto;
+                    var dem    = document.createElement('span'); dem.className  = 'vs-pred-item__demand'; dem.textContent = 'Demanda ' + item.demanda.toLowerCase();
+                    var trend  = document.createElement('span'); trend.className = 'vs-pred-item__trend'; trend.textContent = item.cambio;
+                    fila.appendChild(rank); fila.appendChild(ico); fila.appendChild(nombre); fila.appendChild(dem); fila.appendChild(trend);
+                    lista.appendChild(fila);
+                });
+            }
+
+            if (selector) {
+                selector.addEventListener('change', function () { pintarPrediccion(selector.value); });
+                pintarPrediccion(selector.value);
+            }
+        })();
+    </script>
+</body>
+</html>

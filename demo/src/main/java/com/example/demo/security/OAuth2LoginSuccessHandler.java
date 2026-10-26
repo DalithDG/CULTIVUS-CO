@@ -62,7 +62,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         } else if (usuario.hasRole(com.example.demo.Model.Role.TRANSPORTISTA)) {
             getRedirectStrategy().sendRedirect(request, response, "/transportista/inicio");
         } else if (usuario.hasRole(com.example.demo.Model.Role.VENDEDOR)) {
-            getRedirectStrategy().sendRedirect(request, response, "/vendedor/inicio");
+            getRedirectStrategy().sendRedirect(request, response, "/vendedor/dashboard");
         } else {
             getRedirectStrategy().sendRedirect(request, response, "/usuario/inicio");
         }
