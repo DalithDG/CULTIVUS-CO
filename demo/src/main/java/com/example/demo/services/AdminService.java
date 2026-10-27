@@ -50,6 +50,12 @@ public class AdminService {
     @Autowired
     private MensajeRepository mensajeRepository;
 
+    @Autowired(required = false)
+    private PedidoEstadoService pedidoEstadoService;
+
+    @Autowired(required = false)
+    private PedidoCancelacionService pedidoCancelacionService;
+
     // ==================== GESTIÓN DE ADMINS ====================
 
     /**
@@ -344,8 +350,8 @@ public class AdminService {
     }
 
     /**
-     * Permite al administrador cambiar el estado de un pedido sin las restricciones
-     * del vendedor/transportista. Valida que el estado sea uno de los permitidos.
+     * 5.1: Permite al administrador actualizar el estado de un pedido centralizándolo
+     * a través de PedidoEstadoService y PedidoCancelacionService.
      */
     public void actualizarEstadoPedidoAdmin(String pedidoId, String nuevoEstado) {
         if (pedidoId == null || nuevoEstado == null || nuevoEstado.trim().isEmpty()) {
@@ -354,19 +360,50 @@ public class AdminService {
         Pedido pedido = pedidoRepository.findById(pedidoId)
                 .orElseThrow(() -> new IllegalArgumentException("Pedido no encontrado: " + pedidoId));
 
-        String estadoDeseado = nuevoEstado.trim().toUpperCase();
-        List<String> estadosValidos = Arrays.asList(
-                Pedido.PENDIENTE, Pedido.PENDIENTE, "PENDIENTE_PAGO", Pedido.CONFIRMADO,
-                Pedido.EN_PROCESO, "PROCESANDO", Pedido.LISTO_PARA_RECOGER,
-                Pedido.ENVIADO, Pedido.ENTREGADO, "COMPLETADO", Pedido.CANCELADO,
-                Pedido.EN_REVISION);
-        if (!estadosValidos.contains(estadoDeseado)) {
-            throw new IllegalArgumentException("Estado no válido: " + nuevoEstado);
+        com.example.demo.Model.EstadoPedido estadoDeseado = com.example.demo.Model.EstadoPedido.interpretar(nuevoEstado)
+                .orElseThrow(() -> new IllegalArgumentException("Estado no válido: " + nuevoEstado));
+
+        if (estadoDeseado == com.example.demo.Model.EstadoPedido.CANCELADO) {
+            if (pedidoCancelacionService != null) {
+                pedidoCancelacionService.cancelarPedido(
+                        pedido,
+                        "Cancelado por el administrador",
+                        com.example.demo.Model.ActorTransicion.ADMIN,
+                        com.example.demo.Model.CanceladoPor.ADMIN
+                );
+            } else {
+                pedido.setCanceladoPor(com.example.demo.Model.CanceladoPor.ADMIN);
+                pedido.setMotivoCancelacion("Cancelado por el administrador");
+                pedido.setFechaCancelacion(LocalDateTime.now());
+                if (pedidoEstadoService != null) {
+                    pedidoEstadoService.transicionar(
+                            pedido,
+                            com.example.demo.Model.EstadoPedido.CANCELADO,
+                            com.example.demo.Model.ActorTransicion.ADMIN,
+                            "Cancelación administrativa",
+                            com.example.demo.Model.CanceladoPor.ADMIN
+                    );
+                } else {
+                    pedido.setEstado(com.example.demo.Model.EstadoPedido.CANCELADO.name());
+                    pedido.setUpdatedAt(LocalDateTime.now());
+                    pedidoRepository.save(pedido);
+                }
+            }
+            return;
         }
 
-        pedido.setEstado(estadoDeseado);
-        pedido.setUpdatedAt(LocalDateTime.now());
-        pedidoRepository.save(pedido);
+        if (pedidoEstadoService != null) {
+            pedidoEstadoService.transicionar(
+                    pedido,
+                    estadoDeseado,
+                    com.example.demo.Model.ActorTransicion.ADMIN,
+                    "Actualización realizada por administrador"
+            );
+        } else {
+            pedido.setEstado(estadoDeseado.name());
+            pedido.setUpdatedAt(LocalDateTime.now());
+            pedidoRepository.save(pedido);
+        }
 
         // Notificar al comprador del cambio de estado
         if (pedido.getComprador() != null && pedido.getComprador().getId() != null && notificacionService != null) {
@@ -374,25 +411,103 @@ public class AdminService {
                 notificacionService.enviar(
                         pedido.getComprador().getId(),
                         "Estado de pedido actualizado",
-                        "Tu pedido " + pedido.getNumeroFactura() + " ahora está en estado: " + estadoDeseado,
+                        "Tu pedido " + pedido.getNumeroFactura() + " ahora está en estado: " + estadoDeseado.name(),
                         "INFO");
             } catch (Exception ignored) {
-                // No bloquear el flujo por fallos de notificación
             }
         }
     }
 
     /**
-     * Acepta un pedido disponible (PENDIENTE) pasándolo a CONFIRMADO.
+     * 5.2: Acepta un pedido disponible (PENDIENTE) pasándolo a CONFIRMADO formalmente.
+     * Valida que el pago haya sido completado o registrado.
      */
     public void aceptarPedidoAdmin(String pedidoId) {
         Pedido pedido = pedidoRepository.findById(pedidoId)
                 .orElseThrow(() -> new IllegalArgumentException("Pedido no encontrado: " + pedidoId));
-        String estadoActual = pedido.getEstado() != null ? pedido.getEstado().toUpperCase() : Pedido.PENDIENTE;
-        if (!Pedido.PENDIENTE.equals(estadoActual) && !"PENDIENTE_PAGO".equals(estadoActual)) {
-            throw new IllegalStateException("Solo se pueden aceptar pedidos disponibles (PENDIENTE). Estado actual: " + estadoActual);
+
+        com.example.demo.Model.EstadoPedido estadoActual = pedido.getEstadoEnum();
+        if (estadoActual != com.example.demo.Model.EstadoPedido.PENDIENTE) {
+            throw new IllegalStateException("Solo se pueden aceptar pedidos en estado PENDIENTE. Estado actual: " + estadoActual);
         }
-        actualizarEstadoPedidoAdmin(pedidoId, Pedido.CONFIRMADO);
+
+        if (pedido.getPago() == null || !"COMPLETADO".equalsIgnoreCase(pedido.getPago().getEstado())) {
+            throw new IllegalStateException("No se puede confirmar un pedido sin pago validado. El pago debe registrarse como COMPLETADO.");
+        }
+
+        if (pedidoEstadoService != null) {
+            pedidoEstadoService.transicionar(
+                    pedido,
+                    com.example.demo.Model.EstadoPedido.CONFIRMADO,
+                    com.example.demo.Model.ActorTransicion.ADMIN,
+                    "Aceptación y confirmación de pago por administrador"
+            );
+        } else {
+            pedido.setEstado(com.example.demo.Model.EstadoPedido.CONFIRMADO.name());
+            pedido.setUpdatedAt(LocalDateTime.now());
+            pedidoRepository.save(pedido);
+        }
+    }
+
+    /**
+     * 5.3: Acción 'Reembolso realizado':
+     * Para pedidos en EN_REVISION o CANCELADOS que requieren reembolso:
+     * Pasa a CANCELADO (canceladoPor = ADMIN), marcando requiereReembolso = false, reembolsoRealizadoEn = now().
+     * NO toca stock ni billetera (en EN_REVISION nunca se descontó stock ni se acreditó saldo al vendedor).
+     */
+    public Pedido marcarReembolsoRealizadoAdmin(String pedidoId, String motivo) {
+        if (pedidoId == null || pedidoId.isBlank()) {
+            throw new IllegalArgumentException("El ID de pedido es obligatorio");
+        }
+
+        Pedido pedido = pedidoRepository.findById(pedidoId)
+                .orElseThrow(() -> new IllegalArgumentException("Pedido no encontrado: " + pedidoId));
+
+        com.example.demo.Model.EstadoPedido ep = pedido.getEstadoEnum();
+        boolean esEnRevision = ep == com.example.demo.Model.EstadoPedido.EN_REVISION;
+        boolean esCanceladoConReembolso = ep == com.example.demo.Model.EstadoPedido.CANCELADO && pedido.isRequiereReembolso();
+
+        if (!esEnRevision && !esCanceladoConReembolso) {
+            throw new IllegalStateException("Solo se puede registrar reembolso para pedidos en EN_REVISION o CANCELADOS con reembolso pendiente. Estado actual: " + ep);
+        }
+
+        String motivoFinal = (motivo != null && !motivo.isBlank())
+                ? motivo.trim()
+                : "Reembolso procesado exitosamente por administración";
+
+        pedido.setCanceladoPor(com.example.demo.Model.CanceladoPor.ADMIN);
+        pedido.setRequiereReembolso(false);
+        pedido.setReembolsoRealizadoEn(LocalDateTime.now());
+        pedido.setMotivoCancelacion(motivoFinal);
+        pedido.setUpdatedAt(LocalDateTime.now());
+
+        if (esEnRevision && pedidoEstadoService != null) {
+            pedidoEstadoService.transicionar(
+                    pedido,
+                    com.example.demo.Model.EstadoPedido.CANCELADO,
+                    com.example.demo.Model.ActorTransicion.ADMIN,
+                    motivoFinal,
+                    com.example.demo.Model.CanceladoPor.ADMIN
+            );
+        } else {
+            pedido.setEstado(com.example.demo.Model.EstadoPedido.CANCELADO.name());
+        }
+
+        Pedido guardado = pedidoRepository.save(pedido);
+
+        if (pedido.getComprador() != null && pedido.getComprador().getId() != null && notificacionService != null) {
+            try {
+                notificacionService.enviar(
+                        pedido.getComprador().getId(),
+                        "Reembolso Procesado",
+                        "El reembolso de tu pedido #" + pedido.getNumeroFactura() + " ha sido completado exitosamente por nuestro equipo.",
+                        "SUCCESS"
+                );
+            } catch (Exception ignored) {
+            }
+        }
+
+        return guardado;
     }
 
     // ==================== ESTADÍSTICAS ====================

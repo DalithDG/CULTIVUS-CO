@@ -73,6 +73,11 @@ class BilleteraServiceTest {
         }
 
         @Override
+        public boolean existeMovimientoPorClave(String claveIdempotencia) {
+            return claveIdempotencia != null && claves.contains(claveIdempotencia);
+        }
+
+        @Override
         public void incrementarSaldo(String billeteraId, Billetera.EstadoSaldo estado, long delta) {
             SaldosMutables s = billeteras.get(billeteraId);
             switch (estado) {

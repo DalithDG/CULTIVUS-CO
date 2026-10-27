@@ -115,6 +115,71 @@ public class BilleteraService {
     }
 
     /**
+     * US-22 / 3.2: Revierte los movimientos de billetera (ABONO y COMISION) de un pedido cancelado.
+     * Solo opera si el movimiento original de ABONO existe.
+     * Idempotente mediante claves "REVERSO_ABONO:pedidoId" y "REVERSO_COMISION:pedidoId".
+     */
+    public void revertirVentaCancelada(Pedido pedido) {
+        if (pedido == null || pedido.getId() == null || pedido.getVendedor() == null || pedido.getVendedor().getId() == null) {
+            return;
+        }
+
+        String claveAbonoOriginal = "ABONO:" + pedido.getId();
+        if (!almacen.existeMovimientoPorClave(claveAbonoOriginal)) {
+            log.info("No existe movimiento de ABONO para el pedido {}, omitiendo reverso en billetera", pedido.getId());
+            return;
+        }
+
+        long subtotal = subtotalProductosCentavos(pedido);
+        if (subtotal <= 0) {
+            return;
+        }
+
+        int bps = comisionPuntosBasicos();
+        long neto = calcularNeto(subtotal, bps);
+        long comision = subtotal - neto;
+        String cid = pedido.getCompraId();
+
+        Billetera billetera = almacen.obtenerOCrear(pedido.getVendedor().getId(), Billetera.Rol.VENDEDOR);
+
+        // Reverso del ABONO (-subtotal en retención)
+        MovimientoBilletera revAbono = MovimientoBilletera.nuevo(
+                billetera,
+                MovimientoBilletera.Tipo.REVERSO,
+                Billetera.EstadoSaldo.EN_RETENCION,
+                -subtotal,
+                pedido.getId(),
+                cid,
+                "Reverso de venta por cancelación del pedido #" + pedido.getNumeroFactura(),
+                "REVERSO_ABONO:" + pedido.getId()
+        );
+        if (almacen.insertarMovimiento(revAbono)) {
+            almacen.incrementarSaldo(billetera.getId(), Billetera.EstadoSaldo.EN_RETENCION, -subtotal);
+            log.info("Reverso de abono aplicado al vendedor {} por {} centavos (pedido {})",
+                    pedido.getVendedor().getId(), subtotal, pedido.getId());
+        }
+
+        // Reverso de la COMISIÓN (+comision en retención para devolver el descuento previo)
+        if (comision > 0) {
+            MovimientoBilletera revComision = MovimientoBilletera.nuevo(
+                    billetera,
+                    MovimientoBilletera.Tipo.REVERSO,
+                    Billetera.EstadoSaldo.EN_RETENCION,
+                    comision,
+                    pedido.getId(),
+                    cid,
+                    "Reverso de comisión por cancelación del pedido #" + pedido.getNumeroFactura(),
+                    "REVERSO_COMISION:" + pedido.getId()
+            );
+            if (almacen.insertarMovimiento(revComision)) {
+                almacen.incrementarSaldo(billetera.getId(), Billetera.EstadoSaldo.EN_RETENCION, comision);
+                log.info("Reverso de comisión aplicado al vendedor {} por {} centavos (pedido {})",
+                        pedido.getVendedor().getId(), comision, pedido.getId());
+            }
+        }
+    }
+
+    /**
      * Abona al transportista el flete de un envío entregado. Idempotente por envío.
      */
     public void registrarFleteEntregado(com.example.demo.Model.Envio envio) {

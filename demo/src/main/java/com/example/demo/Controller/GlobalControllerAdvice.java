@@ -58,5 +58,21 @@ public class GlobalControllerAdvice {
         }
         return request.getRequestURI();
     }
+
+    @org.springframework.web.bind.annotation.ExceptionHandler(org.springframework.dao.OptimisticLockingFailureException.class)
+    public Object manejarConflictoOptimista(org.springframework.dao.OptimisticLockingFailureException ex,
+                                            HttpServletRequest request,
+                                            org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+        String mensaje = "El pedido o envío fue modificado simultáneamente en otra sesión. Los datos se actualizaron; por favor confirma tu acción nuevamente.";
+        String accept = request.getHeader("Accept");
+        if (accept != null && accept.contains("application/json")) {
+            return org.springframework.http.ResponseEntity.status(409).body(java.util.Map.of("ok", false, "error", mensaje));
+        }
+        if (redirectAttributes != null) {
+            redirectAttributes.addFlashAttribute("error", mensaje);
+        }
+        String referer = request.getHeader("Referer");
+        return "redirect:" + (referer != null ? referer : "/");
+    }
 }
 

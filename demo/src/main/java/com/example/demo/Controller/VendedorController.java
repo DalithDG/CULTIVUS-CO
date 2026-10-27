@@ -39,6 +39,9 @@ public class VendedorController {
     @Autowired(required = false)
     private BilleteraService billeteraService;
 
+    @Autowired(required = false)
+    private com.example.demo.repository.EnvioRepository envioRepository;
+
     /**
      * US-22: saldos por estado y movimientos de la billetera del vendedor.
      * Solo lectura: no hay endpoints para editar ni borrar movimientos.
@@ -214,17 +217,20 @@ public class VendedorController {
 
         long porPreparar = contarEstados(ventas, "CONFIRMADO");
         long enProceso = contarEstados(ventas, "EN_PROCESO", "PROCESANDO");
+        long listosParaRecoger = contarEstados(ventas, Pedido.LISTO_PARA_RECOGER);
         long enCamino = contarEstados(ventas, "ENVIADO");
         long entregados = contarEstados(ventas, "ENTREGADO", "COMPLETADO");
         long enRevision = contarEstados(ventas, Pedido.EN_REVISION);
+        long cancelados = contarEstados(ventas, "CANCELADO");
         List<Pedido> pedidosAtencion = ventas.stream()
                 .filter(p -> {
                     String estado = p.getEstado() == null ? "" : p.getEstado().trim().toUpperCase();
                     return "CONFIRMADO".equals(estado)
                             || "EN_PROCESO".equals(estado)
-                            || "PROCESANDO".equals(estado);
+                            || "PROCESANDO".equals(estado)
+                            || Pedido.LISTO_PARA_RECOGER.equals(estado);
                 })
-                .limit(3)
+                .limit(4)
                 .toList();
         long ofertasActivas = ofertas.stream().filter(OfertaVendedor::isDisponible).count();
         long stockBajo = ofertas.stream()
@@ -241,11 +247,13 @@ public class VendedorController {
         model.addAttribute("totalPedidosVenta", ventas.size());
         model.addAttribute("porPreparar", porPreparar);
         model.addAttribute("enProceso", enProceso);
+        model.addAttribute("listosParaRecoger", listosParaRecoger);
         model.addAttribute("enCamino", enCamino);
         model.addAttribute("entregados", entregados);
         model.addAttribute("enRevision", enRevision);
+        model.addAttribute("cancelados", cancelados);
         model.addAttribute("pedidosAtencion", pedidosAtencion);
-        model.addAttribute("tareasPendientes", porPreparar + enProceso);
+        model.addAttribute("tareasPendientes", porPreparar + enProceso + listosParaRecoger);
         model.addAttribute("ofertasActivas", ofertasActivas);
         model.addAttribute("stockBajo", stockBajo);
         model.addAttribute("agotadas", agotadas);
@@ -381,12 +389,25 @@ public class VendedorController {
         model.addAttribute("usuario", usuario);
         model.addAttribute("pedidos", pedidos);
         model.addAttribute("totalVentas", vendedorService.calcularTotalVentas(usuario.getId()));
+        long porPreparar = contarEstados(todasLasVentas, "CONFIRMADO");
+        long enProceso = contarEstados(todasLasVentas, "EN_PROCESO", "PROCESANDO");
+        long listosParaRecoger = contarEstados(todasLasVentas, Pedido.LISTO_PARA_RECOGER);
+        long enCamino = contarEstados(todasLasVentas, "ENVIADO");
+        long entregados = contarEstados(todasLasVentas, "ENTREGADO", "COMPLETADO");
+        long enRevision = contarEstados(todasLasVentas, Pedido.EN_REVISION);
+        long cancelados = contarEstados(todasLasVentas, "CANCELADO");
+
+        model.addAttribute("usuario", usuario);
+        model.addAttribute("pedidos", pedidos);
+        model.addAttribute("totalVentas", vendedorService.calcularTotalVentas(usuario.getId()));
         model.addAttribute("totalVentasCount", todasLasVentas.size());
-        model.addAttribute("porPreparar", contarEstados(todasLasVentas, "CONFIRMADO"));
-        model.addAttribute("enProceso", contarEstados(todasLasVentas, "EN_PROCESO", "PROCESANDO", Pedido.LISTO_PARA_RECOGER));
-        model.addAttribute("enCamino", contarEstados(todasLasVentas, "ENVIADO"));
-        model.addAttribute("entregados", contarEstados(todasLasVentas, "ENTREGADO", "COMPLETADO"));
-        model.addAttribute("enRevision", contarEstados(todasLasVentas, Pedido.EN_REVISION));
+        model.addAttribute("porPreparar", porPreparar);
+        model.addAttribute("enProceso", enProceso);
+        model.addAttribute("listosParaRecoger", listosParaRecoger);
+        model.addAttribute("enCamino", enCamino);
+        model.addAttribute("entregados", entregados);
+        model.addAttribute("enRevision", enRevision);
+        model.addAttribute("cancelados", cancelados);
         model.addAttribute("filtroActivo", filtro);
         model.addAttribute("busqueda", texto);
 
@@ -427,15 +448,28 @@ public class VendedorController {
                     .orElse(null);
         }
 
-        String siguienteEstado = vendedorService.obtenerSiguienteEstado(pedido.getEstado()).orElse(null);
+        String siguienteEstado = vendedorService.obtenerSiguienteEstado(pedido).orElse(null);
+        String accionSiguiente = vendedorService.etiquetaAccionSiguiente(pedido);
+
+        com.example.demo.Model.Envio envio = null;
+        if (pedido.getCompraId() != null && envioRepository != null) {
+            envio = envioRepository.findByCompraId(pedido.getCompraId()).orElse(null);
+        }
+
+        com.example.demo.Model.EstadoPedido ep = pedido.getEstadoEnum();
+        boolean puedeCancelar = ep == com.example.demo.Model.EstadoPedido.CONFIRMADO
+                || ep == com.example.demo.Model.EstadoPedido.EN_PROCESO
+                || ep == com.example.demo.Model.EstadoPedido.LISTO_PARA_RECOGER;
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("pedido", pedido);
         model.addAttribute("detalles", pedido.getItems());
         model.addAttribute("compradorEmail", compradorEmail);
+        model.addAttribute("envio", envio);
         model.addAttribute("siguienteEstado", siguienteEstado);
-        model.addAttribute("accionSiguiente", vendedorService.etiquetaAccionSiguiente(pedido.getEstado()));
+        model.addAttribute("accionSiguiente", accionSiguiente);
         model.addAttribute("puedeActualizar", siguienteEstado != null);
+        model.addAttribute("puedeCancelar", puedeCancelar);
         return "vendedor/detalle-pedido-vendedor";
     }
 
@@ -473,6 +507,44 @@ public class VendedorController {
         }
     }
 
+    /**
+     * 3.1: Cancela un pedido del vendedor requiriendo motivo obligatorio.
+     */
+    @PostMapping("/ventas/pedido/{pedidoId}/cancelar")
+    public String cancelarPedido(
+            @PathVariable String pedidoId,
+            @RequestParam("motivo") String motivo,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+        try {
+            Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+            if (usuario == null) {
+                redirectAttributes.addFlashAttribute("error", "Debe iniciar sesión primero");
+                return "redirect:/usuario/login";
+            }
+            if (!vendedorService.esVendedor(usuario.getId())) {
+                redirectAttributes.addFlashAttribute("error", "Debe registrarse como vendedor primero");
+                return "redirect:/vendedor/registro";
+            }
+
+            if (motivo == null || motivo.trim().isBlank()) {
+                redirectAttributes.addFlashAttribute("error", "Debe ingresar un motivo para cancelar el pedido");
+                return "redirect:/vendedor/ventas/pedido/" + pedidoId;
+            }
+
+            vendedorService.cancelarPedido(pedidoId, motivo.trim(), usuario.getId());
+            redirectAttributes.addFlashAttribute("mensaje", "El pedido ha sido cancelado exitosamente.");
+            return "redirect:/vendedor/ventas/pedido/" + pedidoId;
+
+        } catch (IllegalArgumentException | IllegalStateException | SecurityException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/vendedor/ventas/pedido/" + pedidoId;
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al cancelar el pedido: " + e.getMessage());
+            return "redirect:/vendedor/ventas/pedido/" + pedidoId;
+        }
+    }
+
     private long contarEstados(List<Pedido> pedidos, String... estados) {
         java.util.Set<String> buscados = java.util.Set.of(estados);
         return pedidos.stream()
@@ -485,11 +557,12 @@ public class VendedorController {
         String estado = pedido.getEstado() == null ? "" : pedido.getEstado().trim().toUpperCase();
         return switch (filtro) {
             case "preparar" -> "CONFIRMADO".equals(estado);
-            case "proceso" -> "EN_PROCESO".equals(estado) || "PROCESANDO".equals(estado)
-                    || Pedido.LISTO_PARA_RECOGER.equals(estado);
+            case "proceso" -> "EN_PROCESO".equals(estado) || "PROCESANDO".equals(estado);
+            case "listo", "listos" -> Pedido.LISTO_PARA_RECOGER.equals(estado);
             case "enviado" -> "ENVIADO".equals(estado);
             case "entregado" -> "ENTREGADO".equals(estado) || "COMPLETADO".equals(estado);
             case "revision" -> Pedido.EN_REVISION.equals(estado);
+            case "cancelado", "cancelados" -> "CANCELADO".equals(estado);
             default -> true;
         };
     }

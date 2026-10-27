@@ -396,4 +396,31 @@ public class TransportistaController {
 
         return "redirect:/transportista/inicio";
     }
+
+    /**
+     * 4.5: Reportar incidencia en una parada.
+     */
+    @PostMapping("/parada/{envioId}/{pedidoId}/incidencia")
+    public String reportarProblemaParada(
+            @PathVariable String envioId,
+            @PathVariable String pedidoId,
+            @RequestParam("motivo") String motivo,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuario == null || !usuario.hasRole(Role.TRANSPORTISTA)) {
+            redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión como transportista");
+            return "redirect:/transportista/login";
+        }
+
+        try {
+            transportistaService.reportarProblemaParada(envioId, pedidoId, motivo, usuario.getId());
+            redirectAttributes.addFlashAttribute("mensaje", "Incidencia registrada. Se ha notificado al vendedor y al equipo administrativo.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
+
+        return "redirect:/transportista/inicio";
+    }
 }

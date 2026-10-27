@@ -20,6 +20,11 @@ public class ParadaEnvio {
     private boolean recogido = false;
     private LocalDateTime fechaRecogida;
 
+    // 4.5: Incidencias reportadas por el transportista en la parada
+    private boolean incidenciaReportada = false;
+    private String motivoIncidencia;
+    private LocalDateTime fechaIncidencia;
+
     // Resumen de productos del pedido para visualización rápida en las rutas disponibles
     private List<String> itemsResumen = new ArrayList<>();
 
@@ -85,6 +90,15 @@ public class ParadaEnvio {
 
     public LocalDateTime getFechaRecogida() { return fechaRecogida; }
     public void setFechaRecogida(LocalDateTime fechaRecogida) { this.fechaRecogida = fechaRecogida; }
+
+    public boolean isIncidenciaReportada() { return incidenciaReportada; }
+    public void setIncidenciaReportada(boolean incidenciaReportada) { this.incidenciaReportada = incidenciaReportada; }
+
+    public String getMotivoIncidencia() { return motivoIncidencia; }
+    public void setMotivoIncidencia(String motivoIncidencia) { this.motivoIncidencia = motivoIncidencia; }
+
+    public LocalDateTime getFechaIncidencia() { return fechaIncidencia; }
+    public void setFechaIncidencia(LocalDateTime fechaIncidencia) { this.fechaIncidencia = fechaIncidencia; }
 
     public List<String> getItemsResumen() {
         if (itemsResumen == null) itemsResumen = new ArrayList<>();

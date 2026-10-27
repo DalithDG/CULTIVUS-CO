@@ -24,7 +24,7 @@ import java.time.LocalDateTime;
 public final class MovimientoBilletera {
 
     public enum Tipo {
-        ABONO, COMISION, AJUSTE
+        ABONO, COMISION, AJUSTE, REVERSO
     }
 
     @Id

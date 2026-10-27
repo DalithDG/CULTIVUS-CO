@@ -94,4 +94,15 @@ public class BilleteraAlmacenMongo implements BilleteraAlmacen {
         mongoTemplate.updateFirst(new Query(Criteria.where("_id").is(billeteraId)),
                 new Update().inc(campo, deltaCentavos), Billetera.class);
     }
+
+    @Override
+    public boolean existeMovimientoPorClave(String claveIdempotencia) {
+        if (claveIdempotencia == null || claveIdempotencia.isBlank()) {
+            return false;
+        }
+        return mongoTemplate.exists(
+                new Query(Criteria.where("clave_idempotencia").is(claveIdempotencia)),
+                MovimientoBilletera.class
+        );
+    }
 }

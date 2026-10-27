@@ -77,6 +77,10 @@
                     <span class="vs-easy-number__label">Pedidos por atender</span>
                 </div>
                 <div class="vs-easy-number">
+                    <span class="vs-easy-number__value" th:text="${listosParaRecoger}">0</span>
+                    <span class="vs-easy-number__label">Listos para recoger</span>
+                </div>
+                <div class="vs-easy-number">
                     <span class="vs-easy-number__value" th:text="${enCamino}">0</span>
                     <span class="vs-easy-number__label">Pedidos en camino</span>
                 </div>
@@ -207,6 +211,13 @@
                     <p class="vs-stat__label">Por preparar</p>
                     <p class="vs-stat__value" th:text="${porPreparar}">0</p>
                     <p class="vs-stat__hint">Pedidos confirmados que esperan tu despacho</p>
+                </div>
+
+                <div class="vs-stat" style="border-top: 3px solid #27ae60;">
+                    <div class="vs-stat__icon"><i class="fas fa-box-archive"></i></div>
+                    <p class="vs-stat__label">Listos para recoger</p>
+                    <p class="vs-stat__value" th:text="${listosParaRecoger}">0</p>
+                    <p class="vs-stat__hint">Listos en tienda o para transportista</p>
                 </div>
 
                 <div class="vs-stat vs-stat--blue">

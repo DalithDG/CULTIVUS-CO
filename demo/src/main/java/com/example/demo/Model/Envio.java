@@ -4,6 +4,7 @@ import com.example.demo.Model.embebidos.DireccionPedido;
 import com.example.demo.Model.embebidos.ParadaEnvio;
 import com.example.demo.Model.embebidos.SnapshotTransportista;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -29,6 +30,10 @@ public class Envio {
 
     @Id
     private String id;
+
+    @Version
+    @Field("version")
+    private Long version;
 
     @Indexed(unique = true)
     @Field("compra_id")
@@ -56,6 +61,10 @@ public class Envio {
     @Field("fecha_creacion")
     private LocalDateTime fechaCreacion;
 
+    /** 4.1: Reloj de expiración se mide desde aquí. Se setea al crear y al liberar. */
+    @Field("fecha_disponible_desde")
+    private LocalDateTime fechaDisponibleDesde;
+
     @Field("fecha_asignacion")
     private LocalDateTime fechaAsignacion;
 
@@ -67,6 +76,7 @@ public class Envio {
 
     public Envio() {
         this.fechaCreacion = LocalDateTime.now();
+        this.fechaDisponibleDesde = null;
         this.updatedAt = LocalDateTime.now();
         this.estado = PENDIENTE_ASIGNACION;
         this.paradas = new ArrayList<>();
@@ -122,6 +132,9 @@ public class Envio {
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
 
+    public Long getVersion() { return version; }
+    public void setVersion(Long version) { this.version = version; }
+
     public String getCompraId() { return compraId; }
     public void setCompraId(String compraId) { this.compraId = compraId; }
 
@@ -150,6 +163,13 @@ public class Envio {
 
     public LocalDateTime getFechaCreacion() { return fechaCreacion; }
     public void setFechaCreacion(LocalDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }
+
+    public LocalDateTime getFechaDisponibleDesde() {
+        return fechaDisponibleDesde;
+    }
+    public void setFechaDisponibleDesde(LocalDateTime fechaDisponibleDesde) {
+        this.fechaDisponibleDesde = fechaDisponibleDesde;
+    }
 
     public LocalDateTime getFechaAsignacion() { return fechaAsignacion; }
     public void setFechaAsignacion(LocalDateTime fechaAsignacion) { this.fechaAsignacion = fechaAsignacion; }

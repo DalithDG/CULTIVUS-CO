@@ -40,6 +40,9 @@ public class AdminController {
     @Autowired
     private SecurityContextRefreshService securityContextRefreshService;
 
+    @Autowired(required = false)
+    private com.example.demo.services.TransportistaService transportistaService;
+
     // Roles disponibles — ya no hay tabla de roles
     private static final List<String> ROLES = Arrays.asList(
             "COMPRADOR", "VENDEDOR", "ADMIN");
@@ -420,6 +423,74 @@ public class AdminController {
             redirectAttributes.addFlashAttribute("mensaje", "Estado del pedido actualizado correctamente");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Error al actualizar estado: " + e.getMessage());
+        }
+
+        return "redirect:/admin/pedidos";
+    }
+
+    /**
+     * 5.3: Acción 'Reembolso realizado' para pedidos en EN_REVISION o CANCELADOS con reembolso pendiente.
+     */
+    @PostMapping("/pedidos/{id}/reembolso-realizado")
+    public String marcarReembolsoRealizado(@PathVariable String id,
+            @RequestParam(value = "motivo", required = false) String motivo,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        if (!verificarAdmin(session, redirectAttributes)) {
+            return "redirect:/usuario/login";
+        }
+
+        try {
+            adminService.marcarReembolsoRealizadoAdmin(id, motivo);
+            redirectAttributes.addFlashAttribute("mensaje", "Reembolso registrado exitosamente y pedido finalizado.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al procesar reembolso: " + e.getMessage());
+        }
+
+        return "redirect:/admin/pedidos";
+    }
+
+    // ==================== GESTIÓN DE ENVÍOS (4.4, 4.8) ====================
+
+    @PostMapping("/envios/{id}/reasignar")
+    public String reasignarEnvio(@PathVariable String id,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        if (!verificarAdmin(session, redirectAttributes)) {
+            return "redirect:/usuario/login";
+        }
+
+        Usuario admin = (Usuario) session.getAttribute("usuarioLogueado");
+        try {
+            if (transportistaService != null) {
+                transportistaService.reasignarEnvioSinTransportista(id, admin.getId());
+                redirectAttributes.addFlashAttribute("mensaje", "Envío reasignado y devuelto a la bolsa de cargas exitosamente.");
+            }
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al reasignar envío: " + e.getMessage());
+        }
+
+        return "redirect:/admin/pedidos";
+    }
+
+    @PostMapping("/envios/reconciliar")
+    public String reconciliarEnvios(
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        if (!verificarAdmin(session, redirectAttributes)) {
+            return "redirect:/usuario/login";
+        }
+
+        try {
+            if (transportistaService != null) {
+                int reconciliados = transportistaService.reconciliarEnviosFaltantes();
+                redirectAttributes.addFlashAttribute("mensaje", "Reconciliación completada: " + reconciliados + " envíos creados.");
+            }
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error durante la reconciliación: " + e.getMessage());
         }
 
         return "redirect:/admin/pedidos";

@@ -865,12 +865,31 @@
                                     </div>
                                 </div>
 
-                                <!-- Stepper Timeline de 6 pasos por vendedor -->
-                                <div class="mp-timeline">
+                                <!-- Banner de Cancelación (1.6) -->
+                                <div th:if="${sub.cancelado}" class="mp-banner mp-banner--cancelled" style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 12px 16px; margin-top: 12px; color: #991b1b; display: flex; align-items: center; gap: 10px;">
+                                    <i class="fa-solid fa-ban" style="font-size: 1.2rem;"></i>
+                                    <div>
+                                        <strong>Pedido Cancelado</strong>
+                                        <div style="font-size: 0.85rem;" th:if="${sub.motivoCancelacion != null}" th:text="'Motivo: ' + ${sub.motivoCancelacion}">Motivo de cancelación</div>
+                                    </div>
+                                </div>
+
+                                <!-- Banner de Revisión (1.6) -->
+                                <div th:if="${sub.enRevision}" class="mp-banner mp-banner--revision" style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 12px 16px; margin-top: 12px; color: #92400e; display: flex; align-items: center; gap: 10px;">
+                                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.2rem;"></i>
+                                    <div>
+                                        <strong>Pedido en Revisión</strong>
+                                        <div style="font-size: 0.85rem;" th:text="${sub.motivoRevision != null ? sub.motivoRevision : 'El pago fue recibido pero se está validando el stock para gestión de reembolso.'}">En revisión</div>
+                                    </div>
+                                </div>
+
+                                <!-- Stepper Timeline (oculto en CANCELADO) -->
+                                <div class="mp-timeline" th:if="${sub.mostrarStepper}">
                                     <div class="mp-timeline__title">
                                         <i class="fa-solid fa-timeline"></i>
                                         <span>Seguimiento de preparación y entrega</span>
                                     </div>
+                                    <!-- Stepper Domicilio (6 pasos) -->
                                     <div class="mp-stepper">
                                         <!-- 1. Pagado -->
                                         <div class="mp-step" th:classappend="${sub.pasoTracking > 1 ? 'completed' : (sub.pasoTracking == 1 ? 'active' : '')}">
@@ -1137,39 +1156,60 @@
                                 </div>
                             </div>
 
+                            <!-- Banner de Cancelación (1.6) -->
+                            <div th:if="${pedido.cancelado}" class="mp-banner mp-banner--cancelled" style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 12px 16px; margin-bottom: 18px; color: #991b1b; display: flex; align-items: center; gap: 10px;">
+                                <i class="fa-solid fa-ban" style="font-size: 1.2rem;"></i>
+                                <div>
+                                    <strong>Pedido Cancelado</strong>
+                                    <div style="font-size: 0.85rem;" th:if="${pedido.motivoCancelacion != null}" th:text="'Motivo: ' + ${pedido.motivoCancelacion}">Motivo de cancelación</div>
+                                </div>
+                            </div>
+
+                            <!-- Banner de Revisión (1.6) -->
+                            <div th:if="${pedido.enRevision}" class="mp-banner mp-banner--revision" style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 12px 16px; margin-bottom: 18px; color: #92400e; display: flex; align-items: center; gap: 10px;">
+                                <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.2rem;"></i>
+                                <div>
+                                    <strong>Pedido en Revisión</strong>
+                                    <div style="font-size: 0.85rem;" th:text="${pedido.motivoRevision != null ? pedido.motivoRevision : 'El pago fue recibido pero se está validando el stock para gestión de reembolso.'}">En revisión</div>
+                                </div>
+                            </div>
+
                             <!-- Stepper Timeline inside modal -->
-                            <div class="modal-section-title">Progreso del Pedido</div>
-                            <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px 14px; margin-bottom: 22px;">
-                                <div class="mp-stepper">
-                                    <!-- 1. Pagado -->
-                                    <div class="mp-step" th:classappend="${pedido.pasoTracking > 1 ? 'completed' : (pedido.pasoTracking == 1 ? 'active' : '')}">
-                                        <div class="mp-step__dot"><i th:class="${pedido.pasoTracking > 1 ? 'fa-solid fa-check' : 'fa-solid fa-credit-card'}"></i></div>
-                                        <div class="mp-step__label">PAGADO</div>
-                                    </div>
-                                    <!-- 2. Confirmado -->
-                                    <div class="mp-step" th:classappend="${pedido.pasoTracking > 2 ? 'completed' : (pedido.pasoTracking == 2 ? 'active' : '')}">
-                                        <div class="mp-step__dot"><i th:class="${pedido.pasoTracking > 2 ? 'fa-solid fa-check' : 'fa-solid fa-circle-check'}"></i></div>
-                                        <div class="mp-step__label">CONFIRMADO</div>
-                                    </div>
-                                    <!-- 3. Preparando -->
-                                    <div class="mp-step" th:classappend="${pedido.pasoTracking > 3 ? 'completed' : (pedido.pasoTracking == 3 ? 'active' : '')}">
-                                        <div class="mp-step__dot"><i th:class="${pedido.pasoTracking > 3 ? 'fa-solid fa-check' : 'fa-solid fa-box-open'}"></i></div>
-                                        <div class="mp-step__label">PREPARANDO</div>
-                                    </div>
-                                    <!-- 4. Listo para recoger -->
-                                    <div class="mp-step" th:classappend="${pedido.pasoTracking > 4 ? 'completed' : (pedido.pasoTracking == 4 ? 'active' : '')}">
-                                        <div class="mp-step__dot"><i th:class="${pedido.pasoTracking > 4 ? 'fa-solid fa-check' : 'fa-solid fa-box-archive'}"></i></div>
-                                        <div class="mp-step__label">LISTO PARA RECOGER</div>
-                                    </div>
-                                    <!-- 5. En camino -->
-                                    <div class="mp-step" th:classappend="${pedido.pasoTracking > 5 ? 'completed' : (pedido.pasoTracking == 5 ? 'active' : '')}">
-                                        <div class="mp-step__dot"><i th:class="${pedido.pasoTracking > 5 ? 'fa-solid fa-check' : 'fa-solid fa-truck-fast'}"></i></div>
-                                        <div class="mp-step__label">EN CAMINO</div>
-                                    </div>
-                                    <!-- 6. Entregado -->
-                                    <div class="mp-step" th:classappend="${pedido.pasoTracking >= 6 ? 'completed' : ''}">
-                                        <div class="mp-step__dot"><i class="fa-solid fa-house-chimney"></i></div>
-                                        <div class="mp-step__label">ENTREGADO</div>
+                            <div th:if="${pedido.mostrarStepper}">
+                                <div class="modal-section-title">Progreso del Pedido</div>
+                                <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px 14px; margin-bottom: 22px;">
+                                    <!-- Stepper Domicilio -->
+                                    <div class="mp-stepper">
+                                        <!-- 1. Pagado -->
+                                        <div class="mp-step" th:classappend="${pedido.pasoTracking > 1 ? 'completed' : (pedido.pasoTracking == 1 ? 'active' : '')}">
+                                            <div class="mp-step__dot"><i th:class="${pedido.pasoTracking > 1 ? 'fa-solid fa-check' : 'fa-solid fa-credit-card'}"></i></div>
+                                            <div class="mp-step__label">PAGADO</div>
+                                        </div>
+                                        <!-- 2. Confirmado -->
+                                        <div class="mp-step" th:classappend="${pedido.pasoTracking > 2 ? 'completed' : (pedido.pasoTracking == 2 ? 'active' : '')}">
+                                            <div class="mp-step__dot"><i th:class="${pedido.pasoTracking > 2 ? 'fa-solid fa-check' : 'fa-solid fa-circle-check'}"></i></div>
+                                            <div class="mp-step__label">CONFIRMADO</div>
+                                        </div>
+                                        <!-- 3. Preparando -->
+                                        <div class="mp-step" th:classappend="${pedido.pasoTracking > 3 ? 'completed' : (pedido.pasoTracking == 3 ? 'active' : '')}">
+                                            <div class="mp-step__dot"><i th:class="${pedido.pasoTracking > 3 ? 'fa-solid fa-check' : 'fa-solid fa-box-open'}"></i></div>
+                                            <div class="mp-step__label">PREPARANDO</div>
+                                        </div>
+                                        <!-- 4. Listo para recoger -->
+                                        <div class="mp-step" th:classappend="${pedido.pasoTracking > 4 ? 'completed' : (pedido.pasoTracking == 4 ? 'active' : '')}">
+                                            <div class="mp-step__dot"><i th:class="${pedido.pasoTracking > 4 ? 'fa-solid fa-check' : 'fa-solid fa-box-archive'}"></i></div>
+                                            <div class="mp-step__label">LISTO PARA RECOGER</div>
+                                        </div>
+                                        <!-- 5. En camino -->
+                                        <div class="mp-step" th:classappend="${pedido.pasoTracking > 5 ? 'completed' : (pedido.pasoTracking == 5 ? 'active' : '')}">
+                                            <div class="mp-step__dot"><i th:class="${pedido.pasoTracking > 5 ? 'fa-solid fa-check' : 'fa-solid fa-truck-fast'}"></i></div>
+                                            <div class="mp-step__label">EN CAMINO</div>
+                                        </div>
+                                        <!-- 6. Entregado -->
+                                        <div class="mp-step" th:classappend="${pedido.pasoTracking >= 6 ? 'completed' : ''}">
+                                            <div class="mp-step__dot"><i class="fa-solid fa-house-chimney"></i></div>
+                                            <div class="mp-step__label">ENTREGADO</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
