@@ -537,15 +537,19 @@
             </div>
         </section>
 
-        <!-- Tabs para alternar entre "Rutas Disponibles" y "Mis Envíos" -->
+        <!-- Tabs para alternar entre "Rutas Disponibles", "Mis Envíos" e "Historial" -->
         <div class="tabs-header">
             <button class="tab-btn active" id="tabRutasBtn" onclick="cambiarPestana('rutas')">
                 <i class="fas fa-map-pin"></i> Rutas Disponibles
                 <span class="tab-badge" th:text="${totalRutasDisponibles != null ? totalRutasDisponibles : 0}">0</span>
             </button>
             <button class="tab-btn" id="tabMisEnviosBtn" onclick="cambiarPestana('mis-envios')">
-                <i class="fas fa-box-archive"></i> Mis Envíos
+                <i class="fas fa-box-archive"></i> Mis Envíos (En curso)
                 <span class="tab-badge" th:text="${totalMisEnvios != null ? totalMisEnvios : 0}">0</span>
+            </button>
+            <button class="tab-btn" id="tabHistorialBtn" onclick="cambiarPestana('historial')">
+                <i class="fas fa-clock-rotate-left"></i> Historial de Entregas
+                <span class="tab-badge" th:text="${totalHistorialEnvios != null ? totalHistorialEnvios : 0}">0</span>
             </button>
         </div>
 
@@ -825,6 +829,104 @@
                     </div>
                 </div>
 
+                <!-- PESTAÑA 3: HISTORIAL DE ENTREGAS COMPLETADAS -->
+                <div id="panelHistorial" class="tab-panel" style="display: none;">
+                    <div class="section-box">
+                        <div style="margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                            <div>
+                                <h2 style="font-size: 1.25rem; font-weight: 800; color: #111827; margin: 0;">
+                                    <i class="fas fa-circle-check" style="color: #3d7a1e;"></i> Historial de Entregas Completadas
+                                </h2>
+                                <p style="font-size: 0.8rem; color: #6b7280; margin: 4px 0 0;">
+                                    Envíos que has entregado exitosamente con flete garantizado y acreditado.
+                                </p>
+                            </div>
+                            <a th:href="@{/transportista/billetera}" style="background: #e8f5e1; color: #2c5c14; border: 1px solid #c8e6c9; padding: 6px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                                <i class="fas fa-wallet"></i> Ver en mi Billetera
+                            </a>
+                        </div>
+
+                        <!-- Lista de Envíos Entregados -->
+                        <div th:if="${historialEnvios != null and !historialEnvios.isEmpty()}">
+                            <div th:each="he : ${historialEnvios}" class="route-card" style="border-left: 4px solid #3d7a1e;">
+                                
+                                <div class="route-header">
+                                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                        <strong style="color: #111827; font-size: 0.95rem;">
+                                            Compra <span th:text="${he.compra != null and he.compra.codigoReferencia != null ? he.compra.codigoReferencia : #strings.substring(he.envio.id, he.envio.id.length() > 6 ? he.envio.id.length() - 6 : 0)}">CULT-123456</span>
+                                        </strong>
+                                        <span class="status-pill status-available" style="background: #d1fae5; color: #065f46;">
+                                            <i class="fas fa-check-circle"></i> ENTREGADO CON ÉXITO
+                                        </span>
+                                    </div>
+                                    <span style="font-size: 0.75rem; color: #64748b;" th:if="${he.envio.fechaEntrega != null}"
+                                          th:text="'Entregado: ' + ${#temporals.format(he.envio.fechaEntrega, 'dd/MM/yyyy HH:mm')}">Fecha Entrega</span>
+                                </div>
+
+                                <!-- Paradas y Destino -->
+                                <div class="stops-container">
+                                    <div th:each="pd, stat : ${he.paradasDetalle}" class="stop-item">
+                                        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                                            <div>
+                                                <div style="font-size: 0.82rem; font-weight: 700; color: #2c5c14;">
+                                                    <i class="fas fa-store"></i> Parada <span th:text="${stat.count}">1</span> (Recolección en finca):
+                                                    <span th:text="${pd.parada.vendedorNombre}">Finca</span>
+                                                </div>
+                                                <div style="font-size: 0.78rem; color: #475569; margin-top: 2px;">
+                                                    <i class="fas fa-location-dot"></i> <span th:text="${pd.parada.direccionRecoleccion}">Dirección</span>, <strong th:text="${pd.parada.ciudad}">Municipio</strong>
+                                                </div>
+                                                <div style="font-size: 0.75rem; color: #1e293b; margin-top: 4px;" th:if="${pd.parada.itemsResumen != null and !pd.parada.itemsResumen.empty}">
+                                                    <i class="fas fa-box-open" style="color: #3d7a1e;"></i>
+                                                    <span th:text="${#strings.arrayJoin(pd.parada.itemsResumen, ', ')}">Productos</span>
+                                                </div>
+                                            </div>
+                                            <div style="text-align: right;">
+                                                <span style="background: #e8f5e1; color: #2c5c14; border: 1px solid #c8e6c9; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
+                                                    <i class="fas fa-check-circle"></i> Recolectado
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Destino Final -->
+                                    <div class="stop-item delivery-point">
+                                        <div style="font-size: 0.82rem; font-weight: 700; color: #1e40af;">
+                                            <i class="fas fa-house-chimney-user"></i> Destino Final (Entregado al comprador):
+                                            <span th:text="${he.envio.puntoEntrega != null ? he.envio.puntoEntrega.destinatarioNombre : 'Comprador'}">Comprador</span>
+                                        </div>
+                                        <div style="font-size: 0.78rem; color: #334155; margin-top: 2px;">
+                                            <i class="fas fa-location-pin"></i>
+                                            <span th:text="${he.envio.puntoEntrega != null ? he.envio.puntoEntrega.direccionCompleta : 'Dirección'}">Dirección</span>,
+                                            <strong th:text="${he.envio.puntoEntrega != null ? he.envio.puntoEntrega.ciudad : 'Ciudad'}">Ciudad</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Footer con ganancia acreditada -->
+                                <div class="route-footer" style="background: #f8fafc; padding: 12px 16px; border-radius: 8px; margin-top: 14px;">
+                                    <div class="earning-box">
+                                        <span class="earning-label" style="color: #059669;">Flete Ganado y Acreditado:</span>
+                                        <span class="earning-amount" style="color: #059669; font-size: 1.2rem;" th:text="${he.envio.getCostoTotalFormateado()}">$35.000 COP</span>
+                                    </div>
+                                    <div style="font-size: 0.8rem; color: #64748b; display: flex; align-items: center; gap: 6px;">
+                                        <i class="fas fa-shield-check" style="color: #10b981;"></i> Saldo registrado en tu billetera de transportista
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- Si no hay historial -->
+                        <div th:if="${historialEnvios == null or historialEnvios.isEmpty()}" style="text-align: center; padding: 45px 20px; color: #6b7280;">
+                            <i class="fas fa-clipboard-check" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 12px; display: block;"></i>
+                            <h4 style="color: #374151; margin: 0 0 6px; font-size: 1.1rem;">Aún no tienes entregas completadas</h4>
+                            <p style="font-size: 0.85rem; margin: 0; max-width: 440px; margin: auto;">
+                                Cuando aceptes rutas y marques su entrega final al comprador, quedarán archivadas aquí con el comprobante de tu flete ganado.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
             <!-- Columna Derecha: Tarjeta del Vehículo y Perfil -->
@@ -906,19 +1008,27 @@
         function cambiarPestana(pestana) {
             const tabRutasBtn = document.getElementById('tabRutasBtn');
             const tabMisEnviosBtn = document.getElementById('tabMisEnviosBtn');
+            const tabHistorialBtn = document.getElementById('tabHistorialBtn');
             const panelRutas = document.getElementById('panelRutas');
             const panelMisEnvios = document.getElementById('panelMisEnvios');
+            const panelHistorial = document.getElementById('panelHistorial');
+
+            tabRutasBtn.classList.remove('active');
+            tabMisEnviosBtn.classList.remove('active');
+            if (tabHistorialBtn) tabHistorialBtn.classList.remove('active');
+            panelRutas.style.display = 'none';
+            panelMisEnvios.style.display = 'none';
+            if (panelHistorial) panelHistorial.style.display = 'none';
 
             if (pestana === 'rutas') {
                 tabRutasBtn.classList.add('active');
-                tabMisEnviosBtn.classList.remove('active');
                 panelRutas.style.display = 'block';
-                panelMisEnvios.style.display = 'none';
+            } else if (pestana === 'historial') {
+                if (tabHistorialBtn) tabHistorialBtn.classList.add('active');
+                if (panelHistorial) panelHistorial.style.display = 'block';
             } else {
                 tabMisEnviosBtn.classList.add('active');
-                tabRutasBtn.classList.remove('active');
                 panelMisEnvios.style.display = 'block';
-                panelRutas.style.display = 'none';
             }
         }
     </script>

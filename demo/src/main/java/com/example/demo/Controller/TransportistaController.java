@@ -227,14 +227,26 @@ public class TransportistaController {
 
         PerfilTransportista perfil = usuario.getPerfilTransportista();
         List<TransportistaService.RutaDisponibleDTO> rutasDisponibles = transportistaService.obtenerRutasDisponibles(usuario.getId());
-        List<TransportistaService.MiEnvioDetalleDTO> misEnvios = transportistaService.obtenerMisEnviosDetallados(usuario.getId());
+        List<TransportistaService.MiEnvioDetalleDTO> todosMisEnvios = transportistaService.obtenerMisEnviosDetallados(usuario.getId());
+
+        List<TransportistaService.MiEnvioDetalleDTO> enviosActivos = todosMisEnvios.stream()
+                .filter(me -> me.getEnvio() != null
+                        && !Envio.ENTREGADO.equalsIgnoreCase(me.getEnvio().getEstado())
+                        && !Envio.CANCELADO.equalsIgnoreCase(me.getEnvio().getEstado()))
+                .collect(java.util.stream.Collectors.toList());
+
+        List<TransportistaService.MiEnvioDetalleDTO> historialEnvios = todosMisEnvios.stream()
+                .filter(me -> me.getEnvio() != null && Envio.ENTREGADO.equalsIgnoreCase(me.getEnvio().getEstado()))
+                .collect(java.util.stream.Collectors.toList());
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("perfil", perfil);
         model.addAttribute("rutas", rutasDisponibles);
         model.addAttribute("totalRutasDisponibles", rutasDisponibles.size());
-        model.addAttribute("misEnvios", misEnvios);
-        model.addAttribute("totalMisEnvios", misEnvios.size());
+        model.addAttribute("misEnvios", enviosActivos);
+        model.addAttribute("totalMisEnvios", enviosActivos.size());
+        model.addAttribute("historialEnvios", historialEnvios);
+        model.addAttribute("totalHistorialEnvios", historialEnvios.size());
 
         return "transportista/inicio-transportista";
     }
