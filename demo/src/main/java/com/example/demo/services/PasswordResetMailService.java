@@ -15,13 +15,17 @@ import org.springframework.web.util.HtmlUtils;
 
 import java.net.URI;
 import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 
 /**
  * Envío del correo de recuperación.
  *
  * - Se ejecuta en segundo plano para no filtrar por tiempos de respuesta si el
- *   correo existe o no.
+ * correo existe o no.
  * - Nunca registra el token, la contraseña ni las credenciales SMTP.
  * - Si SMTP no está configurado, no rompe la petición: deja un aviso y sigue.
  * - El enlace se construye con APP_BASE_URL, nunca con datos del usuario.
@@ -39,7 +43,27 @@ public class PasswordResetMailService {
     private final String username;
     private final String password;
     private final String remitente;
-    private final String baseUrl;
+    private volatile String baseUrl;
+
+    @Value("${cultivus.mail.webhook-url:}")
+    private String webhookUrl;
+
+    /**
+     * Si APP_BASE_URL quedó en localhost pero la petición entró desde un
+     * dominio público (por ejemplo *.onrender.com), actualiza la URL base
+     * para que el botón del correo apunte al dominio público real.
+     */
+    public void actualizarBaseUrlSiLocalhost(String urlDetectada) {
+        if ((this.baseUrl.contains("localhost") || this.baseUrl.contains("127.0.0.1"))
+                && StringUtils.hasText(urlDetectada)
+                && !urlDetectada.contains("localhost")
+                && !urlDetectada.contains("127.0.0.1")) {
+            String normalizada = normalizarBaseUrl(urlDetectada);
+            if (!normalizada.contains("localhost")) {
+                this.baseUrl = normalizada;
+            }
+        }
+    }
 
     public PasswordResetMailService(
             ObjectProvider<JavaMailSender> mailSenderProvider,
@@ -82,6 +106,17 @@ public class PasswordResetMailService {
         }
 
         String enlace = construirEnlace(tokenOriginal);
+        String nombreLimpio = StringUtils.hasText(nombre) ? nombre.trim() : "productor";
+        String nombreSeguro = HtmlUtils.htmlEscape(nombreLimpio);
+
+        // 1. Si hay MAIL_WEBHOOK_URL (HTTPS puerto 443, ideal para Render Free donde el
+        // puerto 587 está bloqueado)
+        if (StringUtils.hasText(webhookUrl)) {
+            if (enviarPorWebhookHttps(destinatario, "Restablece tu contraseña - Cultivus",
+                    textoPlano(nombreLimpio, enlace), html(nombreSeguro, enlace))) {
+                return;
+            }
+        }
 
         if (!StringUtils.hasText(host) || "tu-correo@gmail.com".equalsIgnoreCase(username)) {
             log.info("\n====================================================================\n"
@@ -109,9 +144,6 @@ public class PasswordResetMailService {
             return;
         }
 
-        String nombreLimpio = StringUtils.hasText(nombre) ? nombre.trim() : "productor";
-        String nombreSeguro = HtmlUtils.htmlEscape(nombreLimpio);
-
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -120,7 +152,7 @@ public class PasswordResetMailService {
             helper.setSubject("Restablece tu contraseña - Cultivus");
             helper.setText(textoPlano(nombreLimpio, enlace), html(nombreSeguro, enlace));
             mailSender.send(message);
-            log.info("Correo de recuperación enviado correctamente");
+            log.info("Correo de recuperación enviado correctamente por SMTP");
         } catch (Exception e) {
             log.error("No se pudo enviar el correo de recuperación ({} / {}). Se muestra enlace de respaldo en logs.",
                     e.getClass().getSimpleName(), causaSimple(e));
@@ -130,6 +162,48 @@ public class PasswordResetMailService {
                     + "====================================================================",
                     destinatario, enlace);
         }
+    }
+
+    private boolean enviarPorWebhookHttps(String destinatario, String asunto, String texto, String htmlBody) {
+        try {
+            HttpClient client = HttpClient.newBuilder()
+                    .followRedirects(HttpClient.Redirect.NEVER)
+                    .connectTimeout(Duration.ofSeconds(15))
+                    .build();
+            String json = "{\"to\":\"" + escaparJson(destinatario) + "\","
+                    + "\"subject\":\"" + escaparJson(asunto) + "\","
+                    + "\"text\":\"" + escaparJson(texto) + "\","
+                    + "\"html\":\"" + escaparJson(htmlBody) + "\"}";
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(webhookUrl.trim()))
+                    .timeout(Duration.ofSeconds(20))
+                    .header("Content-Type", "application/json; charset=UTF-8")
+                    .POST(HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8))
+                    .build();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            int status = response.statusCode();
+            // Google Apps Script ejecuta doPost() y responde con 302 (o 200) hacia
+            // googleusercontent.com
+            if (status >= 200 && status < 400) {
+                log.info("Correo de recuperación enviado correctamente por HTTPS Webhook (status={})", status);
+                return true;
+            }
+            log.error("Fallo al enviar correo por HTTPS Webhook (status={})", status);
+        } catch (Exception e) {
+            log.error("Error al enviar correo por HTTPS Webhook ({})", e.getClass().getSimpleName());
+        }
+        return false;
+    }
+
+    private static String escaparJson(String valor) {
+        if (valor == null) {
+            return "";
+        }
+        return valor.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\r", "\\r")
+                .replace("\n", "\\n")
+                .replace("\t", "\\t");
     }
 
     public String construirEnlace(String tokenOriginal) {

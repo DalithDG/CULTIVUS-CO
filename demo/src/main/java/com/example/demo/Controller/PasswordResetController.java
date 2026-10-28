@@ -78,11 +78,13 @@ public class PasswordResetController {
         }
 
         try {
-            passwordResetService.solicitarRecuperacion(correo, ipDelCliente(request));
-            String enlaceDirecto = passwordResetService.consumirUltimoEnlace(correo);
-            if (enlaceDirecto != null && !enlaceDirecto.isBlank()) {
-                redirectAttributes.addFlashAttribute("enlaceRecuperacionDirecto", enlaceDirecto);
+            String baseUrlPeticion = obtenerBaseUrlDePeticion(request);
+            if (baseUrlPeticion != null
+                    && !baseUrlPeticion.contains("localhost")
+                    && !baseUrlPeticion.contains("127.0.0.1")) {
+                passwordResetService.actualizarBaseUrlSiLocalhost(baseUrlPeticion);
             }
+            passwordResetService.solicitarRecuperacion(correo, ipDelCliente(request));
         } catch (Exception e) {
             // Nunca se muestra el detalle ni se registra el correo/token.
             log.error("Error al procesar la solicitud de recuperación ({})",
@@ -217,6 +219,19 @@ public class PasswordResetController {
     private static String ipDelCliente(HttpServletRequest request) {
         String ip = request.getRemoteAddr();
         return (ip == null || ip.isBlank()) ? "desconocida" : ip;
+    }
+
+    private static String obtenerBaseUrlDePeticion(HttpServletRequest request) {
+        if (request == null || request.getServerName() == null) {
+            return null;
+        }
+        String scheme = request.getScheme() != null ? request.getScheme() : "https";
+        String host = request.getServerName();
+        int port = request.getServerPort();
+        boolean puertoEstandar = ("http".equalsIgnoreCase(scheme) && port == 80)
+                || ("https".equalsIgnoreCase(scheme) && port == 443)
+                || port <= 0;
+        return puertoEstandar ? (scheme + "://" + host) : (scheme + "://" + host + ":" + port);
     }
 
     private static void aplicarCabecerasPrivadas(HttpServletResponse response) {

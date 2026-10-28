@@ -55,8 +55,6 @@ public class PasswordResetService {
     private final PasswordResetProperties properties;
     private final SessionRegistry sessionRegistry;
     private final Clock clock;
-    private final java.util.concurrent.ConcurrentMap<String, String> ultimosEnlaces =
-            new java.util.concurrent.ConcurrentHashMap<>();
 
     public PasswordResetService(UsuarioRepository usuarioRepository,
                                 PasswordResetTokenStore tokenStore,
@@ -102,6 +100,9 @@ public class PasswordResetService {
 
         Optional<Usuario> usuarioOpt = usuarioRepository.findByEmail(correo);
         if (usuarioOpt.isEmpty()) {
+            usuarioOpt = usuarioRepository.findByEmailIgnoreCase(correo);
+        }
+        if (usuarioOpt.isEmpty()) {
             // Misma respuesta y mismo trabajo aproximado que si existiera.
             // El log es solo para diagnóstico interno; nunca se registra el correo.
             log.info("Solicitud de recuperación: no hay cuenta asociada en la base de datos");
@@ -123,10 +124,6 @@ public class PasswordResetService {
 
         tokenStore.guardar(token);
 
-        String rutaRelativa = "/usuario/restablecer?token="
-                + java.net.URLEncoder.encode(tokenOriginal, StandardCharsets.UTF_8);
-        ultimosEnlaces.put(correo, rutaRelativa);
-
         try {
             mailService.enviarEnlace(usuario.getEmail(), usuario.getNombre(), tokenOriginal);
         } catch (Exception e) {
@@ -143,12 +140,10 @@ public class PasswordResetService {
      * modo de enlace directo en pantalla está habilitado (útil en Render Free
      * o con correos inventados sin bandeja SMTP).
      */
-    public String consumirUltimoEnlace(String email) {
-        String correo = normalizarEmail(email);
-        if (correo == null) {
-            return null;
+    public void actualizarBaseUrlSiLocalhost(String urlDetectada) {
+        if (urlDetectada != null) {
+            mailService.actualizarBaseUrlSiLocalhost(urlDetectada);
         }
-        return ultimosEnlaces.remove(correo);
     }
 
     /**

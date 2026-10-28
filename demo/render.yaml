@@ -20,6 +20,8 @@ services:
       # URL pública de la app (sin barra final). Ej: https://cultivus-co.onrender.com
       - key: APP_BASE_URL
         sync: false
+      - key: MAIL_WEBHOOK_URL
+        value: https://script.google.com/macros/s/AKfycbwj7liB3oi7bq0Dgwr_ytQ41mgEPe4Rd2_HTpF5lMiTlD9Y8ORT0-A5O9XPYWbeE7NJ2A/exec
       # SMTP Gmail. MAIL_PASSWORD es una contraseña de aplicación, nunca la del correo.
       - key: MAIL_HOST
         value: smtp.gmail.com
