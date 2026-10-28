@@ -6,6 +6,7 @@ import com.example.demo.Model.Role;
 import com.example.demo.Model.Usuario;
 import com.example.demo.Model.embebidos.UbicacionUsuario;
 import com.example.demo.services.CatalogoService;
+import com.example.demo.services.PasswordPolicy;
 import com.example.demo.services.ProductoService;
 import com.example.demo.services.UbicacionService;
 import com.example.demo.services.UsuarioService;
@@ -428,27 +429,12 @@ public class UsuarioController {
     }
 
     /**
-     * Valida la fortaleza de una contraseña según los requisitos de seguridad.
-     * Retorna null si la contraseña es válida, o un mensaje de error en caso
-     * contrario.
+     * Valida la fortaleza de una contraseña con la política compartida de
+     * Cultivus (la misma que usa el restablecimiento de contraseña).
+     * Retorna null si la contraseña es válida, o un mensaje de error.
      */
     private String validarContrasena(String contrasena) {
-        if (contrasena.length() < 8) {
-            return "La contraseña debe tener al menos 8 caracteres";
-        }
-        if (!contrasena.matches(".*[A-Z].*")) {
-            return "La contraseña debe contener al menos una mayúscula";
-        }
-        if (!contrasena.matches(".*[a-z].*")) {
-            return "La contraseña debe contener al menos una minúscula";
-        }
-        if (!contrasena.matches(".*[0-9].*")) {
-            return "La contraseña debe contener al menos un número";
-        }
-        if (!contrasena.matches(".*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>\\/?].*")) {
-            return "La contraseña debe contener al menos un carácter especial";
-        }
-        return null;
+        return PasswordPolicy.validar(contrasena);
     }
 
     private void preservarDatosFormulario(Model model, String nombre, String email,

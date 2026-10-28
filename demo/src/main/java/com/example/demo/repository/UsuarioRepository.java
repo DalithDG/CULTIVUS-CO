@@ -15,6 +15,9 @@ public interface UsuarioRepository extends MongoRepository<Usuario, String> {
     // Buscar usuario por email
     Optional<Usuario> findByEmail(String email);
 
+    // Buscar usuario por email (insensible a mayúsculas/minúsculas)
+    Optional<Usuario> findByEmailIgnoreCase(String email);
+
     // Verificar si existe un email
     boolean existsByEmail(String email);
 

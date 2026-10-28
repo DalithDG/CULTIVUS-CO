@@ -2,15 +2,19 @@ package com.example.demo.security;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.core.session.SessionRegistry;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.util.StringUtils;
 
@@ -71,8 +75,27 @@ public class SecurityConfig {
         return provider;
     }
 
+    /**
+     * Registro de sesiones activas. Permite invalidar las sesiones de un
+     * usuario cuando restablece su contraseña.
+     */
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SessionRegistry sessionRegistry() {
+        return new SessionRegistryImpl();
+    }
+
+    /**
+     * Necesario para que SessionRegistry elimine las sesiones destruidas y no
+     * acumule información en memoria.
+     */
+    @Bean
+    public ServletListenerRegistrationBean<HttpSessionEventPublisher> httpSessionEventPublisher() {
+        return new ServletListenerRegistrationBean<>(new HttpSessionEventPublisher());
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http,
+                                           SessionRegistry sessionRegistry) throws Exception {
         http
             .csrf(csrf -> csrf
                 // NO QUITAR: el webhook de Wompi (server-to-server) no envia sesion ni token CSRF.
@@ -92,6 +115,10 @@ public class SecurityConfig {
                     "/usuario/login",
                     "/usuario/registro",
                     "/usuario/guardar",
+                    // Recuperación de contraseña: solo las rutas necesarias,
+                    // públicas pero con CSRF activo.
+                    "/usuario/recuperar",
+                    "/usuario/restablecer",
                     "/usuario/logout",
                     "/logout",
                     "/category",
@@ -138,6 +165,15 @@ public class SecurityConfig {
                 .requestMatchers("/transportista/registro", "/transportista/guardar", "/transportista/login").permitAll()
                 .requestMatchers("/transportista/**").hasAnyRole("TRANSPORTISTA", "ADMIN")
                 .anyRequest().authenticated()
+            )
+            // maximumSessions(-1) = sin límite de sesiones, pero registrando
+            // cada sesión para poder expirarlas tras un cambio de contraseña.
+            .sessionManagement(session -> session
+                .sessionConcurrency(concurrency -> concurrency
+                    .maximumSessions(-1)
+                    .sessionRegistry(sessionRegistry)
+                    .expiredUrl("/usuario/login?sesionExpirada=true")
+                )
             )
             .formLogin(form -> form
                 .loginPage("/usuario/login")

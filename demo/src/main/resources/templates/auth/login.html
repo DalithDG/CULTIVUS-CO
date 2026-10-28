@@ -68,6 +68,15 @@
                 </button>
             </div>
 
+            <!-- La sesión se cerró porque la contraseña cambió en otro dispositivo -->
+            <div th:if="${param.sesionExpirada}" class="toast toast-error" role="alert" id="toastSesion">
+                <i class="fas fa-clock"></i>
+                <span>Tu sesión expiró porque la contraseña fue actualizada. Inicia sesión de nuevo.</span>
+                <button type="button" class="toast-close" onclick="closeToast('toastSesion')" aria-label="Cerrar">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
         </div>
 
         <!-- ===== PANEL DERECHO: formulario de login ===== -->
@@ -152,7 +161,9 @@
 
                     <!-- Recuperar contrasena -->
                     <div class="forgot-row">
-                        <a href="#" class="forgot-link">Recuperar contrasena?</a>
+                        <a th:href="@{/usuario/recuperar}" href="/usuario/recuperar" class="forgot-link">
+                            ¿Olvidaste tu contraseña?
+                        </a>
                     </div>
 
                     <!-- Boton Iniciar Sesion -->

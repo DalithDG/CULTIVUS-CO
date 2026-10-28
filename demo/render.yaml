@@ -17,6 +17,24 @@ services:
         value: prod
       - key: SPRING_DATA_MONGODB_URI
         sync: false
+      # URL pública de la app (sin barra final). Ej: https://cultivus-co.onrender.com
+      - key: APP_BASE_URL
+        sync: false
+      # SMTP Gmail. MAIL_PASSWORD es una contraseña de aplicación, nunca la del correo.
+      - key: MAIL_HOST
+        value: smtp.gmail.com
+      - key: MAIL_PORT
+        value: 587
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      - key: MAIL_SMTP_AUTH
+        value: true
+      - key: MAIL_STARTTLS
+        value: true
       #- key: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID
       #  sync: false
       #- key: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET
