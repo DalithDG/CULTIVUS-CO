@@ -1,5 +1,9 @@
 package com.example.demo.services;
 
+import com.example.demo.Model.ActorTransicion;
+import com.example.demo.Model.CanceladoPor;
+import com.example.demo.Model.EstadoPedido;
+import com.example.demo.Model.ModalidadEntrega;
 import com.example.demo.Model.Pedido;
 import com.example.demo.Model.Role;
 import com.example.demo.Model.Usuario;
@@ -35,20 +39,14 @@ public class VendedorService {
             "COMPLETADO",
             Pedido.EN_REVISION);
 
-    /**
-     * Transiciones que el vendedor puede realizar. ENVIADO y ENTREGADO son exclusivos
-     * del transportista/sistema logístico.
-     */
-    private static final Map<String, String> SIGUIENTE_ESTADO = Map.of(
-            "CONFIRMADO", "EN_PROCESO",
-            "EN_PROCESO", Pedido.LISTO_PARA_RECOGER,
-            "PROCESANDO", Pedido.LISTO_PARA_RECOGER);
-
     @Autowired
     private UsuarioRepository usuarioRepository;
 
     @Autowired
     private PedidoRepository pedidoRepository;
+
+    @Autowired
+    private PedidoEstadoService pedidoEstadoService;
 
     @Autowired
     private NotificacionService notificacionService;
@@ -61,6 +59,9 @@ public class VendedorService {
 
     @Autowired(required = false)
     private TransportistaService transportistaService;
+
+    @Autowired(required = false)
+    private PedidoCancelacionService pedidoCancelacionService;
 
     /**
      * Crea un perfil de vendedor para un usuario existente
@@ -225,87 +226,153 @@ public class VendedorService {
         if (pedido == null || pedido.getEstado() == null) {
             return false;
         }
-        return ESTADOS_VENTA_VISIBLES.contains(normalizarEstado(pedido.getEstado()));
+        EstadoPedido ep = pedido.getEstadoEnum();
+        if (ep == null || ep == EstadoPedido.PENDIENTE) {
+            return false;
+        }
+        if (ep == EstadoPedido.CANCELADO) {
+            // 2.5: CANCELADO solo si canceladoPor == VENDEDOR || canceladoPor == ADMIN. SISTEMA_PAGO oculto.
+            return pedido.getCanceladoPor() == CanceladoPor.VENDEDOR
+                    || pedido.getCanceladoPor() == CanceladoPor.ADMIN;
+        }
+        return true;
     }
 
     /**
-     * Siguiente estado permitido para el vendedor. Un pedido listo, enviado, entregado
-     * o en revisión no lo modifica el vendedor.
+     * Siguiente estado permitido para el vendedor considerando la modalidad de entrega.
      */
-    public Optional<String> obtenerSiguienteEstado(String estadoActual) {
-        return Optional.ofNullable(SIGUIENTE_ESTADO.get(normalizarEstado(estadoActual)));
-    }
+    public Optional<String> obtenerSiguienteEstado(Pedido pedido) {
+        if (pedido == null) return Optional.empty();
+        EstadoPedido ep = pedido.getEstadoEnum();
+        if (ep == null) return Optional.empty();
 
-    public String etiquetaAccionSiguiente(String estadoActual) {
-        String siguiente = SIGUIENTE_ESTADO.get(normalizarEstado(estadoActual));
-        if (siguiente == null) {
-            return null;
-        }
-        return switch (siguiente) {
-            case "EN_PROCESO" -> "Comenzar preparación";
-            case Pedido.LISTO_PARA_RECOGER -> "Marcar listo para recoger";
-            default -> "Actualizar estado";
+        return switch (ep) {
+            case CONFIRMADO -> Optional.of(EstadoPedido.EN_PROCESO.name());
+            case EN_PROCESO -> Optional.of(EstadoPedido.LISTO_PARA_RECOGER.name());
+            case LISTO_PARA_RECOGER -> {
+                if (pedido.isRecogeEnTienda()) {
+                    yield Optional.of(EstadoPedido.ENTREGADO.name());
+                } else {
+                    yield Optional.empty();
+                }
+            }
+            default -> Optional.empty();
         };
     }
 
-    /**
-     * Actualiza el estado de un pedido garantizando el ciclo de vida de única responsabilidad:
-     * El vendedor ÚNICAMENTE puede avanzar: CONFIRMADO -> EN_PROCESO -> LISTO_PARA_RECOGER.
-     * Los estados ENVIADO y ENTREGADO son exclusivos del transportista/sistema logístico.
-     */
-    public void actualizarEstadoPedido(String pedidoId, String nuevoEstado) {
-        actualizarEstadoPedido(pedidoId, nuevoEstado, null);
+    public String etiquetaAccionSiguiente(Pedido pedido) {
+        if (pedido == null) return null;
+        EstadoPedido ep = pedido.getEstadoEnum();
+        if (ep == null) return null;
+
+        return switch (ep) {
+            case CONFIRMADO -> "Comenzar preparación";
+            case EN_PROCESO -> "Marcar listo para recoger";
+            case LISTO_PARA_RECOGER -> {
+                if (pedido.isRecogeEnTienda()) {
+                    yield "Validar código y entregar";
+                } else {
+                    yield null;
+                }
+            }
+            default -> null;
+        };
     }
 
+    public Optional<String> obtenerSiguienteEstado(String estadoActual) {
+        EstadoPedido ep = EstadoPedido.interpretar(estadoActual).orElse(null);
+        if (ep == EstadoPedido.CONFIRMADO) return Optional.of(EstadoPedido.EN_PROCESO.name());
+        if (ep == EstadoPedido.EN_PROCESO) return Optional.of(EstadoPedido.LISTO_PARA_RECOGER.name());
+        return Optional.empty();
+    }
+
+    public String etiquetaAccionSiguiente(String estadoActual) {
+        EstadoPedido ep = EstadoPedido.interpretar(estadoActual).orElse(null);
+        if (ep == EstadoPedido.CONFIRMADO) return "Comenzar preparación";
+        if (ep == EstadoPedido.EN_PROCESO) return "Marcar listo para recoger";
+        return null;
+    }
+
+    /**
+     * 2.6: Actualiza el estado de un pedido del vendedor.
+     * Requiere obligatoriamente vendedorId y valida que sea el dueño del pedido (falla cerrado).
+     * Delega la transición a PedidoEstadoService para cumplir la máquina centralizada de estados.
+     */
     public void actualizarEstadoPedido(String pedidoId, String nuevoEstado, String vendedorId) {
-        if (pedidoId == null || nuevoEstado == null) {
-            throw new IllegalArgumentException("El ID de pedido y el nuevo estado son obligatorios");
+        if (pedidoId == null || nuevoEstado == null || vendedorId == null || vendedorId.isBlank()) {
+            throw new IllegalArgumentException("El ID de pedido, el nuevo estado y el ID de vendedor son obligatorios");
         }
 
         Pedido pedido = pedidoRepository.findById(pedidoId)
                 .orElseThrow(() -> new IllegalArgumentException("Pedido no encontrado: " + pedidoId));
 
-        if (vendedorId != null && pedido.getVendedor() != null && pedido.getVendedor().getId() != null) {
-            if (!pedido.getVendedor().getId().equals(vendedorId)) {
-                throw new SecurityException("No tienes permiso para modificar este pedido");
-            }
+        if (pedido.getVendedor() == null || pedido.getVendedor().getId() == null
+                || !vendedorId.equals(pedido.getVendedor().getId())) {
+            throw new SecurityException("No tienes permiso para modificar este pedido");
         }
 
-        String estadoActual = pedido.getEstado() != null ? pedido.getEstado().toUpperCase() : "PENDIENTE";
-        String estadoDeseado = nuevoEstado.trim().toUpperCase();
+        EstadoPedido estadoDeseado = EstadoPedido.interpretar(nuevoEstado)
+                .orElseThrow(() -> new IllegalArgumentException("Estado no reconocido: " + nuevoEstado));
 
         // Bloqueo explícito de estados reservados para la logística (carrier)
-        if (Pedido.ENVIADO.equals(estadoDeseado) || Pedido.ENTREGADO.equals(estadoDeseado) || "COMPLETADO".equals(estadoDeseado)) {
+        if (estadoDeseado == EstadoPedido.ENVIADO || estadoDeseado == EstadoPedido.ENTREGADO) {
             throw new IllegalStateException("El vendedor no puede marcar el pedido como enviado o entregado. Esta acción la realiza exclusivamente el transportista.");
         }
 
-        // Regla estricta: CONFIRMADO -> EN_PROCESO -> LISTO_PARA_RECOGER
-        if (Pedido.CONFIRMADO.equals(estadoActual)) {
-            if (!Pedido.EN_PROCESO.equals(estadoDeseado) && !"PROCESANDO".equals(estadoDeseado)) {
-                throw new IllegalStateException("Desde 'Confirmado' solo se puede avanzar a 'En proceso'. Estado intentado: " + nuevoEstado);
-            }
-        } else if (Pedido.EN_PROCESO.equals(estadoActual) || "PROCESANDO".equals(estadoActual)) {
-            if (!Pedido.LISTO_PARA_RECOGER.equals(estadoDeseado)) {
-                throw new IllegalStateException("Desde 'En proceso' solo se puede avanzar a 'Listo para recoger'. Estado intentado: " + nuevoEstado);
-            }
-        } else {
-            throw new IllegalStateException("Transición no permitida para el vendedor desde el estado '" + estadoActual + "' hacia '" + nuevoEstado + "'. El flujo permitido es: CONFIRMADO -> EN_PROCESO -> LISTO_PARA_RECOGER.");
+        // Regla estricta del vendedor: CONFIRMADO -> EN_PROCESO -> LISTO_PARA_RECOGER
+        EstadoPedido estadoActual = pedido.getEstadoEnum();
+        if (estadoActual == EstadoPedido.CONFIRMADO && estadoDeseado != EstadoPedido.EN_PROCESO) {
+            throw new IllegalStateException("Desde 'Confirmado' solo se puede avanzar a 'En proceso'. Estado intentado: " + nuevoEstado);
+        }
+        if (estadoActual == EstadoPedido.EN_PROCESO && estadoDeseado != EstadoPedido.LISTO_PARA_RECOGER) {
+            throw new IllegalStateException("Desde 'En proceso' solo se puede avanzar a 'Listo para recoger'. Estado intentado: " + nuevoEstado);
         }
 
-        pedido.setEstado(estadoDeseado);
-        pedido.setUpdatedAt(LocalDateTime.now());
-        pedidoRepository.save(pedido);
+        // Transición centralizada
+        pedidoEstadoService.transicionar(
+                pedido,
+                estadoDeseado,
+                ActorTransicion.VENDEDOR,
+                "Actualización realizada por el vendedor"
+        );
+
+        if (estadoDeseado == EstadoPedido.LISTO_PARA_RECOGER) {
+            pedido.setFechaListoParaRecoger(LocalDateTime.now());
+            pedidoRepository.save(pedido);
+
+            // 4.1: Si es a domicilio, verificar si todas las paradas quedaron listas para habilitar el reloj de expiración
+            if (pedido.isDomicilio() && pedido.getCompraId() != null && transportistaService != null) {
+                transportistaService.actualizarDisponibilidadEnvioSiListo(pedido.getCompraId());
+            }
+
+            // Si es a domicilio y ya hay transportista asignado, notificarle
+            if (pedido.isDomicilio() && pedido.getCompraId() != null
+                    && envioRepository != null && notificacionService != null) {
+                envioRepository.findByCompraId(pedido.getCompraId()).ifPresent(envio -> {
+                    if (envio.getTransportistaId() != null) {
+                        String nombreTienda = pedido.getVendedor() != null && pedido.getVendedor().getNombre() != null
+                                ? pedido.getVendedor().getNombre() : "el vendedor agrícola";
+                        notificacionService.enviar(
+                                envio.getTransportistaId(),
+                                "Parada Lista para Recogida",
+                                "El vendedor " + nombreTienda + " tiene listo el paquete (Pedido #" + pedido.getNumeroFactura() + ") para tu recolección.",
+                                "INFO"
+                        );
+                    }
+                });
+            }
+        }
 
         // Notificar al Comprador
         if (pedido.getComprador() != null && pedido.getComprador().getId() != null && notificacionService != null) {
-            if (Pedido.EN_PROCESO.equals(estadoDeseado) || "PROCESANDO".equals(estadoDeseado)) {
+            if (estadoDeseado == EstadoPedido.EN_PROCESO) {
                 notificacionService.enviar(
                         pedido.getComprador().getId(),
                         "Pedido en Preparación",
                         "El vendedor ha comenzado a preparar los productos de tu pedido #" + pedido.getNumeroFactura() + ".",
                         "INFO"
                 );
-            } else if (Pedido.LISTO_PARA_RECOGER.equals(estadoDeseado)) {
+            } else if (estadoDeseado == EstadoPedido.LISTO_PARA_RECOGER) {
                 notificacionService.enviar(
                         pedido.getComprador().getId(),
                         "Pedido Listo para Recoger",
@@ -314,68 +381,101 @@ public class VendedorService {
                 );
             }
         }
-
-        // Si pasó a LISTO_PARA_RECOGER y ya hay transportista asignado al envío, notificarle
-        if (Pedido.LISTO_PARA_RECOGER.equals(estadoDeseado) && pedido.getCompraId() != null
-                && envioRepository != null && notificacionService != null) {
-            envioRepository.findByCompraId(pedido.getCompraId()).ifPresent(envio -> {
-                if (envio.getTransportistaId() != null) {
-                    String nombreTienda = pedido.getVendedor() != null && pedido.getVendedor().getNombre() != null
-                            ? pedido.getVendedor().getNombre() : "el vendedor agrícola";
-                    notificacionService.enviar(
-                            envio.getTransportistaId(),
-                            "Parada Lista para Recogida",
-                            "El vendedor " + nombreTienda + " tiene listo el paquete (Pedido #" + pedido.getNumeroFactura() + ") para tu recolección.",
-                            "INFO"
-                    );
-                }
-            });
-        }
     }
 
     /**
-     * Cancela un pedido del vendedor y ajusta la ruta del transportista recalculando el flete.
+     * Ya no aplica: todas las entregas son a domicilio gestionadas por logística.
+     */
+    @Deprecated
+    public void validarCodigoRetiroYEntregar(String pedidoId, String codigoIngresado, String vendedorId) {
+        throw new UnsupportedOperationException("La modalidad de retiro en tienda fue deshabilitada. Todas las entregas son gestionadas a domicilio por transportistas.");
+    }
+
+    /**
+     * Cancela un pedido del vendedor y ajusta stock, billetera, reembolso y ruta de transportista.
+     * Delega en la rutina centralizada de PedidoCancelacionService.
      */
     public void cancelarPedido(String pedidoId, String motivo, String vendedorId) {
+        if (pedidoId == null || vendedorId == null || vendedorId.isBlank()) {
+            throw new IllegalArgumentException("El ID de pedido y el ID de vendedor son obligatorios");
+        }
+
         Pedido pedido = pedidoRepository.findById(pedidoId)
                 .orElseThrow(() -> new IllegalArgumentException("Pedido no encontrado: " + pedidoId));
 
-        if (vendedorId != null && pedido.getVendedor() != null && pedido.getVendedor().getId() != null) {
-            if (!pedido.getVendedor().getId().equals(vendedorId)) {
-                throw new SecurityException("No tienes permiso para cancelar este pedido");
-            }
+        if (pedido.getVendedor() == null || pedido.getVendedor().getId() == null
+                || !vendedorId.equals(pedido.getVendedor().getId())) {
+            throw new SecurityException("No tienes permiso para cancelar este pedido");
         }
 
-        if (Pedido.ENVIADO.equalsIgnoreCase(pedido.getEstado()) || Pedido.ENTREGADO.equalsIgnoreCase(pedido.getEstado())) {
+        if (pedido.getEstadoEnum() == EstadoPedido.ENVIADO || pedido.getEstadoEnum() == EstadoPedido.ENTREGADO) {
             throw new IllegalStateException("No se puede cancelar un pedido que ya fue enviado o entregado.");
         }
 
-        pedido.setEstado(Pedido.CANCELADO);
-        pedido.setUpdatedAt(LocalDateTime.now());
-        pedidoRepository.save(pedido);
-
-        if (transportistaService != null) {
-            transportistaService.removerParadaPorPedidoCancelado(pedidoId);
-        }
-
-        if (pedido.getComprador() != null && pedido.getComprador().getId() != null && notificacionService != null) {
-            notificacionService.enviar(
-                    pedido.getComprador().getId(),
-                    "Pedido Cancelado",
-                    "Tu pedido #" + pedido.getNumeroFactura() + " ha sido cancelado. Motivo: " + (motivo != null ? motivo : "Cancelación registrada"),
-                    "WARNING"
+        if (pedidoCancelacionService != null) {
+            pedidoCancelacionService.cancelarPedido(pedido, motivo, ActorTransicion.VENDEDOR, CanceladoPor.VENDEDOR);
+        } else {
+            pedido.setCanceladoPor(CanceladoPor.VENDEDOR);
+            pedido.setMotivoCancelacion(motivo != null ? motivo : "Cancelación solicitada por el vendedor");
+            pedido.setFechaCancelacion(LocalDateTime.now());
+            pedidoEstadoService.transicionar(
+                    pedido,
+                    EstadoPedido.CANCELADO,
+                    ActorTransicion.VENDEDOR,
+                    motivo != null ? motivo : "Cancelación por vendedor",
+                    CanceladoPor.VENDEDOR
             );
+
+            if (transportistaService != null) {
+                transportistaService.removerParadaPorPedidoCancelado(pedidoId);
+            }
+
+            if (pedido.getComprador() != null && pedido.getComprador().getId() != null && notificacionService != null) {
+                notificacionService.enviar(
+                        pedido.getComprador().getId(),
+                        "Pedido Cancelado",
+                        "Tu pedido #" + pedido.getNumeroFactura() + " ha sido cancelado por el vendedor. Motivo: "
+                                + (motivo != null ? motivo : "Cancelación registrada"),
+                        "WARNING"
+                );
+            }
         }
     }
 
     /**
-     * Calcula el total de ventas confirmadas del vendedor.
+     * 2.3: Calcula el total de ventas del vendedor basándose en subtotalCentavos (productos sin envío).
+     * Abarca únicamente estados CONFIRMADO..ENTREGADO, excluyendo EN_REVISION y CANCELADO.
      */
     public double calcularTotalVentas(String vendedorId) {
         return obtenerVentasDelVendedor(vendedorId).stream()
-                .map(Pedido::getTotal)
-                .filter(Objects::nonNull)
-                .mapToDouble(Double::doubleValue)
+                .filter(p -> {
+                    EstadoPedido ep = p.getEstadoEnum();
+                    return ep != null && ep.esVentaConfirmada();
+                })
+                .mapToDouble(Pedido::getSubtotalProductos)
+                .sum();
+    }
+
+    /**
+     * Calcula el total de ventas ya entregadas al comprador.
+     */
+    public double calcularTotalVentasEntregadas(String vendedorId) {
+        return obtenerVentasDelVendedor(vendedorId).stream()
+                .filter(p -> p.getEstadoEnum() == EstadoPedido.ENTREGADO)
+                .mapToDouble(Pedido::getSubtotalProductos)
+                .sum();
+    }
+
+    /**
+     * Calcula el total de ventas que están actualmente en curso (CONFIRMADO a ENVIADO).
+     */
+    public double calcularTotalVentasEnCurso(String vendedorId) {
+        return obtenerVentasDelVendedor(vendedorId).stream()
+                .filter(p -> {
+                    EstadoPedido ep = p.getEstadoEnum();
+                    return ep != null && ep.esVentaEnCurso();
+                })
+                .mapToDouble(Pedido::getSubtotalProductos)
                 .sum();
     }
 

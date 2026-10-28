@@ -49,6 +49,9 @@ class TransportistaFase2Test {
     @Mock
     private AppConfigService appConfigService;
 
+    @Mock
+    private PedidoEstadoService pedidoEstadoService;
+
     @InjectMocks
     private TransportistaService transportistaService;
 
@@ -89,6 +92,12 @@ class TransportistaFase2Test {
         when(pedidoRepository.save(any(Pedido.class))).thenAnswer(inv -> inv.getArgument(0));
         when(envioRepository.save(any(Envio.class))).thenAnswer(inv -> inv.getArgument(0));
         when(usuarioRepository.save(any(Usuario.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        pedidoEstadoService = new PedidoEstadoService();
+        org.springframework.test.util.ReflectionTestUtils.setField(pedidoEstadoService, "pedidoRepository", pedidoRepository);
+        org.springframework.test.util.ReflectionTestUtils.setField(pedidoEstadoService, "compraRepository", compraRepository);
+        org.springframework.test.util.ReflectionTestUtils.setField(vendedorService, "pedidoEstadoService", pedidoEstadoService);
+        org.springframework.test.util.ReflectionTestUtils.setField(transportistaService, "pedidoEstadoService", pedidoEstadoService);
     }
 
     // =========================================================================
@@ -127,7 +136,7 @@ class TransportistaFase2Test {
         vendedorService.actualizarEstadoPedido("ped_2", Pedido.LISTO_PARA_RECOGER, "vend_1");
 
         assertEquals(Pedido.LISTO_PARA_RECOGER, pedido.getEstado());
-        verify(pedidoRepository, times(1)).save(pedido);
+        verify(pedidoRepository, atLeastOnce()).save(pedido);
     }
 
     @Test

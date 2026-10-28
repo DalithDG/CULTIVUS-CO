@@ -199,7 +199,8 @@ public class SecurityConfig {
                 && StringUtils.hasText(googleClientSecret);
 
         boolean facebookHabilitado = StringUtils.hasText(facebookClientId)
-                && StringUtils.hasText(facebookClientSecret);
+                && StringUtils.hasText(facebookClientSecret)
+                && !"disabled".equalsIgnoreCase(facebookClientId);
 
         boolean oauthHabilitado = (googleHabilitado || facebookHabilitado)
                 && clientRegistrationRepository != null

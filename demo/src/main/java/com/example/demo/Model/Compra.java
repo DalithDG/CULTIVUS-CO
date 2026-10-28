@@ -24,6 +24,7 @@ public class Compra {
     public static final String PENDIENTE = "PENDIENTE";
     public static final String PAGADA = "PAGADA";
     public static final String RECHAZADA = "RECHAZADA";
+    public static final String COMPLETADA = "COMPLETADA";
 
     @Id
     private String id;
@@ -35,6 +36,10 @@ public class Compra {
     @Indexed(unique = true)
     @Field("referencia_pago")
     private String referenciaPago;
+
+    /** Modalidad elegida en el checkout (DOMICILIO o RECOGE_EN_TIENDA). */
+    @Field("modalidad_entrega")
+    private ModalidadEntrega modalidadEntrega = ModalidadEntrega.DOMICILIO;
 
     /** Suma de los subtotales de productos de todos los sub-pedidos, en centavos. */
     @Field("subtotal_centavos")
@@ -48,7 +53,7 @@ public class Compra {
     @Field("total_centavos")
     private Long totalCentavos;
 
-    // PENDIENTE, PAGADA, RECHAZADA
+    // PENDIENTE, PAGADA, RECHAZADA, COMPLETADA
     @Field("estado")
     private String estado = PENDIENTE;
 
@@ -82,6 +87,7 @@ public class Compra {
     public Compra() {
         this.fecha = LocalDateTime.now();
         this.estado = PENDIENTE;
+        this.modalidadEntrega = ModalidadEntrega.DOMICILIO;
     }
 
     public Compra(DatosComprador comprador, String referenciaPago, long subtotalCentavos, long envioCentavos) {
@@ -94,7 +100,32 @@ public class Compra {
     }
 
     public boolean esFinal() {
-        return PAGADA.equals(estado) || RECHAZADA.equals(estado);
+        return PAGADA.equals(estado) || RECHAZADA.equals(estado) || COMPLETADA.equals(estado);
+    }
+
+    public boolean isCompletada() {
+        return COMPLETADA.equals(estado);
+    }
+
+    /**
+     * Evalúa si la compra pasa a COMPLETADA: todos los sub-pedidos están en ENTREGADO o CANCELADO,
+     * con al menos uno en ENTREGADO.
+     */
+    public boolean evaluarCompletada(List<Pedido> subPedidosActuales) {
+        if (subPedidosActuales == null || subPedidosActuales.isEmpty()) {
+            return false;
+        }
+        boolean todosFinales = subPedidosActuales.stream()
+                .allMatch(p -> p.isEntregado() || p.isCancelado());
+        boolean alMenosUnoEntregado = subPedidosActuales.stream()
+                .anyMatch(Pedido::isEntregado);
+
+        if (todosFinales && alMenosUnoEntregado) {
+            this.estado = COMPLETADA;
+            this.updatedAt = LocalDateTime.now();
+            return true;
+        }
+        return false;
     }
 
     // ── Helpers de vista (no se persisten: Spring Data mapea campos, no getters) ──
@@ -112,12 +143,14 @@ public class Compra {
     }
 
     public String getEstadoEtiqueta() {
+        if (COMPLETADA.equals(estado)) return "Completada";
         if (PAGADA.equals(estado)) return requiereRevision ? "Pagada · con revisión" : "Pagada";
         if (RECHAZADA.equals(estado)) return "Pago rechazado";
         return "Pendiente de pago";
     }
 
     public String getEstadoCss() {
+        if (COMPLETADA.equals(estado)) return "completado";
         if (PAGADA.equals(estado)) return requiereRevision ? "revision" : "confirmado";
         if (RECHAZADA.equals(estado)) return "cancelado";
         return "pendiente";
@@ -136,6 +169,17 @@ public class Compra {
 
     public String getCodigoReferencia() { return referenciaPago; }
     public void setCodigoReferencia(String codigoReferencia) { this.referenciaPago = codigoReferencia; }
+
+    public ModalidadEntrega getModalidadEntrega() {
+        return ModalidadEntrega.DOMICILIO;
+    }
+    public void setModalidadEntrega(ModalidadEntrega modalidadEntrega) {
+        this.modalidadEntrega = ModalidadEntrega.DOMICILIO;
+    }
+
+    public boolean isRecogeEnTienda() {
+        return false;
+    }
 
     public Long getSubtotalCentavos() { return subtotalCentavos; }
     public void setSubtotalCentavos(Long subtotalCentavos) { this.subtotalCentavos = subtotalCentavos; }
@@ -183,10 +227,11 @@ public class Compra {
 
     /**
      * Clave para las pestañas de "Mis Pedidos": ENTREGADO, PROCESO, PENDIENTE o RECHAZADA.
-     * Una compra pagada con envío asignado/en curso queda en PROCESO; entregada, en ENTREGADO.
+     * Una compra pagada con envío asignado/en curso queda en PROCESO; entregada/completada, en ENTREGADO.
      */
     public String getEstadoFiltro() {
         if (RECHAZADA.equals(estado)) return RECHAZADA;
+        if (COMPLETADA.equals(estado)) return "ENTREGADO";
         if (!PAGADA.equals(estado)) return PENDIENTE;
         if (envioLogistica != null && Envio.ENTREGADO.equals(envioLogistica.getEstado())) return "ENTREGADO";
         if (subPedidos != null && !subPedidos.isEmpty()

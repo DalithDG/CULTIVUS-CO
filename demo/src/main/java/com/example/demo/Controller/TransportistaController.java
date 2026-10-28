@@ -227,14 +227,26 @@ public class TransportistaController {
 
         PerfilTransportista perfil = usuario.getPerfilTransportista();
         List<TransportistaService.RutaDisponibleDTO> rutasDisponibles = transportistaService.obtenerRutasDisponibles(usuario.getId());
-        List<TransportistaService.MiEnvioDetalleDTO> misEnvios = transportistaService.obtenerMisEnviosDetallados(usuario.getId());
+        List<TransportistaService.MiEnvioDetalleDTO> todosMisEnvios = transportistaService.obtenerMisEnviosDetallados(usuario.getId());
+
+        List<TransportistaService.MiEnvioDetalleDTO> enviosActivos = todosMisEnvios.stream()
+                .filter(me -> me.getEnvio() != null
+                        && !Envio.ENTREGADO.equalsIgnoreCase(me.getEnvio().getEstado())
+                        && !Envio.CANCELADO.equalsIgnoreCase(me.getEnvio().getEstado()))
+                .collect(java.util.stream.Collectors.toList());
+
+        List<TransportistaService.MiEnvioDetalleDTO> historialEnvios = todosMisEnvios.stream()
+                .filter(me -> me.getEnvio() != null && Envio.ENTREGADO.equalsIgnoreCase(me.getEnvio().getEstado()))
+                .collect(java.util.stream.Collectors.toList());
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("perfil", perfil);
         model.addAttribute("rutas", rutasDisponibles);
         model.addAttribute("totalRutasDisponibles", rutasDisponibles.size());
-        model.addAttribute("misEnvios", misEnvios);
-        model.addAttribute("totalMisEnvios", misEnvios.size());
+        model.addAttribute("misEnvios", enviosActivos);
+        model.addAttribute("totalMisEnvios", enviosActivos.size());
+        model.addAttribute("historialEnvios", historialEnvios);
+        model.addAttribute("totalHistorialEnvios", historialEnvios.size());
 
         return "transportista/inicio-transportista";
     }
@@ -392,6 +404,33 @@ public class TransportistaController {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Error al registrar la entrega: " + e.getMessage());
+        }
+
+        return "redirect:/transportista/inicio";
+    }
+
+    /**
+     * 4.5: Reportar incidencia en una parada.
+     */
+    @PostMapping("/parada/{envioId}/{pedidoId}/incidencia")
+    public String reportarProblemaParada(
+            @PathVariable String envioId,
+            @PathVariable String pedidoId,
+            @RequestParam("motivo") String motivo,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuario == null || !usuario.hasRole(Role.TRANSPORTISTA)) {
+            redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión como transportista");
+            return "redirect:/transportista/login";
+        }
+
+        try {
+            transportistaService.reportarProblemaParada(envioId, pedidoId, motivo, usuario.getId());
+            redirectAttributes.addFlashAttribute("mensaje", "Incidencia registrada. Se ha notificado al vendedor y al equipo administrativo.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
 
         return "redirect:/transportista/inicio";

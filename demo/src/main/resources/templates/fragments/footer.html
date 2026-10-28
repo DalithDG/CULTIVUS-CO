@@ -1,50 +1,645 @@
-<footer th:fragment="siteFooter">
+<!-- ============================================================
+     FOOTER CULTIVUS
+     Diseño minimalista, balanceado y moderno.
+     Incluye estilos autocontenidos para compatibilidad universal.
+     ============================================================ -->
+<th:block th:fragment="siteFooter">
+    <style>
+        /* ============================================================
+           CULTIVUS - FOOTER MINIMALISTA & MODERNO
+           ============================================================ */
+        .site-footer {
+            --ft-bg: #f8faf6;
+            --ft-border: #e6ede3;
+            --ft-text-title: #1b3823;
+            --ft-text-body: #4e5e52;
+            --ft-text-muted: #748578;
+            --ft-green-primary: #387b28;
+            --ft-green-hover: #2a611e;
+            --ft-green-soft: #edf5eb;
+            --ft-card-bg: #ffffff;
+            --ft-radius: 12px;
+            --ft-font: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
-    <div class="footer-container">
-        <!-- Columna 1: Logo y Descripción -->
-        <div class="footer-column footer-about">
-            <div class="footer-logo">
-                <img th:src="@{/images/isotipo_transparente.png}" alt="Cultivus" style="height: 70px; width: auto;">
+            position: relative;
+            margin-top: 70px;
+            background: var(--ft-bg);
+            border-top: 1px solid var(--ft-border);
+            color: var(--ft-text-body);
+            font-family: var(--ft-font);
+            font-size: 14px;
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .site-footer * {
+            box-sizing: border-box;
+        }
+
+        .site-footer a {
+            color: inherit;
+            text-decoration: none;
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+
+        .site-footer ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Contenedor unificado para alineación perfecta */
+        .site-footer .footer-container {
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* ------------------------------------------------------------
+           1. BARRA DE BENEFICIOS (Minimalist Trust Bar)
+           ------------------------------------------------------------ */
+        .footer-benefits {
+            padding: 32px 0 28px;
+            border-bottom: 1px solid var(--ft-border);
+            display: grid;
+            grid-template-columns: repeat(5, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .footer-benefit-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .footer-benefit-icon {
+            flex-shrink: 0;
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            background: var(--ft-green-soft);
+            color: var(--ft-green-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: transform 0.25s ease, background-color 0.25s ease;
+        }
+
+        .footer-benefit-item:hover .footer-benefit-icon {
+            transform: scale(1.06);
+            background: #e2f0de;
+        }
+
+        .footer-benefit-info {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .footer-benefit-title {
+            font-size: 13.5px;
+            font-weight: 700;
+            color: var(--ft-text-title);
+            line-height: 1.25;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .footer-benefit-sub {
+            font-size: 12px;
+            color: var(--ft-text-muted);
+            line-height: 1.3;
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* ------------------------------------------------------------
+           2. CUERPO PRINCIPAL (4 Columnas Equilibradas)
+           ------------------------------------------------------------ */
+        .footer-main-grid {
+            padding: 48px 0 36px;
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr 1.2fr;
+            gap: 44px;
+        }
+
+        .footer-col-title {
+            margin: 0 0 18px;
+            font-size: 12.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--ft-text-title);
+        }
+
+        /* Columna 1: Marca */
+        .footer-brand-link {
+            display: inline-block;
+            margin-bottom: 16px;
+            transition: transform 0.2s ease;
+        }
+
+        .footer-brand-link:hover {
+            transform: translateY(-2px);
+        }
+
+        .footer-brand-logo {
+            display: block;
+            height: 44px;
+            width: auto;
+            max-width: 100%;
+        }
+
+        .footer-brand-desc {
+            margin: 0 0 20px;
+            font-size: 13.5px;
+            color: var(--ft-text-body);
+            line-height: 1.6;
+            max-width: 330px;
+        }
+
+        .footer-social-wrap {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .footer-social-label {
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--ft-text-title);
+        }
+
+        .footer-social-links {
+            display: flex;
+            gap: 8px;
+        }
+
+        .footer-social-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--ft-card-bg);
+            border: 1px solid var(--ft-border);
+            color: var(--ft-green-primary);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            transition: all 0.25s ease;
+        }
+
+        .footer-social-btn:hover {
+            background: var(--ft-green-primary);
+            border-color: var(--ft-green-primary);
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(56, 123, 40, 0.25);
+        }
+
+        /* Columnas 2 y 3: Enlaces */
+        .footer-links-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .footer-links-list a {
+            display: inline-block;
+            padding: 4px 0;
+            font-size: 13.5px;
+            color: var(--ft-text-body);
+        }
+
+        .footer-links-list a:hover {
+            color: var(--ft-green-primary);
+            transform: translateX(4px);
+        }
+
+        /* Columna 4: Contacto */
+        .footer-contact-dept {
+            margin: 0 0 14px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--ft-text-muted);
+        }
+
+        .footer-contact-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .footer-contact-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .footer-contact-icon {
+            flex-shrink: 0;
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: var(--ft-green-soft);
+            color: var(--ft-green-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            margin-top: 2px;
+        }
+
+        .footer-contact-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .footer-contact-tag {
+            font-size: 11.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+            color: var(--ft-text-muted);
+        }
+
+        .footer-contact-link {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--ft-text-title);
+        }
+
+        .footer-contact-link:hover {
+            color: var(--ft-green-primary);
+        }
+
+        /* ------------------------------------------------------------
+           3. MÉTODOS DE PAGO (Fila Integrada & Limpia)
+           ------------------------------------------------------------ */
+        .footer-payments-bar {
+            padding: 22px 0;
+            border-top: 1px solid var(--ft-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .footer-payments-intro {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--ft-text-title);
+        }
+
+        .footer-payments-intro i {
+            color: var(--ft-green-primary);
+            font-size: 14px;
+        }
+
+        .footer-wompi-logo {
+            display: inline-block;
+            height: 24px;
+            width: auto;
+            vertical-align: middle;
+            margin-left: 2px;
+        }
+
+        .footer-payment-chips {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .pay-chip {
+            height: 34px;
+            min-width: 58px;
+            padding: 0 12px;
+            background: var(--ft-card-bg);
+            border: 1px solid var(--ft-border);
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .pay-chip:hover {
+            transform: translateY(-1px);
+            border-color: #cbd8c8;
+        }
+
+        .pay-chip img {
+            display: block;
+            height: 18px;
+            width: auto;
+            max-width: 80px;
+            object-fit: contain;
+        }
+
+        .pay-chip--bancolombia {
+            min-width: 84px;
+        }
+
+        .pay-chip--bancolombia img {
+            height: 14px;
+            max-width: 90px;
+        }
+
+        .pay-chip--text {
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+            color: var(--ft-text-title);
+        }
+
+        .pay-chip--card {
+            font-size: 22px;
+            color: #4a5c50;
+            min-width: 50px;
+        }
+
+        /* ------------------------------------------------------------
+           4. BARRA LEGAL & COPYRIGHT
+           ------------------------------------------------------------ */
+        .footer-legal-bar {
+            padding: 20px 0 28px;
+            border-top: 1px solid var(--ft-border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 14px;
+            font-size: 13px;
+            color: var(--ft-text-muted);
+        }
+
+        .footer-copyright {
+            margin: 0;
+        }
+
+        .footer-back-to-top {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--ft-green-primary);
+            padding: 6px 14px;
+            background: var(--ft-card-bg);
+            border: 1px solid var(--ft-border);
+            border-radius: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .footer-back-to-top:hover {
+            background: var(--ft-green-soft);
+            border-color: #c9dec4;
+            color: var(--ft-green-hover);
+            transform: translateY(-1px);
+        }
+
+        .footer-back-to-top i {
+            font-size: 11px;
+            transition: transform 0.2s ease;
+        }
+
+        .footer-back-to-top:hover i {
+            transform: translateY(-2px);
+        }
+
+        /* ------------------------------------------------------------
+           RESPONSIVE (Adaptación suave a pantallas)
+           ------------------------------------------------------------ */
+        @media (max-width: 1080px) {
+            .footer-benefits {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 18px;
+            }
+
+            .footer-main-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 36px;
+            }
+
+            .footer-col--brand {
+                grid-column: 1 / -1;
+            }
+
+            .footer-brand-desc {
+                max-width: 500px;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .footer-benefits {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .footer-payments-bar {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .footer-benefits {
+                grid-template-columns: 1fr;
+                gap: 14px;
+            }
+
+            .footer-main-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .footer-legal-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+        }
+    </style>
+
+    <footer class="site-footer" aria-label="Pie de página">
+        <div class="footer-container">
+
+            <!-- 1. BENEFICIOS -->
+            <section class="footer-benefits" aria-label="Beneficios de comprar en Cultivus">
+                <div class="footer-benefit-item">
+                    <div class="footer-benefit-icon" aria-hidden="true">
+                        <i class="fa-solid fa-leaf"></i>
+                    </div>
+                    <div class="footer-benefit-info">
+                        <span class="footer-benefit-title">100% Fresco</span>
+                        <span class="footer-benefit-sub">Directo del campo</span>
+                    </div>
+                </div>
+
+                <div class="footer-benefit-item">
+                    <div class="footer-benefit-icon" aria-hidden="true">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div class="footer-benefit-info">
+                        <span class="footer-benefit-title">Pago seguro</span>
+                        <span class="footer-benefit-sub">Transacciones cifradas</span>
+                    </div>
+                </div>
+
+                <div class="footer-benefit-item">
+                    <div class="footer-benefit-icon" aria-hidden="true">
+                        <i class="fa-solid fa-credit-card"></i>
+                    </div>
+                    <div class="footer-benefit-info">
+                        <span class="footer-benefit-title">Paga en línea</span>
+                        <span class="footer-benefit-sub">PSE, tarjetas y Nequi</span>
+                    </div>
+                </div>
+
+                <div class="footer-benefit-item">
+                    <div class="footer-benefit-icon" aria-hidden="true">
+                        <i class="fa-solid fa-truck-fast"></i>
+                    </div>
+                    <div class="footer-benefit-info">
+                        <span class="footer-benefit-title">Envíos nacionales</span>
+                        <span class="footer-benefit-sub">A toda Colombia</span>
+                    </div>
+                </div>
+
+                <div class="footer-benefit-item">
+                    <div class="footer-benefit-icon" aria-hidden="true">
+                        <i class="fa-solid fa-handshake-angle"></i>
+                    </div>
+                    <div class="footer-benefit-info">
+                        <span class="footer-benefit-title">Comercio justo</span>
+                        <span class="footer-benefit-sub">Apoyo directo al campesino</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. CUERPO PRINCIPAL -->
+            <div class="footer-main-grid">
+
+                <!-- Marca y Propósito -->
+                <div class="footer-col footer-col--brand">
+                    <a class="footer-brand-link" th:href="@{/}" aria-label="Cultivus, ir al inicio">
+                        <img th:src="@{/images/imagotipo_transparente.png}" alt="Cultivus" class="footer-brand-logo">
+                    </a>
+                    <p class="footer-brand-desc">
+                        Conectamos el campo colombiano con tu hogar, llevando productos frescos, naturales y de alta
+                        calidad directamente desde los productores locales.
+                    </p>
+                    <div class="footer-social-wrap">
+                        <span class="footer-social-label">Síguenos:</span>
+                        <div class="footer-social-links" aria-label="Redes sociales">
+                            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer"
+                                class="footer-social-btn" aria-label="Facebook de Cultivus">
+                                <i class="fa-brands fa-facebook-f" aria-hidden="true"></i>
+                            </a>
+                            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer"
+                                class="footer-social-btn" aria-label="Instagram de Cultivus">
+                                <i class="fa-brands fa-instagram" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Trabaja con nosotros -->
+                <nav class="footer-col" aria-labelledby="footer-title-work">
+                    <h3 class="footer-col-title" id="footer-title-work">Trabaja con nosotros</h3>
+                    <ul class="footer-links-list">
+                        <li><a th:href="@{/vendedor/registro}">Vender en Cultivus</a></li>
+                        <li><a th:href="@{/transportista/registro}">Sé un transportista</a></li>
+                        <li><a th:href="@{/transportista/login}">Ingreso transportistas</a></li>
+                    </ul>
+                </nav>
+
+                <!-- Ayuda -->
+                <nav class="footer-col" aria-labelledby="footer-title-help">
+                    <h3 class="footer-col-title" id="footer-title-help">Ayuda y soporte</h3>
+                    <ul class="footer-links-list">
+                        <li><a href="#">Preguntas frecuentes</a></li>
+                        <li><a href="#">Contáctanos</a></li>
+                        <li><a href="#">Política de privacidad</a></li>
+                        <li><a href="#">Términos y condiciones</a></li>
+                        <li><a href="#">PQRS</a></li>
+                    </ul>
+                </nav>
+
+                <!-- Contacto -->
+                <div class="footer-col footer-col--contact">
+                    <h3 class="footer-col-title">Contacto</h3>
+                    <p class="footer-contact-dept">Área de ventas y logística</p>
+                    <ul class="footer-contact-list">
+                        <li class="footer-contact-item">
+                            <div class="footer-contact-icon" aria-hidden="true">
+                                <i class="fa-solid fa-phone"></i>
+                            </div>
+                            <div class="footer-contact-info">
+                                <span class="footer-contact-tag">Línea telefónica</span>
+                                <a href="tel:+573008123456" class="footer-contact-link">+57 300 812 3456</a>
+                            </div>
+                        </li>
+                        <li class="footer-contact-item">
+                            <div class="footer-contact-icon" aria-hidden="true">
+                                <i class="fa-solid fa-envelope"></i>
+                            </div>
+                            <div class="footer-contact-info">
+                                <span class="footer-contact-tag">Correo de atención</span>
+                                <a href="mailto:ventas@cultivus.com" class="footer-contact-link">ventas@cultivus.com</a>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
             </div>
-            <p class="footer-description">
-                Con años de experiencia, conectamos toda Colombia con productos frescos y de calidad. 
-                Operamos bajo los más altos estándares de calidad y seguridad, llevando lo mejor 
-                de la naturaleza directamente a tu hogar.
-            </p>
-            <div class="footer-social">
-                <a href="#" target="_blank" aria-label="Facebook">
-                    <i class="fa-brands fa-facebook"></i>
+
+            <!-- 3. MÉTODOS DE PAGO -->
+            <div class="footer-payments-bar">
+                <div class="footer-payments-intro">
+                    <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+                    <span>Tus compras seguras y protegidas con</span>
+                    <img class="footer-wompi-logo" th:src="@{/images/Footer/Wompi_LogoPrincipal.svg}" alt="Wompi">
+                </div>
+                <div class="footer-payment-chips" aria-label="Medios de pago disponibles">
+                    <span class="pay-chip pay-chip--text" title="PSE">PSE</span>
+                    <span class="pay-chip" title="Nequi">
+                        <img th:src="@{/images/Footer/Nequi.svg}" alt="Nequi">
+                    </span>
+                    <span class="pay-chip pay-chip--bancolombia" title="Bancolombia">
+                        <img th:src="@{/images/Footer/Bancolombia.svg}" alt="Bancolombia">
+                    </span>
+                    <span class="pay-chip pay-chip--card" title="Visa">
+                        <i class="fa-brands fa-cc-visa" aria-label="Visa"></i>
+                    </span>
+                    <span class="pay-chip pay-chip--card" title="Mastercard">
+                        <i class="fa-brands fa-cc-mastercard" aria-label="Mastercard"></i>
+                    </span>
+                </div>
+            </div>
+
+            <!-- 4. BARRA LEGAL -->
+            <div class="footer-legal-bar">
+                <p class="footer-copyright">
+                    &copy; <span th:text="${#dates.year(#dates.createNow())}">2026</span> Cultivus Colombia. Todos los
+                    derechos reservados.
+                </p>
+                <a class="footer-back-to-top" href="#top" aria-label="Volver al inicio de la página">
+                    <span>Volver arriba</span>
+                    <i class="fa-solid fa-arrow-up" aria-hidden="true"></i>
                 </a>
-                <a href="#" target="_blank" aria-label="Instagram">
-                    <i class="fa-brands fa-instagram"></i>
-                </a>
             </div>
         </div>
+    </footer>
 
-
-        <div class="footer-column footer-links">
-            <h3>TRABAJA CON NOSOTROS</h3>
-            <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
-                <li><a th:href="@{/vendedor/registro}" style="color: inherit; text-decoration: none;">Vender en Cultivus</a></li>
-                <li><a th:href="@{/transportista/registro}" style="color: inherit; text-decoration: none;">Sé un Transportista</a></li>
-                <li><a th:href="@{/transportista/login}" style="color: inherit; text-decoration: none;">Ingreso Transportistas</a></li>
-            </ul>
-        </div>
-
-        <div class="footer-column footer-contact">
-            <h3>DATOS DE CONTACTO</h3>
-            <div class="contact-section">
-                <h4>Área de ventas y logística</h4>
-                <p class="contact-phone">+01 3008 123 4567</p>
-                <p class="contact-email">ventas@cultivus.com</p>
-            </div>
-        </div>
-    </div>
-    <!-- Línea de copyright (opcional) -->
-    <div class="footer-bottom">
-        <p>&copy; 2025 Cultivus. Todos los derechos reservados.</p>
-    </div>
-
-    <!-- ✅ AJAX para agregar al carrito sin recargar la página -->
+    <!-- AJAX para agregar al carrito sin recargar la página -->
     <script th:src="@{/js/carrito-ajax.js}"></script>
-</footer>
+</th:block>

@@ -30,4 +30,7 @@ public interface BilleteraAlmacen {
 
     /** Lectura: movimientos del usuario para el rol, más recientes primero. */
     List<MovimientoBilletera> listarMovimientos(String usuarioId, Billetera.Rol rol);
+
+    /** Comprueba si ya existe un movimiento con la clave de idempotencia dada. */
+    boolean existeMovimientoPorClave(String claveIdempotencia);
 }

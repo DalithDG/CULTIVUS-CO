@@ -469,6 +469,7 @@
                     <!-- Token CSRF inyectado por Thymeleaf -->
                     <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
+
                     <!-- Fila 1: Receptor y Teléfono -->
                     <div class="form-row">
                         <div class="form-field">
@@ -745,6 +746,7 @@
             e.preventDefault();
             ocultarError();
 
+            const modalidad = 'DOMICILIO';
             const receptor = document.getElementById('receptor').value.trim();
             const telefono = document.getElementById('telefono').value.trim();
             const direccion = document.getElementById('direccion').value.trim();
@@ -793,6 +795,7 @@
                     headers: headers,
                     body: JSON.stringify({
                         reference: serverReference,
+                        modalidadEntrega: modalidad,
                         receptor: receptor,
                         telefono: telefono,
                         direccion: direccion,

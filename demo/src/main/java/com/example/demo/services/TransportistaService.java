@@ -63,6 +63,9 @@ public class TransportistaService {
     @Autowired(required = false)
     private AppConfigService appConfigService;
 
+    @Autowired(required = false)
+    private PedidoEstadoService pedidoEstadoService;
+
     // ──────────────────────────── DTOs para la vista ────────────────────────────
 
     public static class RutaDisponibleDTO {
@@ -640,10 +643,16 @@ public class TransportistaService {
                 Set<String> vendedoresNotificados = new HashSet<>();
                 for (ParadaEnvio p : asignado.getParadas()) {
                     if (p.getVendedorId() != null && vendedoresNotificados.add(p.getVendedorId())) {
+                        String numFactura = p.getPedidoId();
+                        if (pedidoRepository != null && p.getPedidoId() != null) {
+                            numFactura = pedidoRepository.findById(p.getPedidoId())
+                                    .map(Pedido::getNumeroFactura)
+                                    .orElse(p.getPedidoId());
+                        }
                         notificacionService.enviar(
                                 p.getVendedorId(),
                                 "Transportista en Camino",
-                                "El transportista " + transportista.getNombre() + " (" + perfil.getTelefonoContacto() + ") ha tomado la ruta para recoger tu pedido #" + p.getPedidoId(),
+                                "El transportista " + transportista.getNombre() + " (" + perfil.getTelefonoContacto() + ") ha tomado la ruta para recoger tu pedido #" + numFactura,
                                 "INFO"
                         );
                     }
@@ -657,10 +666,47 @@ public class TransportistaService {
     }
 
     /**
-     * Liberar Envío:
-     * Solo el transportista asignado (dueño) puede liberarlo.
-     * Solo si NINGUNA parada ha sido recogida.
-     * Vuelve el envío a PENDIENTE_ASIGNACION y limpia transportista y fecha de asignación.
+     * 4.1: Comprueba si todas las paradas del envío están en LISTO_PARA_RECOGER (o posteriores).
+     * Si es así y fechaDisponibleDesde aún es null, se establece en now().
+     */
+    public void actualizarDisponibilidadEnvioSiListo(String compraId) {
+        if (compraId == null || envioRepository == null || pedidoRepository == null) return;
+        envioRepository.findByCompraId(compraId).ifPresent(envio -> {
+            if (envio.getFechaDisponibleDesde() != null) {
+                return;
+            }
+            if (envio.getParadas() == null || envio.getParadas().isEmpty()) {
+                return;
+            }
+            List<String> pedidoIds = envio.getParadas().stream()
+                    .map(ParadaEnvio::getPedidoId)
+                    .filter(Objects::nonNull)
+                    .toList();
+            if (pedidoIds.isEmpty()) return;
+
+            List<Pedido> pedidos = pedidoRepository.findAllById(pedidoIds);
+            boolean todosListos = pedidos.stream().allMatch(p -> {
+                com.example.demo.Model.EstadoPedido ep = p.getEstadoEnum();
+                return ep == com.example.demo.Model.EstadoPedido.LISTO_PARA_RECOGER
+                        || ep == com.example.demo.Model.EstadoPedido.ENVIADO
+                        || ep == com.example.demo.Model.EstadoPedido.ENTREGADO
+                        || ep == com.example.demo.Model.EstadoPedido.CANCELADO;
+            });
+
+            if (todosListos) {
+                envio.setFechaDisponibleDesde(LocalDateTime.now());
+                envio.setUpdatedAt(LocalDateTime.now());
+                envioRepository.save(envio);
+                log.info("Envío {} habilitado con fechaDisponibleDesde={} (todas las paradas listas para recoger)",
+                        envio.getId(), envio.getFechaDisponibleDesde());
+            }
+        });
+    }
+
+    /**
+     * 4.3: Liberar Envío de manera atómica con findAndModify.
+     * Solo si el estado es ASIGNADO, transportista coincide y ninguna parada ha sido recogida.
+     * Pasa a PENDIENTE_ASIGNACION, desasigna transportista y conserva fechaDisponibleDesde.
      */
     public Envio liberarEnvio(String envioId, String transportistaUsuarioId) {
         if (envioId == null || envioId.isBlank()) {
@@ -681,6 +727,25 @@ public class TransportistaService {
             }
         }
 
+        if (mongoTemplate != null) {
+            Query query = new Query(Criteria.where("_id").is(envioId)
+                    .and("estado").is(Envio.ASIGNADO)
+                    .and("transportistaId").is(transportistaUsuarioId)
+                    .and("paradas.recogido").ne(true));
+
+            Update update = new Update()
+                    .set("estado", Envio.PENDIENTE_ASIGNACION)
+                    .unset("transportistaId")
+                    .unset("transportista")
+                    .unset("fechaAsignacion")
+                    .set("updatedAt", LocalDateTime.now());
+
+            Envio liberado = mongoTemplate.findAndModify(query, update, FindAndModifyOptions.options().returnNew(true), Envio.class);
+            if (liberado != null) {
+                return liberado;
+            }
+        }
+
         envio.setEstado(Envio.PENDIENTE_ASIGNACION);
         envio.setTransportistaId(null);
         envio.setTransportista(null);
@@ -693,10 +758,11 @@ public class TransportistaService {
     // ──────────────────────────── FASE 2: Ciclo Operativo de Paradas y Entregas ────────────────────────────
 
     /**
-     * Marcar Parada Recogida (Carrier):
+     * 4.6: Marcar Parada Recogida (Carrier):
+     * Idempotente si la parada ya fue marcada como recogida.
      * Valida que el transportista logueado sea el asignado al envío.
      * Valida que el sub-pedido se encuentre estrictamente en LISTO_PARA_RECOGER.
-     * Marca parada.recogido = true, actualiza el pedido a ENVIADO y notifica al comprador.
+     * Marca parada.recogido = true, actualiza el pedido a ENVIADO vía PedidoEstadoService y notifica al comprador.
      * Si todas las paradas fueron recogidas, avanza el estado del envío a EN_ENTREGA, sino a EN_RECOGIDA.
      */
     public Envio marcarParadaRecogida(String envioId, String pedidoId, String transportistaUsuarioId) {
@@ -721,7 +787,8 @@ public class TransportistaService {
                 .orElseThrow(() -> new IllegalArgumentException("Parada no encontrada en este envío para el pedido: " + pedidoId));
 
         if (parada.isRecogido()) {
-            throw new IllegalStateException("Esta parada ya fue marcada como recogida previamente.");
+            log.info("Parada para pedido {} ya fue recogida previamente (idempotente)", pedidoId);
+            return envio;
         }
 
         Pedido pedido = pedidoRepository.findById(pedidoId)
@@ -736,9 +803,18 @@ public class TransportistaService {
         parada.setFechaRecogida(LocalDateTime.now());
 
         // Actualizar estado del sub-pedido a ENVIADO (escrito exclusivamente por logística)
-        pedido.setEstado(Pedido.ENVIADO);
-        pedido.setUpdatedAt(LocalDateTime.now());
-        pedidoRepository.save(pedido);
+        if (pedidoEstadoService != null) {
+            pedidoEstadoService.transicionar(
+                    pedido,
+                    com.example.demo.Model.EstadoPedido.ENVIADO,
+                    com.example.demo.Model.ActorTransicion.TRANSPORTISTA,
+                    "Recogido en finca por transportista"
+            );
+        } else {
+            pedido.setEstado(Pedido.ENVIADO);
+            pedido.setUpdatedAt(LocalDateTime.now());
+            pedidoRepository.save(pedido);
+        }
 
         // Actualizar estado del envío
         boolean todasRecogidas = envio.getParadas().stream().allMatch(ParadaEnvio::isRecogido);
@@ -766,11 +842,73 @@ public class TransportistaService {
     }
 
     /**
-     * Marcar Entrega Final (Carrier):
+     * 4.5: Reportar incidencia en parada (finca cerrada, vendedor no entregó, etc.).
+     * Motivo obligatorio. Notifica a vendedor y admin. Bloquea la entrega final del envío.
+     */
+    public Envio reportarProblemaParada(String envioId, String pedidoId, String motivo, String transportistaUsuarioId) {
+        if (envioId == null || pedidoId == null) {
+            throw new IllegalArgumentException("ID de envío y de pedido son obligatorios");
+        }
+        if (motivo == null || motivo.trim().isBlank()) {
+            throw new IllegalArgumentException("El motivo de la incidencia es obligatorio");
+        }
+
+        Envio envio = envioRepository.findById(envioId)
+                .orElseThrow(() -> new IllegalArgumentException("Envío no encontrado"));
+
+        if (envio.getTransportistaId() == null || !envio.getTransportistaId().equals(transportistaUsuarioId)) {
+            throw new SecurityException("Solo el transportista asignado puede reportar incidencias en este envío.");
+        }
+
+        if (Envio.ENTREGADO.equals(envio.getEstado()) || Envio.CANCELADO.equals(envio.getEstado())) {
+            throw new IllegalStateException("No se pueden reportar incidencias en envíos finalizados (" + envio.getEstado() + ").");
+        }
+
+        ParadaEnvio parada = envio.getParadas().stream()
+                .filter(p -> pedidoId.equals(p.getPedidoId()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Parada no encontrada para el pedido: " + pedidoId));
+
+        parada.setIncidenciaReportada(true);
+        parada.setMotivoIncidencia(motivo.trim());
+        parada.setFechaIncidencia(LocalDateTime.now());
+        envio.setUpdatedAt(LocalDateTime.now());
+
+        Envio guardado = envioRepository.save(envio);
+
+        // Notificar al vendedor de la parada
+        if (parada.getVendedorId() != null && notificacionService != null) {
+            notificacionService.enviar(
+                    parada.getVendedorId(),
+                    "Incidencia Reportada en Parada",
+                    "El transportista reportó un problema al recolectar tu pedido: " + motivo.trim(),
+                    "DANGER"
+            );
+        }
+
+        // Notificar a administradores
+        if (usuarioRepository != null && notificacionService != null) {
+            List<Usuario> admins = usuarioRepository.findByRolesContaining(Role.ADMIN);
+            for (Usuario admin : admins) {
+                notificacionService.enviar(
+                        admin.getId(),
+                        "Incidencia de Recolección",
+                        "El transportista reportó una incidencia en la parada del pedido #" + pedidoId + " (Envío #" + envioId + "): " + motivo.trim(),
+                        "WARNING"
+                );
+            }
+        }
+
+        return guardado;
+    }
+
+    /**
+     * 4.7: Marcar Entrega Final (Carrier):
+     * Idempotente si el envío ya fue marcado como ENTREGADO.
      * Valida que el transportista logueado sea el asignado al envío.
-     * Valida que TODAS las paradas hayan sido recogidas (recogido == true).
-     * Pasa el Envio a ENTREGADO y todos los sub-pedidos a ENTREGADO.
-     * Notifica a comprador y vendedores.
+     * Valida que TODAS las paradas hayan sido recogidas (recogido == true) y sin incidencias pendientes.
+     * Pasa el Envio a ENTREGADO y todos los sub-pedidos a ENTREGADO vía PedidoEstadoService.
+     * Abona flete al transportista y notifica a comprador y vendedores.
      */
     public Envio marcarEnvioEntregado(String envioId, String transportistaUsuarioId) {
         if (envioId == null || envioId.isBlank()) {
@@ -784,8 +922,17 @@ public class TransportistaService {
             throw new SecurityException("Solo el transportista asignado puede marcar la entrega de este envío.");
         }
 
+        if (Envio.ENTREGADO.equals(envio.getEstado())) {
+            log.info("Envío {} ya se encuentra en estado ENTREGADO (idempotente)", envioId);
+            return envio;
+        }
+
         if (envio.getParadas() == null || envio.getParadas().isEmpty() || !envio.getParadas().stream().allMatch(ParadaEnvio::isRecogido)) {
             throw new IllegalStateException("No se puede marcar la entrega final: faltan paradas por recolectar.");
+        }
+
+        if (envio.getParadas().stream().anyMatch(ParadaEnvio::isIncidenciaReportada)) {
+            throw new IllegalStateException("No se puede marcar la entrega final: existen incidencias reportadas en una o más paradas.");
         }
 
         envio.setEstado(Envio.ENTREGADO);
@@ -799,9 +946,19 @@ public class TransportistaService {
             if (parada.getPedidoId() != null) {
                 pedidoRepository.findById(parada.getPedidoId()).ifPresent(sub -> {
                     if (!Pedido.CANCELADO.equalsIgnoreCase(sub.getEstado())) {
-                        sub.setEstado(Pedido.ENTREGADO);
-                        sub.setUpdatedAt(LocalDateTime.now());
-                        pedidoRepository.save(sub);
+                        if (pedidoEstadoService != null) {
+                            pedidoEstadoService.transicionar(
+                                    sub,
+                                    com.example.demo.Model.EstadoPedido.ENTREGADO,
+                                    com.example.demo.Model.ActorTransicion.TRANSPORTISTA,
+                                    "Entregado en destino por transportista"
+                            );
+                        } else {
+                            sub.setEstado(Pedido.ENTREGADO);
+                            sub.setFechaEntrega(LocalDateTime.now());
+                            sub.setUpdatedAt(LocalDateTime.now());
+                            pedidoRepository.save(sub);
+                        }
 
                         // Notificar al vendedor de este sub-pedido
                         if (sub.getVendedor() != null && sub.getVendedor().getId() != null && notificacionService != null) {
@@ -850,37 +1007,76 @@ public class TransportistaService {
             return Optional.empty();
         }
 
-        List<Envio> todos = envioRepository.findAll();
-        for (Envio envio : todos) {
-            if (envio.getParadas() != null) {
-                boolean removida = envio.getParadas().removeIf(p -> pedidoId.equals(p.getPedidoId()));
-                if (removida) {
-                    long nuevoTotal = envio.getParadas().stream()
-                            .mapToLong(p -> p.getTarifaCentavos() != null ? p.getTarifaCentavos() : 0L)
-                            .sum();
-                    envio.setCostoTotalCentavos(nuevoTotal);
+        // 3.3: Query eficiente por parada en lugar de findAll en memoria
+        Optional<Envio> envioOpt = (envioRepository != null)
+                ? envioRepository.findByParadaPedidoId(pedidoId)
+                : Optional.empty();
 
-                    if (envio.getParadas().isEmpty()) {
-                        envio.setEstado(Envio.CANCELADO);
-                    } else if (envio.getParadas().stream().allMatch(ParadaEnvio::isRecogido)) {
-                        envio.setEstado(Envio.EN_ENTREGA);
-                    }
+        if (envioOpt.isEmpty() && envioRepository != null) {
+            envioOpt = envioRepository.findByParadas_PedidoId(pedidoId);
+        }
 
-                    envio.setUpdatedAt(LocalDateTime.now());
-                    Envio guardado = envioRepository.save(envio);
+        if (envioOpt.isEmpty() && envioRepository != null) {
+            // Fallback
+            envioOpt = envioRepository.findAll().stream()
+                    .filter(e -> e.getParadas() != null && e.getParadas().stream().anyMatch(p -> pedidoId.equals(p.getPedidoId())))
+                    .findFirst();
+        }
 
-                    // Si tenía transportista asignado, avisarle del ajuste de ruta y flete
-                    if (guardado.getTransportistaId() != null && notificacionService != null) {
-                        notificacionService.enviar(
-                                guardado.getTransportistaId(),
-                                "Ruta Actualizada (Cancelación)",
-                                "Una parada ha sido cancelada en tu ruta. El nuevo flete asignado es: " + guardado.getCostoTotalFormateado(),
-                                "WARNING"
-                        );
-                    }
+        if (envioOpt.isEmpty()) {
+            return Optional.empty();
+        }
 
-                    return Optional.of(guardado);
+        Envio envio = envioOpt.get();
+
+        // 3.3: No actuar sobre envíos ya entregados o cancelados
+        if (Envio.ENTREGADO.equals(envio.getEstado()) || Envio.CANCELADO.equals(envio.getEstado())) {
+            log.info("Envío {} está en estado terminal ({}), no se modifica su ruta tras cancelación de sub-pedido {}",
+                    envio.getId(), envio.getEstado(), pedidoId);
+            return Optional.of(envio);
+        }
+
+        if (envio.getParadas() != null) {
+            boolean removida = envio.getParadas().removeIf(p -> pedidoId.equals(p.getPedidoId()));
+            if (removida) {
+                // 3.4: Recalcular flete: suma de tarifas de paradas
+                long nuevoTotal = envio.getParadas().stream()
+                        .mapToLong(p -> p.getTarifaCentavos() != null ? p.getTarifaCentavos() : 0L)
+                        .sum();
+                envio.setCostoTotalCentavos(nuevoTotal);
+
+                // Advertencia si difiere del costo de envío registrado en la compra
+                if (envio.getCompraId() != null && compraRepository != null) {
+                    compraRepository.findById(envio.getCompraId()).ifPresent(compra -> {
+                        if (compra.getEnvioCentavos() != null && compra.getEnvioCentavos() != nuevoTotal) {
+                            log.warn("Flete de Envío {} ({}) difiere de compra.envioCentavos ({}) tras cancelación de parada {}",
+                                    envio.getId(), nuevoTotal, compra.getEnvioCentavos(), pedidoId);
+                        }
+                    });
                 }
+
+                // 3.3: Si queda sin paradas -> CANCELADO
+                if (envio.getParadas().isEmpty()) {
+                    envio.setEstado(Envio.CANCELADO);
+                } else if (envio.getParadas().stream().allMatch(ParadaEnvio::isRecogido)) {
+                    // Si todas las paradas restantes ya fueron recogidas -> EN_ENTREGA
+                    envio.setEstado(Envio.EN_ENTREGA);
+                }
+
+                envio.setUpdatedAt(LocalDateTime.now());
+                Envio guardado = envioRepository.save(envio);
+
+                // Si tenía transportista asignado, avisarle del ajuste de ruta y flete
+                if (guardado.getTransportistaId() != null && notificacionService != null) {
+                    notificacionService.enviar(
+                            guardado.getTransportistaId(),
+                            "Ruta Actualizada (Cancelación)",
+                            "Una parada ha sido cancelada en tu ruta. El nuevo flete asignado es: " + guardado.getCostoTotalFormateado(),
+                            "WARNING"
+                    );
+                }
+
+                return Optional.of(guardado);
             }
         }
 
@@ -888,8 +1084,10 @@ public class TransportistaService {
     }
 
     /**
-     * Tarea programada: Verifica envíos en PENDIENTE_ASIGNACION que lleven más de N horas sin transportista.
-     * Los pasa a SIN_TRANSPORTISTA y alerta al comprador y administradores para gestión de reembolso manual.
+     * 4.1 y 4.4: Verifica envíos en PENDIENTE_ASIGNACION que lleven más de N horas sin transportista.
+     * Mide el reloj de expiración desde fechaDisponibleDesde (cuando todas las paradas pasaron a LISTO_PARA_RECOGER).
+     * Si no tiene fechaDisponibleDesde y tiene paradas, no expira (aún no está listo en fincas).
+     * Pasa a SIN_TRANSPORTISTA y alerta a comprador, vendedores y administradores.
      */
     public int verificarEnviosSinTransportista() {
         final int horasMax = (appConfigService != null)
@@ -901,13 +1099,20 @@ public class TransportistaService {
         int expirados = 0;
 
         for (Envio envio : pendientes) {
-            if (envio.getFechaCreacion() != null && envio.getFechaCreacion().isBefore(limite)) {
+            LocalDateTime fechaBase = envio.getFechaDisponibleDesde();
+            // Fallback a fechaCreacion únicamente si no hay paradas (compatibilidad con tests legados)
+            if (fechaBase == null && (envio.getParadas() == null || envio.getParadas().isEmpty())) {
+                fechaBase = envio.getFechaCreacion();
+            }
+
+            if (fechaBase != null && fechaBase.isBefore(limite)) {
                 envio.setEstado(Envio.SIN_TRANSPORTISTA);
                 envio.setUpdatedAt(LocalDateTime.now());
                 envioRepository.save(envio);
                 expirados++;
 
-                log.warn("Envío {} expiró sin transportista (> {} horas). Marcado como SIN_TRANSPORTISTA.", envio.getId(), horasMax);
+                log.warn("Envío {} expiró sin transportista (> {} horas desde {}). Marcado como SIN_TRANSPORTISTA.",
+                        envio.getId(), horasMax, fechaBase);
 
                 if (envio.getCompraId() != null && compraRepository != null) {
                     compraRepository.findById(envio.getCompraId()).ifPresent(compra -> {
@@ -915,11 +1120,26 @@ public class TransportistaService {
                             notificacionService.enviar(
                                     compra.getComprador().getId(),
                                     "Envío Sin Transportista Asignado",
-                                    "No fue posible asignar un transportista para tu compra dentro del tiempo límite (" + horasMax + "h). El equipo de soporte se comunicará contigo para el reembolso manual.",
+                                    "No fue posible asignar un transportista para tu compra dentro del tiempo límite (" + horasMax + "h). El equipo de soporte se comunicará contigo para el reembolso manual o reasignación.",
                                     "WARNING"
                             );
                         }
                     });
+                }
+
+                // 4.4: Notificar a los vendedores de cada parada
+                if (envio.getParadas() != null && notificacionService != null) {
+                    Set<String> vendedoresNotificados = new HashSet<>();
+                    for (ParadaEnvio p : envio.getParadas()) {
+                        if (p.getVendedorId() != null && vendedoresNotificados.add(p.getVendedorId())) {
+                            notificacionService.enviar(
+                                    p.getVendedorId(),
+                                    "Envío sin transportista",
+                                    "El envío para tu venta #" + p.getPedidoId() + " no consiguió transportista en " + horasMax + " horas. Soporte atenderá la reasignación.",
+                                    "WARNING"
+                            );
+                        }
+                    }
                 }
 
                 if (usuarioRepository != null && notificacionService != null) {
@@ -928,7 +1148,7 @@ public class TransportistaService {
                         notificacionService.enviar(
                                 admin.getId(),
                                 "Alerta: Envío Sin Transportista",
-                                "El envío #" + envio.getId() + " (Compra #" + envio.getCompraId() + ") no consiguió transportista en " + horasMax + " horas. Requiere gestión manual de reembolso.",
+                                "El envío #" + envio.getId() + " (Compra #" + envio.getCompraId() + ") no consiguió transportista en " + horasMax + " horas. Requiere gestión manual de reembolso o reasignación.",
                                 "WARNING"
                         );
                     }
@@ -937,6 +1157,206 @@ public class TransportistaService {
         }
 
         return expirados;
+    }
+
+    /**
+     * 4.2: Timeout de asignado.
+     * Si un transportista tomó el envío (ASIGNADO), pero pasan HORAS_MAX_ASIGNADO_SIN_RECOGIDA (24h)
+     * sin que haya recogido ninguna parada, regresa a PENDIENTE_ASIGNACION, desasigna el transportista
+     * y notifica al transportista y a los vendedores.
+     */
+    public int verificarEnviosAsignadosExpirados() {
+        final int horasMax = (appConfigService != null)
+                ? appConfigService.obtenerValorInt("HORAS_MAX_ASIGNADO_SIN_RECOGIDA", 24)
+                : 24;
+        LocalDateTime limite = LocalDateTime.now().minusHours(horasMax);
+
+        List<Envio> asignados = envioRepository.findByEstado(Envio.ASIGNADO);
+        int revertidos = 0;
+
+        for (Envio envio : asignados) {
+            LocalDateTime fechaAsig = envio.getFechaAsignacion();
+            if (fechaAsig != null && fechaAsig.isBefore(limite)) {
+                boolean algunaRecogida = envio.getParadas() != null && envio.getParadas().stream().anyMatch(ParadaEnvio::isRecogido);
+                if (!algunaRecogida) {
+                    String transportistaIdViejo = envio.getTransportistaId();
+
+                    envio.setEstado(Envio.PENDIENTE_ASIGNACION);
+                    envio.setTransportistaId(null);
+                    envio.setTransportista(null);
+                    envio.setFechaAsignacion(null);
+                    envio.setUpdatedAt(LocalDateTime.now());
+                    envioRepository.save(envio);
+                    revertidos++;
+
+                    log.warn("Envío {} superó {} horas en ASIGNADO sin iniciar recolecciones. Regresado a PENDIENTE_ASIGNACION.",
+                            envio.getId(), horasMax);
+
+                    if (transportistaIdViejo != null && notificacionService != null) {
+                        notificacionService.enviar(
+                                transportistaIdViejo,
+                                "Servicio de Envío Retirado por Inactividad",
+                                "El envío #" + envio.getId() + " fue retirado de tu cuenta por superar " + horasMax + " horas sin iniciar recolecciones.",
+                                "WARNING"
+                        );
+                    }
+
+                    if (envio.getParadas() != null && notificacionService != null) {
+                        Set<String> vendedoresNotificados = new HashSet<>();
+                        for (ParadaEnvio p : envio.getParadas()) {
+                            if (p.getVendedorId() != null && vendedoresNotificados.add(p.getVendedorId())) {
+                                notificacionService.enviar(
+                                        p.getVendedorId(),
+                                        "Envío Disponible para Nuevos Transportistas",
+                                        "El transportista asignado no se presentó a tiempo (" + horasMax + "h). El envío vuelve a estar disponible para la red.",
+                                        "INFO"
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return revertidos;
+    }
+
+    /**
+     * 4.4: Acción administrativa para reasignar un envío en SIN_TRANSPORTISTA.
+     * Devuelve el envío a PENDIENTE_ASIGNACION con 24h nuevas (fechaDisponibleDesde = now()).
+     */
+    public Envio reasignarEnvioSinTransportista(String envioId, String adminId) {
+        if (envioId == null || envioId.isBlank()) {
+            throw new IllegalArgumentException("ID de envío requerido");
+        }
+
+        Envio envio = envioRepository.findById(envioId)
+                .orElseThrow(() -> new IllegalArgumentException("Envío no encontrado"));
+
+        if (!Envio.SIN_TRANSPORTISTA.equals(envio.getEstado())) {
+            throw new IllegalStateException("Solo se pueden reasignar envíos en estado SIN_TRANSPORTISTA.");
+        }
+
+        envio.setEstado(Envio.PENDIENTE_ASIGNACION);
+        envio.setTransportistaId(null);
+        envio.setTransportista(null);
+        envio.setFechaAsignacion(null);
+        envio.setFechaDisponibleDesde(LocalDateTime.now());
+        envio.setUpdatedAt(LocalDateTime.now());
+
+        Envio guardado = envioRepository.save(envio);
+
+        if (guardado.getParadas() != null && notificacionService != null) {
+            Set<String> vendedoresNotificados = new HashSet<>();
+            for (ParadaEnvio p : guardado.getParadas()) {
+                if (p.getVendedorId() != null && vendedoresNotificados.add(p.getVendedorId())) {
+                    notificacionService.enviar(
+                            p.getVendedorId(),
+                            "Envío Reasignado",
+                            "Un administrador ha vuelto a publicar la ruta de tu pedido #" + p.getPedidoId() + " en la bolsa de cargas.",
+                            "INFO"
+                    );
+                }
+            }
+        }
+
+        return guardado;
+    }
+
+    /**
+     * 4.8: Reconciliador de envíos faltantes.
+     * Busca compras PAGADAS o COMPLETADAS con modalidad DOMICILIO que no tengan Envio registrado.
+     * Reconstruye el documento Envio, calcula las paradas y actualiza fechaDisponibleDesde si aplica.
+     */
+    public int reconciliarEnviosFaltantes() {
+        if (compraRepository == null || envioRepository == null || pedidoRepository == null) {
+            return 0;
+        }
+
+        List<Compra> compras = compraRepository.findAll();
+        int reconciliados = 0;
+
+        for (Compra compra : compras) {
+            String estado = compra.getEstado();
+            if (!Compra.PAGADA.equals(estado) && !Compra.COMPLETADA.equals(estado)) {
+                continue;
+            }
+
+
+            // Si ya existe el envío para esta compra, omitir
+            if (envioRepository.findByCompraId(compra.getId()).isPresent()) {
+                continue;
+            }
+
+            List<Pedido> subPedidos = pedidoRepository.findByCompraId(compra.getId());
+            if (subPedidos.isEmpty()) {
+                continue;
+            }
+
+            // Construir paradas
+            List<ParadaEnvio> paradas = new ArrayList<>();
+            com.example.demo.Model.embebidos.DireccionPedido puntoEntrega = null;
+
+            for (Pedido ped : subPedidos) {
+                if (puntoEntrega == null && ped.getDireccionEntrega() != null) {
+                    puntoEntrega = ped.getDireccionEntrega();
+                }
+
+                String vendedorId = ped.getVendedor() != null ? ped.getVendedor().getId() : null;
+                String nombreVendedor = ped.getVendedor() != null ? ped.getVendedor().getNombre() : "Vendedor";
+                String direccionRecogida = ped.getCiudadOrigenEnvio() != null ? ped.getCiudadOrigenEnvio() : "Dirección finca";
+                String ciudadRecogida = ped.getCiudadOrigenEnvio() != null ? ped.getCiudadOrigenEnvio() : "Cartagena";
+                Integer zona = ped.getZonaOrigenEnvio() != null ? ped.getZonaOrigenEnvio() : 1;
+                Long tarifaCentavos = ped.getTarifaEnvioCentavos() != null ? ped.getTarifaEnvioCentavos() : 0L;
+
+                ParadaEnvio parada = new ParadaEnvio(
+                        ped.getId(),
+                        vendedorId,
+                        nombreVendedor,
+                        direccionRecogida,
+                        ciudadRecogida,
+                        zona,
+                        tarifaCentavos
+                );
+
+                if (ped.getItems() != null) {
+                    List<String> itemsResumen = ped.getItems().stream()
+                            .map(i -> {
+                                String nom = i.getNombreSnapshot() != null ? i.getNombreSnapshot() : "Producto";
+                                String cant = i.getCantidad() != null ? String.valueOf(i.getCantidad()) : "1";
+                                return cant + "x " + nom;
+                            })
+                            .collect(Collectors.toList());
+                    parada.setItemsResumen(itemsResumen);
+                }
+
+                paradas.add(parada);
+            }
+
+            Long costoTotal = compra.getEnvioCentavos() != null ? compra.getEnvioCentavos() : 0L;
+            Envio nuevoEnvio = new Envio(compra.getId(), paradas, puntoEntrega, costoTotal);
+            nuevoEnvio.setEstado(Envio.PENDIENTE_ASIGNACION);
+
+            // Si todas las paradas ya están listas para recoger
+            boolean todosListos = subPedidos.stream().allMatch(p -> {
+                com.example.demo.Model.EstadoPedido ep = p.getEstadoEnum();
+                return ep == com.example.demo.Model.EstadoPedido.LISTO_PARA_RECOGER
+                        || ep == com.example.demo.Model.EstadoPedido.ENVIADO
+                        || ep == com.example.demo.Model.EstadoPedido.ENTREGADO;
+            });
+            if (todosListos) {
+                nuevoEnvio.setFechaDisponibleDesde(LocalDateTime.now());
+            } else {
+                nuevoEnvio.setFechaDisponibleDesde(null);
+            }
+
+            envioRepository.save(nuevoEnvio);
+            reconciliados++;
+            log.info("Reconciliado envío para compraId {} con {} paradas y costo {} centavos",
+                    compra.getId(), paradas.size(), costoTotal);
+        }
+
+        return reconciliados;
     }
 
     /**

@@ -10,6 +10,7 @@ public class PerfilVendedor {
     private String cuentaBancaria;
     private String tipoProductos;
     private boolean verificado = false;
+    private boolean permiteRecogidaEnTienda = true;
 
     public PerfilVendedor() {
     }
@@ -50,4 +51,7 @@ public class PerfilVendedor {
 
     public boolean isVerificado() { return verificado; }
     public void setVerificado(boolean verificado) { this.verificado = verificado; }
+
+    public boolean isPermiteRecogidaEnTienda() { return permiteRecogidaEnTienda; }
+    public void setPermiteRecogidaEnTienda(boolean permiteRecogidaEnTienda) { this.permiteRecogidaEnTienda = permiteRecogidaEnTienda; }
 }

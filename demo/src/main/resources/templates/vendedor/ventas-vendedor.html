@@ -72,6 +72,13 @@
                 <p class="vp-stat__hint">Pedidos que estás alistando</p>
             </article>
 
+            <article class="vp-stat" style="border-top: 3px solid #27ae60;">
+                <div class="vp-stat__icon"><i class="fas fa-box-archive"></i></div>
+                <p class="vp-stat__label">Listos para recoger</p>
+                <p class="vp-stat__value" th:text="${listosParaRecoger}">0</p>
+                <p class="vp-stat__hint">Listos en tienda o para transportista</p>
+            </article>
+
             <article class="vp-stat">
                 <div class="vp-stat__icon"><i class="fas fa-circle-check"></i></div>
                 <p class="vp-stat__label">Entregados</p>
@@ -95,6 +102,10 @@
                         th:classappend="${filtroActivo == 'proceso' ? 'is-active' : ''}">
                         En preparación <span class="vp-tab__count" th:text="${enProceso}">0</span>
                     </a>
+                    <a th:href="@{/vendedor/ventas(estado='listo')}" class="vp-tab"
+                        th:classappend="${filtroActivo == 'listo' ? 'is-active' : ''}">
+                        Listos para recoger <span class="vp-tab__count" th:text="${listosParaRecoger}">0</span>
+                    </a>
                     <a th:href="@{/vendedor/ventas(estado='enviado')}" class="vp-tab"
                         th:classappend="${filtroActivo == 'enviado' ? 'is-active' : ''}">
                         Enviados <span class="vp-tab__count" th:text="${enCamino}">0</span>
@@ -106,6 +117,10 @@
                     <a th:if="${enRevision > 0}" th:href="@{/vendedor/ventas(estado='revision')}" class="vp-tab"
                         th:classappend="${filtroActivo == 'revision' ? 'is-active' : ''}">
                         En revisión <span class="vp-tab__count" th:text="${enRevision}">0</span>
+                    </a>
+                    <a th:if="${cancelados > 0}" th:href="@{/vendedor/ventas(estado='cancelado')}" class="vp-tab"
+                        th:classappend="${filtroActivo == 'cancelado' ? 'is-active' : ''}">
+                        Cancelados <span class="vp-tab__count" th:text="${cancelados}">0</span>
                     </a>
                 </nav>
 

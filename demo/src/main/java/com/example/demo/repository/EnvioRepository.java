@@ -19,4 +19,9 @@ public interface EnvioRepository extends MongoRepository<Envio, String> {
     List<Envio> findByTransportistaId(String transportistaId);
 
     List<Envio> findByTransportistaIdOrderByFechaAsignacionDesc(String transportistaId);
+
+    @org.springframework.data.mongodb.repository.Query("{'paradas.pedidoId': ?0}")
+    Optional<Envio> findByParadaPedidoId(String pedidoId);
+
+    Optional<Envio> findByParadas_PedidoId(String pedidoId);
 }

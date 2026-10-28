@@ -12,9 +12,11 @@ import com.example.demo.Model.embebidos.DireccionPedido;
 import com.example.demo.Model.embebidos.ProductoCarrito;
 import com.example.demo.Model.embebidos.ProductoPedido;
 import com.example.demo.repository.CarritoRepository;
+import com.example.demo.Model.ModalidadEntrega;
 import com.example.demo.repository.CompraRepository;
 import com.example.demo.repository.OfertaRepository;
 import com.example.demo.repository.PedidoRepository;
+import com.example.demo.repository.UsuarioRepository;
 import com.example.demo.services.AppConfigService;
 import com.example.demo.services.CatalogoService;
 import com.example.demo.services.NotificacionService;
@@ -66,6 +68,13 @@ public class PagoController {
 
     @Autowired
     private com.example.demo.services.CalculoEnvioService calculoEnvioService;
+
+    @Autowired(required = false)
+    private UsuarioRepository usuarioRepository;
+
+    public void setUsuarioRepository(UsuarioRepository usuarioRepository) {
+        this.usuarioRepository = usuarioRepository;
+    }
 
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(PagoController.class);
 
@@ -321,13 +330,15 @@ public class PagoController {
             String ciudadFinal = !ciudad.isEmpty() ? ciudad : (usuario.getUbicacion() != null && usuario.getUbicacion().getCiudad() != null ? usuario.getUbicacion().getCiudad() : "Cartagena");
             String deptoFinal = !departamento.isEmpty() ? departamento : "Bolívar";
 
+            ModalidadEntrega modalidadEntrega = ModalidadEntrega.DOMICILIO;
+
             // Cálculo seguro del total en centavos enteros usando la ciudad de entrega final
             double subtotal = carrito.getTotalEstimado();
             long subtotalCentavos = wompiService.convertirACentavos(subtotal);
 
             com.example.demo.services.CalculoEnvioService.ResultadoCalculoEnvio calculoEnvio =
                     calculoEnvioService.calcularTarifaCarrito(carrito, ciudadFinal);
-            long envioCentavos = calculoEnvio.totalCentavos();
+            long envioCentavos = calculoEnvio != null ? calculoEnvio.totalCentavos() : 0L;
             long amountInCents = subtotalCentavos + envioCentavos;
 
             // Reutilizar referencia del frontend o generar una nueva
@@ -396,8 +407,9 @@ public class PagoController {
                         ciudadFinal,
                         deptoFinal);
 
-                // 1. Crear y persistir Compra
+                // 1. Crear y persistir Compra (7.4)
                 Compra compra = new Compra(comprador, reference, subtotalCentavos, envioCentavos);
+                compra.setModalidadEntrega(modalidadEntrega);
                 compra.setTotalCentavos(amountInCents);
                 compra = compraRepository.save(compra);
 
@@ -407,7 +419,9 @@ public class PagoController {
                     String vendedorId = entry.getKey();
                     double subtotalVendedor = entry.getValue().stream().mapToDouble(ProductoPedido::getSubtotal).sum();
                     long subtotalVendedorCentavos = wompiService.convertirACentavos(subtotalVendedor);
-                    long envioVendedorCentavos = calculoEnvio.obtenerTarifaVendedor(vendedorId);
+                    long envioVendedorCentavos = calculoEnvio != null
+                            ? calculoEnvio.obtenerTarifaVendedor(vendedorId)
+                            : 0L;
 
                     DatosPago datosPago = new DatosPago("WOMPI", subtotalVendedor);
                     datosPago.setEstado("PENDIENTE");
@@ -417,17 +431,20 @@ public class PagoController {
                     Pedido pedido = new Pedido(comprador, snapshotsVendedores.get(vendedorId), direccion,
                             entry.getValue(), datosPago);
                     pedido.setCompraId(compra.getId());
+                    pedido.setModalidadEntrega(modalidadEntrega);
                     pedido.setSubtotalCentavos(subtotalVendedorCentavos);
                     pedido.setEnvioCentavos(envioVendedorCentavos);
                     pedido.setTarifaEnvioCentavos(envioVendedorCentavos);
                     // Snapshot del tramo de envío
-                    for (com.example.demo.services.CalculoEnvioService.DesgloseEnvioVendedor dg : calculoEnvio.desglose()) {
-                        if (vendedorId.equals(dg.vendedorId())) {
-                            pedido.setCiudadOrigenEnvio(dg.ciudadOrigen());
-                            pedido.setCiudadDestinoEnvio(dg.ciudadDestino());
-                            pedido.setZonaOrigenEnvio(dg.zonaOrigen());
-                            pedido.setZonaDestinoEnvio(dg.zonaDestino());
-                            break;
+                    if (calculoEnvio != null) {
+                        for (com.example.demo.services.CalculoEnvioService.DesgloseEnvioVendedor dg : calculoEnvio.desglose()) {
+                            if (vendedorId.equals(dg.vendedorId())) {
+                                pedido.setCiudadOrigenEnvio(dg.ciudadOrigen());
+                                pedido.setCiudadDestinoEnvio(dg.ciudadDestino());
+                                pedido.setZonaOrigenEnvio(dg.zonaOrigen());
+                                pedido.setZonaDestinoEnvio(dg.zonaDestino());
+                                break;
+                            }
                         }
                     }
                     pedido.setEstado("PENDIENTE");
@@ -444,6 +461,7 @@ public class PagoController {
                 if (optCompraExistente.isPresent()) {
                     Compra compra = optCompraExistente.get();
                     if (!compra.esFinal()) {
+                        compra.setModalidadEntrega(modalidadEntrega);
                         compra.setSubtotalCentavos(subtotalCentavos);
                         compra.setEnvioCentavos(envioCentavos);
                         compra.setTotalCentavos(amountInCents);
@@ -451,12 +469,15 @@ public class PagoController {
                     }
                 }
                 for (Pedido existente : existentes) {
+                    existente.setModalidadEntrega(modalidadEntrega);
                     DatosPago pagoExistente = existente.getPago();
                     if (pagoExistente != null && !PagoConfirmacionService.esFinal(pagoExistente.getEstado())) {
                         pagoExistente.setMontoCentavosFirmado(amountInCents);
                     }
-                    if (existente.getVendedor() != null) {
-                        existente.setEnvioCentavos(calculoEnvio.obtenerTarifaVendedor(existente.getVendedor().getId()));
+                    if (existente.getVendedor() != null && calculoEnvio != null) {
+                        long tar = calculoEnvio.obtenerTarifaVendedor(existente.getVendedor().getId());
+                        existente.setEnvioCentavos(tar);
+                        existente.setTarifaEnvioCentavos(tar);
                     }
                     pedidoRepository.save(existente);
                 }

@@ -1,7 +1,11 @@
 package com.example.demo.services;
 
+import com.example.demo.Model.ActorTransicion;
 import com.example.demo.Model.Compra;
 import com.example.demo.Model.Envio;
+import com.example.demo.Model.EstadoPedido;
+import com.example.demo.Model.CanceladoPor;
+import com.example.demo.Model.ModalidadEntrega;
 import com.example.demo.Model.OfertaVendedor;
 import com.example.demo.Model.Pedido;
 import com.example.demo.Model.Usuario;
@@ -16,6 +20,11 @@ import com.example.demo.repository.PedidoRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.FindAndModifyOptions;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -27,7 +36,8 @@ import java.util.stream.Collectors;
  * (/pago/resultado): aplica el resultado de una transacción a las compras, pagos y pedidos.
  *
  * APPROVED                  -> COMPLETADO (pago), PAGADA (compra), CONFIRMADO (pedidos con stock),
- *                              descuenta stock en una sola operación, notifica y limpia carrito.
+ *                              descuenta stock de forma atómica y condicionada (stock >= cant),
+ *                              notifica y limpia carrito.
  *                              Si el stock no alcanza al confirmar, marca el pedido EN_REVISION y notifica al admin.
  * DECLINED / ERROR / VOIDED -> FALLIDO (pago), RECHAZADA (compra), CANCELADO (pedidos), sin tocar stock ni carrito,
  *                              y envía UNA SOLA notificación al comprador por compra.
@@ -86,7 +96,21 @@ public class PagoConfirmacionService {
     @Autowired(required = false)
     private CalculoEnvioService calculoEnvioService;
 
+    @Autowired(required = false)
+    private MongoTemplate mongoTemplate;
+
+    @Autowired(required = false)
+    private PedidoEstadoService pedidoEstadoService;
+
     public PagoConfirmacionService() {
+    }
+
+    public void setMongoTemplate(MongoTemplate mongoTemplate) {
+        this.mongoTemplate = mongoTemplate;
+    }
+
+    public void setPedidoEstadoService(PedidoEstadoService pedidoEstadoService) {
+        this.pedidoEstadoService = pedidoEstadoService;
     }
 
     /** Para pruebas: inyecta el servicio de billetera (US-22). */
@@ -222,110 +246,150 @@ public class PagoConfirmacionService {
         }
 
         if (COMPLETADO.equals(destino)) {
-            // US-03 Item 2: Valida primero el stock de todos los pedidos, luego aplica en una sola operación.
-            // Si el stock no alcanza al confirmar, marca ese pedido para revisión del admin (reembolso manual).
+            // US-03 / BLOQUE 6: Descuento atómico condicionado de stock (stock >= cantidad)
+            // y transición centralizada PENDIENTE -> CONFIRMADO vía PedidoEstadoService.
+            // Si el stock no alcanza al confirmar, marca EN_REVISION (requiereRevision=true) y notifica al admin.
             List<Pedido> pedidosAprobados = new ArrayList<>();
             Map<Pedido, String> pedidosEnRevision = new LinkedHashMap<>();
 
-            // 1. Cargar ofertas involucradas
-            Map<String, OfertaVendedor> ofertasMap = new HashMap<>();
-            if (ofertaRepository != null && pedidos != null) {
-                Set<String> ofertaIds = new HashSet<>();
-                for (Pedido p : pedidos) {
-                    if (p.getItems() != null) {
-                        for (ProductoPedido item : p.getItems()) {
-                            if (item.getProductoId() != null) {
-                                ofertaIds.add(item.getProductoId());
-                            }
-                        }
-                    }
-                }
-                for (String oid : ofertaIds) {
-                    ofertaRepository.findById(oid).ifPresent(o -> ofertasMap.put(oid, o));
-                }
-            }
-
-            // 2. Validar pedido por pedido si el stock disponible alcanza para todos sus ítems
             if (pedidos != null) {
                 for (Pedido p : pedidos) {
+                    // Idempotencia: si ya está CONFIRMADO o posterior, o stock ya descontado, no re-descontar
+                    EstadoPedido est = p.getEstadoEnum();
+                    if (est == EstadoPedido.CONFIRMADO || est == EstadoPedido.EN_PROCESO
+                            || est == EstadoPedido.LISTO_PARA_RECOGER || est == EstadoPedido.ENVIADO
+                            || est == EstadoPedido.ENTREGADO || p.isStockDescontado()) {
+                        log.info("Pedido {} ya en estado {} (stockDescontado={}), se omite descuento de stock.",
+                                p.getId(), est, p.isStockDescontado());
+                        pedidosAprobados.add(p);
+                        continue;
+                    }
+
+                    if (est == EstadoPedido.EN_REVISION) {
+                        pedidosEnRevision.put(p, p.getMotivoRevision() != null ? p.getMotivoRevision() : "En revisión de stock previa");
+                        continue;
+                    }
+
+                    if (est == EstadoPedido.CANCELADO) {
+                        continue;
+                    }
+
+                    // Intento de descuento atómico condicionado de stock por cada ítem del pedido
                     boolean stockAlcanza = true;
                     String motivoFalla = null;
+                    List<ItemDescontado> itemsDescontados = new ArrayList<>();
 
-                    if (p.getItems() != null && ofertaRepository != null) {
+                    if (p.getItems() != null && !p.getItems().isEmpty()) {
                         for (ProductoPedido item : p.getItems()) {
                             String idOferta = item.getProductoId();
-                            OfertaVendedor oferta = ofertasMap.get(idOferta);
                             double cant = item.getCantidad() != null ? item.getCantidad() : 0.0;
-                            double stockActual = (oferta != null && oferta.getStock() != null) ? oferta.getStock() : 0.0;
+                            if (idOferta == null || cant <= 0.0) {
+                                continue;
+                            }
 
-                            if (oferta == null || stockActual < cant) {
-                                stockAlcanza = false;
-                                motivoFalla = "Stock insuficiente para '" + item.getNombreSnapshot()
-                                        + "'. Requerido: " + cant + ", disponible: " + stockActual;
-                                break;
+                            if (mongoTemplate != null) {
+                                Query q = new Query(Criteria.where("_id").is(idOferta).and("stock").gte(cant));
+                                Update u = new Update().inc("stock", -cant);
+                                OfertaVendedor mod = mongoTemplate.findAndModify(q, u, FindAndModifyOptions.options().returnNew(true), OfertaVendedor.class);
+                                if (mod != null) {
+                                    if (mod.getStock() != null && mod.getStock() <= 0.0) {
+                                        mongoTemplate.updateFirst(new Query(Criteria.where("_id").is(idOferta)),
+                                                new Update().set("disponible", false), OfertaVendedor.class);
+                                    }
+                                    itemsDescontados.add(new ItemDescontado(idOferta, cant, mod.getProductoCatalogoId()));
+                                } else {
+                                    stockAlcanza = false;
+                                    motivoFalla = "Stock insuficiente para '" + item.getNombreSnapshot() + "'. Requerido: " + cant;
+                                    break;
+                                }
+                            } else if (ofertaRepository != null) {
+                                synchronized (this) {
+                                    OfertaVendedor of = ofertaRepository.findById(idOferta).orElse(null);
+                                    double actual = (of != null && of.getStock() != null) ? of.getStock() : 0.0;
+                                    if (of != null && actual >= cant) {
+                                        double nuevo = actual - cant;
+                                        of.setStock(nuevo);
+                                        if (nuevo <= 0.0) of.setDisponible(false);
+                                        ofertaRepository.save(of);
+                                        itemsDescontados.add(new ItemDescontado(idOferta, cant, of.getProductoCatalogoId()));
+                                    } else {
+                                        stockAlcanza = false;
+                                        motivoFalla = "Stock insuficiente para '" + item.getNombreSnapshot()
+                                                + "'. Requerido: " + cant + ", disponible: " + actual;
+                                        break;
+                                    }
+                                }
                             }
                         }
                     }
 
                     if (stockAlcanza) {
+                        p.setStockDescontado(true);
                         pedidosAprobados.add(p);
+                        if (catalogoService != null) {
+                            for (ItemDescontado idesc : itemsDescontados) {
+                                if (idesc.catalogoId != null) {
+                                    try {
+                                        catalogoService.actualizarEstadisticas(idesc.catalogoId);
+                                    } catch (Exception ex) {
+                                        log.warn("Error al actualizar estadísticas de catálogo {}: {}", idesc.catalogoId, ex.getMessage());
+                                    }
+                                }
+                            }
+                        }
                     } else {
+                        // Rollback de ítems que alcanzaron a descontarse para este pedido fallido
+                        for (ItemDescontado idesc : itemsDescontados) {
+                            if (mongoTemplate != null) {
+                                mongoTemplate.findAndModify(
+                                        new Query(Criteria.where("_id").is(idesc.ofertaId)),
+                                        new Update().inc("stock", idesc.cantidad).set("disponible", true),
+                                        OfertaVendedor.class);
+                            } else if (ofertaRepository != null) {
+                                synchronized (this) {
+                                    ofertaRepository.findById(idesc.ofertaId).ifPresent(o -> {
+                                        o.setStock((o.getStock() != null ? o.getStock() : 0.0) + idesc.cantidad);
+                                        o.setDisponible(true);
+                                        ofertaRepository.save(o);
+                                    });
+                                }
+                            }
+                        }
                         pedidosEnRevision.put(p, motivoFalla != null ? motivoFalla : "Stock insuficiente");
                     }
                 }
             }
 
-            // US-22: reparto a billeteras. Va ANTES de persistir stock y pedidos para que, si algo falla,
-            // el reintento (aún con pedidos PENDIENTE) vuelva a entrar y el abono, idempotente, no se duplique.
+            // US-22: reparto a billeteras (idempotente)
             abonarBilleteraPorCompra(compra, pedidosAprobados);
-
-            // 3. Aplicar descuento de stock SOLO a los pedidos aprobados en una sola operación
-            Set<OfertaVendedor> ofertasParaGuardar = new HashSet<>();
-            for (Pedido p : pedidosAprobados) {
-                if (p.getItems() != null) {
-                    for (ProductoPedido item : p.getItems()) {
-                        String idOferta = item.getProductoId();
-                        OfertaVendedor oferta = ofertasMap.get(idOferta);
-                        if (oferta != null) {
-                            double cant = item.getCantidad() != null ? item.getCantidad() : 0.0;
-                            double stockActual = oferta.getStock() != null ? oferta.getStock() : 0.0;
-                            double nuevoStock = Math.max(0.0, stockActual - cant);
-                            oferta.setStock(nuevoStock);
-                            if (nuevoStock <= 0.0) {
-                                oferta.setDisponible(false);
-                            }
-                            ofertasParaGuardar.add(oferta);
-                        }
-                    }
-                }
-            }
-
-            if (ofertaRepository != null) {
-                for (OfertaVendedor of : ofertasParaGuardar) {
-                    ofertaRepository.save(of);
-                    if (catalogoService != null && of.getProductoCatalogoId() != null) {
-                        catalogoService.actualizarEstadisticas(of.getProductoCatalogoId());
-                    }
-                }
-            }
 
             // 4. Guardar pedidos aprobados y notificar a cada vendedor
             for (Pedido p : pedidosAprobados) {
-                p.setEstado("CONFIRMADO");
+                p.setStockDescontado(true);
                 p.setRequiereRevision(false);
                 p.setMotivoRevision(null);
-                p.setUpdatedAt(LocalDateTime.now());
-                if (pedidoRepository != null) {
-                    pedidoRepository.save(p);
-                }
 
-                if (notificacionService != null && p.getVendedor() != null && p.getVendedor().getId() != null) {
-                    String nombreComprador = p.getComprador() != null ? p.getComprador().getNombre() : "un comprador";
-                    notificacionService.enviar(
-                            p.getVendedor().getId(),
-                            "¡Nueva Venta!",
-                            "Has recibido un nuevo pedido #" + p.getId() + " de " + nombreComprador,
-                            "SUCCESS");
+                boolean yaEstabaConfirmado = p.getEstadoEnum() != null && p.getEstadoEnum() != EstadoPedido.PENDIENTE;
+                if (!yaEstabaConfirmado) {
+                    if (pedidoEstadoService != null) {
+                        pedidoEstadoService.transicionar(p, EstadoPedido.CONFIRMADO, ActorTransicion.SISTEMA, "Pago confirmado por pasarela");
+                    } else {
+                        p.setEstadoEnum(EstadoPedido.CONFIRMADO);
+                        p.setUpdatedAt(LocalDateTime.now());
+                        if (pedidoRepository != null) {
+                            pedidoRepository.save(p);
+                        }
+                    }
+
+                    if (notificacionService != null && p.getVendedor() != null && p.getVendedor().getId() != null) {
+                        String nombreComprador = p.getComprador() != null ? p.getComprador().getNombre() : "un comprador";
+                        String refPed = p.getNumeroFactura() != null ? p.getNumeroFactura() : p.getId();
+                        notificacionService.enviar(
+                                p.getVendedor().getId(),
+                                "¡Nueva Venta!",
+                                "Has recibido un nuevo pedido #" + refPed + " de " + nombreComprador,
+                                "SUCCESS");
+                    }
                 }
             }
 
@@ -334,18 +398,25 @@ public class PagoConfirmacionService {
                 Pedido p = entry.getKey();
                 String motivo = entry.getValue();
 
-                p.setEstado(Pedido.EN_REVISION);
+                p.setStockDescontado(false);
                 p.setRequiereRevision(true);
                 p.setMotivoRevision(motivo);
-                p.setUpdatedAt(LocalDateTime.now());
-                if (pedidoRepository != null) {
-                    pedidoRepository.save(p);
+
+                if (pedidoEstadoService != null) {
+                    pedidoEstadoService.transicionar(p, EstadoPedido.EN_REVISION, ActorTransicion.SISTEMA, motivo);
+                } else {
+                    p.setEstadoEnum(EstadoPedido.EN_REVISION);
+                    p.setUpdatedAt(LocalDateTime.now());
+                    if (pedidoRepository != null) {
+                        pedidoRepository.save(p);
+                    }
                 }
 
                 if (notificacionService != null) {
+                    String idRef = p.getId() != null ? p.getId() : p.getNumeroFactura();
                     notificacionService.enviarAAdmins(
-                            "Revisión requerida: Pedido #" + p.getId(),
-                            "Stock insuficiente al confirmar el pedido #" + p.getId() + " de la compra " + refLimpia
+                            "Revisión requerida: Pedido #" + idRef,
+                            "Stock insuficiente al confirmar el pedido #" + idRef + " de la compra " + refLimpia
                                     + ". " + motivo + ". Requiere reembolso manual.",
                             "DANGER");
                 }
@@ -404,14 +475,26 @@ public class PagoConfirmacionService {
             }
 
         } else if (FALLIDO.equals(destino)) {
-            // US-03 Item 3: En pago fallido, cada pedido se cancela sin tocar stock,
-            // y se envía UNA SOLA notificación al comprador por compra, no una por pedido.
+            // US-03 Item 3 / BLOQUE 1 / BLOQUE 6: En pago fallido, cada pedido se cancela sin tocar stock,
+            // pasando por PedidoEstadoService si está disponible
             if (pedidos != null) {
                 for (Pedido p : pedidos) {
-                    p.setEstado("CANCELADO");
-                    p.setUpdatedAt(LocalDateTime.now());
-                    if (pedidoRepository != null) {
-                        pedidoRepository.save(p);
+                    if (p.getEstadoEnum() == EstadoPedido.CANCELADO) {
+                        continue;
+                    }
+                    if (pedidoEstadoService != null) {
+                        pedidoEstadoService.transicionar(p, EstadoPedido.CANCELADO, ActorTransicion.SISTEMA,
+                                "Pago no aprobado por pasarela (" + estadoNuevo + ")", CanceladoPor.SISTEMA_PAGO);
+                    } else {
+                        p.setEstadoEnum(EstadoPedido.CANCELADO);
+                        p.setCanceladoPor(CanceladoPor.SISTEMA_PAGO);
+                        p.setMotivoCancelacion("Pago no aprobado por pasarela (" + estadoNuevo + ")");
+                        p.setFechaCancelacion(LocalDateTime.now());
+                        p.setStockDescontado(false);
+                        p.setUpdatedAt(LocalDateTime.now());
+                        if (pedidoRepository != null) {
+                            pedidoRepository.save(p);
+                        }
                     }
                 }
             }
@@ -558,4 +641,17 @@ public class PagoConfirmacionService {
     public static boolean esFinal(String estadoPago) {
         return COMPLETADO.equals(estadoPago) || FALLIDO.equals(estadoPago);
     }
+
+    private static class ItemDescontado {
+        final String ofertaId;
+        final double cantidad;
+        final String catalogoId;
+
+        ItemDescontado(String ofertaId, double cantidad, String catalogoId) {
+            this.ofertaId = ofertaId;
+            this.cantidad = cantidad;
+            this.catalogoId = catalogoId;
+        }
+    }
 }
+
