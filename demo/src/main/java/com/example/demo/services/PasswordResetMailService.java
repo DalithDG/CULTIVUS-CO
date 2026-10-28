@@ -76,16 +76,24 @@ public class PasswordResetMailService {
      */
     @Async(AsyncConfig.PASSWORD_RESET_MAIL_EXECUTOR)
     public void enviarEnlace(String destinatario, String nombre, String tokenOriginal) {
-        if (!StringUtils.hasText(host)) {
-            log.warn("SMTP no configurado (MAIL_HOST vacío): no se envía el correo de recuperación");
+        if (!StringUtils.hasText(destinatario) || !StringUtils.hasText(tokenOriginal)) {
+            log.warn("Datos incompletos: no se envía el correo de recuperación");
+            return;
+        }
+
+        String enlace = construirEnlace(tokenOriginal);
+
+        if (!StringUtils.hasText(host) || "tu-correo@gmail.com".equalsIgnoreCase(username)) {
+            log.info("\n====================================================================\n"
+                    + "[ENLACE DE RECUPERACIÓN GENERADO] ({})\n"
+                    + "Abre este enlace en tu navegador (válido por 15 min):\n"
+                    + "{}\n"
+                    + "====================================================================",
+                    destinatario, enlace);
             return;
         }
         if (StringUtils.hasText(username) && !StringUtils.hasText(password)) {
             log.warn("SMTP sin contraseña configurada: no se envía el correo de recuperación");
-            return;
-        }
-        if (!StringUtils.hasText(destinatario) || !StringUtils.hasText(tokenOriginal)) {
-            log.warn("Datos incompletos: no se envía el correo de recuperación");
             return;
         }
 
@@ -101,7 +109,6 @@ public class PasswordResetMailService {
             return;
         }
 
-        String enlace = construirEnlace(tokenOriginal);
         String nombreLimpio = StringUtils.hasText(nombre) ? nombre.trim() : "productor";
         String nombreSeguro = HtmlUtils.htmlEscape(nombreLimpio);
 
@@ -115,13 +122,17 @@ public class PasswordResetMailService {
             mailSender.send(message);
             log.info("Correo de recuperación enviado correctamente");
         } catch (Exception e) {
-            // No se registra el destinatario, el token ni las credenciales.
-            log.error("No se pudo enviar el correo de recuperación ({} / {})",
+            log.error("No se pudo enviar el correo de recuperación ({} / {}). Se muestra enlace de respaldo en logs.",
                     e.getClass().getSimpleName(), causaSimple(e));
+            log.info("\n====================================================================\n"
+                    + "[RESPALDO] ENLACE DE RECUPERACIÓN DE CONTRASEÑA ({})\n"
+                    + "{}\n"
+                    + "====================================================================",
+                    destinatario, enlace);
         }
     }
 
-    String construirEnlace(String tokenOriginal) {
+    public String construirEnlace(String tokenOriginal) {
         String tokenCodificado = URLEncoder.encode(tokenOriginal, StandardCharsets.UTF_8);
         return baseUrl + "/usuario/restablecer?token=" + tokenCodificado;
     }

@@ -79,6 +79,10 @@ public class PasswordResetController {
 
         try {
             passwordResetService.solicitarRecuperacion(correo, ipDelCliente(request));
+            String enlaceDirecto = passwordResetService.consumirUltimoEnlace(correo);
+            if (enlaceDirecto != null && !enlaceDirecto.isBlank()) {
+                redirectAttributes.addFlashAttribute("enlaceRecuperacionDirecto", enlaceDirecto);
+            }
         } catch (Exception e) {
             // Nunca se muestra el detalle ni se registra el correo/token.
             log.error("Error al procesar la solicitud de recuperación ({})",
