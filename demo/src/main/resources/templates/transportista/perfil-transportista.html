@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Perfil - Transportista - Cultivus</title>
+    <title>Mi Perfil de Transportista - Cultivus</title>
     <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
     <link rel="stylesheet" th:href="@{/perfil.css}">
     <link rel="stylesheet" th:href="@{/header.css}">
@@ -15,12 +15,21 @@
 
     <div class="profile-container">
         <div class="profile-card">
-            <div class="profile-header">
-                <div class="profile-icon">
-                    <i class="fa-solid fa-truck"></i>
+            <div class="profile-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+                <div style="display:flex; align-items:center; gap:16px;">
+                    <div class="profile-icon" style="margin:0;">
+                        <i class="fa-solid fa-truck-fast"></i>
+                    </div>
+                    <div>
+                        <h1 style="margin:0;" th:text="${usuario.nombre}">Transportista</h1>
+                        <p class="profile-subtitle" style="margin:4px 0 0;">Perfil de Transportista Logístico · Cultivus</p>
+                    </div>
                 </div>
-                <h1>Mi Perfil</h1>
-                <p class="profile-subtitle">Gestiona tu información personal</p>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <a th:href="@{/transportista/inicio}" class="btn btn-primary" style="text-decoration:none; background:#2e7d32; color:#fff;">
+                        <i class="fa-solid fa-route"></i> Mis Rutas y Envíos
+                    </a>
+                </div>
             </div>
 
             <div th:if="${mensaje}" class="alert alert-success">
@@ -32,30 +41,54 @@
                 <span th:text="${error}"></span>
             </div>
 
-            <div class="info-section">
-                <h2><i class="fa-solid fa-info-circle"></i> Información Actual</h2>
+            <!-- Datos del Transportista y Vehículo -->
+            <div class="info-section" th:if="${usuario.perfilTransportista != null}">
+                <h2 style="color:#2e7d32;"><i class="fa-solid fa-truck"></i> Datos Logísticos y Vehículo</h2>
                 <div class="info-grid">
                     <div class="info-item">
-                        <label>Nombre:</label>
-                        <p th:text="${usuario.nombre}">Nombre</p>
+                        <label>Estado de Verificación:</label>
+                        <p th:text="${usuario.perfilTransportista.verificado ? 'Transportista Verificado' : 'Pendiente de Verificación'}"
+                           th:style="${usuario.perfilTransportista.verificado ? 'color:#2e7d32; font-weight:700;' : 'color:#d97706; font-weight:700;'}">
+                            Verificado
+                        </p>
                     </div>
                     <div class="info-item">
-                        <label>Email:</label>
-                        <p th:text="${usuario.email}">email@ejemplo.com</p>
+                        <label>Disponibilidad Actual:</label>
+                        <p th:text="${usuario.perfilTransportista.disponible ? 'Disponible para rutas' : 'En ruta / Ocupado'}"
+                           th:style="${usuario.perfilTransportista.disponible ? 'color:#2e7d32; font-weight:700;' : 'color:#dc2626; font-weight:700;'}">
+                            Disponible
+                        </p>
                     </div>
                     <div class="info-item">
-                        <label>Zona que cubre:</label>
-                        <p th:text="${usuario.perfilTransportista != null ? usuario.perfilTransportista.zonasCobertura : 'No especificada'}">Zona</p>
+                        <label>Tipo de Vehículo:</label>
+                        <p th:text="${usuario.perfilTransportista.tipoVehiculo != null ? usuario.perfilTransportista.tipoVehiculo : 'No especificado'}">Camioneta</p>
                     </div>
                     <div class="info-item">
-                        <label>Rol:</label>
-                        <p th:text="${usuario.rol != null ? usuario.rol : 'TRANSPORTISTA'}">TRANSPORTISTA</p>
+                        <label>Placa:</label>
+                        <p th:text="${usuario.perfilTransportista.placa != null ? usuario.perfilTransportista.placa : 'No especificada'}">ABC-123</p>
+                    </div>
+                    <div class="info-item">
+                        <label>Capacidad de Carga:</label>
+                        <p th:text="${usuario.perfilTransportista.capacidadCargaKg != null ? (usuario.perfilTransportista.capacidadCargaKg + ' kg') : 'No especificada'}">1000 kg</p>
+                    </div>
+                    <div class="info-item">
+                        <label>Zonas de Cobertura:</label>
+                        <p th:text="${usuario.perfilTransportista.zonasCobertura != null ? usuario.perfilTransportista.zonasCobertura : 'Bolívar'}">Zonas</p>
+                    </div>
+                    <div class="info-item">
+                        <label>Teléfono de Contacto:</label>
+                        <p th:text="${usuario.perfilTransportista.telefonoContacto != null ? usuario.perfilTransportista.telefonoContacto : '-'}">-</p>
+                    </div>
+                    <div class="info-item">
+                        <label>Ciudad Base:</label>
+                        <p th:text="${usuario.perfilTransportista.ciudadBase != null ? (usuario.perfilTransportista.ciudadBase + ', ' + usuario.perfilTransportista.departamentoBase) : '-'}">-</p>
                     </div>
                 </div>
             </div>
 
-            <div class="edit-section">
-                <h2><i class="fa-solid fa-edit"></i> Editar Información</h2>
+            <!-- Editar Cuenta Personal -->
+            <div class="edit-section" style="margin-top:24px; border-top:1px solid #e5e7eb; padding-top:24px;">
+                <h2><i class="fa-solid fa-user-pen"></i> Editar Datos de mi Cuenta</h2>
                 <form th:action="@{/usuario/perfil/actualizar}" method="post" class="edit-form">
                     <div class="form-row">
                         <div class="form-group">
@@ -70,7 +103,7 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="departamento"><i class="fa-solid fa-map-marked-alt"></i> Departamento</label>
-                            <select id="departamento" name="departamento" required>
+                            <select id="departamento" name="departamento">
                                 <option value="">Seleccione un departamento</option>
                                 <option th:each="dept : ${departamentos}" th:value="${dept.nombre}" th:text="${dept.nombre}"
                                     th:selected="${usuario.ubicacion != null and usuario.ubicacion.departamento == dept.nombre}"></option>
@@ -78,13 +111,20 @@
                         </div>
                         <div class="form-group">
                             <label for="ciudad"><i class="fa-solid fa-city"></i> Ciudad</label>
-                            <select id="ciudad" name="ciudad" required>
-                                <option value="">Seleccione una ciudad</option>
-                                <option th:if="${usuario.ubicacion != null}" th:value="${usuario.ubicacion.ciudad}" th:text="${usuario.ubicacion.ciudad}" selected></option>
-                            </select>
+                            <input type="text" id="ciudad" name="ciudad"
+                                   th:value="${usuario.ubicacion != null ? usuario.ubicacion.ciudad : (usuario.perfilTransportista != null ? usuario.perfilTransportista.ciudadBase : '')}"
+                                   placeholder="Ingrese su ciudad">
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Guardar Cambios</button>
+                    <div class="form-group">
+                        <label for="contrasena"><i class="fa-solid fa-lock"></i> Nueva Contraseña (opcional)</label>
+                        <input type="password" id="contrasena" name="contrasena" placeholder="Dejar en blanco para mantener la actual">
+                        <small>Solo complete este campo si desea cambiar su contraseña</small>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Guardar Cambios</button>
+                        <a th:href="@{/transportista/inicio}" class="btn btn-secondary">Volver a Mis Rutas</a>
+                    </div>
                 </form>
             </div>
         </div>

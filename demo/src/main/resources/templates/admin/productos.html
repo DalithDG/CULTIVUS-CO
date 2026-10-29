@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{admin/fragments/head :: head('Catálogo de Productos')}"></head>
+
+<body class="admin-layout">
+
+    <header th:replace="~{admin/fragments/topbar :: topbar('Catálogo de Productos')}"></header>
+    <aside th:replace="~{admin/fragments/sidebar :: sidebar}"></aside>
+
+    <main class="admin-main">
+        <div class="admin-content">
+            <div th:replace="~{admin/fragments/alerts :: alerts}"></div>
+
+            <div class="admin-page" id="catalogo-page">
+                <div class="page-card">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2><i class="fas fa-list"></i> Catálogo de Productos</h2>
+                        <form th:action="@{/admin/productos}" method="get" style="display: flex; gap: 10px;">
+                            <input type="text" name="search" th:value="${searchQuery}"
+                                placeholder="Buscar por nombre o descripción..."
+                                style="padding: 8px 15px; border: 1px solid #d6e2d8; border-radius: 20px; outline: none; min-width: 200px;">
+                            <select name="categoriaId"
+                                style="padding: 8px 15px; border: 1px solid #d6e2d8; border-radius: 20px; outline: none; background: white; max-width: 200px;">
+                                <option value="">Todas las categorías</option>
+                                <option th:each="cat : ${categorias}" th:value="${cat.id}" th:text="${cat.nombre}"
+                                    th:selected="${cat.id == categoriaFilter}"></option>
+                            </select>
+                            <button type="submit"
+                                style="background: var(--adm-green); color: white; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer;">
+                                <i class="fas fa-search"></i> Filtrar
+                            </button>
+                            <a th:if="${(searchQuery != null and !searchQuery.isEmpty()) or (categoriaFilter != null and !categoriaFilter.isEmpty())}"
+                                th:href="@{/admin/productos}"
+                                style="background: var(--adm-red); color: white; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; text-decoration: none;">
+                                <i class="fas fa-times"></i> Limpiar
+                            </a>
+                        </form>
+                    </div>
+
+                    <div th:if="${productos != null and !productos.empty}">
+                        <div class="products-grid">
+                            <div class="product-item" th:each="p : ${productos.content}">
+                                <div class="product-img" style="background: var(--adm-green-light);">
+                                    <img th:if="${p.imagenUrl}" th:src="${p.imagenUrl}"
+                                        style="width:100%; height:100%; object-fit:cover;">
+                                    <i th:unless="${p.imagenUrl}" class="fas fa-leaf fa-3x" style="color: var(--adm-green);"></i>
+                                </div>
+                                <h4 th:text="${p.nombre}">Producto</h4>
+                                <p class="price" th:text="${'$' + p.precio}">$12.99</p>
+                                <p class="stock"
+                                    th:text="${'Stock: ' + (p.stock % 1 == 0 ? #numbers.formatDecimal(p.stock, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(p.stock, 1, 'POINT', 2, 'COMMA'))}">
+                                    Stock: 150</p>
+                                <form th:action="@{/admin/productos/{id}/eliminar(id=${p.id})}" method="post">
+                                    <button type="submit" class="btn-action"
+                                        style="background:var(--adm-red); border:none; color:white; width:100%;"><i
+                                            class="fas fa-trash"></i> Eliminar</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Paginación Productos -->
+                        <div th:if="${productos.totalPages > 1}" class="paginacion-container"
+                            style="display:flex; justify-content:center; align-items:center; gap:15px; margin-top:30px; padding:20px 0;">
+                            <a th:href="@{/admin/productos(page=${productos.number - 1}, search=${searchQuery}, categoriaId=${categoriaFilter})}"
+                                th:if="${productos.hasPrevious()}"
+                                style="padding:8px 16px; border:1px solid #d6e2d8; border-radius:5px; background:white; cursor:pointer; text-decoration:none; color:#111e15;">
+                                <i class="fas fa-chevron-left"></i> Anterior
+                            </a>
+                            <button th:unless="${productos.hasPrevious()}" disabled
+                                style="padding:8px 16px; border:1px solid var(--adm-line); border-radius:5px; background:var(--adm-green-soft); color:#94a39a; cursor:not-allowed;">
+                                <i class="fas fa-chevron-left"></i> Anterior
+                            </button>
+                            <div style="display:flex; gap:5px;">
+                                <span th:each="i : ${#numbers.sequence(0, productos.totalPages - 1)}"
+                                    th:if="${i >= productos.number - 2 and i <= productos.number + 2}">
+                                    <a th:href="@{/admin/productos(page=${i}, search=${searchQuery}, categoriaId=${categoriaFilter})}"
+                                        th:text="${i + 1}"
+                                        th:style="${i == productos.number ? 'background:var(--adm-green); color:white; border:1px solid var(--adm-green);' : 'background:white; color:#111e15; border:1px solid #d6e2d8;'}"
+                                        style="padding:8px 14px; border-radius:5px; text-decoration:none; font-weight:600; cursor:pointer; transition: 0.3s;">
+                                    </a>
+                                </span>
+                            </div>
+                            <a th:href="@{/admin/productos(page=${productos.number + 1}, search=${searchQuery}, categoriaId=${categoriaFilter})}"
+                                th:if="${productos.hasNext()}"
+                                style="padding:8px 16px; border:1px solid #d6e2d8; border-radius:5px; background:white; cursor:pointer; text-decoration:none; color:#111e15;">
+                                Siguiente <i class="fas fa-chevron-right"></i>
+                            </a>
+                            <button th:unless="${productos.hasNext()}" disabled
+                                style="padding:8px 16px; border:1px solid var(--adm-line); border-radius:5px; background:var(--adm-green-soft); color:#94a39a; cursor:not-allowed;">
+                                Siguiente <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div th:if="${productos == null or productos.empty}"
+                        style="text-align:center; padding:40px; color:#7b8b80;">
+                        <i class="fas fa-box-open"
+                            style="font-size:48px; color:#d6e2d8; margin-bottom:15px; display:block;"></i>
+                        <p style="font-size:18px;">No se encontraron productos.</p>
+                    </div>
+
+                </div>
+            </div>
+
+
+        </div>
+    </main>
+
+    <script th:src="@{/js/admin-panel.js}"></script>
+</body>
+
+</html>

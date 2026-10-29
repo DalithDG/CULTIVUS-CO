@@ -17,7 +17,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.time.LocalDateTime;
+
 import java.util.List;
 
 @Controller
@@ -41,6 +41,9 @@ public class VendedorController {
 
     @Autowired(required = false)
     private com.example.demo.repository.EnvioRepository envioRepository;
+
+    @Autowired(required = false)
+    private com.example.demo.services.UbicacionService ubicacionService;
 
     /**
      * US-22: saldos por estado y movimientos de la billetera del vendedor.
@@ -265,7 +268,7 @@ public class VendedorController {
     }
 
     /**
-     * Perfil del vendedor
+     * Perfil del vendedor (vista integral con datos de tienda + cuenta personal)
      */
     @GetMapping("/perfil")
     public String mostrarPerfil(HttpSession session, Model model,
@@ -277,6 +280,11 @@ public class VendedorController {
             return "redirect:/usuario/login";
         }
 
+        if (usuarioRepository != null && usuario.getId() != null) {
+            usuario = usuarioRepository.findById(usuario.getId()).orElse(usuario);
+            session.setAttribute("usuarioLogueado", usuario);
+        }
+
         PerfilVendedor perfil = usuario.getPerfilVendedor();
         if (perfil == null) {
             redirectAttributes.addFlashAttribute("error", "No tienes un perfil de vendedor");
@@ -285,7 +293,8 @@ public class VendedorController {
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("perfilVendedor", perfil);
-        return "vendedor/editar-perfil-vendedor";
+        model.addAttribute("departamentos", ubicacionService != null ? ubicacionService.obtenerTodos() : java.util.List.of());
+        return "vendedor/perfil-vendedor";
     }
 
     /**

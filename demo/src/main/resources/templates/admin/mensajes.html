@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{admin/fragments/head :: head('Centro de Mensajes')}"></head>
+
+<body class="admin-layout">
+
+    <header th:replace="~{admin/fragments/topbar :: topbar('Centro de Mensajes')}"></header>
+    <aside th:replace="~{admin/fragments/sidebar :: sidebar}"></aside>
+
+    <main class="admin-main">
+        <div class="admin-content">
+            <div th:replace="~{admin/fragments/alerts :: alerts}"></div>
+
+            <div class="admin-page" id="mensajes-page">
+                <div class="page-card">
+                    <h2><i class="fas fa-envelope-open-text"></i> Centro de Mensajes</h2>
+                    <div th:if="${mensajesRecibidosPaginados != null and !mensajesRecibidosPaginados.empty}">
+                        <div class="activity-log">
+                            <div class="activity-item" th:each="m : ${mensajesRecibidosPaginados.content}">
+                                <div class="activity-icon" style="background: var(--adm-amber);">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <h4 th:text="${m.emisorNombre + ' - ' + m.asunto}">Remitente</h4>
+                                    <p th:text="${m.contenido}">Contenido del mensaje...</p>
+                                    <span class="time"
+                                        th:text="${m.fecha != null ? #temporals.format(m.fecha, 'dd/MM/yyyy HH:mm') : '-'}">Fecha</span>
+                                    <form th:action="@{/admin/mensajes/{id}/eliminar(id=${m.id})}" method="post"
+                                        style="display:inline;">
+                                        <button type="submit"
+                                            style="color:red; background:none; border:none; cursor:pointer;"><i
+                                                class="fas fa-trash"></i></button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Paginación Mensajes -->
+                        <div th:if="${mensajesRecibidosPaginados.totalPages > 1}" class="paginacion-container"
+                            style="display:flex; justify-content:center; align-items:center; gap:15px; margin-top:30px; padding:20px 0;">
+                            <a th:href="@{/admin/mensajes(page=${mensajesRecibidosPaginados.number - 1})}"
+                                th:if="${mensajesRecibidosPaginados.hasPrevious()}"
+                                style="padding:8px 16px; border:1px solid #d6e2d8; border-radius:5px; background:white; cursor:pointer; text-decoration:none; color:#111e15;">
+                                <i class="fas fa-chevron-left"></i> Anterior
+                            </a>
+                            <button th:unless="${mensajesRecibidosPaginados.hasPrevious()}" disabled
+                                style="padding:8px 16px; border:1px solid var(--adm-line); border-radius:5px; background:var(--adm-green-soft); color:#94a39a; cursor:not-allowed;">
+                                <i class="fas fa-chevron-left"></i> Anterior
+                            </button>
+                            <div style="display:flex; gap:5px;">
+                                <span th:each="i : ${#numbers.sequence(0, mensajesRecibidosPaginados.totalPages - 1)}"
+                                    th:if="${i >= mensajesRecibidosPaginados.number - 2 and i <= mensajesRecibidosPaginados.number + 2}">
+                                    <a th:href="@{/admin/mensajes(page=${i})}" th:text="${i + 1}"
+                                        th:style="${i == mensajesRecibidosPaginados.number ? 'background:var(--adm-green); color:white; border:1px solid var(--adm-green);' : 'background:white; color:#111e15; border:1px solid #d6e2d8;'}"
+                                        style="padding:8px 14px; border-radius:5px; text-decoration:none; font-weight:600; cursor:pointer; transition: 0.3s;">
+                                    </a>
+                                </span>
+                            </div>
+                            <a th:href="@{/admin/mensajes(page=${mensajesRecibidosPaginados.number + 1})}"
+                                th:if="${mensajesRecibidosPaginados.hasNext()}"
+                                style="padding:8px 16px; border:1px solid #d6e2d8; border-radius:5px; background:white; cursor:pointer; text-decoration:none; color:#111e15;">
+                                Siguiente <i class="fas fa-chevron-right"></i>
+                            </a>
+                            <button th:unless="${mensajesRecibidosPaginados.hasNext()}" disabled
+                                style="padding:8px 16px; border:1px solid var(--adm-line); border-radius:5px; background:var(--adm-green-soft); color:#94a39a; cursor:not-allowed;">
+                                Siguiente <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div th:if="${mensajesRecibidosPaginados == null or mensajesRecibidosPaginados.empty}"
+                        style="text-align:center;padding:40px;color:#7b8b80;">
+                        <i class="fas fa-inbox" style="font-size:40px;margin-bottom:12px;display:block;"></i>
+                        <p>No hay mensajes nuevos.</p>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </main>
+
+    <script th:src="@{/js/admin-panel.js}"></script>
+</body>
+
+</html>

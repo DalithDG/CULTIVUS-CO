@@ -49,6 +49,13 @@ public class PasswordResetMailService {
     private String webhookUrl;
 
     /**
+     * Solo para desarrollo local sin SMTP: permite ver el enlace en consola.
+     * En producción debe quedar en false para no exponer tokens en los logs.
+     */
+    @Value("${cultivus.password-reset.log-link:false}")
+    private boolean logLinkDesarrollo;
+
+    /**
      * Si APP_BASE_URL quedó en localhost pero la petición entró desde un
      * dominio público (por ejemplo *.onrender.com), actualiza la URL base
      * para que el botón del correo apunte al dominio público real.
@@ -119,12 +126,8 @@ public class PasswordResetMailService {
         }
 
         if (!StringUtils.hasText(host) || "tu-correo@gmail.com".equalsIgnoreCase(username)) {
-            log.info("\n====================================================================\n"
-                    + "[ENLACE DE RECUPERACIÓN GENERADO] ({})\n"
-                    + "Abre este enlace en tu navegador (válido por 15 min):\n"
-                    + "{}\n"
-                    + "====================================================================",
-                    destinatario, enlace);
+            log.warn("SMTP no configurado: no se envía el correo de recuperación");
+            registrarEnlaceDeDesarrollo(enlace);
             return;
         }
         if (StringUtils.hasText(username) && !StringUtils.hasText(password)) {
@@ -154,14 +157,25 @@ public class PasswordResetMailService {
             mailSender.send(message);
             log.info("Correo de recuperación enviado correctamente por SMTP");
         } catch (Exception e) {
-            log.error("No se pudo enviar el correo de recuperación ({} / {}). Se muestra enlace de respaldo en logs.",
+            log.error("No se pudo enviar el correo de recuperación ({} / {})",
                     e.getClass().getSimpleName(), causaSimple(e));
-            log.info("\n====================================================================\n"
-                    + "[RESPALDO] ENLACE DE RECUPERACIÓN DE CONTRASEÑA ({})\n"
-                    + "{}\n"
-                    + "====================================================================",
-                    destinatario, enlace);
+            registrarEnlaceDeDesarrollo(enlace);
         }
+    }
+
+    /**
+     * Solo se ejecuta si PASSWORD_RESET_LOG_LINK=true en el entorno local.
+     * En producción nunca debe estar activo: un token en logs es un secreto.
+     */
+    private void registrarEnlaceDeDesarrollo(String enlace) {
+        if (!logLinkDesarrollo) {
+            return;
+        }
+        log.warn("\n====================================================================\n"
+                + "[MODO DESARROLLO] Enlace de recuperación (no usar en producción):\n"
+                + "{}\n"
+                + "====================================================================",
+                enlace);
     }
 
     private boolean enviarPorWebhookHttps(String destinatario, String asunto, String texto, String htmlBody) {

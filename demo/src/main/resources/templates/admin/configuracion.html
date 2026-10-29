@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{admin/fragments/head :: head('Configuración del Sistema')}"></head>
+
+<body class="admin-layout">
+
+    <header th:replace="~{admin/fragments/topbar :: topbar('Configuración del Sistema')}"></header>
+    <aside th:replace="~{admin/fragments/sidebar :: sidebar}"></aside>
+
+    <main class="admin-main">
+        <div class="admin-content">
+            <div th:replace="~{admin/fragments/alerts :: alerts}"></div>
+
+            <div class="admin-page" id="configuracion-page">
+                <div class="page-card">
+                    <h2><i class="fas fa-tools"></i> Límites y Parámetros del Sistema</h2>
+                    <p style="color:#7b8b80;margin-bottom:20px;">Ajusta los parámetros operativos de la plataforma. Los
+                        cambios se aplican de inmediato.</p>
+
+                    <div class="config-grid"
+                        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px;">
+                        <div class="report-card" th:each="config : ${configuraciones}"
+                            style="text-align: left; padding: 20px;">
+                            <h4 th:text="${config.clave}" style="color: var(--adm-green); margin-bottom: 8px;">CLAVE</h4>
+                            <p th:text="${config.descripcion}"
+                                style="font-size: 0.9em; color: var(--adm-muted); margin-bottom: 15px; height: 40px; overflow: hidden;">
+                                Descripción</p>
+
+                            <form th:action="@{/admin/configuracion/actualizar}" method="post"
+                                style="display: flex; gap: 10px;">
+                                <input type="hidden" name="id" th:value="${config.id}">
+                                <input th:type="${config.tipo == 'NUMBER' ? 'number' : 'text'}" name="valor"
+                                    th:value="${config.valor}" class="form-control"
+                                    style="flex: 1; padding: 8px; border: 1px solid #d6e2d8; border-radius: 4px;">
+                                <button type="submit" class="btn-action" style="background: var(--adm-green);">
+                                    <i class="fas fa-save"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </main>
+
+    <script th:src="@{/js/admin-panel.js}"></script>
+</body>
+
+</html>

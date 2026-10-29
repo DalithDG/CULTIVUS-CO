@@ -435,4 +435,24 @@ public class TransportistaController {
 
         return "redirect:/transportista/inicio";
     }
+
+    /**
+     * Vista de perfil dedicada del Transportista.
+     */
+    @GetMapping("/perfil")
+    public String mostrarPerfilTransportista(HttpSession session, Model model,
+            RedirectAttributes redirectAttributes) {
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuario == null || !usuario.hasRole(Role.TRANSPORTISTA)) {
+            redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión como transportista");
+            return "redirect:/transportista/login";
+        }
+        if (usuarioRepository != null && usuario.getId() != null) {
+            usuario = usuarioRepository.findById(usuario.getId()).orElse(usuario);
+            session.setAttribute("usuarioLogueado", usuario);
+        }
+        model.addAttribute("usuario", usuario);
+        model.addAttribute("departamentos", ubicacionService != null ? ubicacionService.obtenerTodos() : java.util.List.of());
+        return "transportista/perfil-transportista";
+    }
 }

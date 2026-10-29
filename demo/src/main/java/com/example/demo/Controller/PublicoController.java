@@ -210,4 +210,3 @@ public class PublicoController {
         return lista;
     }
 }
-

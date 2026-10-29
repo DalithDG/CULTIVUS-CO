@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{admin/fragments/head :: head('Dashboard')}"></head>
+
+<body class="admin-layout">
+
+    <header th:replace="~{admin/fragments/topbar :: topbar('Dashboard')}"></header>
+    <aside th:replace="~{admin/fragments/sidebar :: sidebar}"></aside>
+
+    <main class="admin-main">
+        <div class="admin-content">
+            <div th:replace="~{admin/fragments/alerts :: alerts}"></div>
+
+            <div class="admin-page" id="dashboard-page">
+
+                <section class="admin-hero">
+                    <div class="admin-hero__content">
+                        <span class="admin-hero__kicker">
+                            <i class="fas fa-seedling" aria-hidden="true"></i>
+                            Panel de administrador
+                        </span>
+                        <h1>
+                            Hola,
+                            <span th:text="${admin != null and admin.nombre != null ? admin.nombre : 'Administrador'}">Administrador</span>.
+                        </h1>
+                        <p>
+                            Este es el resumen de Cultivus. Desde aquí puedes gestionar usuarios,
+                            revisar pedidos, moderar el catálogo y acompañar a vendedores y transportistas.
+                        </p>
+                        <div class="admin-hero__actions">
+                            <a th:href="@{/admin/usuarios}" class="admin-btn admin-btn--light">
+                                <i class="fas fa-users" aria-hidden="true"></i>
+                                Gestionar usuarios
+                            </a>
+                            <a th:href="@{/admin/pedidos}" class="admin-btn admin-btn--ghost">
+                                <i class="fas fa-shopping-bag" aria-hidden="true"></i>
+                                Revisar pedidos
+                            </a>
+                            <a th:href="@{/admin/powerbi}" class="admin-btn admin-btn--ghost">
+                                <i class="fas fa-chart-pie" aria-hidden="true"></i>
+                                Ver analíticas
+                            </a>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="admin-stats" aria-label="Indicadores generales">
+                    <article class="admin-stat">
+                        <div class="admin-stat__icon"><i class="fas fa-users" aria-hidden="true"></i></div>
+                        <p class="admin-stat__label">Usuarios</p>
+                        <p class="admin-stat__value" th:text="${estadisticas.totalUsuarios}">0</p>
+                        <p class="admin-stat__hint">Cuentas registradas en la plataforma</p>
+                    </article>
+
+                    <article class="admin-stat admin-stat--amber">
+                        <div class="admin-stat__icon"><i class="fas fa-shopping-bag" aria-hidden="true"></i></div>
+                        <p class="admin-stat__label">Pedidos</p>
+                        <p class="admin-stat__value" th:text="${estadisticas.totalPedidos}">0</p>
+                        <p class="admin-stat__hint">Órdenes registradas en total</p>
+                    </article>
+
+                    <article class="admin-stat">
+                        <div class="admin-stat__icon"><i class="fas fa-box" aria-hidden="true"></i></div>
+                        <p class="admin-stat__label">Productos</p>
+                        <p class="admin-stat__value" th:text="${estadisticas.totalProductos}">0</p>
+                        <p class="admin-stat__hint">Productos publicados en el catálogo</p>
+                    </article>
+
+                    <article class="admin-stat admin-stat--blue">
+                        <div class="admin-stat__icon"><i class="fas fa-star" aria-hidden="true"></i></div>
+                        <p class="admin-stat__label">Reseñas</p>
+                        <p class="admin-stat__value" th:text="${estadisticas.totalResenas}">0</p>
+                        <p class="admin-stat__hint">Opiniones de la comunidad</p>
+                    </article>
+                </section>
+
+                <div class="admin-grid">
+                    <section class="admin-card" aria-label="Accesos rápidos">
+                        <div class="admin-card__head">
+                            <h2><i class="fas fa-bolt" aria-hidden="true"></i> Accesos rápidos</h2>
+                        </div>
+                        <div class="admin-quick-grid">
+                            <a th:href="@{/admin/usuarios}" class="admin-quick">
+                                <i class="fas fa-users" aria-hidden="true"></i>
+                                Gestionar usuarios
+                            </a>
+                            <a th:href="@{/admin/productos}" class="admin-quick">
+                                <i class="fas fa-box" aria-hidden="true"></i>
+                                Catálogo
+                            </a>
+                            <a th:href="@{/admin/verificacion-tiendas}" class="admin-quick">
+                                <i class="fas fa-store" aria-hidden="true"></i>
+                                Verificar tiendas
+                            </a>
+                            <a th:href="@{/admin/moderacion}" class="admin-quick">
+                                <i class="fas fa-gavel" aria-hidden="true"></i>
+                                Moderar catálogo
+                            </a>
+                            <a th:href="@{/admin/transportistas}" class="admin-quick">
+                                <i class="fas fa-truck" aria-hidden="true"></i>
+                                Transportistas
+                            </a>
+                            <a th:href="@{/admin/configuracion}" class="admin-quick">
+                                <i class="fas fa-gear" aria-hidden="true"></i>
+                                Configuración
+                            </a>
+                        </div>
+                    </section>
+
+                    <section class="admin-card" aria-label="Pendientes">
+                        <div class="admin-card__head">
+                            <h2><i class="fas fa-clock" aria-hidden="true"></i> Pendientes</h2>
+                        </div>
+                        <ul class="admin-pending-list">
+                            <li>
+                                <span>Tiendas por verificar</span>
+                                <strong th:text="${vendedoresPendientesCount != null ? vendedoresPendientesCount : 0}">0</strong>
+                            </li>
+                            <li>
+                                <span>Productos por moderar</span>
+                                <strong th:text="${catalogoPendienteCount != null ? catalogoPendienteCount : 0}">0</strong>
+                            </li>
+                            <li>
+                                <span>Transportistas pendientes</span>
+                                <strong th:text="${transportistasPendientesCount != null ? transportistasPendientesCount : 0}">0</strong>
+                            </li>
+                            <li>
+                                <span>Mensajes recibidos</span>
+                                <strong th:text="${mensajesRecibidosCount != null ? mensajesRecibidosCount : 0}">0</strong>
+                            </li>
+                        </ul>
+                    </section>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script th:src="@{/js/admin-panel.js}"></script>
+</body>
+
+</html>

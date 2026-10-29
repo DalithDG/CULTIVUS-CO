@@ -2,9 +2,9 @@ package com.example.demo.Controller;
 
 import com.example.demo.Model.OfertaVendedor;
 import com.example.demo.Model.Pedido;
-import com.example.demo.Model.Producto;
-import com.example.demo.Model.ProductoCatalogo;
-import com.example.demo.Model.Resena;
+
+
+
 import com.example.demo.Model.Usuario;
 import com.example.demo.security.SecurityContextRefreshService;
 import com.example.demo.services.AdminService;
@@ -43,9 +43,18 @@ public class AdminController {
     @Autowired(required = false)
     private com.example.demo.services.TransportistaService transportistaService;
 
+    @Autowired(required = false)
+    private com.example.demo.services.UbicacionService ubicacionService;
+
+    @Autowired(required = false)
+    private com.example.demo.services.UsuarioService usuarioService;
+
+    @Autowired(required = false)
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
     // Roles disponibles — ya no hay tabla de roles
     private static final List<String> ROLES = Arrays.asList(
-            "COMPRADOR", "VENDEDOR", "ADMIN");
+            "COMPRADOR", "VENDEDOR", "TRANSPORTISTA", "ADMIN");
 
     // Verificar que el usuario es admin
     private boolean verificarAdmin(HttpSession session,
@@ -140,10 +149,91 @@ public class AdminController {
         cargarDatosDashboard(model, admin, "dashboard", 0, null, null);
         model.addAttribute("activePage", "dashboard");
 
-        return "admin/admin-dashboard";
+        return "admin/dashboard";
     }
 
     // ==================== ANALÍTICAS POWER BI ====================
+
+    @GetMapping("/perfil")
+    public String mostrarPerfil(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
+        if (!verificarAdmin(session, redirectAttributes)) {
+            return "redirect:/usuario/login";
+        }
+        Usuario admin = (Usuario) session.getAttribute("usuarioLogueado");
+        if (admin != null) {
+            admin = adminService.obtenerUsuarioPorId(admin.getId()).orElse(admin);
+            session.setAttribute("usuarioLogueado", admin);
+        }
+        model.addAttribute("admin", admin);
+        model.addAttribute("usuario", admin);
+        model.addAttribute("departamentos", ubicacionService != null ? ubicacionService.obtenerTodos() : java.util.List.of());
+        model.addAttribute("estadisticas", adminService.obtenerEstadisticas());
+        model.addAttribute("notificacionesCount", adminService.obtenerTotalNotificaciones());
+        model.addAttribute("mensajesRecibidosCount", adminService.obtenerTotalMensajes());
+        model.addAttribute("vendedoresPendientesCount", adminService.obtenerCantidadVendedoresPendientes());
+        model.addAttribute("catalogoPendienteCount", catalogoService.obtenerCantidadCatalogoPendiente());
+        model.addAttribute("transportistasPendientesCount", adminService.obtenerCantidadTransportistasPendientes());
+        model.addAttribute("activePage", "perfil");
+        return "admin/perfil-admin";
+    }
+
+    @PostMapping("/perfil/actualizar")
+    public String actualizarPerfilAdmin(
+            @RequestParam("nombre") String nombre,
+            @RequestParam("email") String email,
+            @RequestParam(value = "departamento", required = false, defaultValue = "") String nombreDepartamento,
+            @RequestParam(value = "ciudad", required = false, defaultValue = "") String nombreCiudad,
+            @RequestParam(value = "contrasena", required = false) String contrasena,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+        if (!verificarAdmin(session, redirectAttributes)) {
+            return "redirect:/usuario/login";
+        }
+        try {
+            Usuario adminSesion = (Usuario) session.getAttribute("usuarioLogueado");
+            Usuario admin = adminService.obtenerUsuarioPorId(adminSesion.getId()).orElse(null);
+            if (admin == null) {
+                redirectAttributes.addFlashAttribute("error", "Usuario administrador no encontrado");
+                return "redirect:/usuario/login";
+            }
+            if (nombre == null || nombre.trim().isEmpty() || email == null || email.trim().isEmpty()) {
+                redirectAttributes.addFlashAttribute("error", "El nombre y el correo electrónico son obligatorios");
+                return "redirect:/admin/perfil";
+            }
+            String emailLimpio = email.trim().toLowerCase();
+            if (usuarioService != null) {
+                Usuario existente = usuarioService.findByEmail(emailLimpio);
+                if (existente != null && !existente.getId().equals(admin.getId())) {
+                    redirectAttributes.addFlashAttribute("error", "Ese correo ya está en uso por otra cuenta");
+                    return "redirect:/admin/perfil";
+                }
+            }
+            admin.setNombre(nombre.trim());
+            admin.setEmail(emailLimpio);
+            if (contrasena != null && !contrasena.trim().isEmpty()) {
+                String errorPolitica = com.example.demo.services.PasswordPolicy.validar(contrasena);
+                if (errorPolitica != null) {
+                    redirectAttributes.addFlashAttribute("error", errorPolitica);
+                    return "redirect:/admin/perfil";
+                }
+                if (passwordEncoder != null) {
+                    admin.setContrasena(passwordEncoder.encode(contrasena));
+                }
+            }
+            if (!nombreCiudad.trim().isEmpty() || !nombreDepartamento.trim().isEmpty()) {
+                admin.setUbicacion(new com.example.demo.Model.embebidos.UbicacionUsuario(
+                        nombreCiudad.trim(), nombreDepartamento.trim()));
+            }
+            if (usuarioService != null) {
+                usuarioService.actualizarUsuario(admin);
+            }
+            session.setAttribute("usuarioLogueado", admin);
+            redirectAttributes.addFlashAttribute("mensaje", "Perfil de administrador actualizado correctamente");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al actualizar perfil: " + e.getMessage());
+        }
+        return "redirect:/admin/perfil";
+    }
 
     @GetMapping("/powerbi")
     public String mostrarPowerBi(HttpSession session, Model model,
@@ -157,7 +247,7 @@ public class AdminController {
         cargarDatosDashboard(model, admin, "powerbi", 0, null, null);
         model.addAttribute("activePage", "powerbi");
 
-        return "admin/admin-dashboard";
+        return "admin/powerbi";
     }
 
     // ==================== GESTIÓN DE TRANSPORTISTAS ====================
@@ -177,7 +267,7 @@ public class AdminController {
         cargarDatosDashboard(model, admin, "transportistas", page, search, null);
         model.addAttribute("activePage", "transportistas");
 
-        return "admin/admin-dashboard";
+        return "admin/transportistas";
     }
 
     @PostMapping("/transportistas/verificar/{usuarioId}")
@@ -221,7 +311,7 @@ public class AdminController {
         model.addAttribute("activePage", "usuarios");
         model.addAttribute("rolFilter", rol);
 
-        return "admin/admin-dashboard";
+        return "admin/usuarios";
     }
 
     @PostMapping("/usuarios/{id}/cambiar-rol")
@@ -291,7 +381,7 @@ public class AdminController {
         model.addAttribute("activePage", "catalogo");
         model.addAttribute("categoriaFilter", categoriaId);
 
-        return "admin/admin-dashboard";
+        return "admin/productos";
     }
 
     @PostMapping("/productos/{id}/eliminar")
@@ -330,7 +420,7 @@ public class AdminController {
         cargarDatosDashboard(model, admin, "resenas", page, null, null);
         model.addAttribute("activePage", "actividad");
 
-        return "admin/admin-dashboard";
+        return "admin/resenas";
     }
 
     // ==================== GESTIÓN DE OFERTAS ====================
@@ -347,7 +437,7 @@ public class AdminController {
         model.addAttribute("ofertas", ofertas);
         model.addAttribute("activePage", "ofertas");
 
-        return "admin/admin-dashboard";
+        return "admin/ofertas";
     }
 
     @PostMapping("/resenas/{id}/eliminar")
@@ -386,7 +476,7 @@ public class AdminController {
         cargarDatosDashboard(model, admin, "pedidos", page, null, null);
         model.addAttribute("activePage", "ordenes");
 
-        return "admin/admin-dashboard";
+        return "admin/pedidos";
     }
 
     @PostMapping("/pedidos/{id}/aceptar")
@@ -514,7 +604,7 @@ public class AdminController {
         model.addAttribute("activePage", "verificacion-tiendas");
         model.addAttribute("estadoFilter", estado);
 
-        return "admin/admin-dashboard";
+        return "admin/verificacion-tiendas";
     }
 
     @PostMapping("/tiendas/{id}/aprobar")
@@ -571,7 +661,7 @@ public class AdminController {
         cargarDatosDashboard(model, admin, "sesiones", page, null, null);
         model.addAttribute("activePage", "sesiones");
 
-        return "admin/admin-dashboard";
+        return "admin/sesiones";
     }
 
     // ==================== NOTIFICACIONES ====================
@@ -590,7 +680,7 @@ public class AdminController {
         cargarDatosDashboard(model, admin, "notificaciones", page, null, null);
         model.addAttribute("activePage", "notificaciones");
 
-        return "admin/admin-dashboard";
+        return "admin/notificaciones";
     }
 
     @PostMapping("/notificaciones/enviar")
@@ -647,7 +737,7 @@ public class AdminController {
         cargarDatosDashboard(model, admin, "mensajes", page, null, null);
         model.addAttribute("activePage", "mensajes");
 
-        return "admin/admin-dashboard";
+        return "admin/mensajes";
     }
 
     @PostMapping("/mensajes/{id}/eliminar")
@@ -674,7 +764,7 @@ public class AdminController {
         cargarDatosDashboard(model, admin, "configuracion", 0, null, null);
         model.addAttribute("activePage", "configuracion");
 
-        return "admin/admin-dashboard";
+        return "admin/configuracion";
     }
 
     @PostMapping("/configuracion/actualizar")
@@ -709,7 +799,7 @@ public class AdminController {
         cargarDatosDashboard(model, admin, "moderacion", page, null, null);
         model.addAttribute("activePage", "moderacion");
 
-        return "admin/admin-dashboard";
+        return "admin/moderacion";
     }
 
 

@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{admin/fragments/head :: head('Inteligencia de Negocios')}"></head>
+
+<body class="admin-layout">
+
+    <header th:replace="~{admin/fragments/topbar :: topbar('Inteligencia de Negocios')}"></header>
+    <aside th:replace="~{admin/fragments/sidebar :: sidebar}"></aside>
+
+    <main class="admin-main">
+        <div class="admin-content">
+            <div th:replace="~{admin/fragments/alerts :: alerts}"></div>
+
+            <div class="admin-page" id="powerbi-page">
+                <div class="page-card"
+                    style="padding: 0; overflow: hidden; display: flex; flex-direction: column; height: calc(100vh - 120px);">
+                    <div
+                        style="padding: 20px; border-bottom: 1px solid var(--adm-line); display: flex; justify-content: space-between; align-items: center;">
+                        <h2 style="margin: 0;"><i class="fas fa-chart-pie"></i> Inteligencia de Negocios (Power BI)</h2>
+                        <a href="https://app.powerbi.com/view?r=eyJrIjoiZTQ5ZWNlNGUtMWVjMi00MmQ3LTkyNTMtN2Q4NzUyNDI4ZDIzIiwidCI6IjlkMTJiZjNmLWU0ZjYtNDdhYi05MTJmLTFhMmYwZmM0OGFhNCIsImMiOjR9"
+                           target="_blank"
+                           style="color: var(--adm-green); text-decoration: none; font-weight: 600;">
+                           <i class="fas fa-external-link-alt"></i> Abrir en Power BI
+                        </a>
+                    </div>
+                    <div
+                        style="flex: 1; background: var(--adm-green-soft); display: flex; flex-direction: column; min-height: 500px;">
+                        <iframe title="Cultivus"
+                            src="https://app.powerbi.com/view?r=eyJrIjoiZTQ5ZWNlNGUtMWVjMi00MmQ3LTkyNTMtN2Q4NzUyNDI4ZDIzIiwidCI6IjlkMTJiZjNmLWU0ZjYtNDdhYi05MTJmLTFhMmYwZmM0OGFhNCIsImMiOjR9"
+                            style="width: 100%; height: 100%; border: none; flex: 1;"
+                            allowFullScreen="true"></iframe>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </main>
+
+    <script th:src="@{/js/admin-panel.js}"></script>
+</body>
+
+</html>

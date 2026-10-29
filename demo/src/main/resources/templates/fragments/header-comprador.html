@@ -9,12 +9,12 @@
 
             <!-- Logo con slogan -->
             <div class="header-logo">
-                <a th:href="@{/}">
+                <a th:href="@{/usuario/inicio}">
                     <img th:src="@{/images/ImagotipoCultivus.png}" alt="Cultivus">
                 </a>
             </div>
 
-            <!-- Navegación principal: Inicio, Categorías, Productos -->
+            <!-- Navegación principal: Inicio, Categorías, Ofertas, Productores -->
             <nav class="header-nav">
                 <a th:href="@{/usuario/inicio}" class="nav-link active">
                     <i class="fas fa-home"></i>
@@ -43,6 +43,11 @@
                     <span>Ofertas</span>
                 </a>
 
+                <a th:href="@{/productores#productores}" class="nav-link">
+                    <i class="fas fa-seedling"></i>
+                    <span>Productores</span>
+                </a>
+
             </nav>
 
             <!-- Buscador ancho tipo píldora -->
@@ -60,12 +65,12 @@
             <!-- Acciones -->
             <div class="header-actions">
 
-                <!-- Botón Vender -->
+                <!-- Botón Vender / Panel Admin -->
                 <th:block th:if="${session.usuarioLogueado != null and session.usuarioLogueado.rol != null}">
-                    <a th:if="${session.usuarioLogueado.rol.name() == 'VENDEDOR'}" th:href="@{/vendedor/inicio}"
-                        class="btn-sell highlight" title="Ir al panel de vendedor">
-                        <i class="fas fa-store"></i>
-                        <span>Modo vendedor</span>
+                    <a th:if="${session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).ADMIN)}"
+                        th:href="@{/admin/dashboard}" class="btn-sell highlight" title="Ir al panel de administrador">
+                        <i class="fas fa-user-shield"></i>
+                        <span>Panel Admin</span>
                     </a>
                     <a th:if="${session.usuarioLogueado.rol.name() == 'COMPRADOR'}" th:href="@{/vendedor/registro}"
                         class="btn-sell" title="Registrarse como vendedor">
@@ -118,6 +123,13 @@
                             <span class="account-panel__text">Mi perfil</span>
                         </a>
 
+                        <!-- Enlace a Panel Admin solo si es Admin -->
+                        <a th:if="${session.usuarioLogueado != null and session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).ADMIN)}"
+                           th:href="@{/admin/dashboard}" class="account-panel__link" role="menuitem">
+                            <span class="account-panel__icon-box"><i class="fas fa-gauge-high"></i></span>
+                            <span class="account-panel__text">Panel de Administración</span>
+                        </a>
+
                         <!-- Opción 2: Billetera -->
                         <a th:href="@{/usuario/billetera}" class="account-panel__link" role="menuitem">
                             <span class="account-panel__icon-box"><i class="fas fa-wallet"></i></span>
@@ -132,7 +144,7 @@
 
                         <div class="account-panel__divider"></div>
 
-                        <!-- Opción 3: Cerrar sesión -->
+                        <!-- Opción 4: Cerrar sesión -->
                         <a th:href="@{/usuario/logout}" class="account-panel__link is-danger" role="menuitem">
                             <span class="account-panel__icon-box"><i class="fas fa-sign-out-alt"></i></span>
                             <span class="account-panel__text">Cerrar sesión</span>
@@ -186,7 +198,7 @@
                 </div>
             </div>
 
-            <a th:href="@{/}"><i class="fas fa-home"></i> Inicio</a>
+            <a th:href="@{/usuario/inicio}"><i class="fas fa-home"></i> Inicio</a>
             <a th:href="@{/category}"><i class="fas fa-th-large"></i> Categorías</a>
             <a th:href="@{/ofertas}"><i class="fas fa-tag"></i> Ofertas</a>
             <div class="mobile-divider"></div>
@@ -195,8 +207,6 @@
             <a th:href="@{/usuario/pedidos}"><i class="fas fa-box"></i> Mis pedidos</a>
 
             <th:block th:if="${session.usuarioLogueado != null and session.usuarioLogueado.rol != null}">
-                <a th:if="${session.usuarioLogueado.rol.name() == 'VENDEDOR'}" th:href="@{/vendedor/inicio}"
-                    class="mobile-highlight"><i class="fas fa-store"></i> Modo vendedor</a>
                 <a th:if="${session.usuarioLogueado.rol.name() == 'COMPRADOR'}" th:href="@{/vendedor/registro}"
                     class="mobile-highlight"><i class="fas fa-store"></i> Convertirse en vendedor</a>
                 <a th:if="${session.usuarioLogueado.rol.name() == 'COMPRADOR'}" th:href="@{/transportista/registro}"
@@ -216,7 +226,6 @@
     <script th:src="@{/js/header.js}"></script>
     <script>
         (function () {
-            // ── Menú desplegable de cuenta (Clic, Hover, Escape y Teclado) ──
             const accountMenu = document.getElementById('accountMenu');
             const accountMenuBtn = document.getElementById('accountMenuBtn');
             const accountMenuPanel = document.getElementById('accountMenuPanel');
@@ -228,20 +237,17 @@
                     accountMenuBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
                 }
 
-                // Clic en el botón
                 accountMenuBtn.addEventListener('click', function (e) {
                     e.stopPropagation();
                     toggleMenu();
                 });
 
-                // Cerrar al hacer clic fuera
                 document.addEventListener('click', function (e) {
                     if (!accountMenu.contains(e.target)) {
                         toggleMenu(false);
                     }
                 });
 
-                // Cerrar con Escape y navegación con teclado
                 accountMenu.addEventListener('keydown', function (e) {
                     if (e.key === 'Escape') {
                         toggleMenu(false);
@@ -262,7 +268,6 @@
                     }
                 });
             }
-
         })();
     </script>
 </header>

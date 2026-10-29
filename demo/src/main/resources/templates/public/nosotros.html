@@ -17,7 +17,7 @@
 </head>
 
 <body>
-    <header th:replace="~{fragments/header-publico :: siteHeader}"></header>
+    <header th:replace="~{fragments/header :: siteHeader}"></header>
 
     <main class="pub-page">
         <section class="pub-hero">
@@ -130,7 +130,6 @@
 
             select.addEventListener('change', function () { irA(select.value, true); });
 
-            // Sincroniza el select cuando se llega desde el header (#productores / #sobre-nosotros)
             var inicial = window.location.hash.replace('#', '');
             if (inicial === 'productores' || inicial === 'sobre-nosotros') {
                 select.value = inicial;
@@ -140,7 +139,6 @@
                 if (h === 'productores' || h === 'sobre-nosotros') select.value = h;
             });
 
-            // Actualiza el select según la sección visible al hacer scroll
             if ('IntersectionObserver' in window) {
                 var obs = new IntersectionObserver(function (entries) {
                     entries.forEach(function (e) {

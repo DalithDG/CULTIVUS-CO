@@ -39,6 +39,7 @@ public class UsuarioController {
     private final UsuarioService usuarioService;
     private final UbicacionService ubicacionService;
     private final VendedorService vendedorService;
+    @SuppressWarnings("unused")
     private final ProductoService productoService;
     private final PasswordEncoder passwordEncoder;
     private final PedidoRepository pedidoRepository;
@@ -265,8 +266,14 @@ public class UsuarioController {
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("departamentos", ubicacionService.obtenerTodos());
+        if (usuario.hasRole(com.example.demo.Model.Role.ADMIN)) {
+            return "redirect:/admin/perfil";
+        }
+        if (usuario.hasRole(com.example.demo.Model.Role.VENDEDOR)) {
+            return "redirect:/vendedor/perfil";
+        }
         if (usuario.hasRole(com.example.demo.Model.Role.TRANSPORTISTA)) {
-            return "transportista/perfil-transportista";
+            return "redirect:/transportista/perfil";
         }
         return "comprador/perfil";
     }
@@ -274,13 +281,24 @@ public class UsuarioController {
     @PostMapping("/perfil/actualizar")
     public String actualizarPerfil(@RequestParam("nombre") String nombre,
             @RequestParam("email") String email,
-            @RequestParam("departamento") String nombreDepartamento,
-            @RequestParam("ciudad") String nombreCiudad,
+            @RequestParam(value = "departamento", required = false, defaultValue = "") String nombreDepartamento,
+            @RequestParam(value = "ciudad", required = false, defaultValue = "") String nombreCiudad,
             @RequestParam(value = "contrasena", required = false) String contrasena,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
+        Usuario usuarioSesion = (Usuario) session.getAttribute("usuarioLogueado");
+        String rutaRetorno = "/usuario/perfil";
+        if (usuarioSesion != null) {
+            if (usuarioSesion.hasRole(Role.ADMIN)) {
+                rutaRetorno = "/admin/perfil";
+            } else if (usuarioSesion.hasRole(Role.VENDEDOR)) {
+                rutaRetorno = "/vendedor/perfil";
+            } else if (usuarioSesion.hasRole(Role.TRANSPORTISTA)) {
+                rutaRetorno = "/transportista/perfil";
+            }
+        }
         try {
-            Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+            Usuario usuario = usuarioSesion;
             if (usuario == null) {
                 redirectAttributes.addFlashAttribute("error", "Debe iniciar sesión primero");
                 return "redirect:/usuario/login";
@@ -289,7 +307,7 @@ public class UsuarioController {
             if (nombre == null || nombre.trim().isEmpty() ||
                     email == null || email.trim().isEmpty()) {
                 redirectAttributes.addFlashAttribute("error", "Nombre y email son requeridos");
-                return "redirect:/usuario/perfil";
+                return "redirect:" + rutaRetorno;
             }
 
             String emailLimpio = email.trim().toLowerCase();
@@ -300,7 +318,7 @@ public class UsuarioController {
                     !usuarioConEmail.getId().equals(usuario.getId())) {
                 redirectAttributes.addFlashAttribute("error",
                         "Este correo ya está registrado por otro usuario");
-                return "redirect:/usuario/perfil";
+                return "redirect:" + rutaRetorno;
             }
 
             Usuario usuarioActualizado = usuarioService.obtenerUsuarioPorId(usuario.getId());
@@ -319,28 +337,30 @@ public class UsuarioController {
                 String validacionContrasena = validarContrasena(contrasena);
                 if (validacionContrasena != null) {
                     redirectAttributes.addFlashAttribute("error", validacionContrasena);
-                    return "redirect:/usuario/perfil";
+                    return "redirect:" + rutaRetorno;
                 }
                 // Encriptar la nueva contraseña con BCrypt
                 usuarioActualizado.setContrasena(passwordEncoder.encode(contrasena));
             }
 
-            // Actualizar ubicación embebida
-            UbicacionUsuario ubicacion = new UbicacionUsuario(
-                    nombreCiudad.trim(),
-                    nombreDepartamento.trim());
-            usuarioActualizado.setUbicacion(ubicacion);
+            // Actualizar ubicación embebida si se proporcionó
+            if (!nombreCiudad.trim().isEmpty() || !nombreDepartamento.trim().isEmpty()) {
+                UbicacionUsuario ubicacion = new UbicacionUsuario(
+                        nombreCiudad.trim(),
+                        nombreDepartamento.trim());
+                usuarioActualizado.setUbicacion(ubicacion);
+            }
 
             usuarioService.actualizarUsuario(usuarioActualizado);
             session.setAttribute("usuarioLogueado", usuarioActualizado);
 
             redirectAttributes.addFlashAttribute("mensaje", "Perfil actualizado exitosamente");
-            return "redirect:/usuario/perfil";
+            return "redirect:" + rutaRetorno;
 
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error",
                     "Error al actualizar el perfil: " + e.getMessage());
-            return "redirect:/usuario/perfil";
+            return "redirect:" + rutaRetorno;
         }
     }
 
@@ -498,6 +518,9 @@ public class UsuarioController {
         }
         if (vendedorService.esVendedor(usuario.getId())) {
             return "redirect:/vendedor/billetera";
+        }
+        if (usuario.hasRole(Role.TRANSPORTISTA)) {
+            return "redirect:/transportista/billetera";
         }
         redirectAttributes.addFlashAttribute("info",
                 "La billetera está disponible para vendedores y productores locales. Regístrate como vendedor para activarla.");

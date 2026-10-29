@@ -1,11 +1,12 @@
 package com.example.demo.Controller;
 
-import com.example.demo.Model.Notificacion;
+
 import com.example.demo.Model.Usuario;
 import com.example.demo.repository.CarritoRepository;
 import com.example.demo.repository.CategoriaRepository;
 import com.example.demo.repository.NotificacionRepository;
-import jakarta.servlet.http.HttpServletRequest;
+
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;

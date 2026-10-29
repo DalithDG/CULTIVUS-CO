@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{admin/fragments/head :: head('Gestión de Notificaciones')}"></head>
+
+<body class="admin-layout">
+
+    <header th:replace="~{admin/fragments/topbar :: topbar('Gestión de Notificaciones')}"></header>
+    <aside th:replace="~{admin/fragments/sidebar :: sidebar}"></aside>
+
+    <main class="admin-main">
+        <div class="admin-content">
+            <div th:replace="~{admin/fragments/alerts :: alerts}"></div>
+
+            <div class="admin-page" id="notificaciones-page">
+                <div class="page-card" style="margin-bottom:24px;">
+                    <h2><i class="fas fa-paper-plane"></i> Enviar Notificación del Sistema</h2>
+                    <form th:action="@{/admin/notificaciones/enviar}" method="post" class="form-container">
+                        <div class="form-group">
+                            <label>Título</label>
+                            <input type="text" name="titulo" placeholder="Ej: Mantenimiento programado" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Mensaje</label>
+                            <textarea name="mensaje" rows="3" placeholder="Escriba el anuncio aquí..."
+                                required></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Tipo</label>
+                                <select name="tipo">
+                                    <option value="INFO">Información (Azul)</option>
+                                    <option value="SUCCESS">Éxito (Verde)</option>
+                                    <option value="WARNING">Advertencia (Naranja)</option>
+                                    <option value="DANGER">Urgente (Rojo)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Usuario ID (Opcional)</label>
+                                <input type="text" name="usuarioId"
+                                    placeholder="ID de usuario específico o vacío para todos">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary"><i class="fas fa-send"></i> Enviar a
+                            todos</button>
+                    </form>
+                </div>
+
+                <div class="page-card">
+                    <div th:if="${notificacionesPaginadas != null and !notificacionesPaginadas.empty}">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Título</th>
+                                    <th>Tipo</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="n : ${notificacionesPaginadas.content}">
+                                    <td th:text="${n.fecha != null ? #temporals.format(n.fecha, 'dd/MM HH:mm') : '-'}">
+                                        Fecha</td>
+                                    <td th:text="${n.titulo}">Título</td>
+                                    <td><span class="badge" th:text="${n.tipo}">Tipo</span></td>
+                                    <td>
+                                        <form th:action="@{/admin/notificaciones/{id}/eliminar(id=${n.id})}"
+                                            method="post">
+                                            <button type="submit" class="btn-action" style="background:var(--adm-red);"><i
+                                                    class="fas fa-trash"></i></button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Paginación Notificaciones -->
+                        <div th:if="${notificacionesPaginadas.totalPages > 1}" class="paginacion-container"
+                            style="display:flex; justify-content:center; align-items:center; gap:15px; margin-top:30px; padding:20px 0;">
+                            <a th:href="@{/admin/notificaciones(page=${notificacionesPaginadas.number - 1})}"
+                                th:if="${notificacionesPaginadas.hasPrevious()}"
+                                style="padding:8px 16px; border:1px solid #d6e2d8; border-radius:5px; background:white; cursor:pointer; text-decoration:none; color:#111e15;">
+                                <i class="fas fa-chevron-left"></i> Anterior
+                            </a>
+                            <button th:unless="${notificacionesPaginadas.hasPrevious()}" disabled
+                                style="padding:8px 16px; border:1px solid var(--adm-line); border-radius:5px; background:var(--adm-green-soft); color:#94a39a; cursor:not-allowed;">
+                                <i class="fas fa-chevron-left"></i> Anterior
+                            </button>
+                            <div style="display:flex; gap:5px;">
+                                <span th:each="i : ${#numbers.sequence(0, notificacionesPaginadas.totalPages - 1)}"
+                                    th:if="${i >= notificacionesPaginadas.number - 2 and i <= notificacionesPaginadas.number + 2}">
+                                    <a th:href="@{/admin/notificaciones(page=${i})}" th:text="${i + 1}"
+                                        th:style="${i == notificacionesPaginadas.number ? 'background:var(--adm-green); color:white; border:1px solid var(--adm-green);' : 'background:white; color:#111e15; border:1px solid #d6e2d8;'}"
+                                        style="padding:8px 14px; border-radius:5px; text-decoration:none; font-weight:600; cursor:pointer; transition: 0.3s;">
+                                    </a>
+                                </span>
+                            </div>
+                            <a th:href="@{/admin/notificaciones(page=${notificacionesPaginadas.number + 1})}"
+                                th:if="${notificacionesPaginadas.hasNext()}"
+                                style="padding:8px 16px; border:1px solid #d6e2d8; border-radius:5px; background:white; cursor:pointer; text-decoration:none; color:#111e15;">
+                                Siguiente <i class="fas fa-chevron-right"></i>
+                            </a>
+                            <button th:unless="${notificacionesPaginadas.hasNext()}" disabled
+                                style="padding:8px 16px; border:1px solid var(--adm-line); border-radius:5px; background:var(--adm-green-soft); color:#94a39a; cursor:not-allowed;">
+                                Siguiente <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div th:if="${notificacionesPaginadas == null or notificacionesPaginadas.empty}"
+                        style="text-align:center; padding:40px; color:#7b8b80;">
+                        <i class="fas fa-history"
+                            style="font-size:48px; color:#d6e2d8; margin-bottom:15px; display:block;"></i>
+                        <p style="font-size:18px;">No hay notificaciones enviadas.</p>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </main>
+
+    <script th:src="@{/js/admin-panel.js}"></script>
+</body>
+
+</html>

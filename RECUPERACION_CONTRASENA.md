@@ -273,8 +273,8 @@ No hay credenciales SMTP en el código ni en `render.yaml`.
 
 ### 9.1 Configuración rápida con `.env` (recomendada)
 
-El proyecto incluye `demo/.env.example` y ya dejé creado `demo/.env`
-(ignorado por Git). Abre ese archivo y completa:
+El proyecto carga un archivo `.env` local (ignorado por Git). Créalo en
+`demo/.env` o en la raíz y completa:
 
 ```properties
 SPRING_DATA_MONGODB_URI=mongodb://localhost:27017/cultivus
@@ -578,6 +578,9 @@ sin que las variables estén configuradas en Render.
   multi-instancia habría que compartir el registro (Spring Session/Redis).
 - **Correo**: envío asíncrono; errores del proveedor se registran sin token,
   correo ni credenciales.
+- **Enlace en logs solo para desarrollo**: con `PASSWORD_RESET_LOG_LINK=true`
+  el enlace se imprime en consola cuando no hay SMTP. Por defecto está en
+  `false`; nunca debe activarse en Render.
 - **Cabeceras**: `Cache-Control: no-store`, `Referrer-Policy: no-referrer`,
   `X-Robots-Tag: noindex` en las páginas del flujo.
 - **Redirecciones**: siempre internas y fijas; no se acepta un parámetro de

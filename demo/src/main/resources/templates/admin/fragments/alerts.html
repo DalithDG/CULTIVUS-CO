@@ -1,0 +1,11 @@
+<div th:fragment="alerts" class="admin-alerts">
+    <div th:if="${mensaje}" class="admin-alert admin-alert--success" role="status">
+        <i class="fas fa-check-circle" aria-hidden="true"></i>
+        <span th:text="${mensaje}">Mensaje</span>
+    </div>
+
+    <div th:if="${error}" class="admin-alert admin-alert--error" role="alert">
+        <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+        <span th:text="${error}">Error</span>
+    </div>
+</div>

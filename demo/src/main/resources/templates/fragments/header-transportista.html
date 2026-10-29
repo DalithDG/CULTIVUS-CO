@@ -20,8 +20,10 @@
                     <i class="fas fa-route" style="color: #3d7a1e;"></i>
                     <span>Mis Rutas y Envíos</span>
                 </a>
-
-
+                <a th:href="@{/transportista/perfil}" class="nav-link" style="color: #1f2937; text-decoration: none; font-weight: 600; font-size: 0.92rem; display: flex; align-items: center; gap: 6px;">
+                    <i class="fas fa-id-card" style="color: #3d7a1e;"></i>
+                    <span>Mi Perfil</span>
+                </a>
             </nav>
 
             <!-- Acciones / Perfil -->
@@ -36,7 +38,7 @@
                     <span th:text="${session.usuarioLogueado.perfilTransportista.disponible} ? 'DISPONIBLE' : 'EN RUTA'">DISPONIBLE</span>
                 </div>
 
-                                <!-- Menú desplegable de perfil -->
+                <!-- Menú desplegable de perfil -->
                 <div class="account-menu" id="accountMenu">
                     <button class="btn-account" id="accountMenuBtn" type="button" aria-haspopup="true"
                         aria-expanded="false" aria-controls="accountMenuPanel" aria-label="Menú de perfil de usuario">
@@ -66,7 +68,7 @@
 
                         <div class="account-panel__divider"></div>
 
-                        <a th:href="@{/usuario/perfil}" class="account-panel__link" role="menuitem">
+                        <a th:href="@{/transportista/perfil}" class="account-panel__link" role="menuitem">
                             <span class="account-panel__icon-box"><i class="fas fa-user"></i></span>
                             <span class="account-panel__text">Mi perfil</span>
                         </a>
@@ -88,4 +90,27 @@
 
         </div>
     </div>
+    <script>
+        (function () {
+            const accountMenu = document.getElementById('accountMenu');
+            const accountMenuBtn = document.getElementById('accountMenuBtn');
+            const accountMenuPanel = document.getElementById('accountMenuPanel');
+            if (accountMenu && accountMenuBtn && accountMenuPanel) {
+                function toggleMenu(open) {
+                    const isOpen = typeof open === 'boolean' ? open : !accountMenu.classList.contains('is-open');
+                    accountMenu.classList.toggle('is-open', isOpen);
+                    accountMenuBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                }
+                accountMenuBtn.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    toggleMenu();
+                });
+                document.addEventListener('click', function (e) {
+                    if (!accountMenu.contains(e.target)) {
+                        toggleMenu(false);
+                    }
+                });
+            }
+        })();
+    </script>
 </header>

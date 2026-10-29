@@ -49,7 +49,7 @@
             </a>
 
             <!-- Avatar / Perfil -->
-            <a th:href="@{/usuario/perfil}" class="vs-topbar__avatar" title="Mi perfil">
+            <a th:href="@{/vendedor/perfil}" class="vs-topbar__avatar" title="Mi perfil de vendedor">
                 <i class="fas fa-user"></i>
             </a>
         </div>
@@ -129,15 +129,16 @@
         <nav class="vs-nav-group">
             <div class="vs-nav-group__label">Configuración</div>
 
-            <a th:href="@{/vendedor/editar}" class="vs-nav-item"
-                th:classappend="${currentPath != null and (currentPath.contains('/editar') or currentPath.contains('/perfil')) ? ' is-active' : ''}">
-                <span class="vs-nav-item__icon"><i class="fas fa-store"></i></span>
-                Mi Tienda
+            <a th:href="@{/vendedor/perfil}" class="vs-nav-item"
+                th:classappend="${currentPath != null and currentPath.contains('/vendedor/perfil') ? ' is-active' : ''}">
+                <span class="vs-nav-item__icon"><i class="fas fa-id-card"></i></span>
+                Mi Perfil
             </a>
 
-            <a th:href="@{/usuario/perfil}" class="vs-nav-item">
-                <span class="vs-nav-item__icon"><i class="fas fa-user-gear"></i></span>
-                Mi Cuenta
+            <a th:href="@{/vendedor/editar}" class="vs-nav-item"
+                th:classappend="${currentPath != null and currentPath.contains('/vendedor/editar') ? ' is-active' : ''}">
+                <span class="vs-nav-item__icon"><i class="fas fa-store"></i></span>
+                Editar mi Tienda
             </a>
         </nav>
 

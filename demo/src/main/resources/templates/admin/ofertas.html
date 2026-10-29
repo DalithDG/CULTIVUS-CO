@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{admin/fragments/head :: head('Ofertas Globales')}"></head>
+
+<body class="admin-layout">
+
+    <header th:replace="~{admin/fragments/topbar :: topbar('Ofertas Globales')}"></header>
+    <aside th:replace="~{admin/fragments/sidebar :: sidebar}"></aside>
+
+    <main class="admin-main">
+        <div class="admin-content">
+            <div th:replace="~{admin/fragments/alerts :: alerts}"></div>
+
+            <div class="admin-page" id="ofertas-page">
+                <div class="page-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h2><i class="fas fa-tags"></i> Ofertas Globales de Vendedores</h2>
+                    </div>
+
+                    <div th:if="${ofertas != null and !ofertas.empty}">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Vendedor</th>
+                                    <th>Precio</th>
+                                    <th>Stock</th>
+                                    <th>Compra Mínima</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="o : ${ofertas.content}">
+                                    <td>
+                                        <div style="font-weight:600;" th:text="${o.nombreProducto != null ? o.nombreProducto : 'Producto'}">Producto</div>
+                                        <div style="font-size:12px; color:var(--adm-muted);" th:text="${o.descripcionPaquete != null ? o.descripcionPaquete : ''}">Presentación</div>
+                                    </td>
+                                    <td th:text="${o.vendedor != null ? o.vendedor.nombre : 'Vendedor'}">Vendedor</td>
+                                    <td>
+                                        <strong th:text="${'$' + #numbers.formatDecimal(o.precio, 0, 'COMMA', 0, 'POINT')}">$0</strong>
+                                    </td>
+                                    <td th:text="${(o.stock != null ? o.stock : 0) + ' unidades'}">0 unidades</td>
+                                    <td th:text="${o.compraMinima != null ? o.compraMinima : 1}">1</td>
+                                    <td>
+                                        <span class="badge" th:classappend="${o.disponible ? 'badge-success' : 'badge-warning'}"
+                                              th:text="${o.disponible ? 'Disponible' : 'Agotada'}">Disponible</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Paginación Ofertas -->
+                        <div th:if="${ofertas.totalPages > 1}" class="paginacion-container"
+                            style="display:flex; justify-content:center; align-items:center; gap:15px; margin-top:30px; padding:20px 0;">
+                            <a th:href="@{/admin/ofertas(page=${ofertas.number - 1})}" th:if="${ofertas.hasPrevious()}"
+                                style="padding:8px 16px; border:1px solid #d6e2d8; border-radius:5px; background:white; cursor:pointer; text-decoration:none; color:#111e15;">
+                                <i class="fas fa-chevron-left"></i> Anterior
+                            </a>
+                            <button th:unless="${ofertas.hasPrevious()}" disabled
+                                style="padding:8px 16px; border:1px solid var(--adm-line); border-radius:5px; background:var(--adm-green-soft); color:#94a39a; cursor:not-allowed;">
+                                <i class="fas fa-chevron-left"></i> Anterior
+                            </button>
+                            <div style="display:flex; gap:5px;">
+                                <span th:each="i : ${#numbers.sequence(0, ofertas.totalPages - 1)}"
+                                    th:if="${i >= ofertas.number - 2 and i <= ofertas.number + 2}">
+                                    <a th:href="@{/admin/ofertas(page=${i})}" th:text="${i + 1}"
+                                        th:style="${i == ofertas.number ? 'background:var(--adm-green); color:white; border:1px solid var(--adm-green);' : 'background:white; color:#111e15; border:1px solid #d6e2d8;'}"
+                                        style="padding:8px 14px; border-radius:5px; text-decoration:none; font-weight:600; cursor:pointer; transition: 0.3s;">
+                                    </a>
+                                </span>
+                            </div>
+                            <a th:href="@{/admin/ofertas(page=${ofertas.number + 1})}" th:if="${ofertas.hasNext()}"
+                                style="padding:8px 16px; border:1px solid #d6e2d8; border-radius:5px; background:white; cursor:pointer; text-decoration:none; color:#111e15;">
+                                Siguiente <i class="fas fa-chevron-right"></i>
+                            </a>
+                            <button th:unless="${ofertas.hasNext()}" disabled
+                                style="padding:8px 16px; border:1px solid var(--adm-line); border-radius:5px; background:var(--adm-green-soft); color:#94a39a; cursor:not-allowed;">
+                                Siguiente <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div th:if="${ofertas == null or ofertas.empty}" style="text-align:center; padding:40px; color:#7b8b80;">
+                        <i class="fas fa-tags" style="font-size:48px; color:#d6e2d8; margin-bottom:15px; display:block;"></i>
+                        <p style="font-size:18px;">No hay ofertas registradas actualmente.</p>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </main>
+
+    <script th:src="@{/js/admin-panel.js}"></script>
+</body>
+
+</html>

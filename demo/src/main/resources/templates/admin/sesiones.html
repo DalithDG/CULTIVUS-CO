@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{admin/fragments/head :: head('Sesiones Activas')}"></head>
+
+<body class="admin-layout">
+
+    <header th:replace="~{admin/fragments/topbar :: topbar('Sesiones Activas')}"></header>
+    <aside th:replace="~{admin/fragments/sidebar :: sidebar}"></aside>
+
+    <main class="admin-main">
+        <div class="admin-content">
+            <div th:replace="~{admin/fragments/alerts :: alerts}"></div>
+
+            <div class="admin-page" id="sesiones-page">
+                <div class="page-card">
+                    <h2><i class="fas fa-user-clock"></i> Sesiones Activas (Últimas 24h)</h2>
+                    <p style="color:#7b8b80;margin-bottom:16px;">Usuarios que han interactuado con la plataforma
+                        recientemente.</p>
+
+                    <div th:if="${usuariosActivos != null and !usuariosActivos.empty}">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Usuario</th>
+                                    <th>Email</th>
+                                    <th>Rol</th>
+                                    <th>Última Conexión</th>
+                                    <th>Estado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="user : ${usuariosActivos.content}">
+                                    <td th:text="${user.nombre}">Nombre</td>
+                                    <td th:text="${user.email}">email@ejemplo.com</td>
+                                    <td>
+                                        <span class="badge"
+                                            th:classappend="${user.rol != null ? (user.rol.name() == 'ADMIN' ? 'badge-admin' : (user.rol.name() == 'VENDEDOR' ? 'badge-mod' : 'badge-user')) : 'badge-user'}"
+                                            th:text="${user.rol != null ? user.rol : 'SIN ROL'}">Rol</span>
+                                    </td>
+                                    <td
+                                        th:text="${user.ultimaConexion != null ? #temporals.format(user.ultimaConexion, 'dd/MM/yyyy HH:mm') : '-'}">
+                                        Fecha</td>
+                                    <td><span class="badge badge-active">Conectado</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Paginación Sesiones Activas -->
+                        <div th:if="${usuariosActivos.totalPages > 1}" class="paginacion-container"
+                            style="display:flex; justify-content:center; align-items:center; gap:15px; margin-top:30px; padding:20px 0;">
+                            <a th:href="@{/admin/sesiones(page=${usuariosActivos.number - 1})}"
+                                th:if="${usuariosActivos.hasPrevious()}"
+                                style="padding:8px 16px; border:1px solid #d6e2d8; border-radius:5px; background:white; cursor:pointer; text-decoration:none; color:#111e15;">
+                                <i class="fas fa-chevron-left"></i> Anterior
+                            </a>
+                            <button th:unless="${usuariosActivos.hasPrevious()}" disabled
+                                style="padding:8px 16px; border:1px solid var(--adm-line); border-radius:5px; background:var(--adm-green-soft); color:#94a39a; cursor:not-allowed;">
+                                <i class="fas fa-chevron-left"></i> Anterior
+                            </button>
+                            <div style="display:flex; gap:5px;">
+                                <span th:each="i : ${#numbers.sequence(0, usuariosActivos.totalPages - 1)}"
+                                    th:if="${i >= usuariosActivos.number - 2 and i <= usuariosActivos.number + 2}">
+                                    <a th:href="@{/admin/sesiones(page=${i})}" th:text="${i + 1}"
+                                        th:style="${i == usuariosActivos.number ? 'background:var(--adm-green); color:white; border:1px solid var(--adm-green);' : 'background:white; color:#111e15; border:1px solid #d6e2d8;'}"
+                                        style="padding:8px 14px; border-radius:5px; text-decoration:none; font-weight:600; cursor:pointer; transition: 0.3s;">
+                                    </a>
+                                </span>
+                            </div>
+                            <a th:href="@{/admin/sesiones(page=${usuariosActivos.number + 1})}"
+                                th:if="${usuariosActivos.hasNext()}"
+                                style="padding:8px 16px; border:1px solid #d6e2d8; border-radius:5px; background:white; cursor:pointer; text-decoration:none; color:#111e15;">
+                                Siguiente <i class="fas fa-chevron-right"></i>
+                            </a>
+                            <button th:unless="${usuariosActivos.hasNext()}" disabled
+                                style="padding:8px 16px; border:1px solid var(--adm-line); border-radius:5px; background:var(--adm-green-soft); color:#94a39a; cursor:not-allowed;">
+                                Siguiente <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div th:if="${usuariosActivos == null or usuariosActivos.empty}"
+                        style="text-align:center; padding:40px; color:#7b8b80;">
+                        <i class="fas fa-user-clock"
+                            style="font-size:48px; color:#d6e2d8; margin-bottom:15px; display:block;"></i>
+                        <p style="font-size:18px;">No hay usuarios activos recientemente.</p>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </main>
+
+    <script th:src="@{/js/admin-panel.js}"></script>
+</body>
+
+</html>

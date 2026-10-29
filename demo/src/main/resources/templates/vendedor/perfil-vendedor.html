@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil de Vendedor | Cultivus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/perfil.css}">
+    <link rel="stylesheet" th:href="@{/footer.css}">
+</head>
+
+<body class="vs-layout">
+    <!-- Header y Sidebar de Vendedor -->
+    <header th:replace="~{fragments/header-vendedor :: siteHeader}"></header>
+
+    <main class="vs-main">
+        <div class="profile-container" style="max-width: 980px; margin: 0 auto; padding: 24px 20px;">
+            <div class="profile-card">
+                <div class="profile-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+                    <div style="display:flex; align-items:center; gap:16px;">
+                        <div class="profile-icon" style="margin:0;">
+                            <i class="fa-solid fa-store"></i>
+                        </div>
+                        <div>
+                            <h1 style="margin:0;" th:text="${perfilVendedor != null and perfilVendedor.razonSocial != null ? perfilVendedor.razonSocial : usuario.nombre}">Mi Tienda</h1>
+                            <p class="profile-subtitle" style="margin:4px 0 0;">Perfil de Vendedor y Productor · Cultivus</p>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                        <a th:href="@{/vendedor/editar}" class="btn btn-primary"
+                           style="text-decoration:none; display:inline-flex; align-items:center; gap:8px; padding:10px 16px; border-radius:8px; font-weight:600; background:#2e7d32; color:#fff;">
+                            <i class="fa-solid fa-pen-to-square"></i> Editar Datos del Negocio
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Alertas -->
+                <div th:if="${mensaje}" class="alert alert-success">
+                    <i class="fa-solid fa-check-circle"></i>
+                    <span th:text="${mensaje}"></span>
+                </div>
+                <div th:if="${error}" class="alert alert-error">
+                    <i class="fa-solid fa-exclamation-circle"></i>
+                    <span th:text="${error}"></span>
+                </div>
+
+                <!-- Datos de la Tienda / Negocio -->
+                <div class="info-section seller-info" th:if="${perfilVendedor != null}">
+                    <h2 style="color: #2e7d32;"><i class="fa-solid fa-tractor"></i> Información de mi Negocio</h2>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>Razón Social / Finca:</label>
+                            <p th:text="${perfilVendedor.razonSocial}">Mi Negocio</p>
+                        </div>
+                        <div class="info-item">
+                            <label>Estado de Verificación:</label>
+                            <p th:text="${perfilVendedor.verificado ? 'Tienda Verificada' : 'En Validación por Administración'}"
+                               th:style="${perfilVendedor.verificado ? 'color: #2e7d32; font-weight: 700;' : 'color: #d97706; font-weight: 700;'}">
+                                Verificada
+                            </p>
+                        </div>
+                        <div class="info-item">
+                            <label>Teléfono de Contacto:</label>
+                            <p th:text="${perfilVendedor.telefonoContacto}">-</p>
+                        </div>
+                        <div class="info-item">
+                            <label>Dirección del Negocio:</label>
+                            <p th:text="${perfilVendedor.direccionNegocio}">-</p>
+                        </div>
+                        <div class="info-item">
+                            <label>Tipo de Productos:</label>
+                            <p th:text="${perfilVendedor.tipoProductos != null ? perfilVendedor.tipoProductos : 'Productos agrícolas'}">-</p>
+                        </div>
+                        <div class="info-item">
+                            <label>Cuenta Bancaria:</label>
+                            <p th:text="${perfilVendedor.banco != null and !perfilVendedor.banco.isBlank() ? (perfilVendedor.banco + ' · ' + perfilVendedor.cuentaBancaria) : 'No registrada'}">-</p>
+                        </div>
+                    </div>
+                    <div style="margin-top:12px;" th:if="${perfilVendedor.descripcionNegocio != null and !perfilVendedor.descripcionNegocio.isBlank()}">
+                        <label style="font-weight:600; color:#4b5563; font-size:0.88rem;">Descripción pública de la tienda:</label>
+                        <p style="margin:4px 0 0; color:#1f2937;" th:text="${perfilVendedor.descripcionNegocio}"></p>
+                    </div>
+                </div>
+
+                <!-- Datos de Cuenta Personal y Contraseña -->
+                <div class="edit-section" style="margin-top: 28px; border-top: 1px solid #e5e7eb; padding-top: 24px;">
+                    <h2><i class="fa-solid fa-user-gear"></i> Datos de mi Cuenta Personal y Contraseña</h2>
+                    <form th:action="@{/usuario/perfil/actualizar}" method="post" class="edit-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="nombre">
+                                    <i class="fa-solid fa-user"></i> Nombre del Titular
+                                </label>
+                                <input type="text" id="nombre" name="nombre"
+                                       th:value="${usuario.nombre}" required
+                                       placeholder="Ingrese su nombre completo">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="email">
+                                    <i class="fa-solid fa-envelope"></i> Correo Electrónico
+                                </label>
+                                <input type="email" id="email" name="email"
+                                       th:value="${usuario.email}" required
+                                       placeholder="correo@ejemplo.com">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="departamento">
+                                    <i class="fa-solid fa-map-marked-alt"></i> Departamento
+                                </label>
+                                <select id="departamento" name="departamento">
+                                    <option value="">Seleccione un departamento</option>
+                                    <option th:each="dept : ${departamentos}"
+                                            th:value="${dept.nombre}"
+                                            th:text="${dept.nombre}"
+                                            th:selected="${usuario.ubicacion != null and usuario.ubicacion.departamento == dept.nombre}">
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="ciudad">
+                                    <i class="fa-solid fa-city"></i> Ciudad / Municipio
+                                </label>
+                                <input type="text" id="ciudad" name="ciudad"
+                                       th:value="${usuario.ubicacion != null ? usuario.ubicacion.ciudad : ''}"
+                                       placeholder="Ingrese su ciudad">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="contrasena">
+                                <i class="fa-solid fa-lock"></i> Nueva Contraseña (opcional)
+                            </label>
+                            <input type="password" id="contrasena" name="contrasena"
+                                   placeholder="Dejar en blanco para mantener la actual">
+                            <small>Solo complete este campo si desea cambiar su contraseña</small>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fa-solid fa-save"></i> Guardar Cambios de Cuenta
+                            </button>
+                            <a th:href="@{/vendedor/dashboard}" class="btn btn-secondary">
+                                <i class="fa-solid fa-arrow-left"></i> Volver al Panel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
+</body>
+
+</html>
+

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{admin/fragments/head :: head('Actividad y Reseñas')}"></head>
+
+<body class="admin-layout">
+
+    <header th:replace="~{admin/fragments/topbar :: topbar('Actividad y Reseñas')}"></header>
+    <aside th:replace="~{admin/fragments/sidebar :: sidebar}"></aside>
+
+    <main class="admin-main">
+        <div class="admin-content">
+            <div th:replace="~{admin/fragments/alerts :: alerts}"></div>
+
+            <div class="admin-page" id="actividad-page">
+                <div class="page-card">
+                    <h2><i class="fas fa-history"></i> Registro de Actividad</h2>
+                    <div th:if="${resenas != null and !resenas.empty}">
+                        <div class="activity-log">
+                            <div class="activity-item" th:each="resena : ${resenas.content}">
+                                <div class="activity-icon" style="background: var(--adm-green);">
+                                    <i class="fas fa-comment"></i>
+                                </div>
+                                <div class="activity-content">
+                                    <h4 th:text="${resena.usuarioId}">Nueva reseña</h4>
+                                    <p th:text="${resena.comentario}">Comentario</p>
+                                    <span class="time" th:text="${#temporals.format(resena.fecha, 'dd/MM/yyyy')}">Hace
+                                        poco</span>
+                                    <form th:action="@{/admin/resenas/{id}/eliminar(id=${resena.id})}" method="post"
+                                        style="display:inline;">
+                                        <button type="submit"
+                                            style="color:red; background:none; border:none; cursor:pointer;"><i
+                                                 class="fas fa-trash"></i></button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Paginación Reseñas -->
+                        <div th:if="${resenas.totalPages > 1}" class="paginacion-container"
+                            style="display:flex; justify-content:center; align-items:center; gap:15px; margin-top:30px; padding:20px 0;">
+                            <a th:href="@{/admin/resenas(page=${resenas.number - 1})}" th:if="${resenas.hasPrevious()}"
+                                style="padding:8px 16px; border:1px solid #d6e2d8; border-radius:5px; background:white; cursor:pointer; text-decoration:none; color:#111e15;">
+                                <i class="fas fa-chevron-left"></i> Anterior
+                            </a>
+                            <button th:unless="${resenas.hasPrevious()}" disabled
+                                style="padding:8px 16px; border:1px solid var(--adm-line); border-radius:5px; background:var(--adm-green-soft); color:#94a39a; cursor:not-allowed;">
+                                <i class="fas fa-chevron-left"></i> Anterior
+                            </button>
+                            <div style="display:flex; gap:5px;">
+                                <span th:each="i : ${#numbers.sequence(0, resenas.totalPages - 1)}"
+                                    th:if="${i >= resenas.number - 2 and i <= resenas.number + 2}">
+                                    <a th:href="@{/admin/resenas(page=${i})}" th:text="${i + 1}"
+                                        th:style="${i == resenas.number ? 'background:var(--adm-green); color:white; border:1px solid var(--adm-green);' : 'background:white; color:#111e15; border:1px solid #d6e2d8;'}"
+                                        style="padding:8px 14px; border-radius:5px; text-decoration:none; font-weight:600; cursor:pointer; transition: 0.3s;">
+                                    </a>
+                                </span>
+                            </div>
+                            <a th:href="@{/admin/resenas(page=${resenas.number + 1})}" th:if="${resenas.hasNext()}"
+                                style="padding:8px 16px; border:1px solid #d6e2d8; border-radius:5px; background:white; cursor:pointer; text-decoration:none; color:#111e15;">
+                                Siguiente <i class="fas fa-chevron-right"></i>
+                            </a>
+                            <button th:unless="${resenas.hasNext()}" disabled
+                                style="padding:8px 16px; border:1px solid var(--adm-line); border-radius:5px; background:var(--adm-green-soft); color:#94a39a; cursor:not-allowed;">
+                                Siguiente <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div th:if="${resenas == null or resenas.empty}"
+                        style="text-align:center; padding:40px; color:#7b8b80;">
+                        <i class="fas fa-history"
+                            style="font-size:48px; color:#d6e2d8; margin-bottom:15px; display:block;"></i>
+                        <p style="font-size:18px;">No hay reseñas registradas.</p>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </main>
+
+    <script th:src="@{/js/admin-panel.js}"></script>
+</body>
+
+</html>

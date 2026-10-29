@@ -1,10 +1,11 @@
 package com.example.demo.Controller;
 
-import com.example.demo.Model.Categoria;
 import com.example.demo.Model.ProductoCatalogo;
+import com.example.demo.Model.Role;
 import com.example.demo.Model.Usuario;
 import com.example.demo.repository.CategoriaRepository;
 import com.example.demo.services.CatalogoService;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,7 +24,18 @@ public class RoutesController {
     private CategoriaRepository categoriaRepository;
 
     @GetMapping("/")
-    public String index(Model model) {
+    public String index(HttpSession session, Model model) {
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuario != null && !usuario.hasRole(Role.ADMIN)) {
+            if (usuario.hasRole(Role.VENDEDOR)) {
+                return "redirect:/vendedor/dashboard";
+            }
+            if (usuario.hasRole(Role.TRANSPORTISTA)) {
+                return "redirect:/transportista/inicio";
+            }
+            return "redirect:/usuario/inicio";
+        }
+
         // Obtener los primeros 8 productos aprobados del catálogo
         List<ProductoCatalogo> productos = catalogoService.listarCatalogo()
                 .stream()
@@ -80,7 +92,7 @@ public class RoutesController {
                 .orElse("redirect:/category");
     }
 
-@GetMapping("/registro-vendedor")
+    @GetMapping("/registro-vendedor")
     public String registroVendedor() {
         return "redirect:/vendedor/registro";
     }

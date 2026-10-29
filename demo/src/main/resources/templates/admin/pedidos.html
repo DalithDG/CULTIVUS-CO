@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{admin/fragments/head :: head('Gestión de Pedidos')}"></head>
+
+<body class="admin-layout">
+
+    <header th:replace="~{admin/fragments/topbar :: topbar('Gestión de Pedidos')}"></header>
+    <aside th:replace="~{admin/fragments/sidebar :: sidebar}"></aside>
+
+    <main class="admin-main">
+        <div class="admin-content">
+            <div th:replace="~{admin/fragments/alerts :: alerts}"></div>
+
+            <div class="admin-page" id="ordenes-page">
+                <div class="page-card">
+                    <h2><i class="fas fa-shopping-bag"></i> Órdenes</h2>
+                    <div th:if="${pedidos != null and !pedidos.empty}">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Orden ID</th>
+                                    <th>Cliente</th>
+                                    <th>Total</th>
+                                    <th>Fecha</th>
+                                    <th>Estado</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="pedido : ${pedidos.content}">
+                                    <td th:text="${pedido.id}">#ORD-001</td>
+                                    <td th:text="${pedido.comprador != null ? pedido.comprador.nombre : 'Anónimo'}">
+                                        Pedro Sánchez</td>
+                                    <td th:text="${'$' + (pedido.total ?: 0)}">$156.99</td>
+                                    <td
+                                        th:text="${pedido.fechaPedido != null ? #temporals.format(pedido.fechaPedido, 'dd/MM/yyyy') : '-'}">
+                                        22/04/2026</td>
+                                    <td>
+                                        <span class="badge"
+                                            th:classappend="${pedido.estado == 'ENTREGADO' ? 'badge-success' : 'badge-warning'}"
+                                            th:text="${pedido.estado}">Estado</span>
+                                    </td>
+                                    <td style="white-space:nowrap;">
+                                        <form th:if="${pedido.estado == 'PENDIENTE' or pedido.estado == 'PENDIENTE_PAGO'}"
+                                              th:action="@{/admin/pedidos/{id}/aceptar(id=${pedido.id})}"
+                                              method="post" style="display:inline;">
+                                            <button type="submit" class="btn-action"
+                                                    style="background:var(--adm-green-dark); color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:600;">
+                                                <i class="fas fa-check"></i> Aceptar
+                                            </button>
+                                        </form>
+                                        <form th:action="@{/admin/pedidos/{id}/actualizar-estado(id=${pedido.id})}"
+                                              method="post" style="display:inline-flex; gap:4px; align-items:center; margin-left:4px;">
+                                            <select name="estado"
+                                                    style="padding:4px 6px; border:1px solid #d6e2d8; border-radius:4px; font-size:12px;">
+                                                <option th:each="est : ${estadosPedido}" th:value="${est}" th:text="${est}"
+                                                        th:selected="${est == pedido.estado}"></option>
+                                            </select>
+                                            <button type="submit" class="btn-action"
+                                                    style="background:var(--adm-green); color:white; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; font-weight:600;">
+                                                <i class="fas fa-sync-alt"></i> Actualizar
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Paginación Pedidos -->
+                        <div th:if="${pedidos.totalPages > 1}" class="paginacion-container"
+                            style="display:flex; justify-content:center; align-items:center; gap:15px; margin-top:30px; padding:20px 0;">
+                            <a th:href="@{/admin/pedidos(page=${pedidos.number - 1})}" th:if="${pedidos.hasPrevious()}"
+                                style="padding:8px 16px; border:1px solid #d6e2d8; border-radius:5px; background:white; cursor:pointer; text-decoration:none; color:#111e15;">
+                                <i class="fas fa-chevron-left"></i> Anterior
+                            </a>
+                            <button th:unless="${pedidos.hasPrevious()}" disabled
+                                style="padding:8px 16px; border:1px solid var(--adm-line); border-radius:5px; background:var(--adm-green-soft); color:#94a39a; cursor:not-allowed;">
+                                <i class="fas fa-chevron-left"></i> Anterior
+                            </button>
+                            <div style="display:flex; gap:5px;">
+                                <span th:each="i : ${#numbers.sequence(0, pedidos.totalPages - 1)}"
+                                    th:if="${i >= pedidos.number - 2 and i <= pedidos.number + 2}">
+                                    <a th:href="@{/admin/pedidos(page=${i})}" th:text="${i + 1}"
+                                        th:style="${i == pedidos.number ? 'background:var(--adm-green); color:white; border:1px solid var(--adm-green);' : 'background:white; color:#111e15; border:1px solid #d6e2d8;'}"
+                                        style="padding:8px 14px; border-radius:5px; text-decoration:none; font-weight:600; cursor:pointer; transition: 0.3s;">
+                                    </a>
+                                </span>
+                            </div>
+                            <a th:href="@{/admin/pedidos(page=${pedidos.number + 1})}" th:if="${pedidos.hasNext()}"
+                                style="padding:8px 16px; border:1px solid #d6e2d8; border-radius:5px; background:white; cursor:pointer; text-decoration:none; color:#111e15;">
+                                Siguiente <i class="fas fa-chevron-right"></i>
+                            </a>
+                            <button th:unless="${pedidos.hasNext()}" disabled
+                                style="padding:8px 16px; border:1px solid var(--adm-line); border-radius:5px; background:var(--adm-green-soft); color:#94a39a; cursor:not-allowed;">
+                                Siguiente <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div th:if="${pedidos == null or pedidos.empty}"
+                        style="text-align:center; padding:40px; color:#7b8b80;">
+                        <i class="fas fa-shopping-bag"
+                            style="font-size:48px; color:#d6e2d8; margin-bottom:15px; display:block;"></i>
+                        <p style="font-size:18px;">No hay pedidos registrados.</p>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </main>
+
+    <script th:src="@{/js/admin-panel.js}"></script>
+</body>
+
+</html>

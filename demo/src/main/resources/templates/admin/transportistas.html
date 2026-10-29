@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{admin/fragments/head :: head('Gestión de Transportistas')}"></head>
+
+<body class="admin-layout">
+
+    <header th:replace="~{admin/fragments/topbar :: topbar('Gestión de Transportistas')}"></header>
+    <aside th:replace="~{admin/fragments/sidebar :: sidebar}"></aside>
+
+    <main class="admin-main">
+        <div class="admin-content">
+            <div th:replace="~{admin/fragments/alerts :: alerts}"></div>
+
+            <div class="admin-page" id="transportistas-page">
+                <div class="page-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
+                        <div>
+                            <h2><i class="fas fa-truck"></i> Gestión y Verificación de Transportistas</h2>
+                            <p style="color:var(--adm-muted); margin-top:4px;">Revisa y verifica transportistas independientes y empresas de transporte para habilitar su operación.</p>
+                        </div>
+                        <div style="display:flex; gap:10px;">
+                            <span class="badge" style="background:var(--adm-amber-bg); color:#92400e; border:1px solid #f0d7a5; padding:6px 14px; font-weight:600;">
+                                <i class="fas fa-clock"></i> <span th:text="${transportistasPendientesCount != null ? transportistasPendientesCount : 0}">0</span> pendientes
+                            </span>
+                            <span class="badge" style="background:var(--adm-green-light); color:var(--adm-green-dark); border:1px solid #bfe3c9; padding:6px 14px; font-weight:600;">
+                                <i class="fas fa-users"></i> <span th:text="${transportistas != null ? transportistas.size() : 0}">0</span> registrados
+                            </span>
+                        </div>
+                    </div>
+
+                    <div th:if="${transportistas != null and !transportistas.empty}" class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Transportista</th>
+                                    <th>Tipo</th>
+                                    <th>Datos Operativos</th>
+                                    <th>Zonas Cobertura</th>
+                                    <th>Estado</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="t : ${transportistas}">
+                                    <td>
+                                        <div style="font-weight:600; color:var(--adm-ink);" th:text="${t.nombre != null ? t.nombre : 'Sin nombre'}">Nombre</div>
+                                        <div style="font-size:12px; color:var(--adm-muted);">
+                                            <i class="fas fa-envelope"></i> <span th:text="${t.email}">email</span>
+                                        </div>
+                                        <div style="font-size:12px; color:var(--adm-muted);" th:if="${t.telefono != null}">
+                                            <i class="fas fa-phone"></i> <span th:text="${t.telefono}">tel</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span th:if="${t.perfilTransportista != null and t.perfilTransportista.tipo == 'EMPRESA'}"
+                                              class="badge" style="background:var(--adm-blue-bg); color:var(--adm-blue); font-weight:600; padding:5px 10px; border-radius:12px;">
+                                            <i class="fas fa-building"></i> EMPRESA
+                                        </span>
+                                        <span th:unless="${t.perfilTransportista != null and t.perfilTransportista.tipo == 'EMPRESA'}"
+                                              class="badge" style="background:var(--adm-blue-bg); color:var(--adm-blue); font-weight:600; padding:5px 10px; border-radius:12px;">
+                                            <i class="fas fa-truck"></i> INDEPENDIENTE
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div th:if="${t.perfilTransportista != null and t.perfilTransportista.tipo == 'EMPRESA'}">
+                                            <div style="font-weight:600; font-size:13px;" th:text="${t.perfilTransportista.razonSocial != null ? t.perfilTransportista.razonSocial : 'Sin Razón Social'}">Razón Social</div>
+                                            <div style="font-size:12px; color:var(--adm-muted);">NIT: <span th:text="${t.perfilTransportista.nit != null ? t.perfilTransportista.nit : '-'}">-</span></div>
+                                            <div style="font-size:12px; color:var(--adm-muted);">Vehículo: <span th:text="${t.perfilTransportista.tipoVehiculo != null ? t.perfilTransportista.tipoVehiculo : 'General'}">-</span></div>
+                                        </div>
+                                        <div th:unless="${t.perfilTransportista != null and t.perfilTransportista.tipo == 'EMPRESA'}">
+                                            <div style="font-size:13px; font-weight:500;">
+                                                <i class="fas fa-truck-moving"></i> <span th:text="${t.perfilTransportista != null and t.perfilTransportista.tipoVehiculo != null ? t.perfilTransportista.tipoVehiculo : 'Vehículo'}">Vehículo</span>
+                                            </div>
+                                            <div style="font-size:12px; color:var(--adm-muted);">Placa: <strong th:text="${t.perfilTransportista != null and t.perfilTransportista.placa != null ? t.perfilTransportista.placa : '-'}">-</strong></div>
+                                            <div style="font-size:12px; color:var(--adm-muted);">Licencia: <span th:text="${t.perfilTransportista != null and t.perfilTransportista.licenciaConduccion != null ? t.perfilTransportista.licenciaConduccion : '-'}">-</span></div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div th:if="${t.perfilTransportista != null and t.perfilTransportista.todasLasZonas}" style="display:inline-block; padding:4px 8px; background:var(--adm-green-light); color:var(--adm-green-dark); border-radius:12px; font-size:12px; font-weight:600;">
+                                            <i class="fas fa-globe-americas"></i> Todas las zonas (6)
+                                        </div>
+                                        <div th:unless="${t.perfilTransportista != null and t.perfilTransportista.todasLasZonas}">
+                                            <span style="font-size:12px; color:#111e15;" th:text="${t.perfilTransportista != null and t.perfilTransportista.zonasCobertura != null ? t.perfilTransportista.zonasCobertura : 'Sin zonas configuradas'}">Zonas</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge" th:if="${t.perfilTransportista != null and t.perfilTransportista.verificado}"
+                                              style="background:var(--adm-green-light); color:var(--adm-green-dark); font-weight:600; padding:6px 12px; border-radius:20px;">
+                                            <i class="fas fa-check-circle"></i> Verificado
+                                        </span>
+                                        <span class="badge" th:unless="${t.perfilTransportista != null and t.perfilTransportista.verificado}"
+                                              style="background:var(--adm-amber-bg); color:#92400e; font-weight:600; padding:6px 12px; border-radius:20px;">
+                                            <i class="fas fa-clock"></i> Pendiente
+                                        </span>
+                                    </td>
+                                    <td style="white-space:nowrap;">
+                                        <!-- Botón para verificar si está pendiente -->
+                                        <form th:if="${t.perfilTransportista == null or !t.perfilTransportista.verificado}"
+                                              th:action="@{/admin/transportistas/verificar/{usuarioId}(usuarioId=${t.id})}"
+                                              method="post" style="display:inline;">
+                                            <input type="hidden" name="verificado" value="true" />
+                                            <button type="submit" class="btn-action" style="background:var(--adm-green-dark); color:white; border:none; padding:7px 14px; border-radius:6px; cursor:pointer; font-weight:600; display:inline-flex; align-items:center; gap:5px;">
+                                                <i class="fas fa-check"></i> Verificar
+                                            </button>
+                                        </form>
+
+                                        <!-- Botón para revocar si ya está verificado -->
+                                        <form th:if="${t.perfilTransportista != null and t.perfilTransportista.verificado}"
+                                              th:action="@{/admin/transportistas/verificar/{usuarioId}(usuarioId=${t.id})}"
+                                              method="post" style="display:inline;"
+                                              onsubmit="return confirm('¿Deseas revocar la verificación de este transportista? No podrá tomar nuevos envíos.')">
+                                            <input type="hidden" name="verificado" value="false" />
+                                            <button type="submit" class="btn-action" style="background:var(--adm-amber); color:white; border:none; padding:7px 14px; border-radius:6px; cursor:pointer; font-weight:600; display:inline-flex; align-items:center; gap:5px;">
+                                                <i class="fas fa-ban"></i> Revocar
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div th:if="${transportistas == null or transportistas.empty}" style="text-align:center; padding:40px 20px; color:var(--adm-muted);">
+                        <i class="fas fa-truck" style="font-size:42px; color:#d6e2d8; margin-bottom:12px;"></i>
+                        <p style="font-size:15px; margin:0;">No hay transportistas registrados en la plataforma.</p>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </main>
+
+    <script th:src="@{/js/admin-panel.js}"></script>
+</body>
+
+</html>
