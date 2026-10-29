@@ -5,135 +5,236 @@
 
 <body class="admin-layout">
 
-    <header th:replace="~{admin/fragments/topbar :: topbar('Dashboard')}"></header>
+    <!-- Topbar -->
+    <header th:replace="~{admin/fragments/topbar :: topbar('Dashboard General')}"></header>
+
+    <!-- Sidebar -->
     <aside th:replace="~{admin/fragments/sidebar :: sidebar}"></aside>
 
+    <!-- Contenido Principal -->
     <main class="admin-main">
         <div class="admin-content">
+
             <div th:replace="~{admin/fragments/alerts :: alerts}"></div>
 
-            <div class="admin-page" id="dashboard-page">
+            <div id="dashboard" class="admin-page">
 
-                <section class="admin-hero">
+                <!-- Hero Ejecutivo -->
+                <section class="admin-hero" aria-label="Resumen general del centro de control">
                     <div class="admin-hero__content">
                         <span class="admin-hero__kicker">
                             <i class="fas fa-seedling" aria-hidden="true"></i>
-                            Panel de administrador
+                            Panel Administrativo · Cultivus Colombia
                         </span>
-                        <h1>
-                            Hola,
-                            <span th:text="${admin != null and admin.nombre != null ? admin.nombre : 'Administrador'}">Administrador</span>.
+                        <h1 th:text="${admin != null and admin.nombre != null ? 'Hola, ' + admin.nombre : 'Centro de Control Cultivus'}">
+                            Centro de Control Cultivus
                         </h1>
                         <p>
-                            Este es el resumen de Cultivus. Desde aquí puedes gestionar usuarios,
-                            revisar pedidos, moderar el catálogo y acompañar a vendedores y transportistas.
+                            Supervisa la operación comercial del campo colombiano: valida productores, modera el catálogo, aprueba retiros y monitorea pedidos en tiempo real.
                         </p>
                         <div class="admin-hero__actions">
-                            <a th:href="@{/admin/usuarios}" class="admin-btn admin-btn--light">
-                                <i class="fas fa-users" aria-hidden="true"></i>
-                                Gestionar usuarios
+                            <a th:href="@{/admin/moderacion}" class="admin-btn admin-btn--light">
+                                <i class="fas fa-clipboard-check" aria-hidden="true"></i>
+                                Moderar Catálogo
                             </a>
-                            <a th:href="@{/admin/pedidos}" class="admin-btn admin-btn--ghost">
-                                <i class="fas fa-shopping-bag" aria-hidden="true"></i>
-                                Revisar pedidos
+                            <a th:href="@{/admin/verificacion-tiendas}" class="admin-btn admin-btn--ghost">
+                                <i class="fas fa-store" aria-hidden="true"></i>
+                                Verificar Tiendas
                             </a>
-                            <a th:href="@{/admin/powerbi}" class="admin-btn admin-btn--ghost">
-                                <i class="fas fa-chart-pie" aria-hidden="true"></i>
-                                Ver analíticas
+                            <a th:href="@{/admin/retiros}" class="admin-btn admin-btn--ghost">
+                                <i class="fas fa-money-bill-transfer" aria-hidden="true"></i>
+                                Solicitudes de Retiro
                             </a>
+                        </div>
+                    </div>
+
+                    <div class="admin-hero__status"
+                         th:with="pendCat=${catalogoPendienteCount != null ? catalogoPendienteCount : 0},
+                                  pendVen=${vendedoresPendientesCount != null ? vendedoresPendientesCount : 0},
+                                  pendTra=${transportistasPendientesCount != null ? transportistasPendientesCount : 0},
+                                  pendRet=${retirosPendientesCount != null ? retirosPendientesCount : 0},
+                                  totalPend=${pendCat + pendVen + pendTra + pendRet}">
+                        <span class="admin-status-label">Estado operativo</span>
+                        <strong th:text="${totalPend > 0 ? totalPend + ' pendientes por revisar' : 'Todo al día'}">
+                            Todo al día
+                        </strong>
+                        <div class="admin-status-breakdown">
+                            <span><i class="fas fa-seedling" aria-hidden="true"></i> Catálogo: <b th:text="${pendCat}">0</b></span>
+                            <span><i class="fas fa-store" aria-hidden="true"></i> Tiendas: <b th:text="${pendVen}">0</b></span>
+                            <span><i class="fas fa-truck" aria-hidden="true"></i> Flota: <b th:text="${pendTra}">0</b></span>
+                            <span><i class="fas fa-money-bill-transfer" aria-hidden="true"></i> Retiros: <b th:text="${pendRet}">0</b></span>
                         </div>
                     </div>
                 </section>
 
-                <section class="admin-stats" aria-label="Indicadores generales">
-                    <article class="admin-stat">
-                        <div class="admin-stat__icon"><i class="fas fa-users" aria-hidden="true"></i></div>
-                        <p class="admin-stat__label">Usuarios</p>
-                        <p class="admin-stat__value" th:text="${estadisticas.totalUsuarios}">0</p>
-                        <p class="admin-stat__hint">Cuentas registradas en la plataforma</p>
-                    </article>
+                <!-- KPIs Principales -->
+                <section class="admin-kpi-grid" aria-label="Indicadores principales">
+                    <a th:href="@{/admin/usuarios}" class="admin-kpi">
+                        <div class="admin-kpi__icon">
+                            <i class="fas fa-users" aria-hidden="true"></i>
+                        </div>
+                        <div class="admin-kpi__body">
+                            <span class="admin-kpi__label">Usuarios Registrados</span>
+                            <strong class="admin-kpi__value" th:text="${estadisticas.totalUsuarios}">0</strong>
+                            <span class="admin-kpi__meta">Cuentas activas en plataforma</span>
+                        </div>
+                    </a>
 
-                    <article class="admin-stat admin-stat--amber">
-                        <div class="admin-stat__icon"><i class="fas fa-shopping-bag" aria-hidden="true"></i></div>
-                        <p class="admin-stat__label">Pedidos</p>
-                        <p class="admin-stat__value" th:text="${estadisticas.totalPedidos}">0</p>
-                        <p class="admin-stat__hint">Órdenes registradas en total</p>
-                    </article>
+                    <a th:href="@{/admin/productos}" class="admin-kpi">
+                        <div class="admin-kpi__icon admin-kpi__icon--green">
+                            <i class="fas fa-box-open" aria-hidden="true"></i>
+                        </div>
+                        <div class="admin-kpi__body">
+                            <span class="admin-kpi__label">Productos en Catálogo</span>
+                            <strong class="admin-kpi__value" th:text="${estadisticas.totalProductos}">0</strong>
+                            <span class="admin-kpi__meta">Referencias agrícolas aprobadas</span>
+                        </div>
+                    </a>
 
-                    <article class="admin-stat">
-                        <div class="admin-stat__icon"><i class="fas fa-box" aria-hidden="true"></i></div>
-                        <p class="admin-stat__label">Productos</p>
-                        <p class="admin-stat__value" th:text="${estadisticas.totalProductos}">0</p>
-                        <p class="admin-stat__hint">Productos publicados en el catálogo</p>
-                    </article>
+                    <a th:href="@{/admin/pedidos}" class="admin-kpi">
+                        <div class="admin-kpi__icon admin-kpi__icon--amber">
+                            <i class="fas fa-shopping-bag" aria-hidden="true"></i>
+                        </div>
+                        <div class="admin-kpi__body">
+                            <span class="admin-kpi__label">Pedidos Totales</span>
+                            <strong class="admin-kpi__value" th:text="${estadisticas.totalPedidos}">0</strong>
+                            <span class="admin-kpi__meta">Órdenes procesadas en tienda</span>
+                        </div>
+                    </a>
 
-                    <article class="admin-stat admin-stat--blue">
-                        <div class="admin-stat__icon"><i class="fas fa-star" aria-hidden="true"></i></div>
-                        <p class="admin-stat__label">Reseñas</p>
-                        <p class="admin-stat__value" th:text="${estadisticas.totalResenas}">0</p>
-                        <p class="admin-stat__hint">Opiniones de la comunidad</p>
-                    </article>
+                    <a th:href="@{/admin/resenas}" class="admin-kpi">
+                        <div class="admin-kpi__icon admin-kpi__icon--teal">
+                            <i class="fas fa-star" aria-hidden="true"></i>
+                        </div>
+                        <div class="admin-kpi__body">
+                            <span class="admin-kpi__label">Reseñas de Clientes</span>
+                            <strong class="admin-kpi__value" th:text="${estadisticas.totalResenas}">0</strong>
+                            <span class="admin-kpi__meta">Valoraciones verificadas</span>
+                        </div>
+                    </a>
                 </section>
 
+                <!-- Cola de Atención Prioritaria + Accesos Rápidos -->
                 <div class="admin-grid">
-                    <section class="admin-card" aria-label="Accesos rápidos">
+                    <!-- Cola de Atención Prioritaria -->
+                    <section class="admin-card" aria-label="Solicitudes pendientes de revisión">
                         <div class="admin-card__head">
-                            <h2><i class="fas fa-bolt" aria-hidden="true"></i> Accesos rápidos</h2>
+                            <h2><i class="fas fa-bell" aria-hidden="true"></i> Cola de Atención Inmediata</h2>
+                            <span class="admin-card__badge">Prioridad</span>
                         </div>
-                        <div class="admin-quick-grid">
-                            <a th:href="@{/admin/usuarios}" class="admin-quick">
-                                <i class="fas fa-users" aria-hidden="true"></i>
-                                Gestionar usuarios
+
+                        <div class="admin-pending-list">
+                            <a th:href="@{/admin/retiros}" class="admin-pending-item">
+                                <div class="admin-pending-item__icon">
+                                    <i class="fas fa-money-bill-transfer" aria-hidden="true"></i>
+                                </div>
+                                <div class="admin-pending-item__info">
+                                    <strong>Solicitudes de Retiro</strong>
+                                    <span>Aprobar o rechazar retiros de vendedores y transportistas</span>
+                                </div>
+                                <span class="admin-pending-item__count"
+                                      th:classappend="${retirosPendientesCount != null and retirosPendientesCount > 0 ? 'is-alert' : ''}"
+                                      th:text="${retirosPendientesCount != null ? retirosPendientesCount : 0}">0</span>
                             </a>
-                            <a th:href="@{/admin/productos}" class="admin-quick">
-                                <i class="fas fa-box" aria-hidden="true"></i>
-                                Catálogo
+
+                            <a th:href="@{/admin/moderacion}" class="admin-pending-item">
+                                <div class="admin-pending-item__icon">
+                                    <i class="fas fa-clipboard-check" aria-hidden="true"></i>
+                                </div>
+                                <div class="admin-pending-item__info">
+                                    <strong>Moderación de Catálogo</strong>
+                                    <span>Sugerencias de nuevos productos enviadas por vendedores</span>
+                                </div>
+                                <span class="admin-pending-item__count"
+                                      th:classappend="${catalogoPendienteCount != null and catalogoPendienteCount > 0 ? 'is-alert' : ''}"
+                                      th:text="${catalogoPendienteCount != null ? catalogoPendienteCount : 0}">0</span>
                             </a>
-                            <a th:href="@{/admin/verificacion-tiendas}" class="admin-quick">
-                                <i class="fas fa-store" aria-hidden="true"></i>
-                                Verificar tiendas
+
+                            <a th:href="@{/admin/verificacion-tiendas}" class="admin-pending-item">
+                                <div class="admin-pending-item__icon">
+                                    <i class="fas fa-store-alt" aria-hidden="true"></i>
+                                </div>
+                                <div class="admin-pending-item__info">
+                                    <strong>Verificación de Tiendas</strong>
+                                    <span>Productores esperando validación para publicar ofertas</span>
+                                </div>
+                                <span class="admin-pending-item__count"
+                                      th:classappend="${vendedoresPendientesCount != null and vendedoresPendientesCount > 0 ? 'is-alert' : ''}"
+                                      th:text="${vendedoresPendientesCount != null ? vendedoresPendientesCount : 0}">0</span>
                             </a>
-                            <a th:href="@{/admin/moderacion}" class="admin-quick">
-                                <i class="fas fa-gavel" aria-hidden="true"></i>
-                                Moderar catálogo
+
+                            <a th:href="@{/admin/transportistas}" class="admin-pending-item">
+                                <div class="admin-pending-item__icon">
+                                    <i class="fas fa-truck" aria-hidden="true"></i>
+                                </div>
+                                <div class="admin-pending-item__info">
+                                    <strong>Habilitación de Transportistas</strong>
+                                    <span>Conductores registrados pendientes de verificación</span>
+                                </div>
+                                <span class="admin-pending-item__count"
+                                      th:classappend="${transportistasPendientesCount != null and transportistasPendientesCount > 0 ? 'is-alert' : ''}"
+                                      th:text="${transportistasPendientesCount != null ? transportistasPendientesCount : 0}">0</span>
                             </a>
-                            <a th:href="@{/admin/transportistas}" class="admin-quick">
-                                <i class="fas fa-truck" aria-hidden="true"></i>
-                                Transportistas
-                            </a>
-                            <a th:href="@{/admin/configuracion}" class="admin-quick">
-                                <i class="fas fa-gear" aria-hidden="true"></i>
-                                Configuración
+
+                            <a th:href="@{/admin/mensajes}" class="admin-pending-item">
+                                <div class="admin-pending-item__icon">
+                                    <i class="fas fa-envelope-open-text" aria-hidden="true"></i>
+                                </div>
+                                <div class="admin-pending-item__info">
+                                    <strong>Bandeja de Mensajes</strong>
+                                    <span>Consultas y reportes enviados desde el formulario de contacto</span>
+                                </div>
+                                <span class="admin-pending-item__count"
+                                      th:text="${mensajesRecibidosCount != null ? mensajesRecibidosCount : 0}">0</span>
                             </a>
                         </div>
                     </section>
 
-                    <section class="admin-card" aria-label="Pendientes">
+                    <!-- Accesos Rápidos del Ecosistema -->
+                    <section class="admin-card" aria-label="Accesos directos a módulos">
                         <div class="admin-card__head">
-                            <h2><i class="fas fa-clock" aria-hidden="true"></i> Pendientes</h2>
+                            <h2><i class="fas fa-compass" aria-hidden="true"></i> Accesos Rápidos de Módulos</h2>
                         </div>
-                        <ul class="admin-pending-list">
-                            <li>
-                                <span>Tiendas por verificar</span>
-                                <strong th:text="${vendedoresPendientesCount != null ? vendedoresPendientesCount : 0}">0</strong>
-                            </li>
-                            <li>
-                                <span>Productos por moderar</span>
-                                <strong th:text="${catalogoPendienteCount != null ? catalogoPendienteCount : 0}">0</strong>
-                            </li>
-                            <li>
-                                <span>Transportistas pendientes</span>
-                                <strong th:text="${transportistasPendientesCount != null ? transportistasPendientesCount : 0}">0</strong>
-                            </li>
-                            <li>
-                                <span>Mensajes recibidos</span>
-                                <strong th:text="${mensajesRecibidosCount != null ? mensajesRecibidosCount : 0}">0</strong>
-                            </li>
-                        </ul>
+
+                        <div class="admin-quick-grid">
+                            <a th:href="@{/admin/ofertas}" class="admin-quick-link">
+                                <i class="fas fa-tags" aria-hidden="true"></i>
+                                <span>Ofertas de Vendedores</span>
+                            </a>
+                            <a th:href="@{/admin/pedidos}" class="admin-quick-link">
+                                <i class="fas fa-receipt" aria-hidden="true"></i>
+                                <span>Gestión de Pedidos</span>
+                            </a>
+                            <a th:href="@{/admin/retiros}" class="admin-quick-link">
+                                <i class="fas fa-money-bill-transfer" aria-hidden="true"></i>
+                                <span>Retiros de Billetera</span>
+                            </a>
+                            <a th:href="@{/admin/usuarios}" class="admin-quick-link">
+                                <i class="fas fa-user-cog" aria-hidden="true"></i>
+                                <span>Roles y Usuarios</span>
+                            </a>
+                            <a th:href="@{/admin/notificaciones}" class="admin-quick-link">
+                                <i class="fas fa-bullhorn" aria-hidden="true"></i>
+                                <span>Enviar Notificación</span>
+                            </a>
+                            <a th:href="@{/admin/configuracion}" class="admin-quick-link">
+                                <i class="fas fa-sliders-h" aria-hidden="true"></i>
+                                <span>Parámetros del Sistema</span>
+                            </a>
+                            <a th:href="@{/admin/powerbi}" class="admin-quick-link">
+                                <i class="fas fa-chart-pie" aria-hidden="true"></i>
+                                <span>Analíticas Power BI</span>
+                            </a>
+                            <a th:href="@{/admin/sesiones}" class="admin-quick-link">
+                                <i class="fas fa-user-check" aria-hidden="true"></i>
+                                <span>Sesiones Activas</span>
+                            </a>
+                        </div>
                     </section>
                 </div>
 
             </div>
+
         </div>
     </main>
 

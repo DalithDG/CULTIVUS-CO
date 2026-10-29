@@ -1,4 +1,4 @@
-<header th:fragment="siteHeader">
+<header xmlns:th="http://www.thymeleaf.org" th:fragment="siteHeader">
     <!-- Fonts & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -7,204 +7,239 @@
     <link rel="stylesheet" th:href="@{/accesibilidad-vendedor.css}">
     <link rel="stylesheet" th:href="@{/vendedor-sidebar.css}">
 
-    <!-- ══════════════════ TOPBAR ══════════════════ -->
+    <!-- ═══════════════════════════════════════════════
+         TOPBAR FIJA SUPERIOR
+         ═══════════════════════════════════════════════ -->
     <div class="vs-topbar" id="vsTopbar">
-        <!-- Hamburger (mobile) -->
-        <button class="vs-menu-toggle" id="vsMenuToggle" aria-label="Abrir menú">
-            <span></span><span></span><span></span>
+        <!-- Botón hamburguesa para móvil -->
+        <button class="vs-menu-toggle" id="vsMenuToggle" aria-label="Abrir menú" aria-expanded="false">
+            <span></span>
+            <span></span>
+            <span></span>
         </button>
 
-        <!-- Logo -->
-        <a th:href="@{/vendedor/dashboard}" class="vs-topbar__logo">
-            <img th:src="@{/images/imagotipoCultivus.png}" alt="Cultivus">
+        <!-- Logo + Etiqueta Vendedor -->
+        <a th:href="@{/vendedor/ventas}" class="vs-topbar__logo" aria-label="Cultivus - Panel de Vendedor">
+            <img th:src="@{/images/imagotipo_transparente.png}" alt="Cultivus" class="vs-topbar__logo-img"
+                 onerror="this.src='/images/imagotipoCultivus.png'">
+            <span class="vs-topbar__badge-vendedor">Vendedor</span>
         </a>
 
         <div class="vs-topbar__divider"></div>
 
-        <!-- Breadcrumb / sección activa -->
+        <!-- Breadcrumb dinámico -->
         <div class="vs-topbar__breadcrumb">
-            Panel de Vendedor <i class="fas fa-chevron-right"></i>
-            <span id="vsBreadcrumbCurrent">Inicio</span>
+            <i class="fas fa-seedling" aria-hidden="true"></i>
+            <span>Panel de Vendedor</span>
+            <i class="fas fa-chevron-right" aria-hidden="true"></i>
+            <span id="vsBreadcrumbCurrent">Gestión de Ventas</span>
         </div>
 
-        <!-- Acciones derecha -->
+        <!-- Acciones derechas -->
         <div class="vs-topbar__actions">
-            <!-- Accesibilidad -->
+            <!-- Accesibilidad: texto más grande -->
             <button type="button" class="vs-topbar__accessibility" id="btnTextoGrande" onclick="toggleTextoGrande()"
-                aria-pressed="false" title="Cambiar tamaño de letra">
-                <i class="fas fa-text-height"></i>
-                <span>Letra grande</span>
+                    aria-pressed="false" title="Cambiar tamaño de letra">
+                <i class="fas fa-text-height" aria-hidden="true"></i>
+                <span id="lblTextoGrande">Letra grande</span>
             </button>
+
+            <!-- Ir al mercado como comprador -->
+            <a th:href="@{/productos}" class="vs-topbar__btn" title="Ver mercado como comprador">
+                <i class="fas fa-store" aria-hidden="true"></i>
+            </a>
 
             <!-- Notificaciones -->
             <a th:href="@{/usuario/notificaciones}" class="vs-topbar__btn" title="Notificaciones">
-                <i class="fas fa-bell"></i>
-                <span class="vs-topbar__badge" th:if="${notificacionesCount != null and notificacionesCount > 0}"
-                    th:text="${notificacionesCount}">0</span>
+                <i class="fas fa-bell" aria-hidden="true"></i>
+                <span class="vs-topbar__badge"
+                      th:if="${notificacionesCount != null and notificacionesCount > 0}"
+                      th:text="${notificacionesCount}">0</span>
             </a>
 
             <!-- Cerrar sesión -->
             <a th:href="@{/usuario/logout}" class="vs-topbar__btn" title="Cerrar sesión">
-                <i class="fas fa-sign-out-alt"></i>
+                <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
             </a>
 
-            <!-- Avatar / Perfil -->
+            <!-- Avatar / Perfil del vendedor -->
             <a th:href="@{/vendedor/perfil}" class="vs-topbar__avatar" title="Mi perfil de vendedor">
-                <i class="fas fa-user"></i>
+                <i class="fas fa-user" aria-hidden="true"></i>
             </a>
         </div>
     </div>
 
-    <!-- Overlay mobile -->
+    <!-- Overlay oscuro para cerrar sidebar en móvil -->
     <div class="vs-overlay" id="vsOverlay"></div>
 
-    <!-- ══════════════════ SIDEBAR ══════════════════ -->
-    <aside class="vs-sidebar" id="vsSidebar">
-        <!-- Info del vendedor -->
+    <!-- ═══════════════════════════════════════════════
+         SIDEBAR LATERAL FIJA
+         ═══════════════════════════════════════════════ -->
+    <aside class="vs-sidebar" id="vsSidebar" aria-label="Navegación del panel de vendedor">
+
+        <!-- Cabecera de Tienda / Vendedor -->
         <div class="vs-sidebar__vendor">
             <div class="vs-sidebar__vendor-avatar">
-                <i class="fas fa-store"></i>
+                <i class="fas fa-store" aria-hidden="true"></i>
             </div>
             <div class="vs-sidebar__vendor-info">
-                <div class="vs-sidebar__vendor-name" th:text="${usuario != null ? usuario.nombre : 'Mi Tienda'}">Mi
-                    Tienda</div>
+                <div class="vs-sidebar__vendor-name"
+                     th:text="${usuario != null ? usuario.nombre : (session.usuarioLogueado != null ? session.usuarioLogueado.nombre : 'Mi Tienda')}">
+                    Mi Tienda
+                </div>
                 <div class="vs-sidebar__vendor-role">Vendedor · Cultivus</div>
             </div>
         </div>
 
-        <!-- Grupo: Principal -->
+        <!-- Grupo Principal: Gestión de Tienda -->
         <nav class="vs-nav-group">
             <div class="vs-nav-group__label">Principal</div>
 
-            <a th:href="@{/vendedor/dashboard}" class="vs-nav-item"
-                th:classappend="${currentPath != null and currentPath.contains('/dashboard') ? ' is-active' : ''}">
-                <span class="vs-nav-item__icon"><i class="fas fa-house"></i></span>
-                Inicio
-            </a>
-
-            <a th:href="@{/vendedor/ventas}" class="vs-nav-item"
-                th:classappend="${currentPath != null and currentPath.contains('/ventas') ? ' is-active' : ''}">
-                <span class="vs-nav-item__icon"><i class="fas fa-receipt"></i></span>
-                Ventas
-                <span class="vs-nav-item__badge" th:if="${tareasPendientes != null and tareasPendientes > 0}"
-                    th:text="${tareasPendientes}">0</span>
+            <a th:href="@{/vendedor/ventas}" class="vs-nav-item" data-vs-nav="ventas"
+               th:classappend="${currentPath != null and currentPath.contains('/ventas') ? ' is-active' : ''}">
+                <span class="vs-nav-item__icon"><i class="fas fa-receipt" aria-hidden="true"></i></span>
+                <span>Ventas</span>
+                <span class="vs-nav-item__badge"
+                      th:if="${tareasPendientes != null and tareasPendientes > 0}"
+                      th:text="${tareasPendientes}">0</span>
             </a>
         </nav>
 
         <div class="vs-sidebar__sep"></div>
 
-        <!-- Grupo: Catálogo -->
+        <!-- Grupo Catálogo -->
         <nav class="vs-nav-group">
             <div class="vs-nav-group__label">Catálogo</div>
 
-            <a th:href="@{/vendedor/mis-productos}" class="vs-nav-item"
-                th:classappend="${currentPath != null and currentPath.contains('/mis-productos') ? ' is-active' : ''}">
-                <span class="vs-nav-item__icon"><i class="fas fa-box"></i></span>
-                Mis Productos
+            <a th:href="@{/vendedor/mis-productos}" class="vs-nav-item" data-vs-nav="mis-productos"
+               th:classappend="${currentPath != null and currentPath.contains('/mis-productos') ? ' is-active' : ''}">
+                <span class="vs-nav-item__icon"><i class="fas fa-box" aria-hidden="true"></i></span>
+                <span>Mis Productos</span>
             </a>
 
-            <a th:href="@{/vendedor/productos/nuevo}" class="vs-nav-item"
-                th:classappend="${currentPath != null and currentPath.contains('/productos/nuevo') ? ' is-active' : ''}">
-                <span class="vs-nav-item__icon"><i class="fas fa-plus-circle"></i></span>
-                Agregar Producto
+            <a th:href="@{/vendedor/productos/nuevo}" class="vs-nav-item" data-vs-nav="nuevo-producto"
+               th:classappend="${currentPath != null and currentPath.contains('/productos/nuevo') ? ' is-active' : ''}">
+                <span class="vs-nav-item__icon"><i class="fas fa-plus-circle" aria-hidden="true"></i></span>
+                <span>Agregar Producto</span>
             </a>
         </nav>
 
         <div class="vs-sidebar__sep"></div>
 
-        <!-- Grupo: Finanzas -->
+        <!-- Grupo Finanzas -->
         <nav class="vs-nav-group">
             <div class="vs-nav-group__label">Finanzas</div>
 
-            <a th:href="@{/vendedor/billetera}" class="vs-nav-item"
-                th:classappend="${currentPath != null and currentPath.contains('/billetera') ? ' is-active' : ''}">
-                <span class="vs-nav-item__icon"><i class="fas fa-wallet"></i></span>
-                Mi Billetera
+            <a th:href="@{/vendedor/billetera}" class="vs-nav-item" data-vs-nav="billetera"
+               th:classappend="${currentPath != null and currentPath.contains('/billetera') ? ' is-active' : ''}">
+                <span class="vs-nav-item__icon"><i class="fas fa-wallet" aria-hidden="true"></i></span>
+                <span>Mi Billetera</span>
+            </a>
+
+            <a th:href="@{/vendedor/cuenta-bancaria}" class="vs-nav-item" data-vs-nav="cuenta-bancaria"
+               th:classappend="${currentPath != null and currentPath.contains('/cuenta-bancaria') ? ' is-active' : ''}">
+                <span class="vs-nav-item__icon"><i class="fas fa-building-columns" aria-hidden="true"></i></span>
+                <span>Cuenta Bancaria</span>
             </a>
         </nav>
 
         <div class="vs-sidebar__sep"></div>
 
-        <!-- Grupo: Cuenta -->
+        <!-- Grupo Configuración -->
         <nav class="vs-nav-group">
             <div class="vs-nav-group__label">Configuración</div>
 
-            <a th:href="@{/vendedor/perfil}" class="vs-nav-item"
-                th:classappend="${currentPath != null and currentPath.contains('/vendedor/perfil') ? ' is-active' : ''}">
-                <span class="vs-nav-item__icon"><i class="fas fa-id-card"></i></span>
-                Mi Perfil
+            <a th:href="@{/vendedor/perfil}" class="vs-nav-item" data-vs-nav="perfil"
+               th:classappend="${currentPath != null and currentPath.contains('/vendedor/perfil') ? ' is-active' : ''}">
+                <span class="vs-nav-item__icon"><i class="fas fa-id-card" aria-hidden="true"></i></span>
+                <span>Mi Perfil</span>
             </a>
 
-            <a th:href="@{/vendedor/editar}" class="vs-nav-item"
-                th:classappend="${currentPath != null and currentPath.contains('/vendedor/editar') ? ' is-active' : ''}">
-                <span class="vs-nav-item__icon"><i class="fas fa-store"></i></span>
-                Editar mi Tienda
+            <a th:href="@{/vendedor/editar}" class="vs-nav-item" data-vs-nav="editar"
+               th:classappend="${currentPath != null and currentPath.contains('/vendedor/editar') ? ' is-active' : ''}">
+                <span class="vs-nav-item__icon"><i class="fas fa-store" aria-hidden="true"></i></span>
+                <span>Editar mi Tienda</span>
             </a>
         </nav>
 
-        <!-- Bottom: cerrar sesión -->
+        <!-- Pie de Sidebar: Cerrar Sesión -->
         <div class="vs-sidebar__bottom">
             <a th:href="@{/usuario/logout}" class="vs-nav-item vs-nav-item--logout">
-                <span class="vs-nav-item__icon"><i class="fas fa-arrow-right-from-bracket"></i></span>
-                Cerrar Sesión
+                <span class="vs-nav-item__icon"><i class="fas fa-arrow-right-from-bracket" aria-hidden="true"></i></span>
+                <span>Cerrar Sesión</span>
             </a>
         </div>
     </aside>
 
-    <!-- Scripts -->
+    <!-- Script de control del Sidebar, ruta activa y modo de letra grande -->
     <script>
-        // ── Auto active navigation & breadcrumb ────────────
         (function () {
+            document.body.classList.add('vs-layout');
+
+            // 1. Marcar ítem activo según URL actual
             var path = window.location.pathname;
-            var navItems = document.querySelectorAll('.vs-sidebar .vs-nav-item');
+            var navItems = document.querySelectorAll('.vs-sidebar .vs-nav-item[data-vs-nav]');
+            var bc = document.getElementById('vsBreadcrumbCurrent');
+
+            var routeMap = [
+                { match: '/vendedor/productos/nuevo', key: 'nuevo-producto', label: 'Publicar Producto' },
+                { match: '/vendedor/productos/editar', key: 'mis-productos', label: 'Editar Oferta' },
+                { match: '/vendedor/mis-productos', key: 'mis-productos', label: 'Mi Catálogo' },
+                { match: '/vendedor/ventas/pedido', key: 'ventas', label: 'Detalle de Venta' },
+                { match: '/vendedor/ventas', key: 'ventas', label: 'Gestión de Ventas' },
+                { match: '/vendedor/cuenta-bancaria', key: 'cuenta-bancaria', label: 'Cuenta Bancaria' },
+                { match: '/vendedor/billetera', key: 'billetera', label: 'Mi Billetera' },
+                { match: '/vendedor/editar', key: 'editar', label: 'Perfil de Tienda' },
+                { match: '/vendedor/perfil', key: 'perfil', label: 'Mi Cuenta' },
+                { match: '/vendedor/dashboard', key: 'dashboard', label: 'Panel Principal' },
+                { match: '/vendedor', key: 'dashboard', label: 'Panel Principal' }
+            ];
+
+            var activeKey = 'dashboard';
+            var activeText = 'Panel Principal';
+            for (var i = 0; i < routeMap.length; i++) {
+                if (path.indexOf(routeMap[i].match) === 0) {
+                    activeKey = routeMap[i].key;
+                    activeText = routeMap[i].label;
+                    break;
+                }
+            }
+
             navItems.forEach(function (item) {
-                var href = item.getAttribute('href');
-                if (!href) return;
-                if (href === '/vendedor/dashboard' && (path === '/vendedor/dashboard' || path === '/vendedor' || path === '/vendedor/')) {
+                if (item.getAttribute('data-vs-nav') === activeKey) {
                     item.classList.add('is-active');
-                } else if (href !== '/vendedor/dashboard' && href !== '/usuario/logout' && path.startsWith(href)) {
-                    item.classList.add('is-active');
+                } else {
+                    item.classList.remove('is-active');
                 }
             });
 
-            var bc = document.getElementById('vsBreadcrumbCurrent');
             if (bc) {
-                if (path.includes('/dashboard')) bc.textContent = 'Panel Principal';
-                else if (path.includes('/ventas/pedido')) bc.textContent = 'Detalle de Venta';
-                else if (path.includes('/ventas')) bc.textContent = 'Gestión de Ventas';
-                else if (path.includes('/mis-productos')) bc.textContent = 'Mi Catálogo';
-                else if (path.includes('/productos/nuevo')) bc.textContent = 'Publicar Producto';
-                else if (path.includes('/productos/editar')) bc.textContent = 'Editar Oferta';
-                else if (path.includes('/billetera')) bc.textContent = 'Mi Billetera';
-                else if (path.includes('/editar')) bc.textContent = 'Perfil de Tienda';
-                else if (path.includes('/perfil')) bc.textContent = 'Mi Cuenta';
+                bc.textContent = activeText;
             }
-        })();
 
-        // ── Sidebar mobile toggle ──────────────────────────
-        (function () {
-            var toggle = document.getElementById('vsMenuToggle');
+            // 2. Toggle menú lateral en móvil
+            var toggleBtn = document.getElementById('vsMenuToggle');
             var sidebar = document.getElementById('vsSidebar');
             var overlay = document.getElementById('vsOverlay');
 
-            function openSidebar() {
-                if (sidebar) sidebar.classList.add('is-open');
-                if (overlay) overlay.classList.add('is-visible');
-                document.body.style.overflow = 'hidden';
-            }
-
-            function closeSidebar() {
+            function closeMobileMenu() {
                 if (sidebar) sidebar.classList.remove('is-open');
                 if (overlay) overlay.classList.remove('is-visible');
                 document.body.style.overflow = '';
+                if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
             }
 
-            if (toggle) toggle.addEventListener('click', openSidebar);
-            if (overlay) overlay.addEventListener('click', closeSidebar);
-        })();
+            if (toggleBtn && sidebar && overlay) {
+                toggleBtn.addEventListener('click', function () {
+                    var isOpen = sidebar.classList.toggle('is-open');
+                    overlay.classList.toggle('is-visible', isOpen);
+                    document.body.style.overflow = isOpen ? 'hidden' : '';
+                    toggleBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+                });
+                overlay.addEventListener('click', closeMobileMenu);
+            }
 
-        // ── Accesibilidad: texto grande ────────────────────
-        (function () {
+            // 3. Accesibilidad: texto grande (compatible con 'cultivus-texto-grande')
             var CLAVE = 'cultivus-texto-grande';
 
             function aplicarTextoGrande(activo) {
@@ -219,11 +254,15 @@
 
             window.toggleTextoGrande = function () {
                 var activo = !document.documentElement.classList.contains('texto-grande');
-                localStorage.setItem(CLAVE, activo ? '1' : '0');
+                try {
+                    localStorage.setItem(CLAVE, activo ? '1' : '0');
+                } catch (e) {}
                 aplicarTextoGrande(activo);
             };
 
-            aplicarTextoGrande(localStorage.getItem(CLAVE) === '1');
+            try {
+                aplicarTextoGrande(localStorage.getItem(CLAVE) === '1');
+            } catch (e) {}
         })();
     </script>
 </header>

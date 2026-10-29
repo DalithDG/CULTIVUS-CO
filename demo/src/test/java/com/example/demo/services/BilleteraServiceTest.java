@@ -46,25 +46,30 @@ class BilleteraServiceTest {
         final List<MovimientoBilletera> movimientos = new ArrayList<>();
         final Set<String> claves = new HashSet<>();
 
-        static class SaldosMutables { long retencion; long disponible; long retirado; }
+        static class SaldosMutables { long retencion; long disponible; long enProceso; long retirado; }
 
         @Override
-        public Billetera obtenerOCrear(String usuarioId, Billetera.Rol rol) {
+        public synchronized Billetera obtenerOCrear(String usuarioId, Billetera.Rol rol) {
             String k = usuarioId + "|" + rol;
-            return entidades.computeIfAbsent(k, x -> {
-                Billetera b = new Billetera(usuarioId, rol);
+            Billetera b = entidades.computeIfAbsent(k, x -> {
+                Billetera nueva = new Billetera(usuarioId, rol);
+                String walId = billeteras.containsKey("wal_" + usuarioId)
+                        ? ("wal_" + usuarioId + "_" + rol)
+                        : ("wal_" + usuarioId);
                 try {
                     Field f = Billetera.class.getDeclaredField("id");
                     f.setAccessible(true);
-                    f.set(b, "wal_" + usuarioId);
+                    f.set(nueva, walId);
                 } catch (Exception e) { throw new RuntimeException(e); }
-                billeteras.put("wal_" + usuarioId, new SaldosMutables());
-                return b;
+                billeteras.put(walId, new SaldosMutables());
+                return nueva;
             });
+            sincronizar(b.getId());
+            return b;
         }
 
         @Override
-        public boolean insertarMovimiento(MovimientoBilletera m) {
+        public synchronized boolean insertarMovimiento(MovimientoBilletera m) {
             if (m.getClaveIdempotencia() != null && !claves.add(m.getClaveIdempotencia())) {
                 return false;
             }
@@ -73,32 +78,101 @@ class BilleteraServiceTest {
         }
 
         @Override
-        public boolean existeMovimientoPorClave(String claveIdempotencia) {
+        public synchronized boolean existeMovimientoPorClave(String claveIdempotencia) {
             return claveIdempotencia != null && claves.contains(claveIdempotencia);
         }
 
+        private void sincronizar(String billeteraId) {
+            SaldosMutables s = billeteras.get(billeteraId);
+            if (s == null) return;
+            for (Billetera b : entidades.values()) {
+                if (billeteraId.equals(b.getId())) {
+                    try {
+                        setField(b, "saldoRetencionCentavos", s.retencion);
+                        setField(b, "saldoDisponibleCentavos", s.disponible);
+                        setField(b, "saldoEnProcesoRetiroCentavos", s.enProceso);
+                        setField(b, "saldoRetiradoCentavos", s.retirado);
+                    } catch (Exception e) { throw new RuntimeException(e); }
+                }
+            }
+        }
+
+        private static void setField(Object target, String fieldName, Object value) throws Exception {
+            Field f = target.getClass().getDeclaredField(fieldName);
+            f.setAccessible(true);
+            f.set(target, value);
+        }
+
         @Override
-        public void incrementarSaldo(String billeteraId, Billetera.EstadoSaldo estado, long delta) {
+        public synchronized void incrementarSaldo(String billeteraId, Billetera.EstadoSaldo estado, long delta) {
             SaldosMutables s = billeteras.get(billeteraId);
             switch (estado) {
                 case EN_RETENCION: s.retencion += delta; break;
                 case DISPONIBLE: s.disponible += delta; break;
+                case EN_PROCESO_RETIRO: s.enProceso += delta; break;
                 default: s.retirado += delta;
             }
+            sincronizar(billeteraId);
         }
 
         @Override
-        public Optional<Billetera> buscar(String usuarioId, Billetera.Rol rol) {
-            return Optional.ofNullable(entidades.get(usuarioId + "|" + rol));
+        public synchronized Optional<Billetera> buscar(String usuarioId, Billetera.Rol rol) {
+            Billetera b = entidades.get(usuarioId + "|" + rol);
+            if (b != null) sincronizar(b.getId());
+            return Optional.ofNullable(b);
         }
 
         @Override
-        public List<MovimientoBilletera> listarMovimientos(String usuarioId, Billetera.Rol rol) {
-            return movimientos.stream().filter(m -> m.getUsuarioId().equals(usuarioId)).collect(Collectors.toList());
+        public synchronized List<MovimientoBilletera> listarMovimientos(String usuarioId, Billetera.Rol rol) {
+            return movimientos.stream()
+                    .filter(m -> m.getUsuarioId().equals(usuarioId) && (rol == null || m.getRol() == rol))
+                    .collect(Collectors.toList());
+        }
+
+        @Override
+        public synchronized Optional<MovimientoBilletera> buscarMovimientoPorClave(String claveIdempotencia) {
+            if (claveIdempotencia == null) return Optional.empty();
+            return movimientos.stream()
+                    .filter(m -> claveIdempotencia.equals(m.getClaveIdempotencia()))
+                    .findFirst();
+        }
+
+        @Override
+        public synchronized boolean reservarParaRetiro(String billeteraId, long montoCentavos) {
+            if (montoCentavos <= 0) return false;
+            SaldosMutables s = billeteras.get(billeteraId);
+            if (s == null || s.disponible < montoCentavos) return false;
+            s.disponible -= montoCentavos;
+            s.enProceso += montoCentavos;
+            sincronizar(billeteraId);
+            return true;
+        }
+
+        @Override
+        public synchronized boolean confirmarRetiro(String billeteraId, long montoCentavos) {
+            if (montoCentavos <= 0) return false;
+            SaldosMutables s = billeteras.get(billeteraId);
+            if (s == null || s.enProceso < montoCentavos) return false;
+            s.enProceso -= montoCentavos;
+            s.retirado += montoCentavos;
+            sincronizar(billeteraId);
+            return true;
+        }
+
+        @Override
+        public synchronized boolean revertirRetiro(String billeteraId, long montoCentavos) {
+            if (montoCentavos <= 0) return false;
+            SaldosMutables s = billeteras.get(billeteraId);
+            if (s == null || s.enProceso < montoCentavos) return false;
+            s.enProceso -= montoCentavos;
+            s.disponible += montoCentavos;
+            sincronizar(billeteraId);
+            return true;
         }
 
         long retencion(String vendedorId) { return billeteras.get("wal_" + vendedorId).retencion; }
         long disponible(String vendedorId) { return billeteras.get("wal_" + vendedorId).disponible; }
+        long enProceso(String vendedorId) { return billeteras.get("wal_" + vendedorId).enProceso; }
         long retirado(String vendedorId) { return billeteras.get("wal_" + vendedorId).retirado; }
         List<MovimientoBilletera> deVendedor(String v) {
             return movimientos.stream().filter(m -> m.getUsuarioId().equals(v)).collect(Collectors.toList());
@@ -372,6 +446,84 @@ class BilleteraServiceTest {
             assertNull(m.getAnnotation(org.springframework.web.bind.annotation.PatchMapping.class));
             assertNull(m.getAnnotation(org.springframework.web.bind.annotation.DeleteMapping.class));
         }
+    }
+
+    // ───────── tests Fase 0: Liberación a DISPONIBLE ─────────
+
+    @Test
+    @DisplayName("Fase 0: Liberación de pedido entregado mueve el neto de retención a disponible con dos asientos")
+    void liberacionPedidoEntregado() {
+        Pedido p = pedido("ped_lib_1", "vend_lib_1", "of1", 100_000L, 100_000L);
+        p.setEstado(Pedido.ENTREGADO);
+        p.setFechaEntrega(java.time.LocalDateTime.now().minusDays(2));
+        Compra c = new Compra();
+        c.setId("compra_lib_1");
+
+        // Abono inicial: 100.000 con 8% de comisión = 92.000 neto
+        billeteraService.registrarRepartoVentas(c, List.of(p));
+        assertEquals(92_000L, almacen.retencion("vend_lib_1"));
+        assertEquals(0L, almacen.disponible("vend_lib_1"));
+
+        // Liberación
+        boolean ok = billeteraService.liberarSaldoPedido(p);
+        assertTrue(ok);
+        assertEquals(0L, almacen.retencion("vend_lib_1"));
+        assertEquals(92_000L, almacen.disponible("vend_lib_1"));
+
+        // Idempotencia: segundo intento no hace nada
+        boolean reintento = billeteraService.liberarSaldoPedido(p);
+        assertFalse(reintento);
+        assertEquals(0L, almacen.retencion("vend_lib_1"));
+        assertEquals(92_000L, almacen.disponible("vend_lib_1"));
+
+        // Dos asientos de tipo LIBERACION
+        List<MovimientoBilletera> movs = almacen.listarMovimientos("vend_lib_1", Billetera.Rol.VENDEDOR);
+        long libRet = movs.stream().filter(m -> m.getTipo() == MovimientoBilletera.Tipo.LIBERACION
+                && m.getEstadoSaldo() == Billetera.EstadoSaldo.EN_RETENCION).count();
+        long libDisp = movs.stream().filter(m -> m.getTipo() == MovimientoBilletera.Tipo.LIBERACION
+                && m.getEstadoSaldo() == Billetera.EstadoSaldo.DISPONIBLE).count();
+        assertEquals(1, libRet);
+        assertEquals(1, libDisp);
+    }
+
+    @Test
+    @DisplayName("Fase 0: Pedido no entregado o con revisión abierta no se libera")
+    void liberacionExcluyeNoEntregadosOEnRevision() {
+        Pedido pPendiente = pedido("ped_pen", "vend_lib_2", "of1", 50_000L, 50_000L);
+        pPendiente.setEstado(Pedido.CONFIRMADO);
+
+        Pedido pRevision = pedido("ped_rev", "vend_lib_2", "of1", 50_000L, 50_000L);
+        pRevision.setEstado(Pedido.ENTREGADO);
+        pRevision.setRequiereRevision(true);
+
+        assertFalse(billeteraService.liberarSaldoPedido(pPendiente));
+        assertFalse(billeteraService.liberarSaldoPedido(pRevision));
+    }
+
+    @Test
+    @DisplayName("Fase 0: Liberación de envío de transportista mueve el flete a disponible")
+    void liberacionEnvioTransportista() {
+        com.example.demo.Model.Envio envio = new com.example.demo.Model.Envio();
+        try {
+            Field fId = com.example.demo.Model.Envio.class.getDeclaredField("id");
+            fId.setAccessible(true);
+            fId.set(envio, "env_lib_1");
+            Field fTrans = com.example.demo.Model.Envio.class.getDeclaredField("transportistaId");
+            fTrans.setAccessible(true);
+            fTrans.set(envio, "trans_lib_1");
+        } catch (Exception e) { throw new RuntimeException(e); }
+        envio.setCostoTotalCentavos(25_000L);
+        envio.setEstado(com.example.demo.Model.Envio.ENTREGADO);
+        envio.setFechaEntrega(java.time.LocalDateTime.now().minusDays(3));
+
+        billeteraService.registrarFleteEntregado(envio);
+        assertEquals(25_000L, almacen.retencion("trans_lib_1"));
+        assertEquals(0L, almacen.disponible("trans_lib_1"));
+
+        boolean ok = billeteraService.liberarSaldoEnvio(envio);
+        assertTrue(ok);
+        assertEquals(0L, almacen.retencion("trans_lib_1"));
+        assertEquals(25_000L, almacen.disponible("trans_lib_1"));
     }
 
     // ───────── helpers ─────────

@@ -1,97 +1,109 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="~{admin/fragments/head :: head('Ofertas Globales')}"></head>
+<head th:replace="~{admin/fragments/head :: head('Ofertas de Vendedores')}"></head>
 
 <body class="admin-layout">
 
-    <header th:replace="~{admin/fragments/topbar :: topbar('Ofertas Globales')}"></header>
+    <!-- Topbar -->
+    <header th:replace="~{admin/fragments/topbar :: topbar('Ofertas de Vendedores')}"></header>
+
+    <!-- Sidebar -->
     <aside th:replace="~{admin/fragments/sidebar :: sidebar}"></aside>
 
+    <!-- Contenido Principal -->
     <main class="admin-main">
         <div class="admin-content">
+
             <div th:replace="~{admin/fragments/alerts :: alerts}"></div>
 
-            <div class="admin-page" id="ofertas-page">
+            <!-- ==================== SECCIÓN OFERTAS ==================== -->
+            <div id="ofertas" class="section">
                 <div class="page-card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <h2><i class="fas fa-tags"></i> Ofertas Globales de Vendedores</h2>
+                    <div class="adm-section-head">
+                        <div class="adm-section-head__info">
+                            <h3 class="adm-section-head__title">
+                                <i class="fas fa-tags" aria-hidden="true"></i>
+                                <span>Ofertas de Vendedores (<span class="adm-tabular" th:text="${ofertas != null ? ofertas.totalElements : 0}">0</span>)</span>
+                            </h3>
+                            <p class="adm-section-head__sub">Listado de productos publicados por los vendedores con su precio, inventario y disponibilidad.</p>
+                        </div>
                     </div>
 
-                    <div th:if="${ofertas != null and !ofertas.empty}">
-                        <table class="table">
+                    <div class="table-container">
+                        <table class="data-table">
                             <thead>
                                 <tr>
+                                    <th>ID</th>
+                                    <th>Imagen</th>
                                     <th>Producto</th>
                                     <th>Vendedor</th>
-                                    <th>Precio</th>
-                                    <th>Stock</th>
-                                    <th>Compra Mínima</th>
+                                    <th class="adm-th-right">Precio</th>
+                                    <th class="adm-th-right">Stock</th>
+                                    <th class="adm-th-right">Compra Mín.</th>
+                                    <th>Disponible</th>
                                     <th>Estado</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr th:each="o : ${ofertas.content}">
+                                <tr th:each="of : ${ofertas.content}">
+                                    <td><span class="adm-mono" th:text="${of.id}">1</span></td>
                                     <td>
-                                        <div style="font-weight:600;" th:text="${o.nombreProducto != null ? o.nombreProducto : 'Producto'}">Producto</div>
-                                        <div style="font-size:12px; color:var(--adm-muted);" th:text="${o.descripcionPaquete != null ? o.descripcionPaquete : ''}">Presentación</div>
+                                        <img th:if="${of.imagenUrl != null}" th:src="${of.imagenUrl}" alt="img"
+                                             class="adm-thumb"
+                                             onerror="this.src='/images/placeholder.jpg'">
+                                        <span th:if="${of.imagenUrl == null}" class="adm-muted">-</span>
                                     </td>
-                                    <td th:text="${o.vendedor != null ? o.vendedor.nombre : 'Vendedor'}">Vendedor</td>
-                                    <td>
-                                        <strong th:text="${'$' + #numbers.formatDecimal(o.precio, 0, 'COMMA', 0, 'POINT')}">$0</strong>
+                                    <td><span class="adm-cell-title" th:text="${of.nombreProducto}">Producto</span></td>
+                                    <td th:text="${of.vendedor != null ? (of.vendedor.razonSocial != null ? of.vendedor.razonSocial : of.vendedor.nombre) : 'Sin vendedor'}">Vendedor</td>
+                                    <td class="adm-td-right">
+                                        <span class="adm-amount" th:text="${of.precio != null ? '$' + #numbers.formatDecimal(of.precio, 1, 'POINT', 0, 'COMMA') : '-'}">$0</span>
                                     </td>
-                                    <td th:text="${(o.stock != null ? o.stock : 0) + ' unidades'}">0 unidades</td>
-                                    <td th:text="${o.compraMinima != null ? o.compraMinima : 1}">1</td>
+                                    <td class="adm-td-right adm-tabular" th:text="${of.stock != null ? of.stock : 0}">0</td>
+                                    <td class="adm-td-right adm-tabular" th:text="${of.compraMinima != null ? of.compraMinima : 1}">1</td>
                                     <td>
-                                        <span class="badge" th:classappend="${o.disponible ? 'badge-success' : 'badge-warning'}"
-                                              th:text="${o.disponible ? 'Disponible' : 'Agotada'}">Disponible</span>
+                                        <span th:if="${of.disponible}" class="badge badge-active">Sí</span>
+                                        <span th:unless="${of.disponible}" class="badge badge-inactive">No</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-role" th:text="${of.estado != null ? of.estado : 'APROBADO'}">APROBADO</span>
+                                    </td>
+                                </tr>
+                                <tr th:if="${ofertas == null or ofertas.empty}">
+                                    <td colspan="9">
+                                        <div class="adm-empty">
+                                            <div class="adm-empty__icon"><i class="fas fa-tags" aria-hidden="true"></i></div>
+                                            <h4 class="adm-empty__title">No hay ofertas registradas</h4>
+                                            <p class="adm-empty__desc">Aún no se han publicado ofertas de venta en el catálogo.</p>
+                                        </div>
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
-
-                        <!-- Paginación Ofertas -->
-                        <div th:if="${ofertas.totalPages > 1}" class="paginacion-container"
-                            style="display:flex; justify-content:center; align-items:center; gap:15px; margin-top:30px; padding:20px 0;">
-                            <a th:href="@{/admin/ofertas(page=${ofertas.number - 1})}" th:if="${ofertas.hasPrevious()}"
-                                style="padding:8px 16px; border:1px solid #d6e2d8; border-radius:5px; background:white; cursor:pointer; text-decoration:none; color:#111e15;">
-                                <i class="fas fa-chevron-left"></i> Anterior
-                            </a>
-                            <button th:unless="${ofertas.hasPrevious()}" disabled
-                                style="padding:8px 16px; border:1px solid var(--adm-line); border-radius:5px; background:var(--adm-green-soft); color:#94a39a; cursor:not-allowed;">
-                                <i class="fas fa-chevron-left"></i> Anterior
-                            </button>
-                            <div style="display:flex; gap:5px;">
-                                <span th:each="i : ${#numbers.sequence(0, ofertas.totalPages - 1)}"
-                                    th:if="${i >= ofertas.number - 2 and i <= ofertas.number + 2}">
-                                    <a th:href="@{/admin/ofertas(page=${i})}" th:text="${i + 1}"
-                                        th:style="${i == ofertas.number ? 'background:var(--adm-green); color:white; border:1px solid var(--adm-green);' : 'background:white; color:#111e15; border:1px solid #d6e2d8;'}"
-                                        style="padding:8px 14px; border-radius:5px; text-decoration:none; font-weight:600; cursor:pointer; transition: 0.3s;">
-                                    </a>
-                                </span>
-                            </div>
-                            <a th:href="@{/admin/ofertas(page=${ofertas.number + 1})}" th:if="${ofertas.hasNext()}"
-                                style="padding:8px 16px; border:1px solid #d6e2d8; border-radius:5px; background:white; cursor:pointer; text-decoration:none; color:#111e15;">
-                                Siguiente <i class="fas fa-chevron-right"></i>
-                            </a>
-                            <button th:unless="${ofertas.hasNext()}" disabled
-                                style="padding:8px 16px; border:1px solid var(--adm-line); border-radius:5px; background:var(--adm-green-soft); color:#94a39a; cursor:not-allowed;">
-                                Siguiente <i class="fas fa-chevron-right"></i>
-                            </button>
-                        </div>
                     </div>
 
-                    <div th:if="${ofertas == null or ofertas.empty}" style="text-align:center; padding:40px; color:#7b8b80;">
-                        <i class="fas fa-tags" style="font-size:48px; color:#d6e2d8; margin-bottom:15px; display:block;"></i>
-                        <p style="font-size:18px;">No hay ofertas registradas actualmente.</p>
+                    <!-- Controles de Paginación -->
+                    <div class="paginacion-container" th:if="${ofertas != null and ofertas.totalPages > 1}">
+                        <span class="adm-pagination__info">
+                            Mostrando página <strong th:text="${ofertas.number + 1}">1</strong> de <strong th:text="${ofertas.totalPages}">1</strong>
+                        </span>
+                        <div class="adm-pagination__controls">
+                            <a th:if="${ofertas.hasPrevious()}" th:href="@{/admin/ofertas(page=${ofertas.number - 1})}" class="adm-page-btn">
+                                <i class="fas fa-chevron-left" aria-hidden="true"></i> Anterior
+                            </a>
+                            <span class="adm-page-pill" th:text="${ofertas.number + 1}">1</span>
+                            <a th:if="${ofertas.hasNext()}" th:href="@{/admin/ofertas(page=${ofertas.number + 1})}" class="adm-page-btn">
+                                Siguiente <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
 
-
         </div>
     </main>
 
+    <!-- Scripts -->
     <script th:src="@{/js/admin-panel.js}"></script>
 </body>
 

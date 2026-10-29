@@ -1,52 +1,103 @@
-<th:block th:fragment="topbar(titulo)">
-<header class="admin-topbar">
-    <button type="button" class="admin-topbar__menu" id="adminMenuToggle"
-        aria-label="Abrir o cerrar el menú" aria-controls="adminSidebar" aria-expanded="false">
-        <i class="fas fa-bars" aria-hidden="true"></i>
-    </button>
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
 
-    <a th:href="@{/admin/dashboard}" class="admin-topbar__logo" aria-label="Ir al panel de administración">
-        <img th:src="@{/images/imagotipo_transparente.png}" alt="Cultivus">
-    </a>
+<body>
+    <th:block th:fragment="topbar(titulo)">
+        <header class="adm-topbar admin-topbar">
+            <div class="adm-topbar__inner">
+                <!-- Izquierda: Botón colapsar + Marca + Breadcrumb -->
+                <div class="adm-topbar__left">
+                    <button type="button" id="adminMenuToggle" class="adm-icon-btn admin-topbar__menu"
+                            aria-label="Abrir o cerrar el menú"
+                            aria-controls="adminSidebar"
+                            aria-expanded="false"
+                            title="Contraer o expandir menú lateral">
+                        <i class="fas fa-bars" aria-hidden="true"></i>
+                    </button>
 
-    <div class="admin-topbar__divider" aria-hidden="true"></div>
+                    <a th:href="@{/admin/dashboard}" class="adm-brand admin-topbar__logo" aria-label="Ir al panel de administración">
+                        <img th:src="@{/images/imagotipo_transparente.png}" alt="Cultivus" class="adm-brand__logo"
+                             onerror="this.src='/images/logo_transparente.png'">
+                        <span class="adm-brand__tag">Admin</span>
+                    </a>
 
-    <div class="admin-topbar__crumb">
-        <span>Panel de Administrador</span>
-        <i class="fas fa-chevron-right" aria-hidden="true"></i>
-        <strong th:text="${titulo}">Dashboard</strong>
-    </div>
+                    <div class="adm-breadcrumb admin-topbar__crumb" th:if="${titulo != null}">
+                        <span class="adm-breadcrumb__root">Panel de Administrador</span>
+                        <i class="fas fa-chevron-right adm-breadcrumb__sep" aria-hidden="true"></i>
+                        <strong class="adm-breadcrumb__current" th:text="${titulo}">Dashboard</strong>
+                    </div>
+                </div>
 
-    <div class="admin-topbar__actions">
-        <a th:href="@{/}" class="admin-topbar__btn" title="Ir a la Vista Pública (Tienda)"
-            style="width: auto; padding: 0 12px; gap: 6px; font-size: 0.82rem; font-weight: 600; text-decoration: none;">
-            <i class="fas fa-store" aria-hidden="true"></i>
-            <span>Vista Pública</span>
-        </a>
+                <!-- Derecha: Accesos rápidos + Notificaciones + Mensajes + Perfil Admin -->
+                <div class="adm-topbar__right admin-topbar__actions">
+                    <a th:href="@{/}" class="adm-topbar__Action" title="Ir a la Vista Pública (Tienda)">
+                        <i class="fas fa-store" aria-hidden="true"></i>
+                        <span>Vista Pública</span>
+                    </a>
 
-        <a th:href="@{/admin/notificaciones}" class="admin-topbar__btn" title="Notificaciones">
-            <i class="fas fa-bell" aria-hidden="true"></i>
-            <span class="admin-topbar__badge"
-                th:if="${notificacionesCount != null and notificacionesCount > 0}"
-                th:text="${notificacionesCount}">0</span>
-        </a>
+                    <a th:href="@{/admin/notificaciones}" class="adm-icon-btn admin-topbar__btn" title="Notificaciones">
+                        <i class="fas fa-bell" aria-hidden="true"></i>
+                        <span class="adm-topbar__alert-badge admin-topbar__badge"
+                              th:if="${notificacionesCount != null and notificacionesCount > 0}"
+                              th:text="${notificacionesCount}">0</span>
+                    </a>
 
-        <a th:href="@{/admin/mensajes}" class="admin-topbar__btn" title="Mensajes">
-            <i class="fas fa-envelope" aria-hidden="true"></i>
-            <span class="admin-topbar__badge"
-                th:if="${mensajesRecibidosCount != null and mensajesRecibidosCount > 0}"
-                th:text="${mensajesRecibidosCount}">0</span>
-        </a>
+                    <a th:href="@{/admin/mensajes}" class="adm-icon-btn admin-topbar__btn" title="Mensajes">
+                        <i class="fas fa-envelope" aria-hidden="true"></i>
+                        <span class="adm-topbar__alert-badge admin-topbar__badge"
+                              th:if="${mensajesRecibidosCount != null and mensajesRecibidosCount > 0}"
+                              th:text="${mensajesRecibidosCount}">0</span>
+                    </a>
 
-        <a th:href="@{/usuario/logout}" class="admin-topbar__btn" title="Cerrar sesión">
-            <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
-        </a>
+                    <!-- Menú de Cuenta de Administrador -->
+                    <div class="adm-user" id="admUserMenu">
+                        <button type="button" class="adm-user__trigger" id="admUserTrigger"
+                                aria-haspopup="true" aria-expanded="false">
+                            <span class="adm-user__avatar"
+                                  th:text="${admin != null and admin.nombre != null and !admin.nombre.isEmpty() ? #strings.substring(admin.nombre,0,1).toUpperCase() : 'A'}">A</span>
+                            <span class="adm-user__info">
+                                <span class="adm-user__name"
+                                      th:text="${admin != null and admin.nombre != null ? admin.nombre : 'Administrador'}">Administrador</span>
+                                <span class="adm-user__role">Administrador</span>
+                            </span>
+                            <i class="fas fa-chevron-down adm-user__caret" aria-hidden="true"></i>
+                        </button>
 
-        <a th:href="@{/admin/perfil}" class="admin-topbar__avatar" title="Mi perfil de Administrador">
-            <i class="fas fa-user-shield" aria-hidden="true"></i>
-        </a>
-    </div>
-</header>
+                        <div class="adm-user__dropdown" id="admUserDropdown" role="menu">
+                            <div class="adm-user__dropdown-head">
+                                <strong th:text="${admin != null and admin.nombre != null ? admin.nombre : 'Administrador'}">Administrador</strong>
+                                <span th:text="${admin != null and admin.email != null ? admin.email : 'admin@cultivus.co'}">admin@cultivus.co</span>
+                            </div>
+                            <div class="adm-user__divider"></div>
+                            <a th:href="@{/admin/perfil}" class="adm-user__item" role="menuitem">
+                                <i class="fas fa-user-shield" aria-hidden="true"></i>
+                                <span>Mi Perfil de Admin</span>
+                            </a>
+                            <a th:href="@{/admin/configuracion}" class="adm-user__item" role="menuitem">
+                                <i class="fas fa-sliders-h" aria-hidden="true"></i>
+                                <span>Configuración del Sistema</span>
+                            </a>
+                            <a th:href="@{/}" class="adm-user__item" role="menuitem">
+                                <i class="fas fa-external-link-alt" aria-hidden="true"></i>
+                                <span>Vista de Comprador</span>
+                            </a>
+                            <div class="adm-user__divider"></div>
+                            <a th:href="@{/usuario/logout}" class="adm-user__item adm-user__item--danger" role="menuitem">
+                                <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+                                <span>Cerrar Sesión</span>
+                            </a>
+                        </div>
+                    </div>
 
-<div class="admin-overlay" id="adminOverlay" aria-hidden="true"></div>
-</th:block>
+                    <a th:href="@{/usuario/logout}" class="adm-icon-btn admin-topbar__btn" title="Cerrar sesión">
+                        <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <div class="admin-overlay" id="adminOverlay" aria-hidden="true"></div>
+    </th:block>
+</body>
+
+</html>

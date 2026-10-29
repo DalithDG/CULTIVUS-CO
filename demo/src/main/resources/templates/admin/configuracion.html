@@ -5,47 +5,64 @@
 
 <body class="admin-layout">
 
+    <!-- Topbar -->
     <header th:replace="~{admin/fragments/topbar :: topbar('Configuración del Sistema')}"></header>
+
+    <!-- Sidebar -->
     <aside th:replace="~{admin/fragments/sidebar :: sidebar}"></aside>
 
+    <!-- Contenido Principal -->
     <main class="admin-main">
         <div class="admin-content">
+
             <div th:replace="~{admin/fragments/alerts :: alerts}"></div>
 
-            <div class="admin-page" id="configuracion-page">
+            <!-- ==================== SECCIÓN CONFIGURACIÓN (US-01) ==================== -->
+            <div id="configuracion-page" class="admin-page section">
                 <div class="page-card">
-                    <h2><i class="fas fa-tools"></i> Límites y Parámetros del Sistema</h2>
-                    <p style="color:#7b8b80;margin-bottom:20px;">Ajusta los parámetros operativos de la plataforma. Los
-                        cambios se aplican de inmediato.</p>
+                    <div class="adm-section-head">
+                        <div class="adm-section-head__info">
+                            <h3 class="adm-section-head__title">
+                                <i class="fas fa-sliders-h" aria-hidden="true"></i>
+                                <span>Límites y Parámetros del Sistema</span>
+                            </h3>
+                            <p class="adm-section-head__sub">Ajusta los parámetros operativos de la plataforma (comisiones, tarifas de envío, retiros mínimos y tiempos operativos). Los cambios se aplican de inmediato.</p>
+                        </div>
+                    </div>
 
-                    <div class="config-grid"
-                        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px;">
-                        <div class="report-card" th:each="config : ${configuraciones}"
-                            style="text-align: left; padding: 20px;">
-                            <h4 th:text="${config.clave}" style="color: var(--adm-green); margin-bottom: 8px;">CLAVE</h4>
-                            <p th:text="${config.descripcion}"
-                                style="font-size: 0.9em; color: var(--adm-muted); margin-bottom: 15px; height: 40px; overflow: hidden;">
-                                Descripción</p>
-
-                            <form th:action="@{/admin/configuracion/actualizar}" method="post"
-                                style="display: flex; gap: 10px;">
+                    <div class="adm-config-grid" th:if="${configuraciones != null and !configuraciones.isEmpty()}">
+                        <div th:each="config : ${configuraciones}" class="adm-config-card">
+                            <div>
+                                <span class="adm-config-card__key" th:text="${config.clave != null ? config.clave : config.id}">CLAVE</span>
+                                <p class="adm-config-card__desc" th:text="${config.descripcion}">Descripción del parámetro</p>
+                            </div>
+                            <form th:action="@{/admin/configuracion/actualizar}" method="post" class="adm-config-card__form">
                                 <input type="hidden" name="id" th:value="${config.id}">
-                                <input th:type="${config.tipo == 'NUMBER' ? 'number' : 'text'}" name="valor"
-                                    th:value="${config.valor}" class="form-control"
-                                    style="flex: 1; padding: 8px; border: 1px solid #d6e2d8; border-radius: 4px;">
-                                <button type="submit" class="btn-action" style="background: var(--adm-green);">
-                                    <i class="fas fa-save"></i>
+                                <input th:type="${config.tipo == 'NUMBER' ? 'number' : 'text'}"
+                                       name="valor"
+                                       th:value="${config.valor}"
+                                       class="adm-input"
+                                       aria-label="Valor del parámetro">
+                                <button type="submit" class="btn-action">
+                                    <i class="fas fa-save" aria-hidden="true"></i>
+                                    <span>Guardar</span>
                                 </button>
                             </form>
                         </div>
                     </div>
+
+                    <div class="adm-empty" th:if="${configuraciones == null or configuraciones.isEmpty()}">
+                        <div class="adm-empty__icon"><i class="fas fa-sliders-h" aria-hidden="true"></i></div>
+                        <h4 class="adm-empty__title">No hay parámetros configurados</h4>
+                        <p class="adm-empty__desc">Los parámetros iniciales se cargan automáticamente al iniciar la aplicación.</p>
+                    </div>
                 </div>
             </div>
-
 
         </div>
     </main>
 
+    <!-- Scripts -->
     <script th:src="@{/js/admin-panel.js}"></script>
 </body>
 

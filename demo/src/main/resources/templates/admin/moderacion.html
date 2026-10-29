@@ -1,109 +1,104 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
-<head th:replace="~{admin/fragments/head :: head('Moderar Ofertas y Catálogo')}"></head>
+<head th:replace="~{admin/fragments/head :: head('Moderación')}"></head>
 
 <body class="admin-layout">
 
-    <header th:replace="~{admin/fragments/topbar :: topbar('Moderar Ofertas y Catálogo')}"></header>
+    <!-- Topbar -->
+    <header th:replace="~{admin/fragments/topbar :: topbar('Moderación de Catálogo')}"></header>
+
+    <!-- Sidebar -->
     <aside th:replace="~{admin/fragments/sidebar :: sidebar}"></aside>
 
+    <!-- Contenido Principal -->
     <main class="admin-main">
         <div class="admin-content">
+
             <div th:replace="~{admin/fragments/alerts :: alerts}"></div>
 
-            <div class="admin-page" id="moderacion-page">
+            <!-- ==================== SECCIÓN MODERACIÓN (SOLO CATÁLOGO) ==================== -->
+            <div id="moderacion" class="section">
                 <div class="page-card">
-                    <h2><i class="fas fa-gavel"></i> Moderación de Catálogo</h2>
-                    <p style="color:#7b8b80;margin-bottom:16px;">Sugerencias de productos enviadas por vendedores para el
-                        catálogo global.</p>
-
-                    <div th:if="${catalogoPendiente == null or catalogoPendiente.empty}"
-                        style="text-align:center;padding:40px;color:#7b8b80;">
-                        <i class="fas fa-check-circle"
-                            style="font-size:40px;color:var(--adm-green);margin-bottom:12px;display:block;"></i>
-                        <p>No hay sugerencias pendientes de moderación. ¡Buen trabajo!</p>
+                    <div class="adm-section-head">
+                        <div class="adm-section-head__info">
+                            <h3 class="adm-section-head__title">
+                                <i class="fas fa-seedling" aria-hidden="true"></i>
+                                <span>Sugerencias de Catálogo (<span class="adm-tabular" th:text="${catalogoPendiente.totalElements}">0</span>)</span>
+                            </h3>
+                            <p class="adm-section-head__sub">Los vendedores proponen nuevos tipos de productos base que no existen aún en el catálogo.</p>
+                        </div>
                     </div>
 
-                    <div th:if="${catalogoPendiente != null and !catalogoPendiente.empty}">
-                        <table class="table">
+                    <div class="table-container">
+                        <table class="data-table">
                             <thead>
                                 <tr>
                                     <th>Imagen</th>
-                                    <th>Producto</th>
+                                    <th>Nombre Sugerido</th>
                                     <th>Categoría</th>
-                                    <th>Unidad</th>
-                                    <th>Descripción</th>
+                                    <th>Venta / Unidad</th>
+                                    <th>Descripción General</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr th:each="p : ${catalogoPendiente.content}">
+                                <tr th:each="cp : ${catalogoPendiente.content}">
                                     <td>
-                                        <img th:if="${p.imagenUrl}" th:src="${p.imagenUrl}"
-                                            style="width:50px; height:50px; object-fit:cover; border-radius:8px;">
-                                        <i th:unless="${p.imagenUrl}" class="fas fa-leaf" style="color:var(--adm-green);"></i>
+                                        <img th:src="${cp.imagenUrl}" alt="img" class="adm-thumb--lg"
+                                            onerror="this.src='/images/placeholder.jpg'">
                                     </td>
-                                    <td th:text="${p.nombre}">Nombre</td>
+                                    <td><span class="adm-cell-title" th:text="${cp.nombre}">Nombre</span></td>
+                                    <td><span class="badge badge-category" th:text="${cp.categoria != null ? cp.categoria.nombre : '-'}">Cat</span></td>
                                     <td>
-                                        <span class="badge" style="background:var(--adm-green-light); color:var(--adm-green-dark);"
-                                            th:text="${p.categoria != null ? p.categoria.nombre : 'Sin categoría'}">Categoría</span>
+                                        <span class="adm-cell-title" th:text="${cp.tipoVenta}">PESO</span> ·
+                                        <span class="adm-muted" th:text="${cp.unidadMedida}">kg</span>
                                     </td>
-                                    <td th:text="${p.unidadMedida}">kg</td>
-                                    <td th:text="${p.descripcion}"
-                                        style="max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                                        Descripción</td>
-                                    <td style="white-space:nowrap;">
-                                        <form th:action="@{/admin/catalogo/{id}/aprobar(id=${p.id})}" method="post"
-                                            style="display:inline;">
-                                            <button type="submit" class="btn-action"
-                                                style="background:var(--adm-green); color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;">
-                                                <i class="fas fa-check"></i> Aprobar
-                                            </button>
-                                        </form>
-                                        <form th:action="@{/admin/catalogo/{id}/rechazar(id=${p.id})}" method="post"
-                                            style="display:inline; margin-left:6px;">
-                                            <button type="submit" class="btn-action"
-                                                style="background:var(--adm-red); color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;"
-                                                onclick="return confirm('¿Rechazar esta sugerencia?')">
-                                                <i class="fas fa-times"></i> Rechazar
-                                            </button>
-                                        </form>
+                                    <td><p class="adm-cell-sub" th:text="${cp.descripcion}">Desc</p></td>
+                                    <td>
+                                        <div class="adm-actions">
+                                            <form th:action="@{/admin/catalogo/{id}/aprobar(id=${cp.id})}" method="post" class="adm-inline-form">
+                                                <button type="submit" class="btn-action" title="Aprobar para el Catálogo">
+                                                    <i class="fas fa-check" aria-hidden="true"></i>
+                                                    <span>Aprobar</span>
+                                                </button>
+                                            </form>
+                                            <form th:action="@{/admin/catalogo/{id}/rechazar(id=${cp.id})}" method="post" class="adm-inline-form"
+                                                onsubmit="return confirm('¿Rechazar sugerencia de catálogo?')">
+                                                <button type="submit" class="btn-action btn-delete" title="Rechazar">
+                                                    <i class="fas fa-times" aria-hidden="true"></i>
+                                                    <span>Rechazar</span>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${catalogoPendiente.empty}">
+                                    <td colspan="6">
+                                        <div class="adm-empty">
+                                            <div class="adm-empty__icon"><i class="fas fa-check-circle" aria-hidden="true"></i></div>
+                                            <h4 class="adm-empty__title">No hay sugerencias de productos pendientes</h4>
+                                            <p class="adm-empty__desc">Todas las propuestas del catálogo han sido revisadas.</p>
+                                        </div>
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
 
-                        <!-- Paginación Moderación de Catálogo -->
-                        <div th:if="${catalogoPendiente.totalPages > 1}" class="paginacion-container"
-                            style="display:flex; justify-content:center; align-items:center; gap:15px; margin-top:30px; padding:20px 0;">
-                            <a th:href="@{/admin/moderacion(page=${catalogoPendiente.number - 1})}"
-                                th:if="${catalogoPendiente.hasPrevious()}"
-                                style="padding:8px 16px; border:1px solid #d6e2d8; border-radius:5px; background:white; cursor:pointer; text-decoration:none; color:#111e15;">
-                                <i class="fas fa-chevron-left"></i> Anterior
+                    <!-- Controles de Paginación -->
+                    <div class="paginacion-container" th:if="${catalogoPendiente.totalPages > 1}">
+                        <span class="adm-pagination__info">
+                            Mostrando página <strong th:text="${catalogoPendiente.number + 1}">1</strong> de <strong th:text="${catalogoPendiente.totalPages}">1</strong>
+                        </span>
+                        <div class="adm-pagination__controls">
+                            <a th:if="${catalogoPendiente.hasPrevious()}" th:href="@{/admin/moderacion(page=${catalogoPendiente.number - 1})}" class="adm-page-btn">
+                                <i class="fas fa-chevron-left" aria-hidden="true"></i> Anterior
                             </a>
-                            <button th:unless="${catalogoPendiente.hasPrevious()}" disabled
-                                style="padding:8px 16px; border:1px solid var(--adm-line); border-radius:5px; background:var(--adm-green-soft); color:#94a39a; cursor:not-allowed;">
-                                <i class="fas fa-chevron-left"></i> Anterior
-                            </button>
-                            <div style="display:flex; gap:5px;">
-                                <span th:each="i : ${#numbers.sequence(0, catalogoPendiente.totalPages - 1)}"
-                                    th:if="${i >= catalogoPendiente.number - 2 and i <= catalogoPendiente.number + 2}">
-                                    <a th:href="@{/admin/moderacion(page=${i})}" th:text="${i + 1}"
-                                        th:style="${i == catalogoPendiente.number ? 'background:var(--adm-green); color:white; border:1px solid var(--adm-green);' : 'background:white; color:#111e15; border:1px solid #d6e2d8;'}"
-                                        style="padding:8px 14px; border-radius:5px; text-decoration:none; font-weight:600; cursor:pointer; transition: 0.3s;">
-                                    </a>
-                                </span>
-                            </div>
-                            <a th:href="@{/admin/moderacion(page=${catalogoPendiente.number + 1})}"
-                                th:if="${catalogoPendiente.hasNext()}"
-                                style="padding:8px 16px; border:1px solid #d6e2d8; border-radius:5px; background:white; cursor:pointer; text-decoration:none; color:#111e15;">
-                                Siguiente <i class="fas fa-chevron-right"></i>
+                            <span class="adm-page-pill" th:text="${catalogoPendiente.number + 1}">1</span>
+                            <a th:if="${catalogoPendiente.hasNext()}" th:href="@{/admin/moderacion(page=${catalogoPendiente.number + 1})}" class="adm-page-btn">
+                                Siguiente <i class="fas fa-chevron-right" aria-hidden="true"></i>
                             </a>
-                            <button th:unless="${catalogoPendiente.hasNext()}" disabled
-                                style="padding:8px 16px; border:1px solid var(--adm-line); border-radius:5px; background:var(--adm-green-soft); color:#94a39a; cursor:not-allowed;">
-                                Siguiente <i class="fas fa-chevron-right"></i>
-                            </button>
                         </div>
                     </div>
                 </div>
@@ -112,6 +107,7 @@
         </div>
     </main>
 
+    <!-- Scripts -->
     <script th:src="@{/js/admin-panel.js}"></script>
 </body>
 

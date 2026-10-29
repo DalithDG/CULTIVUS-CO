@@ -5,130 +5,181 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Perfil de Transportista - Cultivus</title>
     <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
-    <link rel="stylesheet" th:href="@{/perfil.css}">
     <link rel="stylesheet" th:href="@{/header.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/transportista-panel.css}">
 </head>
-<body>
+<body class="tp-body">
     <header th:replace="~{fragments/header-transportista :: siteHeader}"></header>
 
-    <div class="profile-container">
-        <div class="profile-card">
-            <div class="profile-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
-                <div style="display:flex; align-items:center; gap:16px;">
-                    <div class="profile-icon" style="margin:0;">
+    <main class="tp-container tp-container--narrow">
+        <div th:if="${mensaje}" class="tp-alert tp-alert--success" role="status">
+            <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+            <span th:text="${mensaje}"></span>
+        </div>
+        <div th:if="${error}" class="tp-alert tp-alert--error" role="alert">
+            <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+            <span th:text="${error}"></span>
+        </div>
+
+        <!-- Ficha de Datos Logísticos y Vehículo -->
+        <section class="tp-section-card">
+            <header class="tp-profile-header">
+                <div class="tp-profile-identity">
+                    <div class="tp-profile-avatar" aria-hidden="true">
                         <i class="fa-solid fa-truck-fast"></i>
                     </div>
                     <div>
-                        <h1 style="margin:0;" th:text="${usuario.nombre}">Transportista</h1>
-                        <p class="profile-subtitle" style="margin:4px 0 0;">Perfil de Transportista Logístico · Cultivus</p>
+                        <h1 class="tp-profile-title" th:text="${usuario.nombre}">Transportista</h1>
+                        <p class="tp-profile-subtitle">Perfil de Transportista Logístico · Cultivus</p>
                     </div>
                 </div>
-                <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                    <a th:href="@{/transportista/inicio}" class="btn btn-primary" style="text-decoration:none; background:#2e7d32; color:#fff;">
-                        <i class="fa-solid fa-route"></i> Mis Rutas y Envíos
+                <div>
+                    <a th:href="@{/transportista/inicio}" class="tp-btn tp-btn--primary">
+                        <i class="fa-solid fa-route" aria-hidden="true"></i>
+                        <span>Mis Rutas y Envíos</span>
                     </a>
                 </div>
-            </div>
+            </header>
 
-            <div th:if="${mensaje}" class="alert alert-success">
-                <i class="fa-solid fa-check-circle"></i>
-                <span th:text="${mensaje}"></span>
-            </div>
-            <div th:if="${error}" class="alert alert-error">
-                <i class="fa-solid fa-exclamation-circle"></i>
-                <span th:text="${error}"></span>
-            </div>
+            <div th:if="${usuario.perfilTransportista != null}">
+                <h2 class="tp-section-title">
+                    <i class="fa-solid fa-truck" aria-hidden="true"></i>
+                    <span>Datos logísticos y vehículo</span>
+                </h2>
 
-            <!-- Datos del Transportista y Vehículo -->
-            <div class="info-section" th:if="${usuario.perfilTransportista != null}">
-                <h2 style="color:#2e7d32;"><i class="fa-solid fa-truck"></i> Datos Logísticos y Vehículo</h2>
-                <div class="info-grid">
-                    <div class="info-item">
-                        <label>Estado de Verificación:</label>
-                        <p th:text="${usuario.perfilTransportista.verificado ? 'Transportista Verificado' : 'Pendiente de Verificación'}"
-                           th:style="${usuario.perfilTransportista.verificado ? 'color:#2e7d32; font-weight:700;' : 'color:#d97706; font-weight:700;'}">
+                <div class="tp-profile-grid">
+                    <div class="tp-info-tile">
+                        <span class="tp-info-tile__label">Estado de verificación</span>
+                        <p class="tp-info-tile__value"
+                           th:classappend="${usuario.perfilTransportista.verificado} ? 'tp-status-text--ok' : 'tp-status-text--warn'"
+                           th:text="${usuario.perfilTransportista.verificado ? 'Transportista Verificado' : 'Pendiente de Verificación'}">
                             Verificado
                         </p>
                     </div>
-                    <div class="info-item">
-                        <label>Disponibilidad Actual:</label>
-                        <p th:text="${usuario.perfilTransportista.disponible ? 'Disponible para rutas' : 'En ruta / Ocupado'}"
-                           th:style="${usuario.perfilTransportista.disponible ? 'color:#2e7d32; font-weight:700;' : 'color:#dc2626; font-weight:700;'}">
+
+                    <div class="tp-info-tile">
+                        <span class="tp-info-tile__label">Disponibilidad actual</span>
+                        <p class="tp-info-tile__value"
+                           th:classappend="${usuario.perfilTransportista.disponible} ? 'tp-status-text--ok' : 'tp-status-text--warn'"
+                           th:text="${usuario.perfilTransportista.disponible ? 'Disponible para rutas' : 'En ruta / Ocupado'}">
                             Disponible
                         </p>
                     </div>
-                    <div class="info-item">
-                        <label>Tipo de Vehículo:</label>
-                        <p th:text="${usuario.perfilTransportista.tipoVehiculo != null ? usuario.perfilTransportista.tipoVehiculo : 'No especificado'}">Camioneta</p>
+
+                    <div class="tp-info-tile">
+                        <span class="tp-info-tile__label">Tipo de vehículo</span>
+                        <p class="tp-info-tile__value"
+                           th:text="${usuario.perfilTransportista.tipoVehiculo != null ? usuario.perfilTransportista.tipoVehiculo : 'No especificado'}">Camioneta</p>
                     </div>
-                    <div class="info-item">
-                        <label>Placa:</label>
-                        <p th:text="${usuario.perfilTransportista.placa != null ? usuario.perfilTransportista.placa : 'No especificada'}">ABC-123</p>
+
+                    <div class="tp-info-tile">
+                        <span class="tp-info-tile__label">Placa</span>
+                        <p class="tp-info-tile__value"
+                           th:text="${usuario.perfilTransportista.placa != null ? usuario.perfilTransportista.placa : 'No especificada'}">ABC-123</p>
                     </div>
-                    <div class="info-item">
-                        <label>Capacidad de Carga:</label>
-                        <p th:text="${usuario.perfilTransportista.capacidadCargaKg != null ? (usuario.perfilTransportista.capacidadCargaKg + ' kg') : 'No especificada'}">1000 kg</p>
+
+                    <div class="tp-info-tile">
+                        <span class="tp-info-tile__label">Capacidad de carga</span>
+                        <p class="tp-info-tile__value"
+                           th:text="${usuario.perfilTransportista.capacidadCargaKg != null ? (usuario.perfilTransportista.capacidadCargaKg + ' kg') : 'No especificada'}">1000 kg</p>
                     </div>
-                    <div class="info-item">
-                        <label>Zonas de Cobertura:</label>
-                        <p th:text="${usuario.perfilTransportista.zonasCobertura != null ? usuario.perfilTransportista.zonasCobertura : 'Bolívar'}">Zonas</p>
+
+                    <div class="tp-info-tile">
+                        <span class="tp-info-tile__label">Zonas de cobertura</span>
+                        <p class="tp-info-tile__value"
+                           th:text="${usuario.perfilTransportista.zonasCobertura != null ? usuario.perfilTransportista.zonasCobertura : 'Bolívar'}">Zonas</p>
                     </div>
-                    <div class="info-item">
-                        <label>Teléfono de Contacto:</label>
-                        <p th:text="${usuario.perfilTransportista.telefonoContacto != null ? usuario.perfilTransportista.telefonoContacto : '-'}">-</p>
+
+                    <div class="tp-info-tile">
+                        <span class="tp-info-tile__label">Teléfono de contacto</span>
+                        <p class="tp-info-tile__value"
+                           th:text="${usuario.perfilTransportista.telefonoContacto != null ? usuario.perfilTransportista.telefonoContacto : '-'}">-</p>
                     </div>
-                    <div class="info-item">
-                        <label>Ciudad Base:</label>
-                        <p th:text="${usuario.perfilTransportista.ciudadBase != null ? (usuario.perfilTransportista.ciudadBase + ', ' + usuario.perfilTransportista.departamentoBase) : '-'}">-</p>
+
+                    <div class="tp-info-tile">
+                        <span class="tp-info-tile__label">Ciudad base</span>
+                        <p class="tp-info-tile__value"
+                           th:text="${usuario.perfilTransportista.ciudadBase != null ? (usuario.perfilTransportista.ciudadBase + ', ' + usuario.perfilTransportista.departamentoBase) : '-'}">-</p>
+                    </div>
+
+                    <div class="tp-info-tile">
+                        <span class="tp-info-tile__label">Cuenta bancaria</span>
+                        <p class="tp-info-tile__value"
+                           th:if="${usuario.perfilTransportista.tieneCuentaRetiroCompleta()}"
+                           th:text="${usuario.perfilTransportista.cuentaRetiro.resumenEnmascarado}">Bancolombia (****1234)</p>
+                        <p class="tp-info-tile__value"
+                           th:if="${!usuario.perfilTransportista.tieneCuentaRetiroCompleta()}"
+                           th:text="${usuario.perfilTransportista.banco != null and !usuario.perfilTransportista.banco.isBlank() ? (usuario.perfilTransportista.banco + ' · ' + (usuario.perfilTransportista.cuentaBancariaEnmascarada != null ? usuario.perfilTransportista.cuentaBancariaEnmascarada : 'Incompleta')) : 'No registrada'}">-</p>
+                        <a th:href="@{/transportista/cuenta-bancaria}" class="tp-inline-link">
+                            <i class="fa-solid fa-building-columns" aria-hidden="true"></i>
+                            <span>Gestionar cuenta bancaria</span>
+                        </a>
                     </div>
                 </div>
             </div>
+        </section>
 
-            <!-- Editar Cuenta Personal -->
-            <div class="edit-section" style="margin-top:24px; border-top:1px solid #e5e7eb; padding-top:24px;">
-                <h2><i class="fa-solid fa-user-pen"></i> Editar Datos de mi Cuenta</h2>
-                <form th:action="@{/usuario/perfil/actualizar}" method="post" class="edit-form">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="nombre"><i class="fa-solid fa-user"></i> Nombre Completo</label>
-                            <input type="text" id="nombre" name="nombre" th:value="${usuario.nombre}" required placeholder="Ingrese su nombre completo">
-                        </div>
-                        <div class="form-group">
-                            <label for="email"><i class="fa-solid fa-envelope"></i> Correo Electrónico</label>
-                            <input type="email" id="email" name="email" th:value="${usuario.email}" required placeholder="correo@ejemplo.com">
-                        </div>
+        <!-- Formulario para Editar Datos de la Cuenta Personal -->
+        <section class="tp-section-card">
+            <header class="tp-section-head">
+                <div>
+                    <h2 class="tp-section-title">
+                        <i class="fa-solid fa-user-pen" aria-hidden="true"></i>
+                        <span>Editar datos de mi cuenta</span>
+                    </h2>
+                    <p class="tp-section-sub">Mantén actualizados tu nombre, correo de acceso y ubicación principal.</p>
+                </div>
+            </header>
+
+            <form th:action="@{/usuario/perfil/actualizar}" method="post" class="edit-form">
+                <div class="tp-form-grid">
+                    <div class="tp-field">
+                        <label for="nombre"><i class="fa-solid fa-user" aria-hidden="true"></i> Nombre completo</label>
+                        <input type="text" id="nombre" name="nombre" th:value="${usuario.nombre}" required placeholder="Ingrese su nombre completo">
                     </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="departamento"><i class="fa-solid fa-map-marked-alt"></i> Departamento</label>
-                            <select id="departamento" name="departamento">
-                                <option value="">Seleccione un departamento</option>
-                                <option th:each="dept : ${departamentos}" th:value="${dept.nombre}" th:text="${dept.nombre}"
-                                    th:selected="${usuario.ubicacion != null and usuario.ubicacion.departamento == dept.nombre}"></option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="ciudad"><i class="fa-solid fa-city"></i> Ciudad</label>
-                            <input type="text" id="ciudad" name="ciudad"
-                                   th:value="${usuario.ubicacion != null ? usuario.ubicacion.ciudad : (usuario.perfilTransportista != null ? usuario.perfilTransportista.ciudadBase : '')}"
-                                   placeholder="Ingrese su ciudad">
-                        </div>
+
+                    <div class="tp-field">
+                        <label for="email"><i class="fa-solid fa-envelope" aria-hidden="true"></i> Correo electrónico</label>
+                        <input type="email" id="email" name="email" th:value="${usuario.email}" required placeholder="correo@ejemplo.com">
                     </div>
-                    <div class="form-group">
-                        <label for="contrasena"><i class="fa-solid fa-lock"></i> Nueva Contraseña (opcional)</label>
+
+                    <div class="tp-field">
+                        <label for="departamento"><i class="fa-solid fa-map-marked-alt" aria-hidden="true"></i> Departamento</label>
+                        <select id="departamento" name="departamento">
+                            <option value="">Seleccione un departamento</option>
+                            <option th:each="dept : ${departamentos}" th:value="${dept.nombre}" th:text="${dept.nombre}"
+                                th:selected="${usuario.ubicacion != null and usuario.ubicacion.departamento == dept.nombre}"></option>
+                        </select>
+                    </div>
+
+                    <div class="tp-field">
+                        <label for="ciudad"><i class="fa-solid fa-city" aria-hidden="true"></i> Ciudad</label>
+                        <input type="text" id="ciudad" name="ciudad"
+                               th:value="${usuario.ubicacion != null ? usuario.ubicacion.ciudad : (usuario.perfilTransportista != null ? usuario.perfilTransportista.ciudadBase : '')}"
+                               placeholder="Ingrese su ciudad">
+                    </div>
+
+                    <div class="tp-field tp-field--full">
+                        <label for="contrasena"><i class="fa-solid fa-lock" aria-hidden="true"></i> Nueva contraseña (opcional)</label>
                         <input type="password" id="contrasena" name="contrasena" placeholder="Dejar en blanco para mantener la actual">
                         <small>Solo complete este campo si desea cambiar su contraseña</small>
                     </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-save"></i> Guardar Cambios</button>
-                        <a th:href="@{/transportista/inicio}" class="btn btn-secondary">Volver a Mis Rutas</a>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+                </div>
+
+                <div class="tp-form-actions">
+                    <a th:href="@{/transportista/inicio}" class="tp-btn tp-btn--outline">
+                        <span>Volver a Mis Rutas</span>
+                    </a>
+                    <button type="submit" class="tp-btn tp-btn--primary">
+                        <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+                        <span>Guardar Cambios</span>
+                    </button>
+                </div>
+            </form>
+        </section>
+    </main>
 
     <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
 </body>

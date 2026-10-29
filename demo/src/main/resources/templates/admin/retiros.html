@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head th:replace="~{admin/fragments/head :: head('Solicitudes de Retiro')}"></head>
+
+<body class="admin-layout">
+
+    <!-- Topbar -->
+    <header th:replace="~{admin/fragments/topbar :: topbar('Solicitudes de Retiro')}"></header>
+
+    <!-- Sidebar -->
+    <aside th:replace="~{admin/fragments/sidebar :: sidebar}"></aside>
+
+    <!-- Contenido Principal -->
+    <main class="admin-main">
+        <div class="admin-content">
+
+            <div th:replace="~{admin/fragments/alerts :: alerts}"></div>
+
+            <div id="retiros" class="section">
+                <div class="page-card">
+                    <div class="adm-section-head">
+                        <div class="adm-section-head__info">
+                            <h3 class="adm-section-head__title">
+                                <i class="fas fa-money-bill-transfer" aria-hidden="true"></i>
+                                <span>Solicitudes de Retiro (<span class="adm-tabular" th:text="${retiros != null ? retiros.totalElements : 0}">0</span>)</span>
+                            </h3>
+                            <p class="adm-section-head__sub">
+                                Revisa los datos bancarios completos del titular, realiza la transferencia simulada y aprueba o rechaza la solicitud.
+                            </p>
+                        </div>
+
+                        <!-- Filtros por estado (Control segmentado) -->
+                        <div class="adm-segmented" role="tablist" aria-label="Filtrar solicitudes por estado">
+                            <a th:href="@{/admin/retiros(estado='PENDIENTE')}"
+                               class="adm-segmented__item"
+                               th:classappend="${estadoFiltro == 'PENDIENTE' ? 'is-active' : ''}">
+                                <i class="fas fa-hourglass-half" aria-hidden="true"></i>
+                                <span>Pendientes</span>
+                                <span th:if="${retirosPendientesCount != null and retirosPendientesCount > 0}"
+                                      class="adm-segmented__badge"
+                                      th:text="${retirosPendientesCount}">0</span>
+                            </a>
+                            <a th:href="@{/admin/retiros(estado='APROBADO')}"
+                               class="adm-segmented__item"
+                               th:classappend="${estadoFiltro == 'APROBADO' ? 'is-active' : ''}">
+                                <i class="fas fa-check-circle" aria-hidden="true"></i>
+                                <span>Aprobados</span>
+                            </a>
+                            <a th:href="@{/admin/retiros(estado='RECHAZADO')}"
+                               class="adm-segmented__item"
+                               th:classappend="${estadoFiltro == 'RECHAZADO' ? 'is-active' : ''}">
+                                <i class="fas fa-times-circle" aria-hidden="true"></i>
+                                <span>Rechazados</span>
+                            </a>
+                            <a th:href="@{/admin/retiros(estado='TODOS')}"
+                               class="adm-segmented__item"
+                               th:classappend="${estadoFiltro == 'TODOS' ? 'is-active' : ''}">
+                                <i class="fas fa-list" aria-hidden="true"></i>
+                                <span>Todos</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Fecha solicitud</th>
+                                    <th>Usuario / Rol</th>
+                                    <th class="adm-th-right">Monto</th>
+                                    <th>Datos bancarios completos (Vista Admin)</th>
+                                    <th>Estado</th>
+                                    <th>Resolución / Comprobante</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="r : ${retiros.content}">
+                                    <td class="adm-tabular">
+                                        <div class="adm-cell-title" th:text="${r.fechaSolicitud != null ? #temporals.format(r.fechaSolicitud, 'dd/MM/yyyy') : '-'}">01/01/2026</div>
+                                        <div class="adm-cell-sub" th:text="${r.fechaSolicitud != null ? #temporals.format(r.fechaSolicitud, 'HH:mm') : ''}">12:00</div>
+                                    </td>
+                                    <td>
+                                        <div class="adm-cell-title" th:text="${r.usuarioNombre != null ? r.usuarioNombre : r.usuarioId}">Usuario</div>
+                                        <div class="adm-cell-sub" th:text="${r.usuarioEmail}">correo@ejemplo.com</div>
+                                        <span class="badge badge-role"
+                                              th:text="${r.rol != null ? r.rol.name() : '-'}">VENDEDOR</span>
+                                    </td>
+                                    <td class="adm-td-right">
+                                        <span class="adm-amount"
+                                              th:text="${'$' + #numbers.formatInteger(r.montoPesos, 1, 'POINT') + ' COP'}">$50.000 COP</span>
+                                    </td>
+                                    <td>
+                                        <div th:if="${r.cuentaDestino != null}" class="adm-bank-box">
+                                            <div class="adm-bank-box__head">
+                                                <span th:text="${r.cuentaDestino.nombreEntidad}">Bancolombia</span>
+                                                · <span th:text="${r.cuentaDestino.tipo != null ? r.cuentaDestino.tipo.etiqueta : '-'}">Ahorros</span>
+                                            </div>
+                                            <div>
+                                                N.º cuenta:
+                                                <span class="adm-bank-box__number"
+                                                      th:text="${r.cuentaDestino.numero}">0000000000</span>
+                                            </div>
+                                            <div class="adm-cell-sub">
+                                                Titular: <strong th:text="${r.cuentaDestino.titular}">Titular</strong>
+                                                (<span th:text="${r.cuentaDestino.tipoDocumento}">CC</span>
+                                                <span class="adm-tabular" th:text="${r.cuentaDestino.numeroDocumento}">123456</span>)
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span th:if="${r.estado != null and r.estado.name() == 'PENDIENTE'}"
+                                              class="badge badge--warning">
+                                            <i class="fas fa-hourglass-half" aria-hidden="true"></i> Pendiente
+                                        </span>
+                                        <span th:if="${r.estado != null and r.estado.name() == 'APROBADO'}"
+                                              class="badge badge--success">
+                                            <i class="fas fa-check-circle" aria-hidden="true"></i> Aprobado
+                                        </span>
+                                        <span th:if="${r.estado != null and r.estado.name() == 'RECHAZADO'}"
+                                              class="badge badge--danger">
+                                            <i class="fas fa-times-circle" aria-hidden="true"></i> Rechazado
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div th:if="${r.estado != null and r.estado.name() == 'APROBADO'}">
+                                            <span class="adm-mono" th:text="${r.numeroComprobante}">COMP-2026-000001</span>
+                                            <div class="adm-cell-sub" th:if="${r.referenciaTransferencia != null}">
+                                                Ref: <span class="adm-tabular" th:text="${r.referenciaTransferencia}">SIM-123</span>
+                                            </div>
+                                            <div class="adm-cell-sub" th:if="${r.fechaResolucion != null}"
+                                                 th:text="${#temporals.format(r.fechaResolucion, 'dd/MM/yyyy HH:mm')}"></div>
+                                        </div>
+                                        <div th:if="${r.estado != null and r.estado.name() == 'RECHAZADO'}">
+                                            <div class="adm-cell-title" style="color: var(--adm-red);" th:text="${r.motivoRechazo}">Motivo</div>
+                                            <div class="adm-cell-sub" th:if="${r.fechaResolucion != null}"
+                                                 th:text="${#temporals.format(r.fechaResolucion, 'dd/MM/yyyy HH:mm')}"></div>
+                                        </div>
+                                        <span th:if="${r.estado != null and r.estado.name() == 'PENDIENTE'}" class="adm-muted">En espera de revisión</span>
+                                    </td>
+                                    <td>
+                                        <!-- Acciones para solicitudes PENDIENTES -->
+                                        <div th:if="${r.estado != null and r.estado.name() == 'PENDIENTE'}" class="adm-actions--stack">
+                                            <form th:action="@{/admin/retiros/{id}/aprobar(id=${r.id})}" method="post"
+                                                  class="adm-inline-form"
+                                                  onsubmit="return confirm('¿Confirmas la aprobación de este retiro simulado?');">
+                                                <input type="text" name="referencia" maxlength="60"
+                                                       placeholder="Ref. transferencia (opcional)"
+                                                       class="adm-input adm-input--sm" style="flex: 1;">
+                                                <button type="submit" class="btn-action">
+                                                    <i class="fas fa-check" aria-hidden="true"></i>
+                                                    <span>Aprobar</span>
+                                                </button>
+                                            </form>
+
+                                            <form th:action="@{/admin/retiros/{id}/rechazar(id=${r.id})}" method="post"
+                                                  class="adm-inline-form"
+                                                  onsubmit="return confirm('¿Rechazar esta solicitud y devolver el dinero al saldo disponible del usuario?');">
+                                                <input type="text" name="motivo" required minlength="10" maxlength="300"
+                                                       placeholder="Motivo de rechazo (mín. 10 caract.)"
+                                                       class="adm-input adm-input--sm" style="flex: 1;">
+                                                <button type="submit" class="btn-action btn-delete">
+                                                    <i class="fas fa-times" aria-hidden="true"></i>
+                                                    <span>Rechazar</span>
+                                                </button>
+                                            </form>
+                                        </div>
+
+                                        <!-- Enlace al comprobante si está APROBADO -->
+                                        <div th:if="${r.estado != null and r.estado.name() == 'APROBADO'}">
+                                            <a th:href="@{/admin/retiros/{id}/comprobante(id=${r.id})}"
+                                               class="btn-action btn-action--outline">
+                                                <i class="fas fa-file-invoice-dollar" aria-hidden="true"></i>
+                                                <span>Ver comprobante</span>
+                                            </a>
+                                        </div>
+
+                                        <span th:if="${r.estado != null and r.estado.name() == 'RECHAZADO'}" class="adm-muted">—</span>
+                                    </td>
+                                </tr>
+                                <tr th:if="${retiros == null or retiros.empty}">
+                                    <td colspan="7">
+                                        <div class="adm-empty">
+                                            <div class="adm-empty__icon"><i class="fas fa-money-bill-transfer" aria-hidden="true"></i></div>
+                                            <h4 class="adm-empty__title">No hay solicitudes de retiro en este estado</h4>
+                                            <p class="adm-empty__desc">Selecciona otra pestaña de estado para consultar el historial de retiros.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Paginación -->
+                    <div class="paginacion-container" th:if="${retiros != null and retiros.totalPages > 1}">
+                        <span class="adm-pagination__info">
+                            Mostrando página <strong th:text="${retiros.number + 1}">1</strong> de <strong th:text="${retiros.totalPages}">1</strong>
+                        </span>
+                        <div class="adm-pagination__controls">
+                            <a th:if="${retiros.hasPrevious()}"
+                               th:href="@{/admin/retiros(page=${retiros.number - 1}, estado=${estadoFiltro})}"
+                               class="adm-page-btn">
+                                <i class="fas fa-chevron-left" aria-hidden="true"></i> Anterior
+                            </a>
+                            <span class="adm-page-pill" th:text="${retiros.number + 1}">1</span>
+                            <a th:if="${retiros.hasNext()}"
+                               th:href="@{/admin/retiros(page=${retiros.number + 1}, estado=${estadoFiltro})}"
+                               class="adm-page-btn">
+                                Siguiente <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script th:src="@{/js/admin-panel.js}"></script>
+</body>
+
+</html>

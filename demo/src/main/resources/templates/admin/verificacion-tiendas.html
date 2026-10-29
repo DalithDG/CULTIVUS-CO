@@ -5,147 +5,157 @@
 
 <body class="admin-layout">
 
+    <!-- Topbar -->
     <header th:replace="~{admin/fragments/topbar :: topbar('Verificación de Tiendas')}"></header>
+
+    <!-- Sidebar -->
     <aside th:replace="~{admin/fragments/sidebar :: sidebar}"></aside>
 
+    <!-- Contenido Principal -->
     <main class="admin-main">
         <div class="admin-content">
+
             <div th:replace="~{admin/fragments/alerts :: alerts}"></div>
 
-            <div class="admin-page" id="verificacion-tiendas-page">
+            <!-- ==================== SECCIÓN VERIFICACIÓN DE TIENDAS ==================== -->
+            <div id="verificacion-tiendas-page" class="admin-page section">
                 <div class="page-card">
-                    <div
-                        style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:15px;">
-                        <h2>
-                            <i class="fas fa-store"
-                                th:style="${estadoFilter == 'VERIFICADO' ? 'color:var(--adm-green);' : 'color:var(--adm-amber);'}"></i>
-                            <span
-                                th:text="${estadoFilter == 'VERIFICADO' ? 'Tiendas Verificadas' : 'Solicitudes de Tiendas Pendientes'}">Solicitudes
-                                de Tiendas</span>
-                        </h2>
+                    <div class="adm-section-head">
+                        <div class="adm-section-head__info">
+                            <h3 class="adm-section-head__title">
+                                <i class="fas fa-store" aria-hidden="true"></i>
+                                <span>Solicitudes de Vendedores (<span class="adm-tabular" th:text="${vendedores != null ? vendedores.totalElements : 0}">0</span>)</span>
+                            </h3>
+                            <p class="adm-section-head__sub">Valida la información comercial de las tiendas antes de autorizar la publicación de ofertas.</p>
+                        </div>
 
-                        <form th:action="@{/admin/verificacion-tiendas}" method="get"
-                            style="display:flex; gap:10px; align-items:center;">
-                            <label style="font-weight:600; color:var(--adm-muted);">Mostrar:</label>
-                            <select name="estado" onchange="this.form.submit()"
-                                style="padding:8px 15px; border:1px solid #d6e2d8; border-radius:20px; outline:none; background:white; cursor:pointer;">
-                                <option value="PENDIENTE"
-                                    th:selected="${estadoFilter == 'PENDIENTE' or estadoFilter == null}">Pendientes de
-                                    Aprobación</option>
-                                <option value="VERIFICADO" th:selected="${estadoFilter == 'VERIFICADO'}">Verificadas
-                                </option>
-                            </select>
-                        </form>
+                        <!-- Selector de Estado (Control Segmentado) -->
+                        <div class="adm-segmented" role="tablist" aria-label="Filtrar tiendas por estado">
+                            <a th:href="@{/admin/verificacion-tiendas(estado='pendientes')}"
+                               class="adm-segmented__item"
+                               th:classappend="${estadoFilter == 'pendientes' ? 'is-active' : ''}">
+                                <i class="fas fa-clock" aria-hidden="true"></i>
+                                <span>Pendientes</span>
+                                <span th:if="${vendedoresPendientesCount != null and vendedoresPendientesCount > 0}"
+                                      class="adm-segmented__badge"
+                                      th:text="${vendedoresPendientesCount}">0</span>
+                            </a>
+                            <a th:href="@{/admin/verificacion-tiendas(estado='verificados')}"
+                               class="adm-segmented__item"
+                               th:classappend="${estadoFilter == 'verificados' ? 'is-active' : ''}">
+                                <i class="fas fa-check-circle" aria-hidden="true"></i>
+                                <span>Verificadas</span>
+                            </a>
+                        </div>
                     </div>
 
-                    <div th:if="${vendedores == null or vendedores.empty}"
-                        style="text-align:center; padding:40px; color:#7b8b80;">
-                        <i th:class="${estadoFilter == 'VERIFICADO' ? 'fas fa-store-slash' : 'fas fa-check-circle'}"
-                            th:style="${estadoFilter == 'VERIFICADO' ? 'font-size:48px; color:#d6e2d8; margin-bottom:15px; display:block;' : 'font-size:48px; color:var(--adm-green); margin-bottom:15px; display:block;'}"></i>
-                        <p style="font-size:18px;"
-                            th:text="${estadoFilter == 'VERIFICADO' ? 'Aún no hay tiendas verificadas.' : 'No hay solicitudes pendientes. ¡Todo al día!'}">
-                            Sin datos</p>
-                    </div>
-
-                    <div th:if="${vendedores != null and !vendedores.empty}">
-                        <table class="table">
+                    <div class="table-container">
+                        <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>Vendedor</th>
-                                    <th>Email</th>
+                                    <th>Vendedor / Contacto</th>
                                     <th>Razón Social</th>
                                     <th>Teléfono</th>
+                                    <th>Dirección</th>
+                                    <th>Tipo Productos</th>
+                                    <th>Banco / Cuenta</th>
                                     <th>Estado</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr th:each="v : ${vendedores.content}">
-                                    <td th:text="${v.nombre}">Nombre</td>
-                                    <td th:text="${v.email}">email@ejemplo.com</td>
-                                    <td th:text="${v.perfilVendedor != null ? v.perfilVendedor.razonSocial : '-'}">Razón
-                                        Social</td>
-                                    <td th:text="${v.perfilVendedor != null ? v.perfilVendedor.telefonoContacto : '-'}">
-                                        Teléfono</td>
+                                <tr th:if="${vendedores != null}" th:each="v : ${vendedores.content}">
                                     <td>
-                                        <span class="badge"
-                                            th:classappend="${v.perfilVendedor != null and v.perfilVendedor.verificado ? 'badge-success' : 'badge-warning'}">
-                                            <i
-                                                th:class="${v.perfilVendedor != null and v.perfilVendedor.verificado ? 'fas fa-check-circle' : 'fas fa-hourglass-half'}"></i>
-                                            <span
-                                                th:text="${v.perfilVendedor != null and v.perfilVendedor.verificado ? 'Verificado' : 'Pendiente'}">Estado</span>
+                                        <span class="adm-cell-title" th:text="${v.nombre}">Nombre</span>
+                                        <div class="adm-cell-sub" th:text="${v.email}">email@ejemplo.com</div>
+                                    </td>
+                                    <td>
+                                        <span class="adm-fw-700" th:text="${v.perfilVendedor != null and v.perfilVendedor.razonSocial != null ? v.perfilVendedor.razonSocial : 'Sin razón social'}">Razón Social</span>
+                                    </td>
+                                    <td class="adm-tabular" th:text="${v.perfilVendedor != null and v.perfilVendedor.telefonoContacto != null ? v.perfilVendedor.telefonoContacto : '-'}">Teléfono</td>
+                                    <td th:text="${v.perfilVendedor != null and v.perfilVendedor.direccionNegocio != null ? v.perfilVendedor.direccionNegocio : '-'}">Dirección</td>
+                                    <td th:text="${v.perfilVendedor != null and v.perfilVendedor.tipoProductos != null ? v.perfilVendedor.tipoProductos : '-'}">Productos</td>
+                                    <td>
+                                        <span th:if="${v.perfilVendedor != null and v.perfilVendedor.tieneCuentaRetiroCompleta()}"
+                                              th:text="${v.perfilVendedor.cuentaRetiro.resumenEnmascarado}">Bancolombia</span>
+                                        <span th:if="${v.perfilVendedor != null and !v.perfilVendedor.tieneCuentaRetiroCompleta()}"
+                                              th:text="${(v.perfilVendedor.banco != null ? v.perfilVendedor.banco : '-') + ' / ' + (v.perfilVendedor.cuentaBancariaEnmascarada != null ? v.perfilVendedor.cuentaBancariaEnmascarada : '-')}">Banco / Cuenta</span>
+                                    </td>
+                                    <td>
+                                        <span th:if="${v.perfilVendedor != null and v.perfilVendedor.verificado}"
+                                              class="badge badge-active">
+                                            <i class="fas fa-check-circle" aria-hidden="true"></i> Verificada
+                                        </span>
+                                        <span th:unless="${v.perfilVendedor != null and v.perfilVendedor.verificado}"
+                                              class="badge badge--warning">
+                                            <i class="fas fa-clock" aria-hidden="true"></i> Pendiente
                                         </span>
                                     </td>
-                                    <td style="white-space:nowrap;">
-                                        <!-- Acciones para Pendientes -->
-                                        <div th:if="${v.perfilVendedor == null or !v.perfilVendedor.verificado}">
-                                            <form th:action="@{/admin/tiendas/{id}/aprobar(id=${v.id})}" method="post"
-                                                style="display:inline;">
-                                                <button type="submit" class="btn-action" style="background:var(--adm-green);">
-                                                    <i class="fas fa-check"></i> Aprobar
+                                    <td>
+                                        <div class="adm-actions" th:if="${v.perfilVendedor != null and !v.perfilVendedor.verificado}">
+                                            <form th:action="@{/admin/tiendas/{id}/aprobar(id=${v.id})}" method="post" class="adm-inline-form">
+                                                <button type="submit" class="btn-action">
+                                                    <i class="fas fa-check" aria-hidden="true"></i>
+                                                    <span>Aprobar</span>
                                                 </button>
                                             </form>
                                             <form th:action="@{/admin/tiendas/{id}/rechazar(id=${v.id})}" method="post"
-                                                style="display:inline; margin-left:6px;">
-                                                <button type="submit" class="btn-action" style="background:var(--adm-red);">
-                                                    <i class="fas fa-times"></i> Rechazar
+                                                  class="adm-inline-form"
+                                                  onsubmit="return confirm('¿Rechazar esta tienda?')">
+                                                <button type="submit" class="btn-action btn-delete">
+                                                    <i class="fas fa-times" aria-hidden="true"></i>
+                                                    <span>Rechazar</span>
                                                 </button>
                                             </form>
                                         </div>
-                                        <!-- Acciones para Verificados -->
-                                        <div th:if="${v.perfilVendedor != null and v.perfilVendedor.verificado}">
+
+                                        <div class="adm-actions" th:if="${v.perfilVendedor != null and v.perfilVendedor.verificado}">
                                             <form th:action="@{/admin/tiendas/{id}/rechazar(id=${v.id})}" method="post"
-                                                onsubmit="return confirm('¿Revocar verificación a esta tienda?')">
-                                                <button type="submit" class="btn-action" style="background:var(--adm-amber);">
-                                                    <i class="fas fa-ban"></i> Revocar
+                                                  class="adm-inline-form"
+                                                  onsubmit="return confirm('¿Revocar verificación a esta tienda?')">
+                                                <button type="submit" class="btn-action btn-action--amber">
+                                                    <i class="fas fa-ban" aria-hidden="true"></i>
+                                                    <span>Revocar</span>
                                                 </button>
                                             </form>
                                         </div>
                                     </td>
                                 </tr>
+                                <tr th:if="${vendedores == null or vendedores.empty}">
+                                    <td colspan="8">
+                                        <div class="adm-empty">
+                                            <div class="adm-empty__icon"><i class="fas fa-store" aria-hidden="true"></i></div>
+                                            <h4 class="adm-empty__title">No hay tiendas en esta categoría</h4>
+                                            <p class="adm-empty__desc">Cambia entre las pestañas Pendientes y Verificadas para ver más registros.</p>
+                                        </div>
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
+                    </div>
 
-                        <!-- Paginación Vendedores -->
-                        <div th:if="${vendedores.totalPages > 1}" class="paginacion-container"
-                            style="display:flex; justify-content:center; align-items:center; gap:15px; margin-top:30px; padding:20px 0;">
-                            <a th:href="@{/admin/verificacion-tiendas(page=${vendedores.number - 1}, estado=${estadoFilter})}"
-                                th:if="${vendedores.hasPrevious()}"
-                                style="padding:8px 16px; border:1px solid #d6e2d8; border-radius:5px; background:white; cursor:pointer; text-decoration:none; color:#111e15;">
-                                <i class="fas fa-chevron-left"></i> Anterior
+                    <!-- Controles de Paginación -->
+                    <div class="paginacion-container" th:if="${vendedores != null and vendedores.totalPages > 1}">
+                        <span class="adm-pagination__info">
+                            Mostrando página <strong th:text="${vendedores.number + 1}">1</strong> de <strong th:text="${vendedores.totalPages}">1</strong>
+                        </span>
+                        <div class="adm-pagination__controls">
+                            <a th:if="${vendedores.hasPrevious()}" th:href="@{/admin/verificacion-tiendas(page=${vendedores.number - 1}, estado=${estadoFilter})}" class="adm-page-btn">
+                                <i class="fas fa-chevron-left" aria-hidden="true"></i> Anterior
                             </a>
-                            <button th:unless="${vendedores.hasPrevious()}" disabled
-                                style="padding:8px 16px; border:1px solid var(--adm-line); border-radius:5px; background:var(--adm-green-soft); color:#94a39a; cursor:not-allowed;">
-                                <i class="fas fa-chevron-left"></i> Anterior
-                            </button>
-                            <div style="display:flex; gap:5px;">
-                                <span th:each="i : ${#numbers.sequence(0, vendedores.totalPages - 1)}"
-                                    th:if="${i >= vendedores.number - 2 and i <= vendedores.number + 2}">
-                                    <a th:href="@{/admin/verificacion-tiendas(page=${i}, estado=${estadoFilter})}"
-                                        th:text="${i + 1}"
-                                        th:style="${i == vendedores.number ? 'background:var(--adm-green); color:white; border:1px solid var(--adm-green);' : 'background:white; color:#111e15; border:1px solid #d6e2d8;'}"
-                                        style="padding:8px 14px; border-radius:5px; text-decoration:none; font-weight:600; cursor:pointer; transition: 0.3s;">
-                                    </a>
-                                </span>
-                            </div>
-                            <a th:href="@{/admin/verificacion-tiendas(page=${vendedores.number + 1}, estado=${estadoFilter})}"
-                                th:if="${vendedores.hasNext()}"
-                                style="padding:8px 16px; border:1px solid #d6e2d8; border-radius:5px; background:white; cursor:pointer; text-decoration:none; color:#111e15;">
-                                Siguiente <i class="fas fa-chevron-right"></i>
+                            <span class="adm-page-pill" th:text="${vendedores.number + 1}">1</span>
+                            <a th:if="${vendedores.hasNext()}" th:href="@{/admin/verificacion-tiendas(page=${vendedores.number + 1}, estado=${estadoFilter})}" class="adm-page-btn">
+                                Siguiente <i class="fas fa-chevron-right" aria-hidden="true"></i>
                             </a>
-                            <button th:unless="${vendedores.hasNext()}" disabled
-                                style="padding:8px 16px; border:1px solid var(--adm-line); border-radius:5px; background:var(--adm-green-soft); color:#94a39a; cursor:not-allowed;">
-                                Siguiente <i class="fas fa-chevron-right"></i>
-                            </button>
                         </div>
                     </div>
                 </div>
             </div>
 
-
         </div>
     </main>
 
+    <!-- Scripts -->
     <script th:src="@{/js/admin-panel.js}"></script>
 </body>
 

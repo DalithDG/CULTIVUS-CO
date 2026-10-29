@@ -296,6 +296,53 @@ public class TransportistaService {
     }
 
     /**
+     * Sobrecarga sin banco/cuentaBancaria en el registro (US-24).
+     */
+    public Usuario crearPerfilTransportista(
+            String usuarioId,
+            String tipo,
+            String nit,
+            String razonSocial,
+            String tipoVehiculo,
+            String placa,
+            Double capacidadCargaKg,
+            String licenciaConduccion,
+            String telefonoContacto,
+            String ciudadBase,
+            String departamentoBase,
+            List<Integer> zonasCoberturaIds,
+            boolean todasLasZonas,
+            boolean refrigerado,
+            String empresa) {
+        return crearPerfilTransportista(usuarioId, tipo, nit, razonSocial, tipoVehiculo, placa,
+                capacidadCargaKg, licenciaConduccion, telefonoContacto, ciudadBase, departamentoBase,
+                zonasCoberturaIds, todasLasZonas, refrigerado, empresa, null, null);
+    }
+
+    /**
+     * US-24 / Fase 2: Valida y guarda la cuenta bancaria de retiro del transportista,
+     * sincronizando los campos legados banco y cuentaBancaria.
+     */
+    public Usuario guardarCuentaBancaria(String usuarioId, com.example.demo.Model.embebidos.CuentaBancaria cuenta) {
+        if (cuenta == null) {
+            throw new IllegalArgumentException("Los datos de la cuenta bancaria son obligatorios");
+        }
+        cuenta.validar();
+
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+
+        PerfilTransportista perfil = usuario.getPerfilTransportista();
+        if (perfil == null) {
+            throw new IllegalArgumentException("Este usuario no tiene perfil de transportista");
+        }
+
+        perfil.setCuentaRetiro(cuenta);
+        usuario.setPerfilTransportista(perfil);
+        return usuarioRepository.save(usuario);
+    }
+
+    /**
      * Sobrecarga de compatibilidad anterior.
      */
     public Usuario crearPerfilTransportista(

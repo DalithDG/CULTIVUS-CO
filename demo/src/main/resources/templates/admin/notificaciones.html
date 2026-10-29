@@ -5,121 +5,142 @@
 
 <body class="admin-layout">
 
+    <!-- Topbar -->
     <header th:replace="~{admin/fragments/topbar :: topbar('Gestión de Notificaciones')}"></header>
+
+    <!-- Sidebar -->
     <aside th:replace="~{admin/fragments/sidebar :: sidebar}"></aside>
 
+    <!-- Contenido Principal -->
     <main class="admin-main">
         <div class="admin-content">
+
             <div th:replace="~{admin/fragments/alerts :: alerts}"></div>
 
-            <div class="admin-page" id="notificaciones-page">
-                <div class="page-card" style="margin-bottom:24px;">
-                    <h2><i class="fas fa-paper-plane"></i> Enviar Notificación del Sistema</h2>
-                    <form th:action="@{/admin/notificaciones/enviar}" method="post" class="form-container">
-                        <div class="form-group">
-                            <label>Título</label>
-                            <input type="text" name="titulo" placeholder="Ej: Mantenimiento programado" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Mensaje</label>
-                            <textarea name="mensaje" rows="3" placeholder="Escriba el anuncio aquí..."
-                                required></textarea>
-                        </div>
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Tipo</label>
-                                <select name="tipo">
-                                    <option value="INFO">Información (Azul)</option>
-                                    <option value="SUCCESS">Éxito (Verde)</option>
-                                    <option value="WARNING">Advertencia (Naranja)</option>
-                                    <option value="DANGER">Urgente (Rojo)</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>Usuario ID (Opcional)</label>
-                                <input type="text" name="usuarioId"
-                                    placeholder="ID de usuario específico o vacío para todos">
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary"><i class="fas fa-send"></i> Enviar a
-                            todos</button>
-                    </form>
-                </div>
-
+            <!-- ==================== SECCIÓN NOTIFICACIONES ==================== -->
+            <div id="notificaciones-page" class="admin-page section">
                 <div class="page-card">
-                    <div th:if="${notificacionesPaginadas != null and !notificacionesPaginadas.empty}">
-                        <table class="table">
+                    <div class="adm-section-head">
+                        <div class="adm-section-head__info">
+                            <h3 class="adm-section-head__title">
+                                <i class="fas fa-bell" aria-hidden="true"></i>
+                                <span>Notificaciones del Sistema (<span class="adm-tabular" th:text="${notificacionesPaginadas != null ? notificacionesPaginadas.totalElements : 0}">0</span>)</span>
+                            </h3>
+                            <p class="adm-section-head__sub">Envía avisos globales o dirigidos a un usuario específico y administra el historial de notificaciones.</p>
+                        </div>
+                    </div>
+
+                    <!-- Formulario enviar notificación -->
+                    <div class="adm-form-panel">
+                        <h4 class="adm-form-panel__title">
+                            <i class="fas fa-paper-plane" aria-hidden="true"></i>
+                            <span>Enviar Notificación del Sistema</span>
+                        </h4>
+                        <form th:action="@{/admin/notificaciones/enviar}" method="post" class="adm-form-stack">
+                            <div class="adm-form-grid-2">
+                                <div class="adm-field">
+                                    <label for="notif-titulo">Título *</label>
+                                    <input type="text" id="notif-titulo" name="titulo" placeholder="Ej: Mantenimiento programado" required class="adm-input">
+                                </div>
+                                <div class="adm-field">
+                                    <label for="notif-tipo">Tipo</label>
+                                    <select id="notif-tipo" name="tipo" class="adm-select">
+                                        <option value="INFO">Información (Azul)</option>
+                                        <option value="SUCCESS">Éxito (Verde)</option>
+                                        <option value="WARNING">Advertencia (Naranja)</option>
+                                        <option value="DANGER">Urgente (Rojo)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="adm-field">
+                                <label for="notif-mensaje">Mensaje *</label>
+                                <textarea id="notif-mensaje" name="mensaje" placeholder="Escriba el anuncio aquí..." required rows="3" class="adm-textarea"></textarea>
+                            </div>
+                            <div class="adm-form-grid-2">
+                                <div class="adm-field">
+                                    <label for="notif-usuario">Usuario ID (Opcional)</label>
+                                    <input type="text" id="notif-usuario" name="usuarioId" placeholder="ID de usuario específico o vacío para todos" class="adm-input">
+                                </div>
+                                <div class="adm-field" style="justify-content: flex-end;">
+                                    <button type="submit" class="admin-btn admin-btn--primary">
+                                        <i class="fas fa-paper-plane" aria-hidden="true"></i>
+                                        <span>Enviar notificación</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="data-table">
                             <thead>
                                 <tr>
                                     <th>Fecha</th>
                                     <th>Título</th>
+                                    <th>Mensaje</th>
                                     <th>Tipo</th>
-                                    <th>Acción</th>
+                                    <th>Destinatario</th>
+                                    <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr th:each="n : ${notificacionesPaginadas.content}">
-                                    <td th:text="${n.fecha != null ? #temporals.format(n.fecha, 'dd/MM HH:mm') : '-'}">
-                                        Fecha</td>
-                                    <td th:text="${n.titulo}">Título</td>
-                                    <td><span class="badge" th:text="${n.tipo}">Tipo</span></td>
+                                <tr th:if="${notificacionesPaginadas != null}" th:each="n : ${notificacionesPaginadas.content}">
+                                    <td class="adm-tabular" th:text="${n.fecha != null ? #temporals.format(n.fecha, 'dd/MM/yyyy HH:mm') : '-'}">01/01/2026</td>
+                                    <td><span class="adm-cell-title" th:text="${n.titulo}">Título</span></td>
+                                    <td th:text="${n.mensaje != null ? n.mensaje : '-'}">Mensaje</td>
                                     <td>
-                                        <form th:action="@{/admin/notificaciones/{id}/eliminar(id=${n.id})}"
-                                            method="post">
-                                            <button type="submit" class="btn-action" style="background:var(--adm-red);"><i
-                                                    class="fas fa-trash"></i></button>
+                                        <span class="badge"
+                                              th:classappend="${n.tipo == 'SUCCESS' ? 'badge--success' : (n.tipo == 'WARNING' ? 'badge--warning' : (n.tipo == 'DANGER' ? 'badge--danger' : 'badge--info'))}"
+                                              th:text="${n.tipo}">INFO</span>
+                                    </td>
+                                    <td>
+                                        <span class="adm-mono" th:text="${n.usuarioId != null and !n.usuarioId.isEmpty() ? n.usuarioId : 'Todos'}">Todos</span>
+                                    </td>
+                                    <td>
+                                        <form th:action="@{/admin/notificaciones/{id}/eliminar(id=${n.id})}" method="post"
+                                              onsubmit="return confirm('¿Eliminar esta notificación?')">
+                                            <button type="submit" class="btn-action btn-delete">
+                                                <i class="fas fa-trash-alt" aria-hidden="true"></i>
+                                                <span>Eliminar</span>
+                                            </button>
                                         </form>
+                                    </td>
+                                </tr>
+                                <tr th:if="${notificacionesPaginadas == null or notificacionesPaginadas.empty}">
+                                    <td colspan="6">
+                                        <div class="adm-empty">
+                                            <div class="adm-empty__icon"><i class="fas fa-bell-slash" aria-hidden="true"></i></div>
+                                            <h4 class="adm-empty__title">No hay notificaciones enviadas</h4>
+                                            <p class="adm-empty__desc">Usa el formulario superior para emitir un comunicado o alerta.</p>
+                                        </div>
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
-
-                        <!-- Paginación Notificaciones -->
-                        <div th:if="${notificacionesPaginadas.totalPages > 1}" class="paginacion-container"
-                            style="display:flex; justify-content:center; align-items:center; gap:15px; margin-top:30px; padding:20px 0;">
-                            <a th:href="@{/admin/notificaciones(page=${notificacionesPaginadas.number - 1})}"
-                                th:if="${notificacionesPaginadas.hasPrevious()}"
-                                style="padding:8px 16px; border:1px solid #d6e2d8; border-radius:5px; background:white; cursor:pointer; text-decoration:none; color:#111e15;">
-                                <i class="fas fa-chevron-left"></i> Anterior
-                            </a>
-                            <button th:unless="${notificacionesPaginadas.hasPrevious()}" disabled
-                                style="padding:8px 16px; border:1px solid var(--adm-line); border-radius:5px; background:var(--adm-green-soft); color:#94a39a; cursor:not-allowed;">
-                                <i class="fas fa-chevron-left"></i> Anterior
-                            </button>
-                            <div style="display:flex; gap:5px;">
-                                <span th:each="i : ${#numbers.sequence(0, notificacionesPaginadas.totalPages - 1)}"
-                                    th:if="${i >= notificacionesPaginadas.number - 2 and i <= notificacionesPaginadas.number + 2}">
-                                    <a th:href="@{/admin/notificaciones(page=${i})}" th:text="${i + 1}"
-                                        th:style="${i == notificacionesPaginadas.number ? 'background:var(--adm-green); color:white; border:1px solid var(--adm-green);' : 'background:white; color:#111e15; border:1px solid #d6e2d8;'}"
-                                        style="padding:8px 14px; border-radius:5px; text-decoration:none; font-weight:600; cursor:pointer; transition: 0.3s;">
-                                    </a>
-                                </span>
-                            </div>
-                            <a th:href="@{/admin/notificaciones(page=${notificacionesPaginadas.number + 1})}"
-                                th:if="${notificacionesPaginadas.hasNext()}"
-                                style="padding:8px 16px; border:1px solid #d6e2d8; border-radius:5px; background:white; cursor:pointer; text-decoration:none; color:#111e15;">
-                                Siguiente <i class="fas fa-chevron-right"></i>
-                            </a>
-                            <button th:unless="${notificacionesPaginadas.hasNext()}" disabled
-                                style="padding:8px 16px; border:1px solid var(--adm-line); border-radius:5px; background:var(--adm-green-soft); color:#94a39a; cursor:not-allowed;">
-                                Siguiente <i class="fas fa-chevron-right"></i>
-                            </button>
-                        </div>
                     </div>
 
-                    <div th:if="${notificacionesPaginadas == null or notificacionesPaginadas.empty}"
-                        style="text-align:center; padding:40px; color:#7b8b80;">
-                        <i class="fas fa-history"
-                            style="font-size:48px; color:#d6e2d8; margin-bottom:15px; display:block;"></i>
-                        <p style="font-size:18px;">No hay notificaciones enviadas.</p>
+                    <!-- Controles de Paginación -->
+                    <div class="paginacion-container" th:if="${notificacionesPaginadas != null and notificacionesPaginadas.totalPages > 1}">
+                        <span class="adm-pagination__info">
+                            Mostrando página <strong th:text="${notificacionesPaginadas.number + 1}">1</strong> de <strong th:text="${notificacionesPaginadas.totalPages}">1</strong>
+                        </span>
+                        <div class="adm-pagination__controls">
+                            <a th:if="${notificacionesPaginadas.hasPrevious()}" th:href="@{/admin/notificaciones(page=${notificacionesPaginadas.number - 1})}" class="adm-page-btn">
+                                <i class="fas fa-chevron-left" aria-hidden="true"></i> Anterior
+                            </a>
+                            <span class="adm-page-pill" th:text="${notificacionesPaginadas.number + 1}">1</span>
+                            <a th:if="${notificacionesPaginadas.hasNext()}" th:href="@{/admin/notificaciones(page=${notificacionesPaginadas.number + 1})}" class="adm-page-btn">
+                                Siguiente <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
 
-
         </div>
     </main>
 
+    <!-- Scripts -->
     <script th:src="@{/js/admin-panel.js}"></script>
 </body>
 

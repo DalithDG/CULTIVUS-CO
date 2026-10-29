@@ -11,729 +11,405 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
+
     <link rel="stylesheet" th:href="@{/header.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
-
-    <style>
-        :root {
-            --primary: #3d7a1e;
-            --primary-dark: #2c5c14;
-            --primary-light: #e8f5e1;
-            --text-dark: #1f2937;
-            --text-muted: #6b7280;
-            --card-bg: #ffffff;
-            --border-color: #e5e7eb;
-        }
-
-        body {
-            background-color: #f3f4f6;
-            font-family: 'Inter', -apple-system, sans-serif;
-            margin: 0;
-            color: var(--text-dark);
-        }
-
-        .dashboard-container {
-            max-width: 1240px;
-            margin: 30px auto 50px;
-            padding: 0 20px;
-        }
-
-        /* Banner de Bienvenida */
-        .driver-hero {
-            background: linear-gradient(135deg, #2c5c14, #2c5c14);
-            color: #ffffff;
-            border-radius: 16px;
-            padding: 26px 30px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 20px;
-            box-shadow: 0 10px 25px rgba(6, 95, 70, 0.15);
-            margin-bottom: 25px;
-        }
-
-        .driver-info-group {
-            display: flex;
-            align-items: center;
-            gap: 18px;
-        }
-
-        .driver-avatar-circle {
-            width: 64px;
-            height: 64px;
-            border-radius: 50%;
-            background: #ffffff;
-            color: #2c5c14;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.7rem;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
-        .driver-texts h1 {
-            margin: 0 0 6px;
-            font-size: 1.55rem;
-            font-weight: 800;
-        }
-
-        .driver-badges-row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .status-pill {
-            padding: 4px 12px;
-            border-radius: 9999px;
-            font-size: 0.78rem;
-            font-weight: 700;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .status-available {
-            background: #d1fae5;
-            color: #2c5c14;
-        }
-
-        .status-busy {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        /* Tabs de Navegación */
-        .tabs-header {
-            display: flex;
-            gap: 12px;
-            border-bottom: 2px solid #e5e7eb;
-            margin-bottom: 22px;
-        }
-
-        .tab-btn {
-            background: none;
-            border: none;
-            padding: 12px 20px;
-            font-size: 1rem;
-            font-weight: 700;
-            color: #6b7280;
-            cursor: pointer;
-            border-bottom: 3px solid transparent;
-            margin-bottom: -2px;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s;
-        }
-
-        .tab-btn:hover {
-            color: #3d7a1e;
-        }
-
-        .tab-btn.active {
-            color: #2c5c14;
-            border-bottom-color: #3d7a1e;
-        }
-
-        .tab-badge {
-            background: #e5e7eb;
-            color: #374151;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 700;
-        }
-
-        .tab-btn.active .tab-badge {
-            background: #e8f5e1;
-            color: #3d7a1e;
-        }
-
-        /* Cuadrícula de Métricas */
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        @media (max-width: 900px) {
-            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
-        }
-
-        @media (max-width: 500px) {
-            .metrics-grid { grid-template-columns: 1fr; }
-        }
-
-        .metric-card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 18px;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .metric-icon-box {
-            width: 48px;
-            height: 48px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.3rem;
-        }
-
-        .metric-num {
-            font-size: 1.4rem;
-            font-weight: 800;
-            margin: 0;
-            color: #111827;
-        }
-
-        .metric-label {
-            font-size: 0.78rem;
-            color: var(--text-muted);
-            margin-top: 2px;
-        }
-
-        /* Layout de Contenido Principal: Dos Columnas */
-        .main-layout {
-            display: grid;
-            grid-template-columns: 1fr 340px;
-            gap: 25px;
-        }
-
-        @media (max-width: 990px) {
-            .main-layout { grid-template-columns: 1fr; }
-        }
-
-        .section-box {
-            background: var(--card-bg);
-            border-radius: 14px;
-            border: 1px solid var(--border-color);
-            padding: 22px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.03);
-            margin-bottom: 25px;
-        }
-
-        /* Tarjeta de Ruta de Envío */
-        .route-card {
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 18px;
-            transition: all 0.2s;
-            position: relative;
-        }
-
-        .route-card:hover {
-            border-color: #cbd5e1;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
-        }
-
-        .route-card.out-zone-card {
-            background: #fafaf9;
-            border-style: dashed;
-        }
-
-        .route-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 10px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #f1f5f9;
-            margin-bottom: 14px;
-        }
-
-        .badge-in-zone {
-            background: #e8f5e1;
-            color: #2c5c14;
-            border: 1px solid #c8e6c9;
-            padding: 4px 10px;
-            border-radius: 9999px;
-            font-size: 0.76rem;
-            font-weight: 700;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .badge-out-zone {
-            background: #fffbeb;
-            color: #b45309;
-            border: 1px solid #fde68a;
-            padding: 4px 10px;
-            border-radius: 9999px;
-            font-size: 0.76rem;
-            font-weight: 700;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        /* Paradas de la Ruta */
-        .stops-container {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin: 14px 0;
-            padding-left: 28px;
-            position: relative;
-        }
-
-        .stops-container::before {
-            content: '';
-            position: absolute;
-            left: 9px;
-            top: 10px;
-            bottom: 10px;
-            width: 2px;
-            background: #cbd5e1;
-        }
-
-        .stop-item {
-            position: relative;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 10px 14px;
-        }
-
-        .stop-item::before {
-            content: '';
-            position: absolute;
-            left: -24px;
-            top: 14px;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #ffffff;
-            border: 3px solid #3d7a1e;
-        }
-
-        .stop-item.delivery-point {
-            background: #eff6ff;
-            border-color: #bfdbfe;
-        }
-
-        .stop-item.delivery-point::before {
-            border-color: #2563eb;
-        }
-
-        .route-footer {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 14px;
-            margin-top: 16px;
-            padding-top: 14px;
-            border-top: 1px solid #f1f5f9;
-        }
-
-        .earning-box {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .earning-label {
-            font-size: 0.75rem;
-            color: #64748b;
-            text-transform: uppercase;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
-
-        .earning-amount {
-            font-size: 1.35rem;
-            font-weight: 800;
-            color: #2c5c14;
-        }
-
-        .btn-accept-route {
-            background: linear-gradient(135deg, #3d7a1e, #2c5c14);
-            color: #ffffff;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 0.92rem;
-            font-weight: 700;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.2s;
-            box-shadow: 0 4px 6px -1px rgba(5, 150, 105, 0.3);
-        }
-
-        .btn-accept-route:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 12px -1px rgba(5, 150, 105, 0.4);
-        }
-
-        .btn-liberar-route {
-            background: #fff;
-            color: #dc2626;
-            border: 1px solid #f87171;
-            border-radius: 8px;
-            padding: 9px 16px;
-            font-size: 0.88rem;
-            font-weight: 700;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            transition: all 0.2s;
-        }
-
-        .btn-liberar-route:hover {
-            background: #fef2f2;
-            border-color: #dc2626;
-        }
-
-        .btn-liberar-disabled {
-            background: #f3f4f6;
-            color: #9ca3af;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 9px 16px;
-            font-size: 0.88rem;
-            font-weight: 600;
-            cursor: not-allowed;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .vehicle-spec-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #f3f4f6;
-            font-size: 0.85rem;
-        }
-
-        .vehicle-spec-row:last-child { border-bottom: none; }
-        .vehicle-spec-row span { color: var(--text-muted); }
-        .vehicle-spec-row strong { color: #111827; }
-    </style>
+    <link rel="stylesheet" th:href="@{/transportista-panel.css}">
 </head>
 
-<body>
-    <header th:replace="~{fragments/header :: siteHeader}"></header>
+<body class="tp-body">
+    <header th:replace="~{fragments/header-transportista :: siteHeader}"></header>
 
-    <main class="dashboard-container">
+    <main class="tp-container">
 
         <!-- Mensajes de Alerta -->
-        <div th:if="${mensaje}" style="background: #e8f5e1; color: #2c5c14; padding: 14px 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #c8e6c9; display: flex; align-items: center; gap: 10px;">
-            <i class="fas fa-check-circle" style="font-size: 1.2rem;"></i>
+        <div th:if="${mensaje}" class="tp-alert tp-alert--success" role="status">
+            <i class="fas fa-circle-check" aria-hidden="true"></i>
             <span th:text="${mensaje}"></span>
         </div>
 
-        <div th:if="${error}" style="background: #fef2f2; color: #dc2626; padding: 14px 20px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #fecaca; display: flex; align-items: center; gap: 10px;">
-            <i class="fas fa-exclamation-circle" style="font-size: 1.2rem;"></i>
+        <div th:if="${error}" class="tp-alert tp-alert--error" role="alert">
+            <i class="fas fa-circle-exclamation" aria-hidden="true"></i>
             <span th:text="${error}"></span>
         </div>
 
-        <!-- Banner del Transportista -->
-        <section class="driver-hero">
-            <div class="driver-info-group">
-                <div class="driver-avatar-circle">
-                    <i class="fas fa-truck-fast"></i>
-                </div>
-                <div class="driver-texts">
-                    <h1 th:text="'¡Hola, ' + ${usuario.nombre} + '!'">¡Hola, Conductor!</h1>
-                    <div class="driver-badges-row">
-                        <span class="status-pill status-available" th:if="${perfil != null and perfil.disponible}">
-                            <i class="fas fa-circle" style="font-size: 0.5rem;"></i> DISPONIBLE PARA RUTAS
-                        </span>
-                        <span class="status-pill status-busy" th:if="${perfil != null and !perfil.disponible}">
-                            <i class="fas fa-circle" style="font-size: 0.5rem;"></i> EN RUTA / NO DISPONIBLE
-                        </span>
+        <!-- Hero de Bienvenida con Control Principal de Disponibilidad -->
+        <section class="tp-hero" aria-label="Resumen operativo del transportista">
+            <div class="tp-hero__main">
+                <span class="tp-hero__kicker">
+                    <i class="fas fa-truck-fast" aria-hidden="true"></i>
+                    <span>Centro Logístico Cultivus</span>
+                </span>
+                <h1 class="tp-hero__title" th:text="'¡Hola, ' + ${usuario.nombre} + '!'">¡Hola, Conductor!</h1>
+                <p class="tp-hero__subtitle">
+                    Gestiona tus recolecciones en fincas, entregas consolidadas y el cobro garantizado de tus fletes en Bolívar.
+                </p>
 
-                        <span th:if="${perfil != null and (perfil.tipo == 'EMPRESA' or perfil.isEmpresa())}"
-                              style="background: rgba(255,255,255,0.25); padding: 4px 10px; border-radius: 9999px; font-size: 0.78rem; font-weight: 700;">
-                            <i class="fas fa-building"></i> EMPRESA: <span th:text="${perfil.razonSocial != null ? perfil.razonSocial : 'Transportes'}">Empresa</span>
-                        </span>
+                <div class="tp-hero__badges">
+                    <span class="tp-hero-chip tp-hero-chip--online" th:if="${perfil != null and perfil.disponible}">
+                        <i class="fas fa-circle-check" aria-hidden="true"></i>
+                        <span>Disponible para rutas</span>
+                    </span>
+                    <span class="tp-hero-chip tp-hero-chip--busy" th:if="${perfil != null and !perfil.disponible}">
+                        <i class="fas fa-truck-moving" aria-hidden="true"></i>
+                        <span>En ruta / Ocupado</span>
+                    </span>
 
-                        <span th:unless="${perfil != null and (perfil.tipo == 'EMPRESA' or perfil.isEmpresa())}"
-                              style="background: rgba(255,255,255,0.2); padding: 4px 10px; border-radius: 9999px; font-size: 0.78rem;">
-                            <i class="fas fa-id-badge"></i> <span th:text="${perfil != null and perfil.placa != null ? perfil.placa : 'Sin placa'}">ABC-123</span>
-                        </span>
+                    <span class="tp-hero-chip" th:if="${perfil != null and (perfil.tipo == 'EMPRESA' or perfil.isEmpresa())}">
+                        <i class="fas fa-building" aria-hidden="true"></i>
+                        <span>Empresa: <span th:text="${perfil.razonSocial != null ? perfil.razonSocial : 'Transportes'}">Empresa</span></span>
+                    </span>
 
-                        <span th:if="${perfil != null and perfil.verificado}"
-                              style="background: #4e9628; color: white; padding: 4px 10px; border-radius: 9999px; font-size: 0.78rem; font-weight: 700;">
-                            <i class="fas fa-shield-check"></i> Verificado
-                        </span>
+                    <span class="tp-hero-chip" th:unless="${perfil != null and (perfil.tipo == 'EMPRESA' or perfil.isEmpresa())}">
+                        <i class="fas fa-id-badge" aria-hidden="true"></i>
+                        <span th:text="${perfil != null and perfil.placa != null ? perfil.placa : 'Sin placa'}">ABC-123</span>
+                    </span>
 
-                        <span th:if="${perfil != null and !perfil.verificado}"
-                              style="background: #f59e0b; color: white; padding: 4px 10px; border-radius: 9999px; font-size: 0.78rem; font-weight: 700;">
-                            <i class="fas fa-clock"></i> Verificación Pendiente
-                        </span>
-                    </div>
+                    <span class="tp-hero-chip tp-hero-chip--verified" th:if="${perfil != null and perfil.verificado}">
+                        <i class="fas fa-shield-halved" aria-hidden="true"></i>
+                        <span>Verificado</span>
+                    </span>
+
+                    <span class="tp-hero-chip tp-hero-chip--pending" th:if="${perfil != null and !perfil.verificado}">
+                        <i class="fas fa-clock" aria-hidden="true"></i>
+                        <span>Verificación pendiente</span>
+                    </span>
                 </div>
             </div>
 
-            <!-- Botón Cambiar Disponibilidad -->
-            <form th:action="@{/transportista/disponibilidad}" method="post" class="toggle-status-form" th:if="${perfil != null}">
-                <input type="hidden" name="disponible" th:value="${!perfil.disponible}">
-                <button type="submit" style="background: rgba(255,255,255,0.18); color: white; border: 1px solid rgba(255,255,255,0.3); border-radius: 8px; padding: 10px 16px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
-                    <i class="fas fa-arrows-rotate"></i>
-                    <span th:text="${perfil.disponible} ? 'Cambiar a: En Ruta' : 'Cambiar a: Disponible'">Cambiar Estado</span>
+            <!-- Interruptor de Disponibilidad prominente -->
+            <div class="tp-hero__control-card" th:if="${perfil != null}">
+                <div class="tp-hero__control-label">
+                    <span>Estado operativo</span>
+                    <span class="tp-hero__control-state">
+                        <i class="fas" th:classappend="${perfil.disponible} ? 'fa-signal' : 'fa-road'" aria-hidden="true"></i>
+                        <span th:text="${perfil.disponible} ? 'Disponible' : 'En ruta'">Disponible</span>
+                    </span>
+                </div>
+                <form th:action="@{/transportista/disponibilidad}" method="post" class="toggle-status-form">
+                    <input type="hidden" name="disponible" th:value="${!perfil.disponible}">
+                    <button type="submit" class="tp-toggle-btn">
+                        <i class="fas fa-arrows-rotate" aria-hidden="true"></i>
+                        <span th:text="${perfil.disponible} ? 'Cambiar a: En Ruta' : 'Cambiar a: Disponible'">Cambiar Estado</span>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Tarjetas de Métricas con Números Tabulares -->
+        <section class="tp-stats" aria-label="Indicadores operativos">
+            <article class="tp-stat">
+                <div class="tp-stat__top">
+                    <p class="tp-stat__label">Rutas disponibles</p>
+                    <span class="tp-stat__icon" aria-hidden="true">
+                        <i class="fas fa-route"></i>
+                    </span>
+                </div>
+                <h2 class="tp-stat__value" th:text="${totalRutasDisponibles != null ? totalRutasDisponibles : 0}">0</h2>
+                <p class="tp-stat__hint">Listas para aceptar flete</p>
+            </article>
+
+            <article class="tp-stat">
+                <div class="tp-stat__top">
+                    <p class="tp-stat__label">Envíos en curso</p>
+                    <span class="tp-stat__icon tp-stat__icon--blue" aria-hidden="true">
+                        <i class="fas fa-truck-ramp-box"></i>
+                    </span>
+                </div>
+                <h2 class="tp-stat__value" th:text="${totalMisEnvios != null ? totalMisEnvios : 0}">0</h2>
+                <p class="tp-stat__hint">Asignados a tu vehículo</p>
+            </article>
+
+            <article class="tp-stat">
+                <div class="tp-stat__top">
+                    <p class="tp-stat__label">Capacidad de carga</p>
+                    <span class="tp-stat__icon tp-stat__icon--amber" aria-hidden="true">
+                        <i class="fas fa-weight-hanging"></i>
+                    </span>
+                </div>
+                <h2 class="tp-stat__value"
+                    th:text="${perfil != null and perfil.capacidadCargaKg != null ? #numbers.formatDecimal(perfil.capacidadCargaKg, 0, 'POINT', 0, 'COMMA') + ' Kg' : '1.000 Kg'}">1.000 Kg</h2>
+                <p class="tp-stat__hint">Capacidad máxima declarada</p>
+            </article>
+
+            <article class="tp-stat">
+                <div class="tp-stat__top">
+                    <p class="tp-stat__label">Zonas cubiertas</p>
+                    <span class="tp-stat__icon" aria-hidden="true">
+                        <i class="fas fa-map-location-dot"></i>
+                    </span>
+                </div>
+                <h2 class="tp-stat__value"
+                    th:text="${perfil != null and perfil.todasLasZonas ? 'Todas (6)' : (perfil != null and perfil.zonasCoberturaIds != null ? perfil.zonasCoberturaIds.size() + ' zonas' : '0')}">6</h2>
+                <p class="tp-stat__hint">Cobertura en Bolívar</p>
+            </article>
+        </section>
+
+        <!-- Control Segmentado de Pestañas -->
+        <div class="tp-segmented-wrap">
+            <div class="tp-segmented" role="tablist" aria-label="Secciones de rutas y envíos">
+                <button type="button" class="tp-segmented__btn tab-btn active" id="tabRutasBtn" onclick="cambiarPestana('rutas')">
+                    <span><i class="fas fa-map-pin" aria-hidden="true"></i> Rutas disponibles</span>
+                    <span class="tp-segmented__count tab-badge" th:text="${totalRutasDisponibles != null ? totalRutasDisponibles : 0}">0</span>
                 </button>
-            </form>
-        </section>
-
-        <!-- Métricas Rápidas -->
-        <section class="metrics-grid">
-            <div class="metric-card">
-                <div class="metric-icon-box" style="background: #e8f5e1; color: #3d7a1e;">
-                    <i class="fas fa-route"></i>
-                </div>
-                <div>
-                    <h3 class="metric-num" th:text="${totalRutasDisponibles != null ? totalRutasDisponibles : 0}">0</h3>
-                    <p class="metric-label">Rutas disponibles para flete</p>
-                </div>
+                <button type="button" class="tp-segmented__btn tab-btn" id="tabMisEnviosBtn" onclick="cambiarPestana('mis-envios')">
+                    <span><i class="fas fa-box-archive" aria-hidden="true"></i> Mis envíos</span>
+                    <span class="tp-segmented__count tab-badge" th:text="${totalMisEnvios != null ? totalMisEnvios : 0}">0</span>
+                </button>
+                <button type="button" class="tp-segmented__btn tab-btn" id="tabHistorialBtn" onclick="cambiarPestana('historial')">
+                    <span><i class="fas fa-clock-rotate-left" aria-hidden="true"></i> Historial</span>
+                    <span class="tp-segmented__count tab-badge" th:text="${totalHistorialEnvios != null ? totalHistorialEnvios : 0}">0</span>
+                </button>
             </div>
-
-            <div class="metric-card">
-                <div class="metric-icon-box" style="background: #eff6ff; color: #2563eb;">
-                    <i class="fas fa-truck-ramp-box"></i>
-                </div>
-                <div>
-                    <h3 class="metric-num" th:text="${totalMisEnvios != null ? totalMisEnvios : 0}">0</h3>
-                    <p class="metric-label">Mis envíos en curso</p>
-                </div>
-            </div>
-
-            <div class="metric-card">
-                <div class="metric-icon-box" style="background: #fef3c7; color: #d97706;">
-                    <i class="fas fa-weight-hanging"></i>
-                </div>
-                <div>
-                    <h3 class="metric-num" th:text="${perfil != null and perfil.capacidadCargaKg != null ? #numbers.formatDecimal(perfil.capacidadCargaKg, 0, 'POINT', 0, 'COMMA') + ' Kg' : '1.000 Kg'}">1.000 Kg</h3>
-                    <p class="metric-label">Capacidad de carga</p>
-                </div>
-            </div>
-
-            <div class="metric-card">
-                <div class="metric-icon-box" style="background: #f3e8ff; color: #7c3aed;">
-                    <i class="fas fa-map-location-dot"></i>
-                </div>
-                <div>
-                    <h3 class="metric-num" style="font-size: 1.15rem;" th:text="${perfil != null and perfil.todasLasZonas ? 'Todas (6)' : (perfil != null and perfil.zonasCoberturaIds != null ? perfil.zonasCoberturaIds.size() + ' zonas' : '0')}">6</h3>
-                    <p class="metric-label">Zonas de Bolívar cubiertas</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Tabs para alternar entre "Rutas Disponibles", "Mis Envíos" e "Historial" -->
-        <div class="tabs-header">
-            <button class="tab-btn active" id="tabRutasBtn" onclick="cambiarPestana('rutas')">
-                <i class="fas fa-map-pin"></i> Rutas Disponibles
-                <span class="tab-badge" th:text="${totalRutasDisponibles != null ? totalRutasDisponibles : 0}">0</span>
-            </button>
-            <button class="tab-btn" id="tabMisEnviosBtn" onclick="cambiarPestana('mis-envios')">
-                <i class="fas fa-box-archive"></i> Mis Envíos (En curso)
-                <span class="tab-badge" th:text="${totalMisEnvios != null ? totalMisEnvios : 0}">0</span>
-            </button>
-            <button class="tab-btn" id="tabHistorialBtn" onclick="cambiarPestana('historial')">
-                <i class="fas fa-clock-rotate-left"></i> Historial de Entregas
-                <span class="tab-badge" th:text="${totalHistorialEnvios != null ? totalHistorialEnvios : 0}">0</span>
-            </button>
         </div>
 
-        <!-- Contenido en Dos Columnas -->
-        <div class="main-layout">
-            
-            <!-- Columna Izquierda: Rutas Disponibles o Mis Envíos -->
+        <!-- Espacio de Trabajo en Dos Columnas -->
+        <div class="tp-workspace">
+
+            <!-- Columna Principal: Pestañas Operativas -->
             <div class="left-col">
-                
+
                 <!-- PESTAÑA 1: RUTAS DISPONIBLES -->
                 <div id="panelRutas" class="tab-panel">
-                    <div class="section-box">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 10px;">
+                    <section class="tp-section-card">
+                        <header class="tp-section-head">
                             <div>
-                                <h2 style="font-size: 1.25rem; font-weight: 800; color: #111827; margin: 0;">
-                                    <i class="fas fa-route" style="color: #3d7a1e;"></i> Rutas y Fletes Disponibles
+                                <h2 class="tp-section-title">
+                                    <i class="fas fa-route" aria-hidden="true"></i>
+                                    <span>Rutas y fletes disponibles</span>
                                 </h2>
-                                <p style="font-size: 0.8rem; color: #6b7280; margin: 4px 0 0;">
+                                <p class="tp-section-sub">
                                     Cada compra agrupa las recolecciones en fincas y la entrega consolidada al comprador.
                                 </p>
                             </div>
-                        </div>
+                        </header>
 
                         <!-- Lista de Rutas Disponibles -->
                         <div th:if="${rutas != null and !rutas.isEmpty()}">
-                            <div th:each="r : ${rutas}" class="route-card" th:classappend="${!r.enZona ? 'out-zone-card' : ''}">
-                                
-                                <div class="route-header">
-                                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                                        <strong style="color: #111827; font-size: 0.95rem;">
-                                            Compra <span th:text="${r.compra != null and r.compra.codigoReferencia != null ? r.compra.codigoReferencia : #strings.substring(r.envio.id, r.envio.id.length() > 6 ? r.envio.id.length() - 6 : 0)}">CULT-123456</span>
-                                        </strong>
-                                        <span class="badge-in-zone" th:if="${r.enZona}">
-                                            <i class="fas fa-check-circle"></i> En tu zona de cobertura
-                                        </span>
-                                        <span class="badge-out-zone" th:unless="${r.enZona}">
-                                            <i class="fas fa-triangle-exclamation"></i> Fuera de tu zona
-                                        </span>
+                            <article th:each="r : ${rutas}"
+                                     class="tp-route-card route-card"
+                                     th:classappend="${!r.enZona ? 'tp-route-card--out-zone out-zone-card' : ''}">
+
+                                <!-- Información clave primero: Origen -> Destino, Estado/Zona y Ganancia -->
+                                <div class="tp-route-top">
+                                    <div class="tp-route-summary">
+                                        <div class="tp-route-badges">
+                                            <span class="tp-badge tp-badge--available" th:if="${r.enZona}">
+                                                <i class="fas fa-circle-check" aria-hidden="true"></i>
+                                                <span>En tu zona de cobertura</span>
+                                            </span>
+                                            <span class="tp-badge tp-badge--out-zone" th:unless="${r.enZona}">
+                                                <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+                                                <span>Fuera de tu zona</span>
+                                            </span>
+                                            <span class="tp-badge tp-badge--neutral">
+                                                <i class="fas fa-location-dot" aria-hidden="true"></i>
+                                                <span th:text="${(r.paradasDetalle != null ? r.paradasDetalle.size() : 0) + ' parada(s) de recolección'}">1 parada(s)</span>
+                                            </span>
+                                        </div>
+
+                                        <div class="tp-route-Flow">
+                                            <span th:text="${r.paradasDetalle != null and !r.paradasDetalle.isEmpty() and r.paradasDetalle[0].parada.ciudad != null ? r.paradasDetalle[0].parada.ciudad : 'Origen en finca'}">Arjona</span>
+                                            <i class="fas fa-arrow-right tp-route-Flow__arrow" aria-hidden="true"></i>
+                                            <span th:text="${r.envio.puntoEntrega != null and r.envio.puntoEntrega.ciudad != null ? r.envio.puntoEntrega.ciudad : 'Destino comprador'}">Cartagena</span>
+                                        </div>
+
+                                        <div class="tp-route-meta">
+                                            <span>
+                                                <strong>Compra <span th:text="${r.compra != null and r.compra.codigoReferencia != null ? r.compra.codigoReferencia : #strings.substring(r.envio.id, r.envio.id.length() > 6 ? r.envio.id.length() - 6 : 0)}">CULT-123456</span></strong>
+                                            </span>
+                                            <span th:if="${r.envio.fechaCreacion != null}">
+                                                <i class="far fa-clock" aria-hidden="true"></i>
+                                                <span th:text="${#temporals.format(r.envio.fechaCreacion, 'dd/MM/yyyy HH:mm')}">Fecha</span>
+                                            </span>
+                                        </div>
                                     </div>
-                                    <span style="font-size: 0.75rem; color: #64748b;" th:if="${r.envio.fechaCreacion != null}"
-                                          th:text="${#temporals.format(r.envio.fechaCreacion, 'dd/MM/yyyy HH:mm')}">Fecha</span>
+
+                                    <div class="tp-route-earning">
+                                        <span class="tp-route-earning__label">Flete garantizado</span>
+                                        <span class="tp-route-earning__value" th:text="${r.envio.getCostoTotalFormateado()}">$35.000 COP</span>
+                                    </div>
                                 </div>
 
-                                <!-- Paradas de Recolección y Destino -->
-                                <div class="stops-container">
-                                    
+                                <!-- Línea de Paradas de Recolección y Destino -->
+                                <div class="tp-stops stops-container">
                                     <!-- Paradas de Campesinos (Vendedores) -->
-                                    <div th:each="pd, stat : ${r.paradasDetalle}" class="stop-item">
-                                        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                                    <div th:each="pd, stat : ${r.paradasDetalle}" class="tp-stop stop-item">
+                                        <div class="tp-stop__row">
                                             <div>
-                                                <div style="font-size: 0.82rem; font-weight: 700; color: #2c5c14;">
-                                                    <i class="fas fa-store"></i> Parada <span th:text="${stat.count}">1</span> (Recolección):
-                                                    <span th:text="${pd.parada.vendedorNombre}">Finca Los Rosales</span>
+                                                <div class="tp-stop__title">
+                                                    <i class="fas fa-store" aria-hidden="true"></i>
+                                                    <span>Parada <span th:text="${stat.count}">1</span> (Recolección): <span th:text="${pd.parada.vendedorNombre}">Finca Los Rosales</span></span>
                                                 </div>
-                                                <div style="font-size: 0.78rem; color: #475569; margin-top: 2px;">
-                                                    <i class="fas fa-location-dot"></i> <span th:text="${pd.parada.direccionRecoleccion}">Vereda El Salado</span>, <strong th:text="${pd.parada.ciudad}">Arjona</strong>
+                                                <div class="tp-stop__address">
+                                                    <i class="fas fa-location-dot" aria-hidden="true"></i>
+                                                    <span th:text="${pd.parada.direccionRecoleccion}">Vereda El Salado</span>,
+                                                    <strong th:text="${pd.parada.ciudad}">Arjona</strong>
                                                 </div>
-                                                <div style="font-size: 0.75rem; color: #64748b; margin-top: 2px;" th:if="${pd.parada.vendedorTelefono != null}">
-                                                    <i class="fas fa-phone"></i> Contacto: <span th:text="${pd.parada.vendedorTelefono}">3001234567</span>
+                                                <div class="tp-stop__meta" th:if="${pd.parada.vendedorTelefono != null}">
+                                                    <i class="fas fa-phone" aria-hidden="true"></i>
+                                                    <span>Contacto: <span th:text="${pd.parada.vendedorTelefono}">3001234567</span></span>
                                                 </div>
-                                                <div style="font-size: 0.75rem; color: #1e293b; margin-top: 4px;" th:if="${pd.parada.itemsResumen != null and !pd.parada.itemsResumen.empty}">
-                                                    <i class="fas fa-box-open" style="color: #3d7a1e;"></i>
+                                                <div class="tp-stop__items" th:if="${pd.parada.itemsResumen != null and !pd.parada.itemsResumen.empty}">
+                                                    <i class="fas fa-box-open" aria-hidden="true"></i>
                                                     <span th:text="${#strings.arrayJoin(pd.parada.itemsResumen, ', ')}">2x Plátano verde, 1x Ñame</span>
                                                 </div>
                                             </div>
-                                            <div style="text-align: right; min-width: 120px;">
-                                                <span th:style="${pd.estadoPedidoCss}" style="padding: 3px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700; display: inline-block;"
+                                            <div class="tp-stop__aside">
+                                                <span class="tp-stop__status-pill"
+                                                      th:style="${pd.estadoPedidoCss}"
                                                       th:text="${pd.estadoPedidoEtiqueta}">Listo para recoger</span>
-                                                <div style="font-size: 0.78rem; font-weight: 700; color: #2c5c14; margin-top: 4px;"
-                                                     th:text="'+' + ${pd.parada.getTarifaFormateada()}">+$15.000</div>
+                                                <span class="tp-stop__fee" th:text="'+' + ${pd.parada.getTarifaFormateada()}">+$15.000</span>
                                             </div>
                                         </div>
                                     </div>
 
                                     <!-- Punto de Entrega Final (Comprador) -->
-                                    <div class="stop-item delivery-point">
-                                        <div style="font-size: 0.82rem; font-weight: 700; color: #1e40af;">
-                                            <i class="fas fa-flag-checkered"></i> Destino Final (Entrega):
-                                            <span th:text="${r.envio.puntoEntrega != null ? r.envio.puntoEntrega.destinatarioNombre : 'Comprador'}">Comprador</span>
+                                    <div class="tp-stop tp-stop--destination stop-item delivery-point">
+                                        <div class="tp-stop__title">
+                                            <i class="fas fa-flag-checkered" aria-hidden="true"></i>
+                                            <span>Destino final (Entrega): <span th:text="${r.envio.puntoEntrega != null ? r.envio.puntoEntrega.destinatarioNombre : 'Comprador'}">Comprador</span></span>
                                         </div>
-                                        <div style="font-size: 0.78rem; color: #334155; margin-top: 2px;">
-                                            <i class="fas fa-house"></i>
+                                        <div class="tp-stop__address">
+                                            <i class="fas fa-house" aria-hidden="true"></i>
                                             <span th:text="${r.envio.puntoEntrega != null ? r.envio.puntoEntrega.direccionCompleta : 'Dirección'}">Calle 10 # 5-20</span>,
                                             <strong th:text="${r.envio.puntoEntrega != null ? r.envio.puntoEntrega.ciudad : 'Cartagena'}">Cartagena</strong>
                                         </div>
-                                        <div style="font-size: 0.75rem; color: #64748b; margin-top: 2px;" th:if="${r.envio.puntoEntrega != null and r.envio.puntoEntrega.destinatarioTelefono != null}">
-                                            <i class="fas fa-phone"></i> Teléfono: <span th:text="${r.envio.puntoEntrega.destinatarioTelefono}">3001234567</span>
+                                        <div class="tp-stop__meta" th:if="${r.envio.puntoEntrega != null and r.envio.puntoEntrega.destinatarioTelefono != null}">
+                                            <i class="fas fa-phone" aria-hidden="true"></i>
+                                            <span>Teléfono: <span th:text="${r.envio.puntoEntrega.destinatarioTelefono}">3001234567</span></span>
                                         </div>
                                     </div>
-
                                 </div>
 
-                                <!-- Footer con Ganancia Total y Botón de Aceptar -->
-                                <div class="route-footer">
-                                    <div class="earning-box">
-                                        <span class="earning-label">Flete Total Garantizado:</span>
-                                        <span class="earning-amount" th:text="${r.envio.getCostoTotalFormateado()}">$35.000 COP</span>
+                                <!-- Pie con Acción Principal -->
+                                <div class="tp-route-footer route-footer">
+                                    <div class="tp-route-meta">
+                                        <i class="fas fa-shield-halved" aria-hidden="true"></i>
+                                        <span>El valor del flete se acredita automáticamente al confirmar la entrega final.</span>
                                     </div>
 
                                     <form th:action="@{/transportista/aceptar/{envioId}(envioId=${r.envio.id})}" method="post"
                                           onsubmit="return confirm('¿Confirmas que deseas aceptar esta ruta de compra? Te comprometes a recolectar y entregar los paquetes.')">
-                                        <button type="submit" class="btn-accept-route">
-                                            <i class="fas fa-truck-ramp-box"></i> Aceptar Compra
+                                        <button type="submit" class="tp-btn tp-btn--primary btn-accept-route">
+                                            <i class="fas fa-truck-ramp-box" aria-hidden="true"></i>
+                                            <span>Aceptar Compra</span>
                                         </button>
                                     </form>
                                 </div>
 
-                            </div>
+                            </article>
                         </div>
 
-                        <!-- Si no hay rutas disponibles -->
-                        <div th:if="${rutas == null or rutas.isEmpty()}" style="text-align: center; padding: 45px 20px; color: #6b7280;">
-                            <i class="fas fa-truck-clock" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 12px; display: block;"></i>
-                            <h4 style="color: #374151; margin: 0 0 6px; font-size: 1.1rem;">No hay rutas disponibles por el momento</h4>
-                            <p style="font-size: 0.85rem; margin: 0; max-width: 480px; margin: auto;">
-                                Tan pronto los compradores confirmen pedidos en Bolívar, aparecerán aquí agrupados por ruta con sus puntos de recolección y entrega.
+                        <!-- Estado vacío: Sin rutas disponibles -->
+                        <div th:if="${rutas == null or rutas.isEmpty()}" class="tp-empty">
+                            <div class="tp-empty__icon" aria-hidden="true">
+                                <i class="fas fa-truck-clock"></i>
+                            </div>
+                            <h3 class="tp-empty__title">No hay rutas disponibles por el momento</h3>
+                            <p class="tp-empty__text">
+                                Tan pronto los compradores confirmen pedidos en Bolívar, aparecerán aquí con sus paradas de recolección y ganancia estimada. Mantén tu estado en <strong>Disponible</strong>.
                             </p>
+                            <button type="button" class="tp-btn tp-btn--outline" onclick="cambiarPestana('mis-envios')">
+                                <i class="fas fa-box-archive" aria-hidden="true"></i>
+                                <span>Revisar mis envíos en curso</span>
+                            </button>
                         </div>
-                    </div>
+                    </section>
                 </div>
 
                 <!-- PESTAÑA 2: MIS ENVÍOS -->
                 <div id="panelMisEnvios" class="tab-panel" style="display: none;">
-                    <div class="section-box">
-                        <div style="margin-bottom: 18px;">
-                            <h2 style="font-size: 1.25rem; font-weight: 800; color: #111827; margin: 0;">
-                                <i class="fas fa-box-archive" style="color: #3d7a1e;"></i> Mis Envíos Asignados
-                            </h2>
-                            <p style="font-size: 0.8rem; color: #6b7280; margin: 4px 0 0;">
-                                Rutas que has aceptado y tienes actualmente a tu cargo.
-                            </p>
-                        </div>
+                    <section class="tp-section-card">
+                        <header class="tp-section-head">
+                            <div>
+                                <h2 class="tp-section-title">
+                                    <i class="fas fa-box-archive" aria-hidden="true"></i>
+                                    <span>Mis envíos asignados</span>
+                                </h2>
+                                <p class="tp-section-sub">
+                                    Rutas que has aceptado y tienes actualmente a tu cargo.
+                                </p>
+                            </div>
+                        </header>
 
                         <!-- Lista de Mis Envíos -->
                         <div th:if="${misEnvios != null and !misEnvios.isEmpty()}">
-                            <div th:each="me : ${misEnvios}" class="route-card">
-                                
-                                <div class="route-header">
-                                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                                        <strong style="color: #111827; font-size: 0.95rem;">
-                                            Compra <span th:text="${me.compra != null and me.compra.codigoReferencia != null ? me.compra.codigoReferencia : #strings.substring(me.envio.id, me.envio.id.length() > 6 ? me.envio.id.length() - 6 : 0)}">CULT-123456</span>
-                                        </strong>
-                                        <span class="status-pill status-available" th:text="${me.envio.estado}">ASIGNADO</span>
+                            <article th:each="me : ${misEnvios}" class="tp-route-card route-card">
+
+                                <div class="tp-route-top">
+                                    <div class="tp-route-summary">
+                                        <div class="tp-route-badges">
+                                            <span class="tp-badge tp-badge--in-progress" th:text="${me.envio.estado}">ASIGNADO</span>
+                                            <span class="tp-badge tp-badge--success" th:if="${me.todasRecogidas}">
+                                                <i class="fas fa-check-double" aria-hidden="true"></i>
+                                                <span>Carga completa en vehículo</span>
+                                            </span>
+                                        </div>
+
+                                        <div class="tp-route-Flow">
+                                            <span th:text="${me.paradasDetalle != null and !me.paradasDetalle.isEmpty() and me.paradasDetalle[0].parada.ciudad != null ? me.paradasDetalle[0].parada.ciudad : 'Recolección'}">Origen</span>
+                                            <i class="fas fa-arrow-right tp-route-Flow__arrow" aria-hidden="true"></i>
+                                            <span th:text="${me.envio.puntoEntrega != null and me.envio.puntoEntrega.ciudad != null ? me.envio.puntoEntrega.ciudad : 'Entrega'}">Destino</span>
+                                        </div>
+
+                                        <div class="tp-route-meta">
+                                            <span>
+                                                <strong>Compra <span th:text="${me.compra != null and me.compra.codigoReferencia != null ? me.compra.codigoReferencia : #strings.substring(me.envio.id, me.envio.id.length() > 6 ? me.envio.id.length() - 6 : 0)}">CULT-123456</span></strong>
+                                            </span>
+                                            <span th:if="${me.envio.fechaAsignacion != null}"
+                                                  th:text="'Asignado: ' + ${#temporals.format(me.envio.fechaAsignacion, 'dd/MM/yyyy HH:mm')}">Fecha</span>
+                                        </div>
                                     </div>
-                                    <span style="font-size: 0.75rem; color: #64748b;" th:if="${me.envio.fechaAsignacion != null}"
-                                          th:text="'Asignado: ' + ${#temporals.format(me.envio.fechaAsignacion, 'dd/MM/yyyy HH:mm')}">Fecha</span>
+
+                                    <div class="tp-route-earning">
+                                        <span class="tp-route-earning__label">Flete por cobrar</span>
+                                        <span class="tp-route-earning__value" th:text="${me.envio.getCostoTotalFormateado()}">$35.000 COP</span>
+                                    </div>
                                 </div>
 
                                 <!-- Paradas y estado de recolección -->
-                                <div class="stops-container">
-                                    <div th:each="pd, stat : ${me.paradasDetalle}" class="stop-item">
-                                        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                                <div class="tp-stops stops-container">
+                                    <div th:each="pd, stat : ${me.paradasDetalle}" class="tp-stop stop-item">
+                                        <div class="tp-stop__row">
                                             <div>
-                                                <div style="font-size: 0.82rem; font-weight: 700; color: #2c5c14;">
-                                                    <i class="fas fa-store"></i> Parada <span th:text="${stat.count}">1</span>:
-                                                    <span th:text="${pd.parada.vendedorNombre}">Finca</span>
+                                                <div class="tp-stop__title">
+                                                    <i class="fas fa-store" aria-hidden="true"></i>
+                                                    <span>Parada <span th:text="${stat.count}">1</span>: <span th:text="${pd.parada.vendedorNombre}">Finca</span></span>
                                                 </div>
-                                                <div style="font-size: 0.78rem; color: #475569; margin-top: 2px;">
-                                                    <i class="fas fa-location-dot"></i> <span th:text="${pd.parada.direccionRecoleccion}">Dirección</span>, <strong th:text="${pd.parada.ciudad}">Municipio</strong>
+                                                <div class="tp-stop__address">
+                                                    <i class="fas fa-location-dot" aria-hidden="true"></i>
+                                                    <span th:text="${pd.parada.direccionRecoleccion}">Dirección</span>,
+                                                    <strong th:text="${pd.parada.ciudad}">Municipio</strong>
                                                 </div>
-                                                <div style="font-size: 0.75rem; color: #64748b; margin-top: 2px;" th:if="${pd.parada.vendedorTelefono != null}">
-                                                    <i class="fas fa-phone"></i> Tel: <span th:text="${pd.parada.vendedorTelefono}">3001234567</span>
+                                                <div class="tp-stop__meta" th:if="${pd.parada.vendedorTelefono != null}">
+                                                    <i class="fas fa-phone" aria-hidden="true"></i>
+                                                    <span>Tel: <span th:text="${pd.parada.vendedorTelefono}">3001234567</span></span>
                                                 </div>
                                             </div>
-                                            <div style="text-align: right;">
+                                            <div class="tp-stop__aside">
                                                 <!-- Parada ya recogida -->
-                                                <span th:if="${pd.parada.recolectado}" style="background: #e8f5e1; color: #2c5c14; border: 1px solid #c8e6c9; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
-                                                    <i class="fas fa-check-circle"></i> Recolectado
+                                                <span th:if="${pd.parada.recolectado}" class="tp-badge tp-badge--success">
+                                                    <i class="fas fa-circle-check" aria-hidden="true"></i>
+                                                    <span>Recolectado</span>
                                                 </span>
 
-                                                <!-- Parada pendiente: Habilitado si el vendedor ya puso LISTO_PARA_RECOGER -->
+                                                <!-- Parada pendiente -->
                                                 <th:block th:unless="${pd.parada.recolectado}">
                                                     <form th:if="${pd.estadoPedido == 'LISTO_PARA_RECOGER'}"
                                                           th:action="@{/transportista/parada/{envioId}/{pedidoId}/recoger(envioId=${me.envio.id}, pedidoId=${pd.parada.pedidoId})}"
                                                           method="post">
-                                                        <button type="submit" style="background: linear-gradient(135deg, #4e9628, #3d7a1e); color: white; border: none; border-radius: 6px; padding: 6px 14px; font-size: 0.76rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(16,185,129,0.25);">
-                                                            <i class="fas fa-box-open"></i> Marcar Recogido
+                                                        <button type="submit" class="tp-btn tp-btn--primary tp-btn--sm">
+                                                            <i class="fas fa-box-open" aria-hidden="true"></i>
+                                                            <span>Marcar Recogido</span>
                                                         </button>
                                                     </form>
 
                                                     <span th:unless="${pd.estadoPedido == 'LISTO_PARA_RECOGER'}"
-                                                          style="background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; padding: 4px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 600;"
+                                                          class="tp-badge tp-badge--neutral"
                                                           th:title="'El agricultor aún no ha puesto el pedido en Listo para Recoger. Estado actual: ' + ${pd.estadoPedidoEtiqueta}">
-                                                        <i class="fas fa-clock"></i> Esperando al vendedor (<span th:text="${pd.estadoPedidoEtiqueta}">En preparación</span>)
+                                                        <i class="fas fa-clock" aria-hidden="true"></i>
+                                                        <span>Esperando al vendedor (<span th:text="${pd.estadoPedidoEtiqueta}">En preparación</span>)</span>
                                                     </span>
                                                 </th:block>
                                             </div>
@@ -741,13 +417,13 @@
                                     </div>
 
                                     <!-- Destino Final -->
-                                    <div class="stop-item delivery-point">
-                                        <div style="font-size: 0.82rem; font-weight: 700; color: #1e40af;">
-                                            <i class="fas fa-flag-checkered"></i> Entrega Comprador:
-                                            <span th:text="${me.envio.puntoEntrega != null ? me.envio.puntoEntrega.destinatarioNombre : 'Comprador'}">Comprador</span>
+                                    <div class="tp-stop tp-stop--destination stop-item delivery-point">
+                                        <div class="tp-stop__title">
+                                            <i class="fas fa-flag-checkered" aria-hidden="true"></i>
+                                            <span>Entrega comprador: <span th:text="${me.envio.puntoEntrega != null ? me.envio.puntoEntrega.destinatarioNombre : 'Comprador'}">Comprador</span></span>
                                         </div>
-                                        <div style="font-size: 0.78rem; color: #334155; margin-top: 2px;">
-                                            <i class="fas fa-house"></i>
+                                        <div class="tp-stop__address">
+                                            <i class="fas fa-house" aria-hidden="true"></i>
                                             <span th:text="${me.envio.puntoEntrega != null ? me.envio.puntoEntrega.direccionCompleta : 'Dirección'}">Dirección</span>,
                                             <strong th:text="${me.envio.puntoEntrega != null ? me.envio.puntoEntrega.ciudad : 'Ciudad'}">Ciudad</strong>
                                         </div>
@@ -755,248 +431,288 @@
                                 </div>
 
                                 <!-- Bloque de Entrega Final al Comprador -->
-                                <div style="padding: 0 16px 14px 16px;">
-                                    <!-- Entregado -->
-                                    <div th:if="${me.envio.estado == 'ENTREGADO'}"
-                                         style="background: #e8f5e1; border: 1px solid #c8e6c9; border-radius: 8px; padding: 10px 16px; color: #2c5c14; font-size: 0.85rem; font-weight: 700; display: flex; align-items: center; justify-content: space-between;">
-                                        <span><i class="fas fa-circle-check"></i> Entrega final completada al comprador</span>
-                                        <span th:if="${me.envio.fechaEntrega != null}" style="font-size: 0.75rem; font-weight: normal; color: #2c5c14;"
-                                              th:text="${#temporals.format(me.envio.fechaEntrega, 'dd/MM/yyyy HH:mm')}"></span>
-                                    </div>
-
-                                    <!-- En proceso: Si ya se recolectaron todas las paradas -->
-                                    <div th:if="${me.envio.estado != 'ENTREGADO' and me.todasRecogidas}"
-                                         style="padding: 12px; background: #f0fdf4; border: 1px solid #86efac; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
-                                        <div>
-                                            <div style="font-size: 0.85rem; font-weight: 800; color: #166534;">
-                                                <i class="fas fa-circle-check"></i> ¡Todas las paradas recogidas!
-                                            </div>
-                                            <div style="font-size: 0.75rem; color: #15803d; margin-top: 2px;">
-                                                El cargamento está completo y listo para entregar al comprador en destino.
-                                            </div>
-                                        </div>
-                                        <form th:action="@{/transportista/envio/{envioId}/entregar(envioId=${me.envio.id})}" method="post"
-                                              onsubmit="return confirm('¿Confirmas que has entregado los paquetes en la dirección del comprador?')">
-                                            <button type="submit" style="background: linear-gradient(135deg, #3d7a1e, #2c5c14); color: white; border: none; border-radius: 8px; padding: 9px 18px; font-size: 0.84rem; font-weight: 800; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 3px 8px rgba(5,150,105,0.35);">
-                                                <i class="fas fa-truck-ramp-box"></i> Marcar Entrega Final
-                                            </button>
-                                        </form>
-                                    </div>
-
-                                    <!-- En proceso: Aún faltan paradas por recoger -->
-                                    <div th:if="${me.envio.estado != 'ENTREGADO' and !me.todasRecogidas}"
-                                         style="padding: 8px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 0.75rem; color: #64748b; display: flex; align-items: center; gap: 8px;">
-                                        <i class="fas fa-info-circle" style="color: #3b82f6;"></i>
-                                        <span>Debes marcar como recogidas todas las paradas para habilitar la entrega final al comprador.</span>
-                                    </div>
+                                <div th:if="${me.envio.estado == 'ENTREGADO'}" class="tp-delivery-banner tp-delivery-banner--ready">
+                                    <span class="tp-delivery-banner__title">
+                                        <i class="fas fa-circle-check" aria-hidden="true"></i>
+                                        <span>Entrega final completada al comprador</span>
+                                    </span>
+                                    <span th:if="${me.envio.fechaEntrega != null}"
+                                          class="tp-delivery-banner__date"
+                                          th:text="${#temporals.format(me.envio.fechaEntrega, 'dd/MM/yyyy HH:mm')}"></span>
                                 </div>
 
-                                <!-- Footer con Ganancia y Botón Liberar -->
-                                <div class="route-footer">
-                                    <div class="earning-box">
-                                        <span class="earning-label">Flete por Cobrar:</span>
-                                        <span class="earning-amount" th:text="${me.envio.getCostoTotalFormateado()}">$35.000 COP</span>
+                                <div th:if="${me.envio.estado != 'ENTREGADO' and me.todasRecogidas}" class="tp-delivery-banner tp-delivery-banner--ready">
+                                    <div>
+                                        <div class="tp-delivery-banner__title">
+                                            <i class="fas fa-circle-check" aria-hidden="true"></i>
+                                            <span>¡Todas las paradas recogidas!</span>
+                                        </div>
+                                        <div class="tp-delivery-banner__sub">
+                                            El cargamento está completo y listo para entregar al comprador en destino.
+                                        </div>
+                                    </div>
+                                    <form th:action="@{/transportista/envio/{envioId}/entregar(envioId=${me.envio.id})}" method="post"
+                                          onsubmit="return confirm('¿Confirmas que has entregado los paquetes en la dirección del comprador?')">
+                                        <button type="submit" class="tp-btn tp-btn--primary">
+                                            <i class="fas fa-truck-ramp-box" aria-hidden="true"></i>
+                                            <span>Marcar Entrega Final</span>
+                                        </button>
+                                    </form>
+                                </div>
+
+                                <div th:if="${me.envio.estado != 'ENTREGADO' and !me.todasRecogidas}" class="tp-delivery-banner tp-delivery-banner--waiting">
+                                    <span class="tp-route-meta">
+                                        <i class="fas fa-circle-info" aria-hidden="true"></i>
+                                        <span>Debes marcar como recogidas todas las paradas para habilitar la entrega final al comprador.</span>
+                                    </span>
+                                </div>
+
+                                <!-- Footer con Liberar Ruta o explicación de estado bloqueado -->
+                                <div class="tp-route-footer route-footer">
+                                    <div class="tp-route-meta">
+                                        <span th:if="${me.puedeLiberar}">Puedes liberar la ruta si aún no has iniciado la recolección en fincas.</span>
+                                        <span th:unless="${me.puedeLiberar}">No puedes liberar esta ruta porque ya recolectaste al menos una parada.</span>
                                     </div>
 
                                     <div>
-                                        <!-- Botón Activo si no ha recolectado ninguna parada -->
                                         <form th:if="${me.puedeLiberar}" th:action="@{/transportista/liberar/{envioId}(envioId=${me.envio.id})}" method="post"
                                               onsubmit="return confirm('¿Estás seguro de que deseas liberar esta ruta? Dejarás de ser el transportista responsable y volverá a la lista pública.')">
-                                            <button type="submit" class="btn-liberar-route">
-                                                <i class="fas fa-arrow-rotate-left"></i> Liberar Ruta
+                                            <button type="submit" class="tp-btn tp-btn--danger-outline btn-liberar-route">
+                                                <i class="fas fa-arrow-rotate-left" aria-hidden="true"></i>
+                                                <span>Liberar Ruta</span>
                                             </button>
                                         </form>
 
-                                        <!-- Botón Deshabilitado si ya inició recolección -->
-                                        <div th:unless="${me.puedeLiberar}" class="btn-liberar-disabled" title="No puedes liberar la ruta porque ya iniciaste la recolección de paquetes.">
-                                            <i class="fas fa-lock"></i> En recolección (no liberable)
+                                        <div th:unless="${me.puedeLiberar}" class="tp-btn tp-btn--disabled btn-liberar-disabled"
+                                             title="No puedes liberar la ruta porque ya iniciaste la recolección de paquetes.">
+                                            <i class="fas fa-lock" aria-hidden="true"></i>
+                                            <span>En recolección (no liberable)</span>
                                         </div>
                                     </div>
                                 </div>
 
+                            </article>
+                        </div>
+
+                        <!-- Estado vacío: Sin envíos asignados -->
+                        <div th:if="${misEnvios == null or misEnvios.isEmpty()}" class="tp-empty">
+                            <div class="tp-empty__icon" aria-hidden="true">
+                                <i class="fas fa-box-open"></i>
                             </div>
-                        </div>
-
-                        <!-- Si no hay envíos asignados -->
-                        <div th:if="${misEnvios == null or misEnvios.isEmpty()}" style="text-align: center; padding: 45px 20px; color: #6b7280;">
-                            <i class="fas fa-box-open" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 12px; display: block;"></i>
-                            <h4 style="color: #374151; margin: 0 0 6px; font-size: 1.1rem;">Aún no tienes envíos asignados</h4>
-                            <p style="font-size: 0.85rem; margin: 0; max-width: 440px; margin: auto;">
-                                Explora las <strong>Rutas Disponibles</strong> y haz clic en "Aceptar Compra" para asignarte una carga.
+                            <h3 class="tp-empty__title">Aún no tienes envíos asignados</h3>
+                            <p class="tp-empty__text">
+                                Explora la pestaña de <strong>Rutas disponibles</strong> y pulsa "Aceptar Compra" para asignarte un flete.
                             </p>
+                            <button type="button" class="tp-btn tp-btn--primary" onclick="cambiarPestana('rutas')">
+                                <i class="fas fa-route" aria-hidden="true"></i>
+                                <span>Ver rutas disponibles</span>
+                            </button>
                         </div>
-
-                    </div>
+                    </section>
                 </div>
 
                 <!-- PESTAÑA 3: HISTORIAL DE ENTREGAS COMPLETADAS -->
                 <div id="panelHistorial" class="tab-panel" style="display: none;">
-                    <div class="section-box">
-                        <div style="margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <section class="tp-section-card">
+                        <header class="tp-section-head">
                             <div>
-                                <h2 style="font-size: 1.25rem; font-weight: 800; color: #111827; margin: 0;">
-                                    <i class="fas fa-circle-check" style="color: #3d7a1e;"></i> Historial de Entregas Completadas
+                                <h2 class="tp-section-title">
+                                    <i class="fas fa-circle-check" aria-hidden="true"></i>
+                                    <span>Historial de entregas completadas</span>
                                 </h2>
-                                <p style="font-size: 0.8rem; color: #6b7280; margin: 4px 0 0;">
-                                    Envíos que has entregado exitosamente con flete garantizado y acreditado.
+                                <p class="tp-section-sub">
+                                    Envíos entregados exitosamente con flete garantizado y acreditado en tu billetera.
                                 </p>
                             </div>
-                            <a th:href="@{/transportista/billetera}" style="background: #e8f5e1; color: #2c5c14; border: 1px solid #c8e6c9; padding: 6px 14px; border-radius: 8px; font-size: 0.82rem; font-weight: 700; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
-                                <i class="fas fa-wallet"></i> Ver en mi Billetera
+                            <a th:href="@{/transportista/billetera}" class="tp-btn tp-btn--outline tp-btn--sm">
+                                <i class="fas fa-wallet" aria-hidden="true"></i>
+                                <span>Ver en mi Billetera</span>
                             </a>
-                        </div>
+                        </header>
 
-                        <!-- Lista de Envíos Entregados -->
+                        <!-- Lista de Envíos Entregados (sin borde lateral viejo) -->
                         <div th:if="${historialEnvios != null and !historialEnvios.isEmpty()}">
-                            <div th:each="he : ${historialEnvios}" class="route-card" style="border-left: 4px solid #3d7a1e;">
-                                
-                                <div class="route-header">
-                                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                                        <strong style="color: #111827; font-size: 0.95rem;">
-                                            Compra <span th:text="${he.compra != null and he.compra.codigoReferencia != null ? he.compra.codigoReferencia : #strings.substring(he.envio.id, he.envio.id.length() > 6 ? he.envio.id.length() - 6 : 0)}">CULT-123456</span>
-                                        </strong>
-                                        <span class="status-pill status-available" style="background: #d1fae5; color: #065f46;">
-                                            <i class="fas fa-check-circle"></i> ENTREGADO CON ÉXITO
-                                        </span>
+                            <article th:each="he : ${historialEnvios}" class="tp-route-card route-card">
+
+                                <div class="tp-route-top">
+                                    <div class="tp-route-summary">
+                                        <div class="tp-route-badges">
+                                            <span class="tp-badge tp-badge--success">
+                                                <i class="fas fa-circle-check" aria-hidden="true"></i>
+                                                <span>Entregado con éxito</span>
+                                            </span>
+                                        </div>
+
+                                        <div class="tp-route-Flow">
+                                            <span th:text="${he.paradasDetalle != null and !he.paradasDetalle.isEmpty() and he.paradasDetalle[0].parada.ciudad != null ? he.paradasDetalle[0].parada.ciudad : 'Origen'}">Origen</span>
+                                            <i class="fas fa-arrow-right tp-route-Flow__arrow" aria-hidden="true"></i>
+                                            <span th:text="${he.envio.puntoEntrega != null and he.envio.puntoEntrega.ciudad != null ? he.envio.puntoEntrega.ciudad : 'Destino'}">Destino</span>
+                                        </div>
+
+                                        <div class="tp-route-meta">
+                                            <span>
+                                                <strong>Compra <span th:text="${he.compra != null and he.compra.codigoReferencia != null ? he.compra.codigoReferencia : #strings.substring(he.envio.id, he.envio.id.length() > 6 ? he.envio.id.length() - 6 : 0)}">CULT-123456</span></strong>
+                                            </span>
+                                            <span th:if="${he.envio.fechaEntrega != null}"
+                                                  th:text="'Entregado: ' + ${#temporals.format(he.envio.fechaEntrega, 'dd/MM/yyyy HH:mm')}">Fecha Entrega</span>
+                                        </div>
                                     </div>
-                                    <span style="font-size: 0.75rem; color: #64748b;" th:if="${he.envio.fechaEntrega != null}"
-                                          th:text="'Entregado: ' + ${#temporals.format(he.envio.fechaEntrega, 'dd/MM/yyyy HH:mm')}">Fecha Entrega</span>
+
+                                    <div class="tp-route-earning">
+                                        <span class="tp-route-earning__label">Flete acreditado</span>
+                                        <span class="tp-route-earning__value" th:text="${he.envio.getCostoTotalFormateado()}">$35.000 COP</span>
+                                    </div>
                                 </div>
 
                                 <!-- Paradas y Destino -->
-                                <div class="stops-container">
-                                    <div th:each="pd, stat : ${he.paradasDetalle}" class="stop-item">
-                                        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;">
+                                <div class="tp-stops stops-container">
+                                    <div th:each="pd, stat : ${he.paradasDetalle}" class="tp-stop stop-item">
+                                        <div class="tp-stop__row">
                                             <div>
-                                                <div style="font-size: 0.82rem; font-weight: 700; color: #2c5c14;">
-                                                    <i class="fas fa-store"></i> Parada <span th:text="${stat.count}">1</span> (Recolección en finca):
-                                                    <span th:text="${pd.parada.vendedorNombre}">Finca</span>
+                                                <div class="tp-stop__title">
+                                                    <i class="fas fa-store" aria-hidden="true"></i>
+                                                    <span>Parada <span th:text="${stat.count}">1</span> (Recolección en finca): <span th:text="${pd.parada.vendedorNombre}">Finca</span></span>
                                                 </div>
-                                                <div style="font-size: 0.78rem; color: #475569; margin-top: 2px;">
-                                                    <i class="fas fa-location-dot"></i> <span th:text="${pd.parada.direccionRecoleccion}">Dirección</span>, <strong th:text="${pd.parada.ciudad}">Municipio</strong>
+                                                <div class="tp-stop__address">
+                                                    <i class="fas fa-location-dot" aria-hidden="true"></i>
+                                                    <span th:text="${pd.parada.direccionRecoleccion}">Dirección</span>,
+                                                    <strong th:text="${pd.parada.ciudad}">Municipio</strong>
                                                 </div>
-                                                <div style="font-size: 0.75rem; color: #1e293b; margin-top: 4px;" th:if="${pd.parada.itemsResumen != null and !pd.parada.itemsResumen.empty}">
-                                                    <i class="fas fa-box-open" style="color: #3d7a1e;"></i>
+                                                <div class="tp-stop__items" th:if="${pd.parada.itemsResumen != null and !pd.parada.itemsResumen.empty}">
+                                                    <i class="fas fa-box-open" aria-hidden="true"></i>
                                                     <span th:text="${#strings.arrayJoin(pd.parada.itemsResumen, ', ')}">Productos</span>
                                                 </div>
                                             </div>
-                                            <div style="text-align: right;">
-                                                <span style="background: #e8f5e1; color: #2c5c14; border: 1px solid #c8e6c9; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
-                                                    <i class="fas fa-check-circle"></i> Recolectado
+                                            <div class="tp-stop__aside">
+                                                <span class="tp-badge tp-badge--success">
+                                                    <i class="fas fa-circle-check" aria-hidden="true"></i>
+                                                    <span>Recolectado</span>
                                                 </span>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <!-- Destino Final -->
-                                    <div class="stop-item delivery-point">
-                                        <div style="font-size: 0.82rem; font-weight: 700; color: #1e40af;">
-                                            <i class="fas fa-house-chimney-user"></i> Destino Final (Entregado al comprador):
-                                            <span th:text="${he.envio.puntoEntrega != null ? he.envio.puntoEntrega.destinatarioNombre : 'Comprador'}">Comprador</span>
+                                    <div class="tp-stop tp-stop--destination stop-item delivery-point">
+                                        <div class="tp-stop__title">
+                                            <i class="fas fa-house-chimney-user" aria-hidden="true"></i>
+                                            <span>Destino final (Entregado al comprador): <span th:text="${he.envio.puntoEntrega != null ? he.envio.puntoEntrega.destinatarioNombre : 'Comprador'}">Comprador</span></span>
                                         </div>
-                                        <div style="font-size: 0.78rem; color: #334155; margin-top: 2px;">
-                                            <i class="fas fa-location-pin"></i>
+                                        <div class="tp-stop__address">
+                                            <i class="fas fa-location-pin" aria-hidden="true"></i>
                                             <span th:text="${he.envio.puntoEntrega != null ? he.envio.puntoEntrega.direccionCompleta : 'Dirección'}">Dirección</span>,
                                             <strong th:text="${he.envio.puntoEntrega != null ? he.envio.puntoEntrega.ciudad : 'Ciudad'}">Ciudad</strong>
                                         </div>
                                     </div>
                                 </div>
 
-                                <!-- Footer con ganancia acreditada -->
-                                <div class="route-footer" style="background: #f8fafc; padding: 12px 16px; border-radius: 8px; margin-top: 14px;">
-                                    <div class="earning-box">
-                                        <span class="earning-label" style="color: #059669;">Flete Ganado y Acreditado:</span>
-                                        <span class="earning-amount" style="color: #059669; font-size: 1.2rem;" th:text="${he.envio.getCostoTotalFormateado()}">$35.000 COP</span>
+                                <div class="tp-route-footer route-footer">
+                                    <div class="tp-route-meta">
+                                        <i class="fas fa-shield-halved" aria-hidden="true"></i>
+                                        <span>Saldo registrado en tu billetera de transportista</span>
                                     </div>
-                                    <div style="font-size: 0.8rem; color: #64748b; display: flex; align-items: center; gap: 6px;">
-                                        <i class="fas fa-shield-check" style="color: #10b981;"></i> Saldo registrado en tu billetera de transportista
-                                    </div>
+                                    <a th:href="@{/transportista/billetera}" class="tp-btn tp-btn--outline tp-btn--sm">
+                                        <i class="fas fa-wallet" aria-hidden="true"></i>
+                                        <span>Consultar billetera</span>
+                                    </a>
                                 </div>
 
-                            </div>
+                            </article>
                         </div>
 
-                        <!-- Si no hay historial -->
-                        <div th:if="${historialEnvios == null or historialEnvios.isEmpty()}" style="text-align: center; padding: 45px 20px; color: #6b7280;">
-                            <i class="fas fa-clipboard-check" style="font-size: 3rem; color: #cbd5e1; margin-bottom: 12px; display: block;"></i>
-                            <h4 style="color: #374151; margin: 0 0 6px; font-size: 1.1rem;">Aún no tienes entregas completadas</h4>
-                            <p style="font-size: 0.85rem; margin: 0; max-width: 440px; margin: auto;">
-                                Cuando aceptes rutas y marques su entrega final al comprador, quedarán archivadas aquí con el comprobante de tu flete ganado.
+                        <!-- Estado vacío: Sin historial -->
+                        <div th:if="${historialEnvios == null or historialEnvios.isEmpty()}" class="tp-empty">
+                            <div class="tp-empty__icon" aria-hidden="true">
+                                <i class="fas fa-clipboard-check"></i>
+                            </div>
+                            <h3 class="tp-empty__title">Aún no tienes entregas completadas</h3>
+                            <p class="tp-empty__text">
+                                Cuando aceptes rutas y marques su entrega final al comprador, quedarán archivadas aquí con el registro de tu flete ganado.
                             </p>
+                            <button type="button" class="tp-btn tp-btn--outline" onclick="cambiarPestana('rutas')">
+                                <i class="fas fa-route" aria-hidden="true"></i>
+                                <span>Explorar rutas disponibles</span>
+                            </button>
                         </div>
-                    </div>
+                    </section>
                 </div>
 
             </div>
 
-            <!-- Columna Derecha: Tarjeta del Vehículo y Perfil -->
-            <div class="right-col">
-                <div class="section-box" th:if="${perfil != null}">
-                    <h3 style="font-size: 1.05rem; font-weight: 800; color: #111827; margin: 0 0 16px; display: flex; align-items: center; gap: 8px;">
-                        <i class="fas fa-id-card-clip" style="color: #3d7a1e;"></i> Perfil Operativo
-                    </h3>
+            <!-- Columna Lateral: Ficha Operativa del Vehículo y Cobertura -->
+            <aside class="right-col" aria-label="Perfil operativo del vehículo">
+                <section class="tp-section-card" th:if="${perfil != null}">
+                    <header class="tp-section-head">
+                        <h3 class="tp-section-title">
+                            <i class="fas fa-id-card-clip" aria-hidden="true"></i>
+                            <span>Perfil operativo</span>
+                        </h3>
+                    </header>
 
-                    <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 14px; text-align: center; margin-bottom: 16px;">
-                        <span style="font-size: 0.72rem; color: #2c5c14; font-weight: 700; text-transform: uppercase;">
-                            <span th:if="${perfil != null and (perfil.tipo == 'EMPRESA' or perfil.isEmpresa())}">NIT EMPRESA</span>
-                            <span th:unless="${perfil != null and (perfil.tipo == 'EMPRESA' or perfil.isEmpresa())}">PLACA VEHÍCULO</span>
+                    <div class="tp-plate-box">
+                        <span class="tp-plate-box__label">
+                            <span th:if="${perfil != null and (perfil.tipo == 'EMPRESA' or perfil.isEmpresa())}">NIT Empresa</span>
+                            <span th:unless="${perfil != null and (perfil.tipo == 'EMPRESA' or perfil.isEmpresa())}">Placa vehículo</span>
                         </span>
-                        <div style="font-size: 1.6rem; font-weight: 800; letter-spacing: 1.5px; color: #2c5c14;">
+                        <div class="tp-plate-box__value">
                             <span th:if="${perfil != null and (perfil.tipo == 'EMPRESA' or perfil.isEmpresa())}" th:text="${perfil.nit != null ? perfil.nit : '-'}">901234567</span>
                             <span th:unless="${perfil != null and (perfil.tipo == 'EMPRESA' or perfil.isEmpresa())}" th:text="${perfil.placa != null ? perfil.placa : '-'}">ABC-123</span>
                         </div>
                     </div>
 
-                    <div class="vehicle-spec-row">
-                        <span>Modalidad:</span>
-                        <strong th:text="${perfil.tipo != null ? perfil.tipo : 'INDEPENDIENTE'}">INDEPENDIENTE</strong>
+                    <div class="tp-spec-list">
+                        <div class="tp-spec-row">
+                            <span>Modalidad</span>
+                            <strong th:text="${perfil.tipo != null ? perfil.tipo : 'INDEPENDIENTE'}">INDEPENDIENTE</strong>
+                        </div>
+
+                        <div class="tp-spec-row" th:if="${perfil != null and (perfil.tipo == 'EMPRESA' or perfil.isEmpresa())}">
+                            <span>Razón social</span>
+                            <strong th:text="${perfil.razonSocial}">Empresa</strong>
+                        </div>
+
+                        <div class="tp-spec-row">
+                            <span>Vehículo / Flota</span>
+                            <strong th:text="${perfil.tipoVehiculo != null ? perfil.tipoVehiculo : 'Camioneta'}">Pick-up</strong>
+                        </div>
+
+                        <div class="tp-spec-row">
+                            <span>Capacidad máxima</span>
+                            <strong class="tp-tabular" th:text="${perfil.capacidadCargaKg != null ? #numbers.formatDecimal(perfil.capacidadCargaKg, 0, 'POINT', 0, 'COMMA') + ' Kg' : 'N/A'}">1.000 Kg</strong>
+                        </div>
+
+                        <div class="tp-spec-row">
+                            <span>Cadena de frío</span>
+                            <strong th:text="${perfil.refrigerado ? 'Sí (Refrigerado)' : 'No (Carga seca)'}">No</strong>
+                        </div>
+
+                        <div class="tp-spec-row" th:if="${perfil == null or (!perfil.isEmpresa() and perfil.tipo != 'EMPRESA')}">
+                            <span>Licencia conducción</span>
+                            <strong th:text="${perfil != null and perfil.licenciaConduccion != null ? perfil.licenciaConduccion : '-'}">C2</strong>
+                        </div>
+
+                        <div class="tp-spec-row">
+                            <span>Zonas cobertura</span>
+                            <strong th:if="${perfil.todasLasZonas}">Todas las zonas (6)</strong>
+                            <strong th:unless="${perfil.todasLasZonas}" th:text="${perfil.zonasCobertura != null ? perfil.zonasCobertura : 'Sin zonas'}">Dique</strong>
+                        </div>
                     </div>
 
-                    <div class="vehicle-spec-row" th:if="${perfil != null and (perfil.tipo == 'EMPRESA' or perfil.isEmpresa())}">
-                        <span>Razón Social:</span>
-                        <strong style="text-align: right; max-width: 170px;" th:text="${perfil.razonSocial}">Empresa</strong>
-                    </div>
-
-                    <div class="vehicle-spec-row">
-                        <span>Vehículo / Flota:</span>
-                        <strong th:text="${perfil.tipoVehiculo != null ? perfil.tipoVehiculo : 'Camioneta'}">Pick-up</strong>
-                    </div>
-
-                    <div class="vehicle-spec-row">
-                        <span>Capacidad Máxima:</span>
-                        <strong th:text="${perfil.capacidadCargaKg != null ? #numbers.formatDecimal(perfil.capacidadCargaKg, 0, 'POINT', 0, 'COMMA') + ' Kg' : 'N/A'}">1.000 Kg</strong>
-                    </div>
-
-                    <div class="vehicle-spec-row">
-                        <span>Cadena de Frío:</span>
-                        <strong th:text="${perfil.refrigerado ? 'Sí (Refrigerado)' : 'No (Carga seca)'}">No</strong>
-                    </div>
-
-                    <div class="vehicle-spec-row" th:if="${perfil == null or (!perfil.isEmpresa() and perfil.tipo != 'EMPRESA')}">
-                        <span>Licencia Conducción:</span>
-                        <strong th:text="${perfil != null and perfil.licenciaConduccion != null ? perfil.licenciaConduccion : '-'}">C2</strong>
-                    </div>
-
-                    <div class="vehicle-spec-row">
-                        <span>Zonas Cobertura:</span>
-                        <strong style="text-align: right; max-width: 170px;" th:if="${perfil.todasLasZonas}">Todas las zonas (6)</strong>
-                        <strong style="text-align: right; max-width: 170px;" th:unless="${perfil.todasLasZonas}" th:text="${perfil.zonasCobertura != null ? perfil.zonasCobertura : 'Sin zonas'}">Dique</strong>
-                    </div>
-
-                    <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid #f3f4f6;">
-                        <span style="font-size: 0.78rem; color: #6b7280; display: block; margin-bottom: 6px;">
-                            <i class="fas fa-phone"></i> Contacto de ruta: <strong th:text="${perfil.telefonoContacto}">3001234567</strong>
+                    <div class="tp-spec-footer">
+                        <span class="tp-spec-contact">
+                            <i class="fas fa-phone" aria-hidden="true"></i>
+                            <span>Contacto de ruta: <strong th:text="${perfil.telefonoContacto}">3001234567</strong></span>
                         </span>
-                        <span style="font-size: 0.75rem; color: #3d7a1e; font-weight: 600;" th:if="${perfil.verificado}">
-                            <i class="fas fa-shield-check"></i> Transportista Verificado por Cultivus
+                        <span class="tp-badge tp-badge--success" th:if="${perfil.verificado}">
+                            <i class="fas fa-shield-halved" aria-hidden="true"></i>
+                            <span>Transportista verificado por Cultivus</span>
                         </span>
-                        <span style="font-size: 0.75rem; color: #d97706; font-weight: 600;" th:unless="${perfil.verificado}">
-                            <i class="fas fa-clock"></i> Pendiente de verificación por soporte
+                        <span class="tp-badge tp-badge--warning" th:unless="${perfil.verificado}">
+                            <i class="fas fa-clock" aria-hidden="true"></i>
+                            <span>Pendiente de verificación por soporte</span>
                         </span>
                     </div>
-
-                </div>
-            </div>
+                </section>
+            </aside>
 
         </div>
 

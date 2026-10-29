@@ -159,6 +159,49 @@ public class VendedorService {
     }
 
     /**
+     * Sobrecarga para crear perfil de vendedor sin datos bancarios en el registro (US-24).
+     */
+    public Usuario crearPerfilVendedor(String usuarioId, String razonSocial,
+            String telefonoContacto, String direccionNegocio,
+            String descripcionNegocio, String tipoProductos) {
+        return crearPerfilVendedor(usuarioId, razonSocial, telefonoContacto,
+                direccionNegocio, descripcionNegocio, null, null, tipoProductos);
+    }
+
+    /**
+     * Sobrecarga para actualizar perfil sin tocar los datos bancarios (US-24).
+     */
+    public Usuario actualizarPerfil(String usuarioId, String razonSocial,
+            String telefonoContacto, String direccionNegocio,
+            String descripcionNegocio, String tipoProductos) {
+        return actualizarPerfil(usuarioId, razonSocial, telefonoContacto,
+                direccionNegocio, descripcionNegocio, null, null, tipoProductos);
+    }
+
+    /**
+     * US-24 / Fase 2: Valida y guarda la cuenta bancaria de retiro del vendedor,
+     * sincronizando los campos legados banco y cuentaBancaria.
+     */
+    public Usuario guardarCuentaBancaria(String usuarioId, com.example.demo.Model.embebidos.CuentaBancaria cuenta) {
+        if (cuenta == null) {
+            throw new IllegalArgumentException("Los datos de la cuenta bancaria son obligatorios");
+        }
+        cuenta.validar();
+
+        Usuario usuario = usuarioRepository.findById(usuarioId)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+
+        PerfilVendedor perfil = usuario.getPerfilVendedor();
+        if (perfil == null) {
+            throw new IllegalArgumentException("Este usuario no tiene perfil de vendedor");
+        }
+
+        perfil.setCuentaRetiro(cuenta);
+        usuario.setPerfilVendedor(perfil);
+        return usuarioRepository.save(usuario);
+    }
+
+    /**
      * Elimina el perfil de vendedor (el usuario deja de ser vendedor)
      */
     public void eliminarPerfilVendedor(String usuarioId) {

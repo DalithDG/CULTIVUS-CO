@@ -37,6 +37,9 @@ public class TransportistaController {
     @Autowired(required = false)
     private com.example.demo.services.BilleteraService billeteraService;
 
+    @Autowired(required = false)
+    private com.example.demo.services.RetiroService retiroService;
+
     /**
      * Pantalla de Login dedicada para transportistas.
      */
@@ -155,8 +158,8 @@ public class TransportistaController {
                         todasLasZonas,
                         refrigerado,
                         empresa,
-                        banco,
-                        cuentaBancaria
+                        null,
+                        null
                 );
                 session.setAttribute("usuarioLogueado", actualizado);
                 redirectAttributes.addFlashAttribute("mensaje", "¡Bienvenido a la red logística de Cultivus! Tu solicitud fue registrada. Tu perfil está pendiente de verificación por el administrador.");
@@ -186,8 +189,8 @@ public class TransportistaController {
                         todasLasZonas,
                         refrigerado,
                         empresa,
-                        banco,
-                        cuentaBancaria
+                        null,
+                        null
                 );
 
                 redirectAttributes.addFlashAttribute("mensaje", "Registro exitoso. Inicia sesión con tus credenciales.");
@@ -252,7 +255,7 @@ public class TransportistaController {
     }
 
     /**
-     * Billetera del transportista (vista informativa, sin lógica de negocio adicional).
+     * Billetera del transportista con saldos, cuenta bancaria, solicitud de retiro e historial.
      */
     @GetMapping("/billetera")
     public String mostrarBilletera(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
@@ -266,6 +269,11 @@ public class TransportistaController {
             return "redirect:/transportista/login";
         }
 
+        if (usuarioRepository != null && usuario.getId() != null) {
+            usuario = usuarioRepository.findById(usuario.getId()).orElse(usuario);
+            session.setAttribute("usuarioLogueado", usuario);
+        }
+
         Billetera billetera = null;
         java.util.List<com.example.demo.Model.MovimientoBilletera> movimientos = java.util.Collections.emptyList();
         if (billeteraService != null) {
@@ -275,17 +283,120 @@ public class TransportistaController {
 
         // Fletes en ruta (informativo): suma del costoTotalCentavos de envíos asignados no entregados
         long fletesEnRuta = 0L;
-        for (Envio e : envioRepository.findByTransportistaId(usuario.getId())) {
-            if (!Envio.ENTREGADO.equalsIgnoreCase(e.getEstado()) && !Envio.CANCELADO.equalsIgnoreCase(e.getEstado())) {
-                fletesEnRuta += (e.getCostoTotalCentavos() != null ? e.getCostoTotalCentavos() : 0L);
+        if (envioRepository != null) {
+            for (Envio e : envioRepository.findByTransportistaId(usuario.getId())) {
+                if (!Envio.ENTREGADO.equalsIgnoreCase(e.getEstado()) && !Envio.CANCELADO.equalsIgnoreCase(e.getEstado())) {
+                    fletesEnRuta += (e.getCostoTotalCentavos() != null ? e.getCostoTotalCentavos() : 0L);
+                }
             }
         }
+
+        PerfilTransportista perfil = usuario.getPerfilTransportista();
+        com.example.demo.Model.embebidos.CuentaBancaria cuentaRetiro = perfil != null ? perfil.getCuentaRetiro() : null;
+
+        long retiroMinimoCop = com.example.demo.services.RetiroService.RETIRO_MINIMO_DEFECTO_COP;
+        boolean tieneRetiroPendiente = false;
+        java.util.List<com.example.demo.Model.SolicitudRetiro> solicitudesRetiro = java.util.List.of();
+
+        if (retiroService != null) {
+            try {
+                retiroMinimoCop = retiroService.obtenerRetiroMinimoCop();
+                tieneRetiroPendiente = retiroService.existeSolicitudPendiente(usuario.getId(), Billetera.Rol.TRANSPORTISTA);
+                solicitudesRetiro = retiroService.listarPorUsuarioYRol(usuario.getId(), Billetera.Rol.TRANSPORTISTA);
+            } catch (Exception ignored) {
+                // En entornos de prueba sin Mongo de retiros activo se usan valores por defecto
+            }
+        }
+
+        long saldoDisponibleCentavos = billetera != null ? billetera.getSaldoDisponibleCentavos() : 0L;
+        long saldoDisponiblePesos = saldoDisponibleCentavos / 100L;
+        boolean alcanzaMinimoRetiro = saldoDisponibleCentavos >= (retiroMinimoCop * 100L);
+        boolean puedeSolicitarRetiro = cuentaRetiro != null
+                && cuentaRetiro.esCompleta()
+                && !tieneRetiroPendiente
+                && alcanzaMinimoRetiro;
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("billetera", billetera);
         model.addAttribute("movimientos", movimientos);
         model.addAttribute("fletesEnRuta", fletesEnRuta);
+        model.addAttribute("cuentaRetiro", cuentaRetiro);
+        model.addAttribute("retiroMinimoCop", retiroMinimoCop);
+        model.addAttribute("tieneRetiroPendiente", tieneRetiroPendiente);
+        model.addAttribute("solicitudesRetiro", solicitudesRetiro);
+        model.addAttribute("saldoDisponiblePesos", saldoDisponiblePesos);
+        model.addAttribute("alcanzaMinimoRetiro", alcanzaMinimoRetiro);
+        model.addAttribute("puedeSolicitarRetiro", puedeSolicitarRetiro);
         return "transportista/billetera-transportista";
+    }
+
+    /**
+     * US-24 / Fase 5: Solicita un retiro simulado desde el saldo disponible del transportista.
+     */
+    @PostMapping("/retiros/solicitar")
+    public String solicitarRetiro(
+            @RequestParam(value = "montoPesos", required = false) String montoPesosTexto,
+            @RequestParam(value = "retirarTodo", defaultValue = "false") boolean retirarTodo,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuario == null || !usuario.hasRole(Role.TRANSPORTISTA)) {
+            redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión como transportista");
+            return "redirect:/transportista/login";
+        }
+
+        if (retiroService == null) {
+            redirectAttributes.addFlashAttribute("error", "El servicio de retiros no está disponible en este momento");
+            return "redirect:/transportista/billetera";
+        }
+
+        try {
+            com.example.demo.Model.SolicitudRetiro solicitud = retiroService.solicitarRetiro(
+                    usuario.getId(),
+                    Billetera.Rol.TRANSPORTISTA,
+                    montoPesosTexto,
+                    retirarTodo);
+            redirectAttributes.addFlashAttribute("mensaje",
+                    "Solicitud de retiro registrada por $"
+                            + String.format(java.util.Locale.GERMANY, "%,d", solicitud.getMontoPesos())
+                            + " COP hacia " + solicitud.getCuentaDestino().getResumenEnmascarado()
+                            + ". Queda pendiente de aprobación del administrador.");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "No se pudo procesar tu solicitud de retiro: " + e.getMessage());
+        }
+
+        return "redirect:/transportista/billetera";
+    }
+
+    /**
+     * US-24 / Fase 5 y 7: Muestra el comprobante imprimible de un retiro aprobado del transportista.
+     */
+    @GetMapping("/retiros/{id}/comprobante")
+    public String verComprobanteRetiro(
+            @PathVariable("id") String solicitudId,
+            HttpSession session,
+            Model model,
+            RedirectAttributes redirectAttributes) {
+
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuario == null || !usuario.hasRole(Role.TRANSPORTISTA)) {
+            redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión como transportista");
+            return "redirect:/transportista/login";
+        }
+
+        try {
+            com.example.demo.Model.SolicitudRetiro solicitud = retiroService.obtenerComprobanteParaUsuario(
+                    solicitudId, usuario.getId(), Billetera.Rol.TRANSPORTISTA);
+            model.addAttribute("solicitud", solicitud);
+            model.addAttribute("volverUrl", "/transportista/billetera");
+            return "comprobante-retiro";
+        } catch (SecurityException | IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/transportista/billetera";
+        }
     }
 
     /**
@@ -454,5 +565,132 @@ public class TransportistaController {
         model.addAttribute("usuario", usuario);
         model.addAttribute("departamentos", ubicacionService != null ? ubicacionService.obtenerTodos() : java.util.List.of());
         return "transportista/perfil-transportista";
+    }
+
+    /**
+     * US-24 / Fase 2: Pantalla "Mi cuenta bancaria" del transportista.
+     */
+    @GetMapping("/cuenta-bancaria")
+    public String mostrarCuentaBancaria(HttpSession session, Model model,
+            RedirectAttributes redirectAttributes) {
+
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuario == null || !usuario.hasRole(Role.TRANSPORTISTA)) {
+            redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión como transportista");
+            return "redirect:/transportista/login";
+        }
+
+        if (usuarioRepository != null && usuario.getId() != null) {
+            usuario = usuarioRepository.findById(usuario.getId()).orElse(usuario);
+            session.setAttribute("usuarioLogueado", usuario);
+        }
+
+        PerfilTransportista perfil = usuario.getPerfilTransportista();
+        com.example.demo.Model.embebidos.CuentaBancaria cuentaActual = perfil != null ? perfil.getCuentaRetiro() : null;
+
+        model.addAttribute("usuario", usuario);
+        model.addAttribute("bancos", com.example.demo.Model.Banco.values());
+        model.addAttribute("tiposCuenta", com.example.demo.Model.TipoCuenta.values());
+        model.addAttribute("tiposDocumento", com.example.demo.Model.TipoDocumento.values());
+        model.addAttribute("cuentaActual", cuentaActual);
+        model.addAttribute("cuentaLegadaEnmascarada", perfil != null ? perfil.getCuentaBancariaEnmascarada() : null);
+        model.addAttribute("bancoLegadoTexto", perfil != null ? perfil.getBanco() : null);
+
+        if (!model.containsAttribute("bancoSeleccionado")) {
+            if (cuentaActual != null && cuentaActual.getBanco() != null) {
+                model.addAttribute("bancoSeleccionado", cuentaActual.getBanco().name());
+                model.addAttribute("bancoOtroNombre", cuentaActual.getBancoOtroNombre());
+                model.addAttribute("tipoSeleccionado", cuentaActual.getTipo() != null ? cuentaActual.getTipo().name() : null);
+                model.addAttribute("titular", cuentaActual.getTitular());
+                model.addAttribute("tipoDocumentoSeleccionado", cuentaActual.getTipoDocumento() != null ? cuentaActual.getTipoDocumento().name() : null);
+                model.addAttribute("numeroDocumento", cuentaActual.getNumeroDocumento());
+            } else if (perfil != null && perfil.getBanco() != null && !perfil.getBanco().isBlank()) {
+                com.example.demo.Model.Banco.ResultadoMapeo mapeo = com.example.demo.Model.Banco.mapearTextoLibre(perfil.getBanco());
+                if (mapeo != null) {
+                    model.addAttribute("bancoSeleccionado", mapeo.getBanco().name());
+                    model.addAttribute("bancoOtroNombre", mapeo.getBancoOtroNombre());
+                }
+                model.addAttribute("titular", usuario.getNombre());
+            } else {
+                model.addAttribute("titular", usuario.getNombre());
+            }
+        }
+
+        return "transportista/cuenta-bancaria-transportista";
+    }
+
+    /**
+     * US-24 / Fase 2: Guarda la cuenta bancaria del transportista y vuelve a la billetera.
+     */
+    @PostMapping("/cuenta-bancaria")
+    public String guardarCuentaBancaria(
+            @RequestParam(value = "banco", required = false) String bancoStr,
+            @RequestParam(value = "bancoOtroNombre", required = false) String bancoOtroNombre,
+            @RequestParam(value = "tipo", required = false) String tipoStr,
+            @RequestParam(value = "numero", required = false) String numero,
+            @RequestParam(value = "titular", required = false) String titular,
+            @RequestParam(value = "tipoDocumento", required = false) String tipoDocumentoStr,
+            @RequestParam(value = "numeroDocumento", required = false) String numeroDocumento,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuario == null || !usuario.hasRole(Role.TRANSPORTISTA)) {
+            redirectAttributes.addFlashAttribute("error", "Debes iniciar sesión como transportista");
+            return "redirect:/transportista/login";
+        }
+
+        try {
+            com.example.demo.Model.Banco banco = parseBanco(bancoStr);
+            com.example.demo.Model.TipoCuenta tipo = parseTipoCuenta(tipoStr);
+            com.example.demo.Model.TipoDocumento tipoDoc = parseTipoDocumento(tipoDocumentoStr);
+
+            com.example.demo.Model.embebidos.CuentaBancaria nueva = new com.example.demo.Model.embebidos.CuentaBancaria(
+                    banco, bancoOtroNombre, tipo, numero, titular, tipoDoc, numeroDocumento);
+
+            Usuario actualizado = transportistaService.guardarCuentaBancaria(usuario.getId(), nueva);
+            session.setAttribute("usuarioLogueado", actualizado);
+
+            redirectAttributes.addFlashAttribute("mensaje",
+                    "Cuenta bancaria guardada exitosamente: " + nueva.getResumenEnmascarado());
+            return "redirect:/transportista/billetera";
+
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            redirectAttributes.addFlashAttribute("bancoSeleccionado", bancoStr);
+            redirectAttributes.addFlashAttribute("bancoOtroNombre", bancoOtroNombre);
+            redirectAttributes.addFlashAttribute("tipoSeleccionado", tipoStr);
+            redirectAttributes.addFlashAttribute("titular", titular);
+            redirectAttributes.addFlashAttribute("tipoDocumentoSeleccionado", tipoDocumentoStr);
+            redirectAttributes.addFlashAttribute("numeroDocumento", numeroDocumento);
+            return "redirect:/transportista/cuenta-bancaria";
+        }
+    }
+
+    private com.example.demo.Model.Banco parseBanco(String valor) {
+        if (valor == null || valor.isBlank()) return null;
+        try {
+            return com.example.demo.Model.Banco.valueOf(valor.trim());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    private com.example.demo.Model.TipoCuenta parseTipoCuenta(String valor) {
+        if (valor == null || valor.isBlank()) return null;
+        try {
+            return com.example.demo.Model.TipoCuenta.valueOf(valor.trim());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    private com.example.demo.Model.TipoDocumento parseTipoDocumento(String valor) {
+        if (valor == null || valor.isBlank()) return null;
+        try {
+            return com.example.demo.Model.TipoDocumento.valueOf(valor.trim());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 }

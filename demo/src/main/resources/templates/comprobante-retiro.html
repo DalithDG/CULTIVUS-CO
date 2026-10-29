@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="'Comprobante ' + (${solicitud != null and solicitud.numeroComprobante != null ? solicitud.numeroComprobante : 'de Retiro'}) + ' - Cultivus'">Comprobante de Retiro - Cultivus</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --cp-bg: #f5f9f6;
+            --cp-surface: #ffffff;
+            --cp-border: #e2ece4;
+            --cp-text: #111e15;
+            --cp-muted: #5e7264;
+            --cp-accent: #1f7a3a;
+            --cp-accent-dark: #14552a;
+            --cp-accent-soft: #e9f6ed;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            padding: 36px 16px 64px;
+            background: var(--cp-bg);
+            color: var(--cp-text);
+            font-family: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .cp-container {
+            max-width: 720px;
+            margin: 0 auto;
+        }
+        .cp-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .cp-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 44px;
+            padding: 10px 18px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: background 180ms cubic-bezier(0.4, 0, 0.2, 1), border-color 180ms cubic-bezier(0.4, 0, 0.2, 1), transform 180ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .cp-btn:focus-visible {
+            outline: 2px solid var(--cp-accent);
+            outline-offset: 2px;
+            box-shadow: 0 0 0 4px rgba(31, 122, 58, 0.20);
+        }
+        .cp-btn--back {
+            background: var(--cp-surface);
+            color: var(--cp-text);
+            border-color: var(--cp-border);
+        }
+        .cp-btn--back:hover {
+            background: #f4fbf6;
+            border-color: #cfe0d3;
+        }
+        .cp-btn--print {
+            background: var(--cp-accent);
+            color: #ffffff;
+            box-shadow: 0 6px 16px -6px rgba(31, 122, 58, 0.45);
+        }
+        .cp-btn--print:hover {
+            background: var(--cp-accent-dark);
+        }
+        .cp-card {
+            background: var(--cp-surface);
+            border: 1px solid var(--cp-border);
+            border-radius: 22px;
+            overflow: hidden;
+            box-shadow: 0 12px 32px rgba(15, 52, 27, 0.06);
+        }
+        .cp-sim-banner {
+            background: #fef3c7;
+            border-bottom: 1px solid #fde68a;
+            color: #b45309;
+            padding: 12px 24px;
+            font-size: 0.86rem;
+            font-weight: 700;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            letter-spacing: 0.01em;
+        }
+        .cp-header {
+            padding: 28px 32px 24px;
+            border-bottom: 1px dashed var(--cp-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .cp-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--cp-accent);
+        }
+        .cp-doc-title {
+            font-size: 1.35rem;
+            font-weight: 800;
+            margin: 8px 0 4px;
+            color: var(--cp-text);
+            letter-spacing: -0.02em;
+        }
+        .cp-doc-num {
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: var(--cp-muted);
+            font-variant-numeric: tabular-nums;
+        }
+        .cp-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--cp-accent-soft);
+            color: var(--cp-accent-dark);
+            border: 1px solid rgba(31, 122, 58, 0.20);
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 0.82rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .cp-amount-section {
+            padding: 26px 32px;
+            background: var(--cp-accent-soft);
+            border-bottom: 1px solid #cfe0d3;
+            text-align: center;
+        }
+        .cp-amount-label {
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--cp-accent-dark);
+        }
+        .cp-amount-value {
+            font-size: 2.35rem;
+            font-weight: 800;
+            color: #0a351a;
+            margin-top: 6px;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.02em;
+        }
+        .cp-body {
+            padding: 28px 32px;
+        }
+        .cp-section-title {
+            font-size: 0.76rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--cp-muted);
+            margin: 0 0 12px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--cp-border);
+        }
+        .cp-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px 24px;
+            margin-bottom: 26px;
+        }
+        .cp-grid--last {
+            margin-bottom: 0;
+        }
+        @media (max-width: 560px) {
+            .cp-grid { grid-template-columns: 1fr; }
+            .cp-header, .cp-body, .cp-amount-section, .cp-footer {
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+        }
+        .cp-field__label {
+            font-size: 0.78rem;
+            color: var(--cp-muted);
+            margin-bottom: 3px;
+        }
+        .cp-field__value {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--cp-text);
+            word-break: break-word;
+            font-variant-numeric: tabular-nums;
+        }
+        .cp-field__value--mono {
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+        .cp-footer {
+            padding: 18px 32px;
+            background: var(--cp-bg);
+            border-top: 1px solid var(--cp-border);
+            font-size: 0.8rem;
+            color: var(--cp-muted);
+            text-align: center;
+        }
+        @media print {
+            body {
+                background: #ffffff;
+                padding: 0;
+            }
+            .cp-toolbar {
+                display: none !important;
+            }
+            .cp-card {
+                box-shadow: none;
+                border: 1px solid #cfe0d3;
+                border-radius: 8px;
+            }
+            .cp-sim-banner {
+                border-bottom: 1px solid #b45309;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="cp-container">
+        <div class="cp-toolbar">
+            <a th:href="@{${volverUrl != null ? volverUrl : '/'}}" class="cp-btn cp-btn--back">
+                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+                <span>Volver</span>
+            </a>
+            <button type="button" class="cp-btn cp-btn--print" onclick="window.print()">
+                <i class="fa-solid fa-print" aria-hidden="true"></i>
+                <span>Imprimir comprobante</span>
+            </button>
+        </div>
+
+        <article class="cp-card" th:if="${solicitud != null}">
+            <div class="cp-sim-banner" role="note">
+                <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                <span>Comprobante simulado — no corresponde a una transferencia bancaria real</span>
+            </div>
+
+            <header class="cp-header">
+                <div>
+                    <div class="cp-brand">
+                        <i class="fa-solid fa-seedling" aria-hidden="true"></i>
+                        <span>Cultivus Colombia</span>
+                    </div>
+                    <h1 class="cp-doc-title">Comprobante de Retiro de Fondos</h1>
+                    <div class="cp-doc-num">
+                        N.º <span th:text="${solicitud.numeroComprobante != null ? solicitud.numeroComprobante : solicitud.id}">RET-2026-000001</span>
+                    </div>
+                </div>
+                <div>
+                    <span class="cp-status-badge">
+                        <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                        <span th:text="${solicitud.estado}">APROBADO</span>
+                    </span>
+                </div>
+            </header>
+
+            <section class="cp-amount-section">
+                <div class="cp-amount-label">Monto transferido (COP)</div>
+                <div class="cp-amount-value">
+                    $<span th:text="${#numbers.formatDecimal(solicitud.monto, 0, 'COMMA', 2, 'POINT')}">50,000.00</span>
+                </div>
+            </section>
+
+            <div class="cp-body">
+                <h2 class="cp-section-title">Información del Beneficiario y Solicitud</h2>
+                <div class="cp-grid">
+                    <div class="cp-field">
+                        <div class="cp-field__label">Beneficiario</div>
+                        <div class="cp-field__value" th:text="${solicitud.usuarioNombre != null ? solicitud.usuarioNombre : '—'}">Nombre Usuario</div>
+                    </div>
+                    <div class="cp-field">
+                        <div class="cp-field__label">Rol en la plataforma</div>
+                        <div class="cp-field__value" th:text="${solicitud.rol == T(com.example.demo.Model.Billetera.Rol).VENDEDOR ? 'Vendedor' : 'Transportista'}">Vendedor</div>
+                    </div>
+                    <div class="cp-field">
+                        <div class="cp-field__label">Fecha de solicitud</div>
+                        <div class="cp-field__value" th:text="${solicitud.fechaSolicitud != null ? #temporals.format(solicitud.fechaSolicitud, 'dd/MM/yyyy HH:mm') : '—'}">01/01/2026 10:00</div>
+                    </div>
+                    <div class="cp-field">
+                        <div class="cp-field__label">Fecha de aprobación</div>
+                        <div class="cp-field__value" th:text="${solicitud.fechaResolucion != null ? #temporals.format(solicitud.fechaResolucion, 'dd/MM/yyyy HH:mm') : '—'}">01/01/2026 12:00</div>
+                    </div>
+                </div>
+
+                <h2 class="cp-section-title">Cuenta Bancaria de Destino</h2>
+                <div class="cp-grid" th:if="${solicitud.cuentaDestino != null}">
+                    <div class="cp-field">
+                        <div class="cp-field__label">Entidad financiera</div>
+                        <div class="cp-field__value" th:text="${solicitud.cuentaDestino.nombreEntidad}">Bancolombia</div>
+                    </div>
+                    <div class="cp-field">
+                        <div class="cp-field__label">Tipo de cuenta</div>
+                        <div class="cp-field__value" th:text="${solicitud.cuentaDestino.tipo != null ? solicitud.cuentaDestino.tipo.etiqueta : '—'}">Cuenta de ahorros</div>
+                    </div>
+                    <div class="cp-field">
+                        <div class="cp-field__label">Número de cuenta (enmascarado)</div>
+                        <div class="cp-field__value cp-field__value--mono" th:text="${solicitud.cuentaDestino.numeroEnmascarado}">****1234</div>
+                    </div>
+                    <div class="cp-field">
+                        <div class="cp-field__label">Titular de la cuenta</div>
+                        <div class="cp-field__value" th:text="${solicitud.cuentaDestino.titular}">Titular</div>
+                    </div>
+                </div>
+
+                <h2 class="cp-section-title">Datos de Aprobación</h2>
+                <div class="cp-grid cp-grid--last">
+                    <div class="cp-field">
+                        <div class="cp-field__label">Referencia de operación</div>
+                        <div class="cp-field__value cp-field__value--mono"
+                             th:text="${solicitud.referenciaBancaria != null and !solicitud.referenciaBancaria.isBlank() ? solicitud.referenciaBancaria : 'SIM-' + (solicitud.numeroComprobante != null ? solicitud.numeroComprobante : solicitud.id)}">
+                            SIM-RET-2026-000001
+                        </div>
+                    </div>
+                    <div class="cp-field">
+                        <div class="cp-field__label">Aprobado por</div>
+                        <div class="cp-field__value" th:text="${solicitud.adminNombre != null ? solicitud.adminNombre : 'Administración Cultivus'}">Administración Cultivus</div>
+                    </div>
+                </div>
+            </div>
+
+            <footer class="cp-footer">
+                Comprobante simulado — no corresponde a una transferencia bancaria real · Generado por Cultivus Colombia
+            </footer>
+        </article>
+    </div>
+</body>
+
+</html>

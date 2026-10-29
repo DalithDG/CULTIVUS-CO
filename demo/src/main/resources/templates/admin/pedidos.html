@@ -5,112 +5,163 @@
 
 <body class="admin-layout">
 
+    <!-- Topbar -->
     <header th:replace="~{admin/fragments/topbar :: topbar('Gestión de Pedidos')}"></header>
+
+    <!-- Sidebar -->
     <aside th:replace="~{admin/fragments/sidebar :: sidebar}"></aside>
 
+    <!-- Contenido Principal -->
     <main class="admin-main">
         <div class="admin-content">
+
             <div th:replace="~{admin/fragments/alerts :: alerts}"></div>
 
-            <div class="admin-page" id="ordenes-page">
+            <!-- ==================== SECCIÓN ÓRDENES / PEDIDOS ==================== -->
+            <div id="ordenes-page" class="admin-page section">
                 <div class="page-card">
-                    <h2><i class="fas fa-shopping-bag"></i> Órdenes</h2>
-                    <div th:if="${pedidos != null and !pedidos.empty}">
-                        <table class="table">
+                    <div class="adm-section-head">
+                        <div class="adm-section-head__info">
+                            <h3 class="adm-section-head__title">
+                                <i class="fas fa-shopping-bag" aria-hidden="true"></i>
+                                <span>Órdenes y Pedidos (<span class="adm-tabular" th:text="${pedidos != null ? pedidos.totalElements : 0}">0</span>)</span>
+                            </h3>
+                            <p class="adm-section-head__sub">Supervisa el flujo de órdenes, estados de entrega, conciliación de envíos y reembolsos.</p>
+                        </div>
+                        <form th:action="@{/admin/envios/reconciliar}" method="post" class="adm-inline-form">
+                            <button type="submit" class="btn-action btn-action--outline"
+                                    title="Detecta compras pagadas sin envío y los crea automáticamente">
+                                <i class="fas fa-sync-alt" aria-hidden="true"></i>
+                                <span>Reconciliar envíos faltantes</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="table-container">
+                        <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>Orden ID</th>
-                                    <th>Cliente</th>
-                                    <th>Total</th>
+                                    <th>Orden / Factura</th>
+                                    <th>Comprador</th>
+                                    <th>Vendedor</th>
                                     <th>Fecha</th>
                                     <th>Estado</th>
-                                    <th>Acción</th>
+                                    <th>Pago</th>
+                                    <th class="adm-th-right">Subtotal</th>
+                                    <th class="adm-th-right">Envío</th>
+                                    <th class="adm-th-right">Total</th>
+                                    <th>Acciones Admin</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr th:each="pedido : ${pedidos.content}">
-                                    <td th:text="${pedido.id}">#ORD-001</td>
-                                    <td th:text="${pedido.comprador != null ? pedido.comprador.nombre : 'Anónimo'}">
-                                        Pedro Sánchez</td>
-                                    <td th:text="${'$' + (pedido.total ?: 0)}">$156.99</td>
-                                    <td
-                                        th:text="${pedido.fechaPedido != null ? #temporals.format(pedido.fechaPedido, 'dd/MM/yyyy') : '-'}">
-                                        22/04/2026</td>
+                                <tr th:if="${pedidos != null}" th:each="pedido : ${pedidos.content}">
+                                    <td>
+                                        <span class="adm-cell-title" th:text="${pedido.numeroFactura}">CLT-000000</span>
+                                        <div class="adm-cell-sub adm-mono" th:text="${pedido.id}">#ORD-001</div>
+                                    </td>
+                                    <td>
+                                        <span class="adm-cell-title" th:text="${pedido.comprador != null ? pedido.comprador.nombre : 'Anónimo'}">Pedro Sánchez</span>
+                                        <div class="adm-cell-sub" th:if="${pedido.direccionEntrega != null}"
+                                             th:text="${(pedido.direccionEntrega.ciudad != null ? pedido.direccionEntrega.ciudad : '') + (pedido.direccionEntrega.direccion != null ? ' · ' + pedido.direccionEntrega.direccion : '')}">Ciudad</div>
+                                    </td>
+                                    <td th:text="${pedido.vendedor != null ? (pedido.vendedor.razonSocial != null ? pedido.vendedor.razonSocial : pedido.vendedor.nombre) : '-'}">Tienda</td>
+                                    <td class="adm-tabular"
+                                        th:text="${pedido.fechaPedido != null ? #temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm') : '-'}">
+                                        22/04/2026
+                                    </td>
                                     <td>
                                         <span class="badge"
-                                            th:classappend="${pedido.estado == 'ENTREGADO' ? 'badge-success' : 'badge-warning'}"
-                                            th:text="${pedido.estado}">Estado</span>
+                                              th:classappend="${pedido.estado == 'ENTREGADO' ? 'badge--success' : (pedido.estado == 'CANCELADO' ? 'badge--danger' : (pedido.estado == 'EN_REVISION' ? 'badge--warning' : 'badge-role'))}"
+                                              th:text="${pedido.estadoEtiqueta != null ? pedido.estadoEtiqueta : pedido.estado}">Estado</span>
                                     </td>
-                                    <td style="white-space:nowrap;">
-                                        <form th:if="${pedido.estado == 'PENDIENTE' or pedido.estado == 'PENDIENTE_PAGO'}"
-                                              th:action="@{/admin/pedidos/{id}/aceptar(id=${pedido.id})}"
-                                              method="post" style="display:inline;">
-                                            <button type="submit" class="btn-action"
-                                                    style="background:var(--adm-green-dark); color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer; font-weight:600;">
-                                                <i class="fas fa-check"></i> Aceptar
-                                            </button>
-                                        </form>
-                                        <form th:action="@{/admin/pedidos/{id}/actualizar-estado(id=${pedido.id})}"
-                                              method="post" style="display:inline-flex; gap:4px; align-items:center; margin-left:4px;">
-                                            <select name="estado"
-                                                    style="padding:4px 6px; border:1px solid #d6e2d8; border-radius:4px; font-size:12px;">
-                                                <option th:each="est : ${estadosPedido}" th:value="${est}" th:text="${est}"
-                                                        th:selected="${est == pedido.estado}"></option>
-                                            </select>
-                                            <button type="submit" class="btn-action"
-                                                    style="background:var(--adm-green); color:white; border:none; padding:6px 10px; border-radius:6px; cursor:pointer; font-weight:600;">
-                                                <i class="fas fa-sync-alt"></i> Actualizar
-                                            </button>
-                                        </form>
+                                    <td>
+                                        <span class="badge badge-category"
+                                              th:text="${pedido.pago != null and pedido.pago.estado != null ? pedido.pago.estado : 'PENDIENTE'}">PAGADO</span>
+                                        <div class="adm-cell-sub" th:if="${pedido.pago != null and pedido.pago.metodo != null}"
+                                             th:text="${pedido.pago.metodo}">WOMPI</div>
+                                    </td>
+                                    <td class="adm-td-right adm-tabular"
+                                        th:text="${'$' + #numbers.formatDecimal(pedido.subtotalProductos, 1, 'POINT', 0, 'COMMA')}">$0</td>
+                                    <td class="adm-td-right adm-tabular"
+                                        th:text="${'$' + #numbers.formatDecimal(pedido.envio, 1, 'POINT', 0, 'COMMA')}">$0</td>
+                                    <td class="adm-td-right">
+                                        <span class="adm-amount"
+                                              th:text="${'$' + #numbers.formatDecimal(pedido.total != null ? pedido.total : 0, 1, 'POINT', 0, 'COMMA')}">$0</span>
+                                    </td>
+                                    <td>
+                                        <div class="adm-actions">
+                                            <form th:if="${pedido.estado == 'PENDIENTE' or pedido.estado == 'PENDIENTE_PAGO'}"
+                                                  th:action="@{/admin/pedidos/{id}/aceptar(id=${pedido.id})}"
+                                                  method="post" class="adm-inline-form">
+                                                <button type="submit" class="btn-action">
+                                                    <i class="fas fa-check" aria-hidden="true"></i>
+                                                    <span>Aceptar</span>
+                                                </button>
+                                            </form>
+
+                                            <form th:action="@{/admin/pedidos/{id}/actualizar-estado(id=${pedido.id})}"
+                                                  method="post" class="adm-inline-form">
+                                                <select name="estado" class="role-select">
+                                                    <option th:each="est : ${estadosPedido}"
+                                                            th:value="${est}"
+                                                            th:text="${est}"
+                                                            th:selected="${est == pedido.estado}">
+                                                    </option>
+                                                </select>
+                                                <button type="submit" class="btn-action btn-action--outline">
+                                                    <i class="fas fa-sync-alt" aria-hidden="true"></i>
+                                                    <span>Actualizar</span>
+                                                </button>
+                                            </form>
+
+                                            <form th:if="${pedido.estado == 'EN_REVISION' or pedido.requiereReembolso}"
+                                                  th:action="@{/admin/pedidos/{id}/reembolso-realizado(id=${pedido.id})}"
+                                                  method="post" class="adm-inline-form"
+                                                  onsubmit="return confirm('¿Confirmar que el reembolso de este pedido ya fue realizado?');">
+                                                <input type="hidden" name="motivo" value="Reembolso procesado manualmente por administración" />
+                                                <button type="submit" class="btn-action btn-action--amber">
+                                                    <i class="fas fa-hand-holding-usd" aria-hidden="true"></i>
+                                                    <span>Reembolso realizado</span>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr th:if="${pedidos == null or pedidos.empty}">
+                                    <td colspan="10">
+                                        <div class="adm-empty">
+                                            <div class="adm-empty__icon"><i class="fas fa-shopping-bag" aria-hidden="true"></i></div>
+                                            <h4 class="adm-empty__title">No hay pedidos registrados</h4>
+                                            <p class="adm-empty__desc">Cuando se generen compras en la plataforma aparecerán aquí.</p>
+                                        </div>
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
-
-                        <!-- Paginación Pedidos -->
-                        <div th:if="${pedidos.totalPages > 1}" class="paginacion-container"
-                            style="display:flex; justify-content:center; align-items:center; gap:15px; margin-top:30px; padding:20px 0;">
-                            <a th:href="@{/admin/pedidos(page=${pedidos.number - 1})}" th:if="${pedidos.hasPrevious()}"
-                                style="padding:8px 16px; border:1px solid #d6e2d8; border-radius:5px; background:white; cursor:pointer; text-decoration:none; color:#111e15;">
-                                <i class="fas fa-chevron-left"></i> Anterior
-                            </a>
-                            <button th:unless="${pedidos.hasPrevious()}" disabled
-                                style="padding:8px 16px; border:1px solid var(--adm-line); border-radius:5px; background:var(--adm-green-soft); color:#94a39a; cursor:not-allowed;">
-                                <i class="fas fa-chevron-left"></i> Anterior
-                            </button>
-                            <div style="display:flex; gap:5px;">
-                                <span th:each="i : ${#numbers.sequence(0, pedidos.totalPages - 1)}"
-                                    th:if="${i >= pedidos.number - 2 and i <= pedidos.number + 2}">
-                                    <a th:href="@{/admin/pedidos(page=${i})}" th:text="${i + 1}"
-                                        th:style="${i == pedidos.number ? 'background:var(--adm-green); color:white; border:1px solid var(--adm-green);' : 'background:white; color:#111e15; border:1px solid #d6e2d8;'}"
-                                        style="padding:8px 14px; border-radius:5px; text-decoration:none; font-weight:600; cursor:pointer; transition: 0.3s;">
-                                    </a>
-                                </span>
-                            </div>
-                            <a th:href="@{/admin/pedidos(page=${pedidos.number + 1})}" th:if="${pedidos.hasNext()}"
-                                style="padding:8px 16px; border:1px solid #d6e2d8; border-radius:5px; background:white; cursor:pointer; text-decoration:none; color:#111e15;">
-                                Siguiente <i class="fas fa-chevron-right"></i>
-                            </a>
-                            <button th:unless="${pedidos.hasNext()}" disabled
-                                style="padding:8px 16px; border:1px solid var(--adm-line); border-radius:5px; background:var(--adm-green-soft); color:#94a39a; cursor:not-allowed;">
-                                Siguiente <i class="fas fa-chevron-right"></i>
-                            </button>
-                        </div>
                     </div>
 
-                    <div th:if="${pedidos == null or pedidos.empty}"
-                        style="text-align:center; padding:40px; color:#7b8b80;">
-                        <i class="fas fa-shopping-bag"
-                            style="font-size:48px; color:#d6e2d8; margin-bottom:15px; display:block;"></i>
-                        <p style="font-size:18px;">No hay pedidos registrados.</p>
+                    <!-- Controles de Paginación -->
+                    <div class="paginacion-container" th:if="${pedidos != null and pedidos.totalPages > 1}">
+                        <span class="adm-pagination__info">
+                            Mostrando página <strong th:text="${pedidos.number + 1}">1</strong> de <strong th:text="${pedidos.totalPages}">1</strong>
+                        </span>
+                        <div class="adm-pagination__controls">
+                            <a th:if="${pedidos.hasPrevious()}" th:href="@{/admin/pedidos(page=${pedidos.number - 1})}" class="adm-page-btn">
+                                <i class="fas fa-chevron-left" aria-hidden="true"></i> Anterior
+                            </a>
+                            <span class="adm-page-pill" th:text="${pedidos.number + 1}">1</span>
+                            <a th:if="${pedidos.hasNext()}" th:href="@{/admin/pedidos(page=${pedidos.number + 1})}" class="adm-page-btn">
+                                Siguiente <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
 
-
         </div>
     </main>
 
+    <!-- Scripts -->
     <script th:src="@{/js/admin-panel.js}"></script>
 </body>
 

@@ -5,633 +5,216 @@
     <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nueva Oferta - Cultivus</title>
+    <title>Nueva Oferta · Vendedor | Cultivus</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" th:href="@{/header.css}">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #f8faf8;
-            color: #333;
-            min-height: 100vh;
-        }
-
-        /* ── Main Container ── */
-        .add-product-wrapper {
-            max-width: 820px;
-            margin: 0 auto;
-            padding: 0 1.5rem;
-            animation: fadeInUp 0.5s ease-out;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(24px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
-        /* ── Page Header ── */
-        .page-header {
-            display: flex;
-            align-items: center;
-            gap: 18px;
-            margin-bottom: 2rem;
-        }
-
-        .page-header .icon-circle {
-            width: 56px;
-            height: 56px;
-            background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
-            color: #2e7d32;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.4rem;
-            flex-shrink: 0;
-        }
-
-        .page-header h1 {
-            font-size: 1.6rem;
-            font-weight: 700;
-            color: #1a1a1a;
-        }
-
-        .page-header p {
-            color: #777;
-            font-size: 0.9rem;
-            margin-top: 2px;
-        }
-
-        /* ── Alerts ── */
-        .alert {
-            padding: 14px 20px;
-            border-radius: 12px;
-            margin-bottom: 1.5rem;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .alert-success {
-            background: #e8f5e9;
-            color: #2e7d32;
-            border: 1px solid #a5d6a7;
-        }
-        .alert-error {
-            background: #ffebee;
-            color: #c62828;
-            border: 1px solid #ef9a9a;
-        }
-        .alert-info {
-            background: #e3f2fd;
-            color: #1565c0;
-            border: 1px solid #90caf9;
-        }
-
-        /* ── Card ── */
-        .form-card {
-            background: #fff;
-            border-radius: 20px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.04);
-            border: 1px solid #eee;
-            overflow: hidden;
-        }
-
-        /* ── Tabs ── */
-        .tabs {
-            display: flex;
-            border-bottom: 2px solid #f0f0f0;
-        }
-        .tab {
-            flex: 1;
-            padding: 16px;
-            text-align: center;
-            cursor: pointer;
-            font-weight: 600;
-            color: #999;
-            transition: all 0.3s;
-            border-bottom: 3px solid transparent;
-        }
-        .tab:hover {
-            color: #2e7d32;
-        }
-        .tab.active {
-            color: #2e7d32;
-            border-bottom-color: #2e7d32;
-        }
-        .tab-content {
-            display: none;
-        }
-        .tab-content.active {
-            display: block;
-        }
-
-        /* ── Section ── */
-        .form-section {
-            padding: 2rem 2.5rem;
-            border-bottom: 1px solid #f3f3f3;
-        }
-
-        .form-section:last-of-type {
-            border-bottom: none;
-        }
-
-        .section-title {
-            font-size: 0.78rem;
-            text-transform: uppercase;
-            letter-spacing: 1.2px;
-            color: #2e7d32;
-            font-weight: 700;
-            margin-bottom: 1.4rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .section-title i {
-            font-size: 0.85rem;
-        }
-
-        /* ── Grid Layouts ── */
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.2rem;
-        }
-
-        .grid-3 {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 1.2rem;
-        }
-
-        .full-width {
-            grid-column: 1 / -1;
-        }
-
-        /* ── Input Groups ── */
-        .field {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .field label {
-            font-size: 0.82rem;
-            font-weight: 600;
-            color: #555;
-        }
-
-        .field input,
-        .field select,
-        .field textarea {
-            padding: 11px 14px;
-            border: 1.5px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 0.92rem;
-            font-family: 'Inter', sans-serif;
-            transition: all 0.25s ease;
-            background: #fafafa;
-            color: #333;
-        }
-
-        .field input:focus,
-        .field select:focus,
-        .field textarea:focus {
-            outline: none;
-            border-color: #4caf50;
-            background: #fff;
-            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.08);
-        }
-
-        .field input::placeholder,
-        .field textarea::placeholder {
-            color: #bbb;
-        }
-
-        .field textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        .field small {
-            font-size: 0.78rem;
-            color: #999;
-        }
-
-        /* ── Currency Input ── */
-        .currency-input {
-            position: relative;
-        }
-
-        .currency-input span {
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-weight: 600;
-            color: #999;
-            font-size: 0.9rem;
-        }
-
-        .currency-input input {
-            padding-left: 30px;
-        }
-
-        /* ── Image Preview ── */
-        .image-preview-container {
-            margin-top: 10px;
-        }
-
-        .image-preview {
-            max-width: 200px;
-            max-height: 150px;
-            border-radius: 12px;
-            border: 2px dashed #e0e0e0;
-            object-fit: cover;
-            display: none;
-        }
-
-        .image-preview.visible {
-            display: block;
-        }
-
-        /* ── Footer Actions ── */
-        .form-footer {
-            padding: 1.5rem 2.5rem;
-            background: #fdfdfd;
-            border-top: 1px solid #f0f0f0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .btn-back {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #666;
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 0.9rem;
-            padding: 10px 20px;
-            border-radius: 10px;
-            transition: all 0.2s;
-            border: 1px solid #e0e0e0;
-            background: #fff;
-        }
-
-        .btn-back:hover {
-            background: #f5f5f5;
-            color: #333;
-        }
-
-        .btn-publish {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 28px;
-            border: none;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #2e7d32, #43a047);
-            color: #fff;
-            font-weight: 700;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 14px rgba(46, 125, 50, 0.2);
-            font-family: 'Inter', sans-serif;
-        }
-
-        .btn-publish:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(46, 125, 50, 0.3);
-        }
-
-        .btn-publish:active {
-            transform: translateY(0);
-        }
-
-        /* ── Responsive ── */
-        @media (max-width: 768px) {
-            .grid-2, .grid-3 {
-                grid-template-columns: 1fr;
-            }
-            .form-section {
-                padding: 1.5rem;
-            }
-            .form-footer {
-                padding: 1.2rem 1.5rem;
-                flex-direction: column-reverse;
-                gap: 12px;
-            }
-            .btn-back, .btn-publish {
-                width: 100%;
-                justify-content: center;
-            }
-            .add-product-wrapper {
-                margin: 1.5rem auto;
-            }
-            .tabs {
-                flex-direction: column;
-            }
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/vendedor-panel.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
 </head>
 
 <body class="vs-layout">
     <!-- Header Vendedor -->
-    <header th:replace="fragments/header-vendedor :: siteHeader"></header>
+    <header th:replace="~{fragments/header-vendedor :: siteHeader}"></header>
     <main class="vs-main">
 
-    <div class="add-product-wrapper">
-        <!-- Page Header -->
-        <div class="page-header">
-            <div class="icon-circle">
-                <i class="fas fa-plus"></i>
-            </div>
-            <div>
-                <h1>Nueva Oferta</h1>
-                <p>Selecciona un producto del catálogo y define tu precio y stock</p>
-            </div>
-        </div>
-
-        <!-- Alerts -->
-        <div th:if="${mensaje}" class="alert alert-success">
-            <i class="fas fa-check-circle"></i>
-            <span th:text="${mensaje}"></span>
-        </div>
-        <div th:if="${error}" class="alert alert-error">
-            <i class="fas fa-exclamation-circle"></i>
-            <span th:text="${error}"></span>
-        </div>
-
-        <!-- ═══ TABS ═══ -->
-        <div class="form-card">
-            <div class="tabs">
-                <div class="tab active" onclick="showTab('crear-oferta')">
-                    <i class="fas fa-tag"></i> Crear Oferta
+        <div class="add-product-wrapper">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="icon-circle">
+                    <i class="fas fa-plus" aria-hidden="true"></i>
                 </div>
-                <div class="tab" onclick="showTab('sugerir-producto')">
-                    <i class="fas fa-lightbulb"></i> Sugerir Nuevo Producto
+                <div>
+                    <h1>Nueva Oferta</h1>
+                    <p>Selecciona un producto del catálogo y define tu precio y stock</p>
                 </div>
             </div>
 
-            <!-- ═══ TAB 1: Crear oferta para producto existente ═══ -->
-            <div id="crear-oferta" class="tab-content active">
-                <form th:action="@{/vendedor/productos/guardar}" method="post">
+            <!-- Alerts -->
+            <div th:if="${mensaje}" class="alert alert-success">
+                <i class="fas fa-check-circle" aria-hidden="true"></i>
+                <span th:text="${mensaje}"></span>
+            </div>
+            <div th:if="${error}" class="alert alert-error">
+                <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
+                <span th:text="${error}"></span>
+            </div>
 
-                    <!-- Selección de producto del catálogo -->
-                    <div class="form-section">
-                        <div class="section-title">
-                            <i class="fas fa-search"></i> Seleccionar Producto del Catálogo
-                        </div>
-                        <div class="field">
-                            <label for="productoCatalogoId">Producto *</label>
-                            <select id="productoCatalogoId" name="productoCatalogoId" required>
-                                <option value="">Selecciona un producto del catálogo</option>
-                                <option th:each="prod : ${catalogoProductos}"
-                                        th:value="${prod.id}"
-                                        th:data-tipo-venta="${prod.tipoVenta}"
-                                        th:data-unidad="${prod.unidadMedida}"
-                                        th:text="${prod.nombre + ' (' + (prod.categoria != null ? prod.categoria.nombre : 'Sin categoría') + ')'}">
-                                </option>
-                            </select>
-                            <small>Si el producto no aparece, usa la pestaña "Sugerir Nuevo Producto"</small>
-                        </div>
-                    </div>
+            <!-- ═══ FORMULARIO CREAR OFERTA ═══ -->
+            <div class="form-card">
+                <div id="crear-oferta" class="tab-content active">
+                    <form th:action="@{/vendedor/productos/guardar}" method="post">
 
-                    <!-- Tu oferta -->
-                    <div class="form-section">
-                        <div class="section-title">
-                            <i class="fas fa-tag"></i> Tu Oferta
-                        </div>
-                        <div class="grid-3">
+                        <!-- Selección de producto del catálogo -->
+                        <div class="form-section">
+                            <div class="section-title">
+                                <i class="fas fa-search" aria-hidden="true"></i> Seleccionar Producto del Catálogo
+                            </div>
                             <div class="field">
-                                <label for="precio">Precio (COP) *</label>
-                                <div class="currency-input">
-                                    <span>$</span>
-                                    <input type="number" id="precio" name="precio" required min="500" step="0.01"
-                                        placeholder="0.00">
+                                <label for="productoCatalogoId">Producto *</label>
+                                <select id="productoCatalogoId" name="productoCatalogoId" required>
+                                    <option value="">Selecciona un producto del catálogo</option>
+                                    <option th:each="prod : ${catalogoProductos}"
+                                            th:value="${prod.id}"
+                                            th:data-tipo-venta="${prod.tipoVenta}"
+                                            th:data-unidad="${prod.unidadMedida}"
+                                            th:text="${prod.nombre + ' (' + (prod.categoria != null ? prod.categoria.nombre : 'Sin categoría') + ')'}">
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Tu oferta -->
+                        <div class="form-section">
+                            <div class="section-title">
+                                <i class="fas fa-tag" aria-hidden="true"></i> Tu Oferta
+                            </div>
+                            <div class="grid-3">
+                                <div class="field">
+                                    <label for="precio">Precio (COP) *</label>
+                                    <div class="currency-input">
+                                        <span>$</span>
+                                        <input type="number" id="precio" name="precio" required min="500" step="0.01"
+                                            placeholder="0.00">
+                                    </div>
+                                </div>
+                                <div class="field">
+                                    <label for="stock">Stock Disponible *</label>
+                                    <input type="number" id="stock" name="stock" required min="1" max="10000"
+                                        placeholder="0">
+                                </div>
+                                <div class="field">
+                                    <label for="compraMinima">Compra Mínima *</label>
+                                    <input type="number" id="compraMinima" name="compraMinima" required min="0.01" step="any"
+                                        value="1" placeholder="Ej: 2">
+                                    <small>Cantidad mínima por compra</small>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Detalles Dinámicos según Tipo de Venta -->
+                        <div class="form-section">
+                            <div class="section-title">
+                                <i class="fas fa-weight-hanging" aria-hidden="true"></i> Detalles
+                            </div>
+                            <div class="grid-2">
+                                <!-- Campos para PESO -->
+                                <div class="field" id="campoPesoPromedio" style="display:none;">
+                                    <label for="pesoPromedioUnidad">Peso promedio por unidad (kg/lb)</label>
+                                    <input type="number" id="pesoPromedioUnidad" name="pesoPromedioUnidad" min="0.01" step="0.01"
+                                        placeholder="Ej: 0.5">
+                                    <small>Opcional para dar una estimación al cliente</small>
+                                </div>
+
+                                <!-- Campos para UNIDAD -->
+                                <div class="field" id="campoDescripcionPaquete" style="display:none;">
+                                    <label for="descripcionPaquete">Descripción del paquete</label>
+                                    <input type="text" id="descripcionPaquete" name="descripcionPaquete" maxlength="100"
+                                        placeholder="Ej: Manojo de ~100g, Bandeja de 12 uds">
+                                </div>
+
+                                <div class="field full-width">
+                                    <label for="descripcionVendedor">Descripción de tu oferta</label>
+                                    <textarea id="descripcionVendedor" name="descripcionVendedor" maxlength="255" rows="3"
+                                        placeholder="Ej: Cultivada orgánicamente en Boyacá, cosecha reciente..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Imagen -->
+                        <div class="form-section">
+                            <div class="section-title">
+                                <i class="fas fa-image" aria-hidden="true"></i> Imagen (opcional)
+                            </div>
                             <div class="field">
-                                <label for="stock">Stock Disponible *</label>
-                                <input type="number" id="stock" name="stock" required min="1" max="10000"
-                                    placeholder="0">
+                                <label for="imagenUrl">URL de la Imagen</label>
+                                <input type="url" id="imagenUrl" name="imagenUrl"
+                                    placeholder="https://ejemplo.com/imagen.jpg (se usa la del catálogo si se deja vacío)">
                             </div>
-                            <div class="field">
-                                <label for="compraMinima">Compra Mínima *</label>
-                                <input type="number" id="compraMinima" name="compraMinima" required min="0.01" step="any"
-                                    value="1" placeholder="Ej: 2">
-                                <small>Cantidad mínima por compra</small>
+                            <div class="image-preview-container">
+                                <img id="imagePreview" class="image-preview" alt="Vista previa">
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Detalles Dinámicos según Tipo de Venta -->
-                    <div class="form-section">
-                        <div class="section-title">
-                            <i class="fas fa-weight-hanging"></i> Detalles
+                        <!-- Footer Actions -->
+                        <div class="form-footer">
+                            <a th:href="@{/vendedor/mis-productos}" class="btn-back">
+                                <i class="fas fa-arrow-left" aria-hidden="true"></i> Volver
+                            </a>
+                            <button type="submit" class="btn-publish">
+                                <i class="fas fa-rocket" aria-hidden="true"></i> Enviar Oferta
+                            </button>
                         </div>
-                        <div class="grid-2">
-                            <!-- Campos para PESO -->
-                            <div class="field" id="campoPesoPromedio" style="display:none;">
-                                <label for="pesoPromedioUnidad">Peso promedio por unidad (kg/lb)</label>
-                                <input type="number" id="pesoPromedioUnidad" name="pesoPromedioUnidad" min="0.01" step="0.01"
-                                    placeholder="Ej: 0.5">
-                                <small>Opcional para dar una estimación al cliente</small>
-                            </div>
-                            
-                            <!-- Campos para UNIDAD -->
-                            <div class="field" id="campoDescripcionPaquete" style="display:none;">
-                                <label for="descripcionPaquete">Descripción del paquete</label>
-                                <input type="text" id="descripcionPaquete" name="descripcionPaquete" maxlength="100"
-                                    placeholder="Ej: Manojo de ~100g, Bandeja de 12 uds">
-                            </div>
+                    </form>
+                </div>
 
-                            <div class="field full-width">
-                                <label for="descripcionVendedor">Descripción de tu oferta</label>
-                                <textarea id="descripcionVendedor" name="descripcionVendedor" maxlength="255" rows="3"
-                                    placeholder="Ej: Cultivada orgánicamente en Boyacá, cosecha reciente..."></textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Imagen -->
-                    <div class="form-section">
-                        <div class="section-title">
-                            <i class="fas fa-image"></i> Imagen (opcional)
-                        </div>
-                        <div class="field">
-                            <label for="imagenUrl">URL de la Imagen</label>
-                            <input type="url" id="imagenUrl" name="imagenUrl"
-                                placeholder="https://ejemplo.com/imagen.jpg (se usa la del catálogo si se deja vacío)">
-                        </div>
-                        <div class="image-preview-container">
-                            <img id="imagePreview" class="image-preview" alt="Vista previa">
-                        </div>
-                    </div>
-
-                    <!-- Footer Actions -->
-                    <div class="form-footer">
-                        <a th:href="@{/vendedor/mis-productos}" class="btn-back">
-                            <i class="fas fa-arrow-left"></i> Volver
-                        </a>
-                        <button type="submit" class="btn-publish">
-                            <i class="fas fa-rocket"></i> Enviar Oferta
-                        </button>
-                    </div>
-                </form>
             </div>
-
-            <!-- ═══ TAB 2: Sugerir nuevo producto al catálogo ═══ -->
-            <div id="sugerir-producto" class="tab-content">
-                <form th:action="@{/vendedor/productos/sugerir}" method="post">
-
-                    <div class="form-section">
-                        <div class="section-title">
-                            <i class="fas fa-lightbulb"></i> Sugerir Producto para el Catálogo
-                        </div>
-                        <div class="alert alert-info" style="margin-bottom:1.5rem;">
-                            <i class="fas fa-info-circle"></i>
-                            <span>El producto será revisado por un administrador. Una vez aprobado, podrás crear tu oferta.</span>
-                        </div>
-                        <div class="grid-2">
-                            <div class="field">
-                                <label for="nombreSugerido">Nombre del Producto *</label>
-                                <input type="text" id="nombreSugerido" name="nombre" required minlength="3" maxlength="50"
-                                    placeholder="Ej: Yuca Criolla">
-                            </div>
-                            <div class="field">
-                                <label for="categoriaSugerida">Categoría *</label>
-                                <select id="categoriaSugerida" name="categoriaId" required>
-                                    <option value="">Selecciona una categoría</option>
-                                    <option th:each="categoria : ${categorias}" th:value="${categoria.id}" th:text="${categoria.nombre}"></option>
-                                </select>
-                            </div>
-                            <div class="field full-width">
-                                <label for="descripcionSugerida">Descripción *</label>
-                                <textarea id="descripcionSugerida" name="descripcion" required minlength="10" maxlength="255" rows="3"
-                                    placeholder="Describe las características generales del producto..."></textarea>
-                            </div>
-                            <div class="field">
-                                <label for="tipoSugerido">Tipo de Venta *</label>
-                                <select id="tipoSugerido" name="tipoVenta" required>
-                                    <option value="">Selecciona el tipo</option>
-                                    <option value="PESO">Venta por Peso</option>
-                                    <option value="UNIDAD">Venta por Unidad / Paquete</option>
-                                </select>
-                            </div>
-                            <div class="field">
-                                <label for="unidadSugerida">Unidad de Medida *</label>
-                                <select id="unidadSugerida" name="unidadMedida" required>
-                                    <option value="">Selecciona una unidad</option>
-                                    <option th:each="u : ${unidadesMedida}" 
-                                            th:value="${u.abreviatura}" 
-                                            th:text="${u.nombre + ' (' + u.abreviatura + ')'}"></option>
-                                </select>
-                            </div>
-                            <div class="field">
-                                <label for="imagenSugerida">URL de Imagen *</label>
-                                <input type="url" id="imagenSugerida" name="imagenUrl" required
-                                    placeholder="https://ejemplo.com/imagen.jpg">
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-footer">
-                        <a th:href="@{/vendedor/mis-productos}" class="btn-back">
-                            <i class="fas fa-arrow-left"></i> Volver
-                        </a>
-                        <button type="submit" class="btn-publish" style="background: linear-gradient(135deg, #1565c0, #1976d2);">
-                            <i class="fas fa-paper-plane"></i> Enviar Sugerencia
-                        </button>
-                    </div>
-                </form>
-            </div>
-
         </div>
-    </div>
 
-    <script>
-        // Tab Switching
-        function showTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(tc => tc.classList.remove('active'));
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            event.currentTarget.classList.add('active');
-        }
+        <script>
+            // Image Preview
+            const imagenInput = document.getElementById('imagenUrl');
+            const preview = document.getElementById('imagePreview');
 
-        // Image Preview
-        const imagenInput = document.getElementById('imagenUrl');
-        const preview = document.getElementById('imagePreview');
+            if (imagenInput) {
+                imagenInput.addEventListener('input', function () {
+                    const url = this.value;
+                    if (url) {
+                        preview.src = url;
+                        preview.classList.add('visible');
+                        preview.onerror = () => preview.classList.remove('visible');
+                    } else {
+                        preview.classList.remove('visible');
+                    }
+                });
 
-        if (imagenInput) {
-            imagenInput.addEventListener('input', function () {
-                const url = this.value;
-                if (url) {
-                    preview.src = url;
+                // Show preview on load if value exists
+                if (imagenInput.value) {
+                    preview.src = imagenInput.value;
                     preview.classList.add('visible');
-                    preview.onerror = () => preview.classList.remove('visible');
-                } else {
-                    preview.classList.remove('visible');
                 }
-            });
-
-            // Show preview on load if value exists
-            if (imagenInput.value) {
-                preview.src = imagenInput.value;
-                preview.classList.add('visible');
             }
-        }
 
-        // Logic for dynamic fields based on sale type
-        const selectProducto = document.getElementById('productoCatalogoId');
-        const labelPrecio = document.querySelector('label[for="precio"]');
-        const labelStock = document.querySelector('label[for="stock"]');
-        const campoPesoPromedio = document.getElementById('campoPesoPromedio');
-        const campoDescripcionPaquete = document.getElementById('campoDescripcionPaquete');
+            // Logic for dynamic fields based on sale type
+            const selectProducto = document.getElementById('productoCatalogoId');
+            const labelPrecio = document.querySelector('label[for="precio"]');
+            const labelStock = document.querySelector('label[for="stock"]');
+            const campoPesoPromedio = document.getElementById('campoPesoPromedio');
+            const campoDescripcionPaquete = document.getElementById('campoDescripcionPaquete');
 
-        if (selectProducto) {
-            selectProducto.addEventListener('change', function() {
-                const selectedOption = this.options[this.selectedIndex];
-                const tipoVenta = selectedOption.getAttribute('data-tipo-venta');
-                const unidad = selectedOption.getAttribute('data-unidad');
+            if (selectProducto) {
+                selectProducto.addEventListener('change', function() {
+                    const selectedOption = this.options[this.selectedIndex];
+                    const tipoVenta = selectedOption.getAttribute('data-tipo-venta');
+                    const unidad = selectedOption.getAttribute('data-unidad');
 
-                if (!tipoVenta) {
-                    labelPrecio.textContent = 'Precio (COP) *';
-                    labelStock.textContent = 'Stock Disponible *';
-                    campoPesoPromedio.style.display = 'none';
-                    campoDescripcionPaquete.style.display = 'none';
-                    return;
+                    if (!tipoVenta) {
+                        labelPrecio.textContent = 'Precio (COP) *';
+                        labelStock.textContent = 'Stock Disponible *';
+                        campoPesoPromedio.style.display = 'none';
+                        campoDescripcionPaquete.style.display = 'none';
+                        return;
+                    }
+
+                    labelPrecio.textContent = `Precio por ${unidad} (COP) *`;
+                    labelStock.textContent = `Stock Disponible (${unidad}) *`;
+
+                    if (tipoVenta === 'PESO') {
+                        campoPesoPromedio.style.display = 'flex';
+                        campoDescripcionPaquete.style.display = 'none';
+                    } else if (tipoVenta === 'UNIDAD') {
+                        campoPesoPromedio.style.display = 'none';
+                        campoDescripcionPaquete.style.display = 'flex';
+                    }
+                });
+                // Trigger change on load if something is already selected
+                if(selectProducto.value) {
+                    selectProducto.dispatchEvent(new Event('change'));
                 }
-
-                labelPrecio.textContent = `Precio por ${unidad} (COP) *`;
-                labelStock.textContent = `Stock Disponible (${unidad}) *`;
-
-                if (tipoVenta === 'PESO') {
-                    campoPesoPromedio.style.display = 'flex';
-                    campoDescripcionPaquete.style.display = 'none';
-                } else if (tipoVenta === 'UNIDAD') {
-                    campoPesoPromedio.style.display = 'none';
-                    campoDescripcionPaquete.style.display = 'flex';
-                }
-            });
-            // Trigger change on load if something is already selected
-            if(selectProducto.value) {
-                selectProducto.dispatchEvent(new Event('change'));
             }
-        }
-    </script>
+        </script>
         <footer class="vs-footer">
             <div class="vs-footer__brand">
-                <i class="fas fa-seedling" style="color: var(--vs-green);"></i>
+                <i class="fas fa-seedling"></i>
                 <span>Cultivus Colombia · Publicar Nueva Oferta</span>
             </div>
             <div class="vs-footer__links">

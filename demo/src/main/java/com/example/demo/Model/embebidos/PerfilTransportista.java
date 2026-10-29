@@ -31,6 +31,7 @@ public class PerfilTransportista {
     private String empresa;               // Nombre de empresa de transporte o "Independiente"
     private String banco;
     private String cuentaBancaria;
+    private CuentaBancaria cuentaRetiro;
     private Double calificacion = 5.0;
     private Integer totalEntregas = 0;
 
@@ -131,6 +132,29 @@ public class PerfilTransportista {
 
     public String getCuentaBancaria() { return cuentaBancaria; }
     public void setCuentaBancaria(String cuentaBancaria) { this.cuentaBancaria = cuentaBancaria; }
+
+    public CuentaBancaria getCuentaRetiro() { return cuentaRetiro; }
+    public void setCuentaRetiro(CuentaBancaria cuentaRetiro) {
+        this.cuentaRetiro = cuentaRetiro;
+        if (cuentaRetiro != null) {
+            this.banco = cuentaRetiro.getNombreEntidad();
+            this.cuentaBancaria = cuentaRetiro.getNumero();
+        }
+    }
+
+    public boolean tieneCuentaRetiroCompleta() {
+        return cuentaRetiro != null && cuentaRetiro.esCompleta();
+    }
+
+    public String getCuentaBancariaEnmascarada() {
+        if (cuentaRetiro != null && cuentaRetiro.getNumero() != null && !cuentaRetiro.getNumero().isBlank()) {
+            return cuentaRetiro.getNumeroEnmascarado();
+        }
+        if (cuentaBancaria != null && !cuentaBancaria.isBlank()) {
+            return CuentaBancaria.enmascarar(cuentaBancaria);
+        }
+        return null;
+    }
 
     public Double getCalificacion() { return calificacion; }
     public void setCalificacion(Double calificacion) { this.calificacion = calificacion; }

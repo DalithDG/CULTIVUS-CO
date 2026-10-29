@@ -28,7 +28,7 @@ public class Billetera {
     }
 
     public enum EstadoSaldo {
-        EN_RETENCION, DISPONIBLE, RETIRADO
+        EN_RETENCION, DISPONIBLE, EN_PROCESO_RETIRO, RETIRADO
     }
 
     @Id
@@ -45,6 +45,9 @@ public class Billetera {
 
     @Field("saldo_disponible_centavos")
     private long saldoDisponibleCentavos;
+
+    @Field("saldo_en_proceso_retiro_centavos")
+    private long saldoEnProcesoRetiroCentavos;
 
     @Field("saldo_retirado_centavos")
     private long saldoRetiradoCentavos;
@@ -66,19 +69,24 @@ public class Billetera {
     public Rol getRol() { return rol; }
     public long getSaldoRetencionCentavos() { return saldoRetencionCentavos; }
     public long getSaldoDisponibleCentavos() { return saldoDisponibleCentavos; }
+    public long getSaldoEnProcesoRetiroCentavos() { return saldoEnProcesoRetiroCentavos; }
     public long getSaldoRetiradoCentavos() { return saldoRetiradoCentavos; }
     public LocalDateTime getCreatedAt() { return createdAt; }
 
     // Helpers de vista (pesos)
     public double getSaldoRetencion() { return saldoRetencionCentavos / 100.0; }
     public double getSaldoDisponible() { return saldoDisponibleCentavos / 100.0; }
+    public double getSaldoEnProcesoRetiro() { return saldoEnProcesoRetiroCentavos / 100.0; }
     public double getSaldoRetirado() { return saldoRetiradoCentavos / 100.0; }
 
     public long saldoDe(EstadoSaldo estado) {
+        if (estado == null) return 0L;
         switch (estado) {
             case EN_RETENCION: return saldoRetencionCentavos;
             case DISPONIBLE: return saldoDisponibleCentavos;
-            default: return saldoRetiradoCentavos;
+            case EN_PROCESO_RETIRO: return saldoEnProcesoRetiroCentavos;
+            case RETIRADO: return saldoRetiradoCentavos;
+            default: return 0L;
         }
     }
 }

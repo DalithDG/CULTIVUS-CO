@@ -8,7 +8,8 @@
     <title>Mi Perfil de Vendedor | Cultivus</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" th:href="@{/perfil.css}">
+    <link rel="stylesheet" th:href="@{/header.css}">
+    <link rel="stylesheet" th:href="@{/vendedor-panel.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
 </head>
 
@@ -17,102 +18,116 @@
     <header th:replace="~{fragments/header-vendedor :: siteHeader}"></header>
 
     <main class="vs-main">
-        <div class="profile-container" style="max-width: 980px; margin: 0 auto; padding: 24px 20px;">
+        <div class="profile-container">
             <div class="profile-card">
-                <div class="profile-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
-                    <div style="display:flex; align-items:center; gap:16px;">
-                        <div class="profile-icon" style="margin:0;">
-                            <i class="fa-solid fa-store"></i>
+                <div class="vs-profile-head">
+                    <div class="vs-profile-identity">
+                        <div class="vs-profile-avatar">
+                            <i class="fa-solid fa-store" aria-hidden="true"></i>
                         </div>
                         <div>
-                            <h1 style="margin:0;" th:text="${perfilVendedor != null and perfilVendedor.razonSocial != null ? perfilVendedor.razonSocial : usuario.nombre}">Mi Tienda</h1>
-                            <p class="profile-subtitle" style="margin:4px 0 0;">Perfil de Vendedor y Productor · Cultivus</p>
+                            <h1 class="vs-profile-title" th:text="${perfilVendedor != null and perfilVendedor.razonSocial != null ? perfilVendedor.razonSocial : usuario.nombre}">Mi Tienda</h1>
+                            <p class="vs-profile-sub">Perfil de Vendedor y Productor · Cultivus</p>
                         </div>
                     </div>
-                    <div style="display:flex; gap:10px; flex-wrap:wrap;">
-                        <a th:href="@{/vendedor/editar}" class="btn btn-primary"
-                           style="text-decoration:none; display:inline-flex; align-items:center; gap:8px; padding:10px 16px; border-radius:8px; font-weight:600; background:#2e7d32; color:#fff;">
-                            <i class="fa-solid fa-pen-to-square"></i> Editar Datos del Negocio
+                    <div class="vs-page-header__actions">
+                        <a th:href="@{/vendedor/editar}" class="vs-btn vs-btn--primary">
+                            <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
+                            <span>Editar Datos del Negocio</span>
                         </a>
                     </div>
                 </div>
 
                 <!-- Alertas -->
                 <div th:if="${mensaje}" class="alert alert-success">
-                    <i class="fa-solid fa-check-circle"></i>
+                    <i class="fa-solid fa-check-circle" aria-hidden="true"></i>
                     <span th:text="${mensaje}"></span>
                 </div>
                 <div th:if="${error}" class="alert alert-error">
-                    <i class="fa-solid fa-exclamation-circle"></i>
+                    <i class="fa-solid fa-exclamation-circle" aria-hidden="true"></i>
                     <span th:text="${error}"></span>
                 </div>
 
                 <!-- Datos de la Tienda / Negocio -->
-                <div class="info-section seller-info" th:if="${perfilVendedor != null}">
-                    <h2 style="color: #2e7d32;"><i class="fa-solid fa-tractor"></i> Información de mi Negocio</h2>
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <label>Razón Social / Finca:</label>
-                            <p th:text="${perfilVendedor.razonSocial}">Mi Negocio</p>
+                <section class="vs-section-block" th:if="${perfilVendedor != null}" aria-labelledby="headingInfoNegocio">
+                    <h2 id="headingInfoNegocio" class="vs-section-heading">
+                        <i class="fa-solid fa-tractor" aria-hidden="true"></i>
+                        <span>Información de mi Negocio</span>
+                    </h2>
+                    <div class="vs-info-grid">
+                        <div class="vs-info-tile">
+                            <span class="vs-info-tile__label"><i class="fa-solid fa-store" aria-hidden="true"></i> Razón Social / Finca</span>
+                            <p class="vs-info-tile__value" th:text="${perfilVendedor.razonSocial}">Mi Negocio</p>
                         </div>
-                        <div class="info-item">
-                            <label>Estado de Verificación:</label>
-                            <p th:text="${perfilVendedor.verificado ? 'Tienda Verificada' : 'En Validación por Administración'}"
-                               th:style="${perfilVendedor.verificado ? 'color: #2e7d32; font-weight: 700;' : 'color: #d97706; font-weight: 700;'}">
+                        <div class="vs-info-tile">
+                            <span class="vs-info-tile__label"><i class="fa-solid fa-shield-check" aria-hidden="true"></i> Estado de Verificación</span>
+                            <p class="vs-info-tile__value"
+                               th:classappend="${perfilVendedor.verificado ? 'vs-info-tile__value--ok' : 'vs-info-tile__value--warn'}"
+                               th:text="${perfilVendedor.verificado ? 'Tienda Verificada' : 'En Validación por Administración'}">
                                 Verificada
                             </p>
                         </div>
-                        <div class="info-item">
-                            <label>Teléfono de Contacto:</label>
-                            <p th:text="${perfilVendedor.telefonoContacto}">-</p>
+                        <div class="vs-info-tile">
+                            <span class="vs-info-tile__label"><i class="fa-solid fa-phone" aria-hidden="true"></i> Teléfono de Contacto</span>
+                            <p class="vs-info-tile__value" th:text="${perfilVendedor.telefonoContacto}">-</p>
                         </div>
-                        <div class="info-item">
-                            <label>Dirección del Negocio:</label>
-                            <p th:text="${perfilVendedor.direccionNegocio}">-</p>
+                        <div class="vs-info-tile">
+                            <span class="vs-info-tile__label"><i class="fa-solid fa-location-dot" aria-hidden="true"></i> Dirección del Negocio</span>
+                            <p class="vs-info-tile__value" th:text="${perfilVendedor.direccionNegocio}">-</p>
                         </div>
-                        <div class="info-item">
-                            <label>Tipo de Productos:</label>
-                            <p th:text="${perfilVendedor.tipoProductos != null ? perfilVendedor.tipoProductos : 'Productos agrícolas'}">-</p>
+                        <div class="vs-info-tile">
+                            <span class="vs-info-tile__label"><i class="fa-solid fa-leaf" aria-hidden="true"></i> Tipo de Productos</span>
+                            <p class="vs-info-tile__value" th:text="${perfilVendedor.tipoProductos != null ? perfilVendedor.tipoProductos : 'Productos agrícolas'}">-</p>
                         </div>
-                        <div class="info-item">
-                            <label>Cuenta Bancaria:</label>
-                            <p th:text="${perfilVendedor.banco != null and !perfilVendedor.banco.isBlank() ? (perfilVendedor.banco + ' · ' + perfilVendedor.cuentaBancaria) : 'No registrada'}">-</p>
+                        <div class="vs-info-tile">
+                            <span class="vs-info-tile__label"><i class="fa-solid fa-building-columns" aria-hidden="true"></i> Cuenta Bancaria</span>
+                            <p class="vs-info-tile__value"
+                               th:if="${perfilVendedor.tieneCuentaRetiroCompleta()}"
+                               th:text="${perfilVendedor.cuentaRetiro.resumenEnmascarado}">Bancolombia (****1234)</p>
+                            <p class="vs-info-tile__value"
+                               th:if="${!perfilVendedor.tieneCuentaRetiroCompleta()}"
+                               th:text="${perfilVendedor.banco != null and !perfilVendedor.banco.isBlank() ? (perfilVendedor.banco + ' · ' + (perfilVendedor.cuentaBancariaEnmascarada != null ? perfilVendedor.cuentaBancariaEnmascarada : 'Incompleta')) : 'No registrada'}">-</p>
+                            <a th:href="@{/vendedor/cuenta-bancaria}" class="vs-inline-link">
+                                <i class="fa-solid fa-gear" aria-hidden="true"></i>
+                                <span>Gestionar cuenta bancaria</span>
+                            </a>
+                        </div>
+                        <div class="vs-info-tile vs-info-tile--full" th:if="${perfilVendedor.descripcionNegocio != null and !perfilVendedor.descripcionNegocio.isBlank()}">
+                            <span class="vs-info-tile__label"><i class="fa-solid fa-align-left" aria-hidden="true"></i> Descripción pública de la tienda</span>
+                            <p class="vs-info-tile__value" th:text="${perfilVendedor.descripcionNegocio}"></p>
                         </div>
                     </div>
-                    <div style="margin-top:12px;" th:if="${perfilVendedor.descripcionNegocio != null and !perfilVendedor.descripcionNegocio.isBlank()}">
-                        <label style="font-weight:600; color:#4b5563; font-size:0.88rem;">Descripción pública de la tienda:</label>
-                        <p style="margin:4px 0 0; color:#1f2937;" th:text="${perfilVendedor.descripcionNegocio}"></p>
-                    </div>
-                </div>
+                </section>
 
                 <!-- Datos de Cuenta Personal y Contraseña -->
-                <div class="edit-section" style="margin-top: 28px; border-top: 1px solid #e5e7eb; padding-top: 24px;">
-                    <h2><i class="fa-solid fa-user-gear"></i> Datos de mi Cuenta Personal y Contraseña</h2>
-                    <form th:action="@{/usuario/perfil/actualizar}" method="post" class="edit-form">
-                        <div class="form-row">
-                            <div class="form-group">
+                <section class="vs-section-block" aria-labelledby="headingCuentaPersonal">
+                    <h2 id="headingCuentaPersonal" class="vs-section-heading">
+                        <i class="fa-solid fa-user-gear" aria-hidden="true"></i>
+                        <span>Datos de mi Cuenta Personal y Contraseña</span>
+                    </h2>
+                    <form th:action="@{/usuario/perfil/actualizar}" method="post">
+                        <div class="grid-2">
+                            <div class="field">
                                 <label for="nombre">
-                                    <i class="fa-solid fa-user"></i> Nombre del Titular
+                                    <i class="fa-solid fa-user" aria-hidden="true"></i> Nombre del Titular *
                                 </label>
                                 <input type="text" id="nombre" name="nombre"
                                        th:value="${usuario.nombre}" required
                                        placeholder="Ingrese su nombre completo">
                             </div>
 
-                            <div class="form-group">
+                            <div class="field">
                                 <label for="email">
-                                    <i class="fa-solid fa-envelope"></i> Correo Electrónico
+                                    <i class="fa-solid fa-envelope" aria-hidden="true"></i> Correo Electrónico *
                                 </label>
                                 <input type="email" id="email" name="email"
                                        th:value="${usuario.email}" required
                                        placeholder="correo@ejemplo.com">
                             </div>
-                        </div>
 
-                        <div class="form-row">
-                            <div class="form-group">
+                            <div class="field">
                                 <label for="departamento">
-                                    <i class="fa-solid fa-map-marked-alt"></i> Departamento
+                                    <i class="fa-solid fa-map-marked-alt" aria-hidden="true"></i> Departamento
                                 </label>
                                 <select id="departamento" name="departamento">
                                     <option value="">Seleccione un departamento</option>
@@ -124,41 +139,50 @@
                                 </select>
                             </div>
 
-                            <div class="form-group">
+                            <div class="field">
                                 <label for="ciudad">
-                                    <i class="fa-solid fa-city"></i> Ciudad / Municipio
+                                    <i class="fa-solid fa-city" aria-hidden="true"></i> Ciudad / Municipio
                                 </label>
                                 <input type="text" id="ciudad" name="ciudad"
                                        th:value="${usuario.ubicacion != null ? usuario.ubicacion.ciudad : ''}"
                                        placeholder="Ingrese su ciudad">
                             </div>
-                        </div>
 
-                        <div class="form-group">
-                            <label for="contrasena">
-                                <i class="fa-solid fa-lock"></i> Nueva Contraseña (opcional)
-                            </label>
-                            <input type="password" id="contrasena" name="contrasena"
-                                   placeholder="Dejar en blanco para mantener la actual">
-                            <small>Solo complete este campo si desea cambiar su contraseña</small>
+                            <div class="field full-width">
+                                <label for="contrasena">
+                                    <i class="fa-solid fa-lock" aria-hidden="true"></i> Nueva Contraseña (opcional)
+                                </label>
+                                <input type="password" id="contrasena" name="contrasena"
+                                       placeholder="Dejar en blanco para mantener la actual">
+                                <small>Solo complete este campo si desea cambiar su contraseña</small>
+                            </div>
                         </div>
 
                         <div class="form-actions">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fa-solid fa-save"></i> Guardar Cambios de Cuenta
-                            </button>
-                            <a th:href="@{/vendedor/dashboard}" class="btn btn-secondary">
-                                <i class="fa-solid fa-arrow-left"></i> Volver al Panel
+                            <a th:href="@{/vendedor/dashboard}" class="btn-back">
+                                <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+                                <span>Volver al Panel</span>
                             </a>
+                            <button type="submit" class="btn-submit">
+                                <i class="fa-solid fa-save" aria-hidden="true"></i>
+                                <span>Guardar Cambios de Cuenta</span>
+                            </button>
                         </div>
                     </form>
-                </div>
+                </section>
             </div>
         </div>
-    </main>
 
-    <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
+        <footer class="vs-footer">
+            <div class="vs-footer__brand">
+                <i class="fas fa-seedling"></i>
+                <span>Cultivus Colombia · Perfil de Vendedor</span>
+            </div>
+            <div class="vs-footer__links">
+                <span>&copy; 2025 Cultivus. Todos los derechos reservados.</span>
+            </div>
+        </footer>
+    </main>
 </body>
 
 </html>
-

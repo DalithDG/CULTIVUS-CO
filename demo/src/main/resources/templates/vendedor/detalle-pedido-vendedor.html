@@ -5,67 +5,50 @@
     <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cultivus - Detalle de Venta</title>
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <title>Detalle de Venta | Cultivus</title>
     <link rel="stylesheet" th:href="@{/header.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
     <link rel="stylesheet" th:href="@{/vendedor-panel.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 
-<body class="vs-layout">
+<body class="vp-page vs-layout">
     <header th:replace="~{fragments/header-vendedor :: siteHeader}"></header>
 
     <main class="vs-main">
         <a th:href="@{/vendedor/ventas}" class="vp-breadcrumb">
-            <i class="fas fa-arrow-left"></i> Volver a mis ventas
+            <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Volver a mis ventas
         </a>
 
         <div th:if="${mensaje}" class="vp-alert vp-alert--success">
-            <i class="fas fa-check-circle"></i>
+            <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
             <span th:text="${mensaje}"></span>
         </div>
         <div th:if="${error}" class="vp-alert vp-alert--error">
-            <i class="fas fa-exclamation-circle"></i>
+            <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
             <span th:text="${error}"></span>
         </div>
 
-        <div th:if="${pedido.estado == 'EN_REVISION'}" class="vp-alert vp-alert--warning">
-            <i class="fas fa-triangle-exclamation"></i>
-            <div>
-                <strong>Pedido en revisión.</strong>
-                El pago fue recibido, pero el stock disponible no alcanzaba al confirmar la compra.
-                El equipo administrativo gestionará el reembolso; no despaches este pedido.
-            </div>
-        </div>
-
-        <div th:if="${pedido.estado == 'CANCELADO'}" class="vp-alert vp-alert--error">
-            <i class="fas fa-ban"></i>
-            <div>
-                <strong>Pedido cancelado.</strong>
-                <span th:if="${pedido.motivoCancelacion != null}" th:text="'Motivo: ' + ${pedido.motivoCancelacion}">Motivo registrado.</span>
-            </div>
-        </div>
-
-        <div class="vp-detail-grid">
+        <section class="vp-detail-grid">
             <div class="vp-stack">
-                <section class="vp-card">
+                <!-- Encabezado y productos -->
+                <article class="vp-card">
                     <div class="vp-detail-head">
                         <div>
-                            <h1 th:text="${pedido.numeroFactura}">CLT-000000</h1>
+                            <h1 th:text="${pedido.numeroFactura != null ? 'Venta ' + pedido.numeroFactura : 'Pedido #' + #strings.substring(pedido.id, 0, 8)}">
+                                Venta CLT-000000
+                            </h1>
                             <p>
-                                <i class="fas fa-calendar-day"></i>
-                                <span th:text="${pedido.fechaPedido != null ? #temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm') : '—'}">—</span>
-                                <span class="vp-muted"> · ID interno </span>
-                                <span th:text="${pedido.id}">id</span>
+                                Registrada el <span th:text="${pedido.fechaPedido != null ? #temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm') : '-'}">01/01/2026</span>
+                                · ID <span th:text="${pedido.id}">id</span>
                             </p>
                         </div>
-                        <span class="vp-badge" th:classappend="'vp-badge--' + ${pedido.estadoCss}"
-                              th:text="${pedido.estadoEtiqueta}">Confirmado</span>
-                    </div>
 
-                    <div class="vp-card__head" style="border-top: 1px solid var(--vp-line);">
-                        <h2 class="vp-card__title"><i class="fas fa-seedling"></i> Productos de esta venta</h2>
+                        <span class="vp-badge"
+                              th:classappend="'vp-badge--' + ${pedido.estadoCss}"
+                              th:text="${pedido.estadoEtiqueta}">
+                            Confirmado
+                        </span>
                     </div>
 
                     <div class="vp-table-wrap">
@@ -86,24 +69,23 @@
                                                 <img th:if="${detalle.imagenSnapshot != null and !detalle.imagenSnapshot.isEmpty()}"
                                                      th:src="${detalle.imagenSnapshot}"
                                                      th:alt="${detalle.nombreSnapshot}"
-                                                     loading="lazy"
-                                                     onerror="this.style.display='none';">
+                                                     onerror="this.src='/images/placeholder.jpg'">
                                                 <i th:if="${detalle.imagenSnapshot == null or detalle.imagenSnapshot.isEmpty()}"
-                                                   class="fas fa-seedling"></i>
+                                                   class="fa-solid fa-seedling" aria-hidden="true"></i>
                                             </div>
-                                            <span class="vp-product__name" th:text="${detalle.nombreSnapshot}">Producto</span>
+                                            <div>
+                                                <div class="vp-product__name"
+                                                     th:text="${detalle.nombreSnapshot != null ? detalle.nombreSnapshot : 'Producto'}">Producto</div>
+                                                <div class="vp-muted"
+                                                     th:if="${detalle.unidadAbreviatura != null and !detalle.unidadAbreviatura.isEmpty()}"
+                                                     th:text="${'Unidad: ' + detalle.unidadAbreviatura}">kg</div>
+                                            </div>
                                         </div>
                                     </td>
-                                    <td class="vp-nowrap">
-                                        <span th:text="${detalle.cantidad}">0</span>
-                                        <span class="vp-muted" th:text="${detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : 'unid'}">unid</span>
-                                    </td>
-                                    <td class="vp-nowrap">
-                                        $<span th:text="${#numbers.formatDecimal(detalle.precioUnitario, 0, 'COMMA', 0, 'POINT')}">0</span>
-                                    </td>
-                                    <td class="vp-amount vp-nowrap">
-                                        $<span th:text="${#numbers.formatDecimal(detalle.subtotal, 0, 'COMMA', 0, 'POINT')}">0</span>
-                                    </td>
+                                    <td th:text="${(detalle.cantidad != null ? (detalle.cantidad % 1 == 0 ? #numbers.formatDecimal(detalle.cantidad, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(detalle.cantidad, 1, 'POINT', 2, 'COMMA')) : '1') + (detalle.unidadAbreviatura != null ? ' ' + detalle.unidadAbreviatura : '')}">1</td>
+                                    <td th:text="${'$' + #numbers.formatDecimal(detalle.precioUnitario != null ? detalle.precioUnitario : 0, 1, 'POINT', 0, 'COMMA')}">$0</td>
+                                    <td class="vp-amount"
+                                        th:text="${'$' + #numbers.formatDecimal(detalle.subtotal != null ? detalle.subtotal : 0, 1, 'POINT', 0, 'COMMA')}">$0</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -111,228 +93,245 @@
 
                     <div class="vp-summary">
                         <div class="vp-summary__row">
-                            <span>Productos</span>
-                            <span th:text="${pedido.items != null ? pedido.items.size() : 0} + ' ítem(s)'">0 ítem(s)</span>
-                        </div>
-                        <div class="vp-summary__row">
                             <span>Subtotal productos</span>
-                            <span>$<span th:text="${#numbers.formatDecimal(pedido.subtotalProductos, 0, 'COMMA', 0, 'POINT')}">0</span></span>
+                            <strong th:text="${'$' + #numbers.formatDecimal(pedido.subtotalProductos, 1, 'POINT', 0, 'COMMA')}">$0</strong>
+                        </div>
+                        <div class="vp-summary__row" th:if="${pedido.envioCentavos != null and pedido.envioCentavos > 0}">
+                            <span>Envío</span>
+                            <strong th:text="${'$' + #numbers.formatDecimal(pedido.envio, 1, 'POINT', 0, 'COMMA')}">$0</strong>
                         </div>
                         <div class="vp-summary__row vp-summary__row--total">
-                            <span>Total de la venta</span>
-                            <strong>
-                                $<span th:text="${#numbers.formatDecimal(pedido.total, 0, 'COMMA', 0, 'POINT')}">0</span>
-                            </strong>
+                            <span>Total del pedido</span>
+                            <strong th:text="${'$' + #numbers.formatDecimal(pedido.total != null ? pedido.total : 0, 1, 'POINT', 0, 'COMMA')}">$0</strong>
                         </div>
                     </div>
-                </section>
-            </div>
+                </article>
 
-            <aside class="vp-stack">
-                <!-- Siguiente paso / Acciones -->
-                <section class="vp-card">
+                <!-- Datos de entrega y comprador -->
+                <article class="vp-card">
                     <div class="vp-card__head">
-                        <h2 class="vp-card__title">
-                            <i class="fas fa-list-check"></i> Siguiente paso
-                        </h2>
-                    </div>
-                    <div class="vp-card__body">
-                        <!-- Caso 1: Botón de avance normal (CONFIRMADO -> EN_PROCESO -> LISTO_PARA_RECOGER) -->
-                        <div class="vp-action-box" th:if="${puedeActualizar}">
-                            <p style="margin-top: 0; margin-bottom: 12px; font-size: 0.9rem;">
-                                Estado actual: <strong th:text="${pedido.estadoEtiqueta}">Confirmado</strong>.
-                                Al avanzar, el comprador recibirá una notificación automática.
-                            </p>
-                            <form th:action="@{/vendedor/ventas/pedido/{id}/actualizar-estado(id=${pedido.id})}" method="post">
-                                <input type="hidden" name="estado" th:value="${siguienteEstado}">
-                                <button type="submit" class="vp-btn" style="width: 100%; justify-content: center;">
-                                    <i class="fas fa-arrow-right"></i>
-                                    <span th:text="${accionSiguiente}">Actualizar estado</span>
-                                </button>
-                            </form>
-                        </div>
-
-                        <!-- Caso 2: Ya no requiere acciones del vendedor (ej: LISTO_PARA_RECOGER) -->
-                        <div class="vp-action-box" th:if="${!puedeActualizar and pedido.estado != 'EN_REVISION' and pedido.estado != 'CANCELADO'}">
-                            <div style="display: flex; align-items: flex-start; gap: 10px;">
-                                <i class="fas fa-circle-check" style="color: var(--vp-green); font-size: 1.15rem; margin-top: 2px;"></i>
-                                <div style="font-size: 0.88rem; line-height: 1.5;">
-                                    <span th:if="${pedido.isListoParaRecoger()}">
-                                        <strong>¡Listo para recoger!</strong> El paquete está empacado en finca. El transportista se encargará de recolectarlo y despacharlo.
-                                    </span>
-                                    <span th:if="${pedido.isEnviado()}">
-                                        <strong>Paquete en camino.</strong> El transportista ya recolectó el pedido y va en tránsito hacia el comprador.
-                                    </span>
-                                    <span th:if="${pedido.isEntregado()}">
-                                        <strong>Venta finalizada.</strong> El pedido fue entregado con éxito al comprador.
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Caso 4: En revisión -->
-                        <div class="vp-action-box" th:if="${pedido.estado == 'EN_REVISION'}">
-                            <p style="margin: 0; font-size: 0.88rem;">
-                                <i class="fas fa-triangle-exclamation" style="color: var(--vp-amber);"></i>
-                                No despaches este pedido. El equipo administrativo está gestionando el reembolso.
-                            </p>
-                        </div>
-
-                        <!-- 3.1: Cancelación de emergencia (opción secundaria y discreta) -->
-                        <div th:if="${puedeCancelar}" style="margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--vp-line); text-align: center;">
-                            <p style="font-size: 0.78rem; color: var(--vp-muted); margin: 0 0 8px 0;">
-                                ¿Tuviste algún imprevisto con la cosecha o el producto?
-                            </p>
-                            <button type="button" style="background: none; border: none; cursor: pointer; color: var(--vp-red); font-size: 0.82rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; text-decoration: underline;"
-                                    onclick="document.getElementById('modal-cancelar-pedido').style.display='flex'">
-                                <i class="fas fa-ban"></i> Cancelar esta venta
-                            </button>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Comprador -->
-                <section class="vp-card">
-                    <div class="vp-card__head">
-                        <h2 class="vp-card__title"><i class="fas fa-user"></i> Comprador</h2>
+                        <h2 class="vp-card__title"><i class="fa-solid fa-location-dot" aria-hidden="true"></i> Datos de entrega y comprador</h2>
                     </div>
                     <div class="vp-card__body">
                         <dl class="vp-info-list">
                             <div class="vp-info-row">
-                                <dt>Nombre</dt>
-                                <dd th:text="${pedido.comprador != null ? pedido.comprador.nombre : 'Cliente'}">Cliente</dd>
+                                <dt>Comprador</dt>
+                                <dd th:text="${pedido.comprador != null and pedido.comprador.nombre != null ? pedido.comprador.nombre : 'Cliente'}">Comprador</dd>
                             </div>
                             <div class="vp-info-row" th:if="${compradorEmail != null}">
                                 <dt>Correo</dt>
                                 <dd th:text="${compradorEmail}">correo@ejemplo.com</dd>
                             </div>
-                        </dl>
-                    </div>
-                </section>
-
-                <!-- Dirección y logística de entrega -->
-                <section class="vp-card">
-                    <div class="vp-card__head">
-                        <h2 class="vp-card__title">
-                            <i class="fas fa-truck"></i>
-                            Dirección y logística de entrega
-                        </h2>
-                    </div>
-                    <div class="vp-card__body">
-                        <dl class="vp-info-list">
                             <div class="vp-info-row">
                                 <dt>Modalidad</dt>
                                 <dd>
-                                    <strong style="color: var(--vp-green, #27ae60);">
-                                        <i class="fas fa-truck-ramp-box"></i> Envío a domicilio
+                                    <strong style="color: var(--vp-green);">
+                                        <i class="fa-solid fa-truck-ramp-box" aria-hidden="true"></i> Envío a domicilio
                                     </strong>
                                 </dd>
                             </div>
-
                             <div class="vp-info-row" th:if="${pedido.direccionEntrega != null}">
                                 <dt>Dirección destino</dt>
                                 <dd th:text="${pedido.direccionEntrega.direccion != null ? pedido.direccionEntrega.direccion : 'No registrada'}">Dirección</dd>
                             </div>
                             <div class="vp-info-row" th:if="${pedido.direccionEntrega != null}">
-                                <dt>Ciudad / Depto</dt>
+                                <dt>Ciudad / Departamento</dt>
                                 <dd th:text="${(pedido.direccionEntrega.ciudad != null ? pedido.direccionEntrega.ciudad : '') + (pedido.direccionEntrega.departamento != null ? ' - ' + pedido.direccionEntrega.departamento : '')}">Ciudad</dd>
                             </div>
-
-                            <div class="vp-info-row" style="margin-top: 10px; border-top: 1px dashed var(--vp-line, #eee); padding-top: 8px;">
-                                <dt>Estado de envío</dt>
-                                <dd>
-                                    <span class="vp-badge"
-                                          th:text="${envio != null ? envio.estado : 'Pendiente de asignación'}">Pendiente</span>
-                                </dd>
-                            </div>
-                            <div class="vp-info-row" th:if="${envio != null and envio.transportistaNombre != null}">
-                                <dt>Transportista</dt>
-                                <dd th:text="${envio.transportistaNombre}">Transportista</dd>
-                            </div>
-                            <div class="vp-info-row" th:if="${envio != null and envio.transportistaTelefono != null}">
-                                <dt>Tel. Transportista</dt>
-                                <dd th:text="${envio.transportistaTelefono}">3001234567</dd>
-                            </div>
-                            <div class="vp-info-row" th:if="${envio == null or envio.transportistaNombre == null}">
-                                <dt>Transportista</dt>
-                                <dd class="vp-muted">Aún sin asignar</dd>
-                            </div>
-                        </dl>
-                    </div>
-                </section>
-
-                <!-- Pago -->
-                <section class="vp-card">
-                    <div class="vp-card__head">
-                        <h2 class="vp-card__title"><i class="fas fa-credit-card"></i> Pago</h2>
-                    </div>
-                    <div class="vp-card__body">
-                        <dl class="vp-info-list" th:if="${pedido.pago != null}">
-                            <div class="vp-info-row">
-                                <dt>Estado</dt>
+                            <div class="vp-info-row" th:if="${pedido.pago != null}">
+                                <dt>Estado del pago</dt>
                                 <dd>
                                     <span class="vp-badge"
                                           th:classappend="${pedido.pago.estado == 'COMPLETADO' ? 'vp-badge--completado' : (pedido.pago.estado == 'FALLIDO' ? 'vp-badge--cancelado' : 'vp-badge--revision')}"
                                           th:text="${pedido.pago.estado}">COMPLETADO</span>
                                 </dd>
                             </div>
-                            <div class="vp-info-row" th:if="${pedido.pago.metodo != null}">
-                                <dt>Método</dt>
+                            <div class="vp-info-row" th:if="${pedido.pago != null and pedido.pago.metodo != null}">
+                                <dt>Método de pago</dt>
                                 <dd th:text="${pedido.pago.metodo}">WOMPI</dd>
                             </div>
-                            <div class="vp-info-row" th:if="${pedido.pago.referencia != null}">
-                                <dt>Referencia</dt>
-                                <dd th:text="${pedido.pago.referencia}" style="word-break: break-all;">CUL-000</dd>
+                            <div class="vp-info-row" th:if="${pedido.pago != null and pedido.pago.referencia != null}">
+                                <dt>Referencia de pago</dt>
+                                <dd style="word-break: break-all;" th:text="${pedido.pago.referencia}">CUL-000</dd>
+                            </div>
+                            <div class="vp-info-row" th:if="${pedido.motivoCancelacion != null and !pedido.motivoCancelacion.isEmpty()}">
+                                <dt>Motivo de cancelación</dt>
+                                <dd style="color: var(--vp-red);" th:text="${pedido.motivoCancelacion}">Motivo</dd>
                             </div>
                         </dl>
-                        <p th:if="${pedido.pago == null}" class="vp-muted" style="margin: 0; font-size: 0.86rem;">
-                            No hay información de pago asociada.
-                        </p>
                     </div>
-                </section>
+                </article>
+
+                <!-- Información de transporte y recogida -->
+                <article class="vp-card">
+                    <div class="vp-card__head">
+                        <h2 class="vp-card__title"><i class="fa-solid fa-truck" aria-hidden="true"></i> Logística y transporte</h2>
+                    </div>
+                    <div class="vp-card__body">
+                        <dl class="vp-info-list">
+                            <div class="vp-info-row">
+                                <dt>Estado del envío</dt>
+                                <dd>
+                                    <span class="vp-badge"
+                                          th:text="${envio != null ? envio.estadoEtiqueta : 'Pendiente de asignación'}">Pendiente</span>
+                                </dd>
+                            </div>
+                            <div class="vp-info-row" th:if="${envio != null and envio.transportista != null and envio.transportista.nombreMostrar != null}">
+                                <dt>Transportista asignado</dt>
+                                <dd th:text="${envio.transportista.nombreMostrar}">Transportista</dd>
+                            </div>
+                            <div class="vp-info-row" th:if="${envio != null and envio.transportista != null and envio.transportista.telefonoLimpio != null}">
+                                <dt>Tel. Transportista</dt>
+                                <dd th:text="${envio.transportista.telefonoLimpio}">3001234567</dd>
+                            </div>
+                            <div class="vp-info-row" th:if="${envio != null and envio.transportista != null and envio.transportista.vehiculoMostrar != null}">
+                                <dt>Vehículo / Placa</dt>
+                                <dd th:text="${envio.transportista.vehiculoMostrar}">Camión ABC-123</dd>
+                            </div>
+                            <div class="vp-info-row" th:if="${envio == null or envio.transportista == null or envio.transportista.nombreMostrar == null}">
+                                <dt>Transportista</dt>
+                                <dd class="vp-muted">Buscando transportista disponible...</dd>
+                            </div>
+                        </dl>
+                    </div>
+                </article>
+            </div>
+
+            <!-- Columna de acción -->
+            <aside class="vp-stack">
+                <article class="vp-card">
+                    <div class="vp-card__head">
+                        <h2 class="vp-card__title"><i class="fa-solid fa-list-check" aria-hidden="true"></i> Progreso del despacho</h2>
+                    </div>
+                    <div class="vp-card__body">
+                        <div class="vp-timeline"
+                             th:with="est=${pedido.estado == 'PROCESANDO' ? 'EN_PROCESO' : (pedido.estado == 'COMPLETADO' ? 'ENTREGADO' : pedido.estado)}">
+                            <div class="vp-timeline__step is-done">
+                                <span class="vp-timeline__dot"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                                <div>
+                                    <div>Pago confirmado</div>
+                                    <small class="vp-muted">El comprador ya pagó este pedido.</small>
+                                </div>
+                            </div>
+
+                            <div class="vp-timeline__step"
+                                 th:classappend="${est == 'EN_PROCESO' or est == 'LISTO_PARA_RECOGER' or est == 'ENVIADO' or est == 'ENTREGADO'} ? 'is-done' : (${est == 'CONFIRMADO'} ? 'is-current' : '')">
+                                <span class="vp-timeline__dot"><i class="fa-solid fa-box-open" aria-hidden="true"></i></span>
+                                <div>
+                                    <div>En preparación</div>
+                                    <small class="vp-muted">Seleccionando y empacando productos.</small>
+                                </div>
+                            </div>
+
+                            <div class="vp-timeline__step"
+                                 th:classappend="${est == 'LISTO_PARA_RECOGER' or est == 'ENVIADO' or est == 'ENTREGADO'} ? 'is-done' : (${est == 'EN_PROCESO'} ? 'is-current' : '')">
+                                <span class="vp-timeline__dot"><i class="fa-solid fa-box-archive" aria-hidden="true"></i></span>
+                                <div>
+                                    <div>Listo para recoger</div>
+                                    <small class="vp-muted">Empacado, esperando al transportista.</small>
+                                </div>
+                            </div>
+
+                            <div class="vp-timeline__step"
+                                 th:classappend="${est == 'ENVIADO' or est == 'ENTREGADO'} ? 'is-done' : ''">
+                                <span class="vp-timeline__dot"><i class="fa-solid fa-truck-fast" aria-hidden="true"></i></span>
+                                <div>
+                                    <div>Recogido por transportista</div>
+                                    <small class="vp-muted">El transportista lleva el pedido al cliente.</small>
+                                </div>
+                            </div>
+
+                            <div class="vp-timeline__step"
+                                 th:classappend="${est == 'ENTREGADO'} ? 'is-done is-current' : ''">
+                                <span class="vp-timeline__dot"><i class="fa-solid fa-house-circle-check" aria-hidden="true"></i></span>
+                                <div>
+                                    <div>Entregado al comprador</div>
+                                    <small class="vp-muted">El transportista o comprador confirma la recepción.</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="vp-action-box">
+                        <div th:if="${puedeActualizar}">
+                            <p>Avanza el estado solo cuando hayas completado el paso actual con el producto físico.</p>
+                            <form th:action="@{/vendedor/ventas/pedido/{id}/actualizar-estado(id=${pedido.id})}" method="post">
+                                <input type="hidden" name="estado" th:value="${siguienteEstado}">
+                                <button type="submit" class="vp-btn">
+                                    <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                                    <span th:text="${accionSiguiente}">Avanzar estado</span>
+                                </button>
+                            </form>
+                        </div>
+
+                        <div th:if="${!puedeActualizar}">
+                            <p th:if="${pedido.isListoParaRecoger()}">
+                                Tu paquete ya está listo. El transportista asignado confirmará cuando lo recoja en tu punto de entrega y cuando lo entregue al comprador.
+                            </p>
+                            <p th:if="${pedido.isEnviado()}">
+                                El pedido ya fue recogido y va en camino. Se marcará como entregado cuando el transportista o el comprador confirme la recepción.
+                            </p>
+                            <p th:if="${pedido.isEntregado()}">
+                                Esta venta ya fue entregada. Puedes consultar el abono correspondiente en tu billetera.
+                            </p>
+                            <p th:if="${pedido.isEnRevision()}">
+                                El comprador reportó un problema con este pedido. El equipo de administración lo está revisando.
+                            </p>
+                            <p th:if="${pedido.isCancelado()}">
+                                Este pedido fue cancelado.
+                            </p>
+                            <button type="button" class="vp-btn" disabled>
+                                <i class="fa-solid fa-lock" aria-hidden="true"></i>
+                                <span th:text="${accionSiguiente}">Sin acciones disponibles</span>
+                            </button>
+                        </div>
+
+                        <!-- 3.1: Botón para abrir modal de cancelación con motivo obligatorio -->
+                        <div th:if="${puedeCancelar}" class="vp-action-box__cancel">
+                            <button type="button" class="vp-btn vp-btn--danger-outline"
+                                    onclick="document.getElementById('modal-cancelar-pedido').style.display='flex'">
+                                <i class="fa-solid fa-ban" aria-hidden="true"></i> Cancelar pedido
+                            </button>
+                        </div>
+
+                        <div class="vp-note">
+                            <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+                            <span>Por seguridad, el vendedor no puede marcar el pedido como recogido ni entregado por el cliente.</span>
+                        </div>
+                    </div>
+                </article>
             </aside>
-        </div>
+        </section>
 
-        <!-- Modal de Cancelación con advertencias y motivo obligatorio (3.1) -->
-        <div id="modal-cancelar-pedido" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 1000; align-items: center; justify-content: center; padding: 16px;">
-            <div style="background: #fff; border-radius: 18px; max-width: 520px; width: 100%; padding: 26px; box-shadow: 0 24px 48px rgba(0,0,0,0.25);">
-                <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 16px;">
-                    <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--vp-red-bg, #fdeceb); color: var(--vp-red, #ae2b24); display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
-                        <i class="fas fa-triangle-exclamation"></i>
-                    </div>
+        <!-- 3.1: Modal de cancelación con motivo obligatorio -->
+        <div th:if="${puedeCancelar}" id="modal-cancelar-pedido" class="vp-modal-backdrop">
+            <div class="vp-modal" role="dialog" aria-modal="true" aria-labelledby="modalCancelarTitulo">
+                <div class="vp-modal__head">
+                    <span class="vp-modal__icon">
+                        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                    </span>
                     <div>
-                        <h3 style="margin: 0; font-size: 1.25rem; color: var(--vp-ink, #15241a);">Cancelar pedido</h3>
-                        <p style="margin: 0; font-size: 0.85rem; color: var(--vp-muted, #647568);" th:text="${pedido.numeroFactura}">CLT-000000</p>
+                        <h3 id="modalCancelarTitulo" class="vp-modal__title">Cancelar pedido</h3>
+                        <p class="vp-modal__sub">Esta acción devolverá el stock y notificará al comprador.</p>
                     </div>
                 </div>
-
-                <div style="background: #fff8e6; border: 1px solid #ffd591; border-radius: 10px; padding: 14px; margin-bottom: 18px; font-size: 0.88rem; color: #873800; line-height: 1.45;">
-                    <strong>Consecuencias de esta acción:</strong>
-                    <ul style="margin: 6px 0 0 0; padding-left: 20px;">
-                        <li>Se <strong>revertirá el saldo</strong> acreditado a tu billetera.</li>
-                        <li>Se programará el <strong>reembolso</strong> automático o manual al comprador.</li>
-                        <li th:if="${pedido.domicilio}">Se <strong>retirará la parada</strong> logística de la ruta del transportista.</li>
-                        <li>Se restaurará el <strong>stock</strong> de tus productos ofertados.</li>
-                    </ul>
-                </div>
-
+                <p class="vp-modal__warning">
+                    Si el comprador ya pagó, el pedido quedará marcado con reembolso pendiente para gestión administrativa y tu retención en billetera será reversada.
+                </p>
                 <form th:action="@{/vendedor/ventas/pedido/{id}/cancelar(id=${pedido.id})}" method="post">
-                    <div style="margin-bottom: 20px;">
-                        <label for="motivoCancelacion" style="display: block; font-weight: 600; font-size: 0.9rem; margin-bottom: 6px; color: var(--vp-ink, #15241a);">
-                            Motivo de la cancelación <span style="color: var(--vp-red, #ae2b24);">*</span>
-                        </label>
-                        <textarea id="motivoCancelacion" name="motivo" required rows="3"
-                                  placeholder="Describe la razón (ej. helada afectó la cosecha, daño en empaque, etc.)..."
-                                  style="width: 100%; border: 1px solid #d9d9d9; border-radius: 8px; padding: 10px; font-family: inherit; font-size: 0.9rem; resize: vertical; box-sizing: border-box;"></textarea>
+                    <div class="vp-modal__field">
+                        <label for="motivo-cancelacion">Motivo de la cancelación *</label>
+                        <textarea id="motivo-cancelacion" name="motivo" required rows="3" maxlength="300"
+                                  placeholder="Explica por qué no puedes despachar este pedido (ej. pérdida de cosecha, error de inventario...)"
+                                  class="vp-modal__textarea"></textarea>
                     </div>
-
-                    <div style="display: flex; gap: 12px; justify-content: flex-end;">
-                        <button type="button" class="vp-btn" style="background: #f0f0f0; color: #595959;"
+                    <div class="vp-modal__actions">
+                        <button type="button" class="vp-btn vp-btn--neutral-outline"
                                 onclick="document.getElementById('modal-cancelar-pedido').style.display='none'">
-                            Volver atrás
+                            Volver
                         </button>
-                        <button type="submit" class="vp-btn" style="background: var(--vp-red, #ae2b24); color: #fff;">
-                            <i class="fas fa-ban"></i> Confirmar cancelación
+                        <button type="submit" class="vp-btn vp-btn--danger-solid">
+                            <i class="fa-solid fa-ban" aria-hidden="true"></i> Confirmar cancelación
                         </button>
                     </div>
                 </form>
@@ -341,8 +340,8 @@
 
         <footer class="vs-footer">
             <div class="vs-footer__brand">
-                <i class="fas fa-seedling" style="color: var(--vs-green);"></i>
-                <span>Cultivus Colombia · Detalle de Venta</span>
+                <i class="fas fa-seedling" aria-hidden="true"></i>
+                <span>Cultivus Colombia · Detalle de Orden de Venta</span>
             </div>
             <div class="vs-footer__links">
                 <span>&copy; 2025 Cultivus. Todos los derechos reservados.</span>

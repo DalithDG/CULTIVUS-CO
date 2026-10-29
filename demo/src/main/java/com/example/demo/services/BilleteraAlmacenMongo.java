@@ -67,6 +67,7 @@ public class BilleteraAlmacenMongo implements BilleteraAlmacen {
         Update u = new Update()
                 .setOnInsert("saldo_retencion_centavos", 0L)
                 .setOnInsert("saldo_disponible_centavos", 0L)
+                .setOnInsert("saldo_en_proceso_retiro_centavos", 0L)
                 .setOnInsert("saldo_retirado_centavos", 0L)
                 .setOnInsert("created_at", LocalDateTime.now());
         return mongoTemplate.findAndModify(q, u,
@@ -89,6 +90,7 @@ public class BilleteraAlmacenMongo implements BilleteraAlmacen {
         switch (estado) {
             case EN_RETENCION: campo = "saldo_retencion_centavos"; break;
             case DISPONIBLE: campo = "saldo_disponible_centavos"; break;
+            case EN_PROCESO_RETIRO: campo = "saldo_en_proceso_retiro_centavos"; break;
             default: campo = "saldo_retirado_centavos"; break;
         }
         mongoTemplate.updateFirst(new Query(Criteria.where("_id").is(billeteraId)),
@@ -104,5 +106,52 @@ public class BilleteraAlmacenMongo implements BilleteraAlmacen {
                 new Query(Criteria.where("clave_idempotencia").is(claveIdempotencia)),
                 MovimientoBilletera.class
         );
+    }
+
+    @Override
+    public Optional<MovimientoBilletera> buscarMovimientoPorClave(String claveIdempotencia) {
+        if (claveIdempotencia == null || claveIdempotencia.isBlank()) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(mongoTemplate.findOne(
+                new Query(Criteria.where("clave_idempotencia").is(claveIdempotencia)),
+                MovimientoBilletera.class
+        ));
+    }
+
+    @Override
+    public boolean reservarParaRetiro(String billeteraId, long montoCentavos) {
+        if (montoCentavos <= 0) return false;
+        Query q = new Query(Criteria.where("_id").is(billeteraId)
+                .and("saldo_disponible_centavos").gte(montoCentavos));
+        Update u = new Update()
+                .inc("saldo_disponible_centavos", -montoCentavos)
+                .inc("saldo_en_proceso_retiro_centavos", montoCentavos);
+        com.mongodb.client.result.UpdateResult res = mongoTemplate.updateFirst(q, u, Billetera.class);
+        return res.getModifiedCount() == 1;
+    }
+
+    @Override
+    public boolean confirmarRetiro(String billeteraId, long montoCentavos) {
+        if (montoCentavos <= 0) return false;
+        Query q = new Query(Criteria.where("_id").is(billeteraId)
+                .and("saldo_en_proceso_retiro_centavos").gte(montoCentavos));
+        Update u = new Update()
+                .inc("saldo_en_proceso_retiro_centavos", -montoCentavos)
+                .inc("saldo_retirado_centavos", montoCentavos);
+        com.mongodb.client.result.UpdateResult res = mongoTemplate.updateFirst(q, u, Billetera.class);
+        return res.getModifiedCount() == 1;
+    }
+
+    @Override
+    public boolean revertirRetiro(String billeteraId, long montoCentavos) {
+        if (montoCentavos <= 0) return false;
+        Query q = new Query(Criteria.where("_id").is(billeteraId)
+                .and("saldo_en_proceso_retiro_centavos").gte(montoCentavos));
+        Update u = new Update()
+                .inc("saldo_en_proceso_retiro_centavos", -montoCentavos)
+                .inc("saldo_disponible_centavos", montoCentavos);
+        com.mongodb.client.result.UpdateResult res = mongoTemplate.updateFirst(q, u, Billetera.class);
+        return res.getModifiedCount() == 1;
     }
 }

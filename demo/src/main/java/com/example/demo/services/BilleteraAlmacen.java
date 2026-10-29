@@ -33,4 +33,31 @@ public interface BilleteraAlmacen {
 
     /** Comprueba si ya existe un movimiento con la clave de idempotencia dada. */
     boolean existeMovimientoPorClave(String claveIdempotencia);
+
+    /** Busca un movimiento por su clave de idempotencia única. */
+    Optional<MovimientoBilletera> buscarMovimientoPorClave(String claveIdempotencia);
+
+    /**
+     * Reserva saldo para retiro de forma atómica condicional:
+     * Exige saldo_disponible_centavos >= montoCentavos.
+     * Pasa saldo de DISPONIBLE a EN_PROCESO_RETIRO.
+     * Devuelve true si la condición se cumplió y se modificó exactamente 1 documento.
+     */
+    boolean reservarParaRetiro(String billeteraId, long montoCentavos);
+
+    /**
+     * Confirma un retiro de forma atómica condicional:
+     * Exige saldo_en_proceso_retiro_centavos >= montoCentavos.
+     * Pasa saldo de EN_PROCESO_RETIRO a RETIRADO.
+     * Devuelve true si se ejecutó exitosamente.
+     */
+    boolean confirmarRetiro(String billeteraId, long montoCentavos);
+
+    /**
+     * Revierte la reserva de un retiro de forma atómica condicional:
+     * Exige saldo_en_proceso_retiro_centavos >= montoCentavos.
+     * Pasa saldo de EN_PROCESO_RETIRO de vuelta a DISPONIBLE.
+     * Devuelve true si se ejecutó exitosamente.
+     */
+    boolean revertirRetiro(String billeteraId, long montoCentavos);
 }

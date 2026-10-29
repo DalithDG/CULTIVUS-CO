@@ -8,6 +8,7 @@ public class PerfilVendedor {
     private String descripcionNegocio;
     private String banco;
     private String cuentaBancaria;
+    private CuentaBancaria cuentaRetiro;
     private String tipoProductos;
     private boolean verificado = false;
     private boolean permiteRecogidaEnTienda = true;
@@ -45,6 +46,29 @@ public class PerfilVendedor {
 
     public String getCuentaBancaria() { return cuentaBancaria; }
     public void setCuentaBancaria(String cuentaBancaria) { this.cuentaBancaria = cuentaBancaria; }
+
+    public CuentaBancaria getCuentaRetiro() { return cuentaRetiro; }
+    public void setCuentaRetiro(CuentaBancaria cuentaRetiro) {
+        this.cuentaRetiro = cuentaRetiro;
+        if (cuentaRetiro != null) {
+            this.banco = cuentaRetiro.getNombreEntidad();
+            this.cuentaBancaria = cuentaRetiro.getNumero();
+        }
+    }
+
+    public boolean tieneCuentaRetiroCompleta() {
+        return cuentaRetiro != null && cuentaRetiro.esCompleta();
+    }
+
+    public String getCuentaBancariaEnmascarada() {
+        if (cuentaRetiro != null && cuentaRetiro.getNumero() != null && !cuentaRetiro.getNumero().isBlank()) {
+            return cuentaRetiro.getNumeroEnmascarado();
+        }
+        if (cuentaBancaria != null && !cuentaBancaria.isBlank()) {
+            return CuentaBancaria.enmascarar(cuentaBancaria);
+        }
+        return null;
+    }
 
     public String getTipoProductos() { return tipoProductos; }
     public void setTipoProductos(String tipoProductos) { this.tipoProductos = tipoProductos; }

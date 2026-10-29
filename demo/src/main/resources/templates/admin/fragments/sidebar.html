@@ -1,4 +1,5 @@
-<aside class="admin-sidebar" id="adminSidebar" th:fragment="sidebar">
+<th:block xmlns:th="http://www.thymeleaf.org" th:fragment="sidebar">
+<aside class="admin-sidebar" id="adminSidebar">
     <div class="admin-sidebar__profile">
         <div class="admin-sidebar__avatar">
             <i class="fas fa-user-shield" aria-hidden="true"></i>
@@ -28,6 +29,15 @@
             th:classappend="${currentPath != null and currentPath.contains('/admin/pedidos') ? ' is-active' : ''}">
             <span class="admin-nav-item__icon"><i class="fas fa-shopping-bag" aria-hidden="true"></i></span>
             <span>Pedidos</span>
+        </a>
+
+        <a th:href="@{/admin/retiros}" class="admin-nav-item"
+            th:classappend="${(currentPath != null and currentPath.contains('/admin/retiros')) or activePage == 'retiros' ? ' is-active' : ''}">
+            <span class="admin-nav-item__icon"><i class="fas fa-money-bill-transfer" aria-hidden="true"></i></span>
+            <span>Retiros</span>
+            <span class="admin-nav-badge"
+                th:if="${retirosPendientesCount != null and retirosPendientesCount > 0}"
+                th:text="${retirosPendientesCount}">0</span>
         </a>
 
         <div class="admin-nav__label">Gestión</div>
@@ -156,3 +166,5 @@
         </a>
     </div>
 </aside>
+<div class="admin-overlay" id="adminOverlay"></div>
+</th:block>

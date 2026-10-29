@@ -5,187 +5,203 @@
     <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Consulta y gestiona las ventas confirmadas de tu tienda en Cultivus.">
-    <title>Mis Ventas - Cultivus</title>
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <title>Mis Ventas | Cultivus</title>
+    <meta name="description" content="Administra los pedidos pagados de tu tienda, prepara paquetes y actualiza el estado de entrega.">
     <link rel="stylesheet" th:href="@{/header.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
     <link rel="stylesheet" th:href="@{/vendedor-panel.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 
-<body class="vs-layout">
+<body class="vp-page vs-layout">
     <header th:replace="~{fragments/header-vendedor :: siteHeader}"></header>
 
     <main class="vs-main">
-        <div th:if="${mensaje}" class="vp-alert vp-alert--success">
-            <i class="fas fa-check-circle"></i>
-            <span th:text="${mensaje}"></span>
-        </div>
-        <div th:if="${error}" class="vp-alert vp-alert--error">
-            <i class="fas fa-exclamation-circle"></i>
-            <span th:text="${error}"></span>
-        </div>
-
         <section class="vp-hero">
             <div class="vp-hero__content">
-                <span class="vp-kicker"><i class="fas fa-chart-line"></i> Ventas confirmadas</span>
+                <span class="vp-kicker"><i class="fa-solid fa-seedling" aria-hidden="true"></i> Gestión de despachos</span>
                 <h1>Mis ventas</h1>
                 <p>
-                    Aquí solo aparecen pedidos con pago confirmado. Prepara, despacha y entrega cada pedido
-                    para que el comprador reciba el aviso en cada etapa.
+                    Aquí aparecen únicamente los pedidos con pago confirmado. Prepara cada orden y marca su avance para informar al comprador.
                 </p>
                 <div class="vp-hero__actions">
-                    <a th:href="@{/vendedor/dashboard}" class="vp-btn vp-btn--ghost">
-                        <i class="fas fa-arrow-left"></i> Volver al panel
+                    <a th:href="@{/vendedor/dashboard}" class="vp-btn vp-btn--light">
+                        <i class="fa-solid fa-chart-line" aria-hidden="true"></i> Resumen de tienda
                     </a>
-                    <a th:href="@{/vendedor/mis-productos}" class="vp-btn vp-btn--light">
-                        <i class="fas fa-box"></i> Ver inventario
+                    <a th:href="@{/vendedor/mis-productos}" class="vp-btn vp-btn--ghost">
+                        <i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i> Mi inventario
+                    </a>
+                    <a th:href="@{/vendedor/billetera}" class="vp-btn vp-btn--ghost">
+                        <i class="fa-solid fa-wallet" aria-hidden="true"></i> Mi billetera
                     </a>
                 </div>
             </div>
         </section>
 
+        <div th:if="${mensaje}" class="vp-alert vp-alert--success">
+            <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+            <span th:text="${mensaje}"></span>
+        </div>
+        <div th:if="${error}" class="vp-alert vp-alert--error">
+            <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+            <span th:text="${error}"></span>
+        </div>
+
         <section class="vp-stats" aria-label="Resumen de ventas">
             <article class="vp-stat">
-                <div class="vp-stat__icon"><i class="fas fa-sack-dollar"></i></div>
+                <div class="vp-stat__icon"><i class="fa-solid fa-sack-dollar" aria-hidden="true"></i></div>
                 <p class="vp-stat__label">Total vendido</p>
-                <p class="vp-stat__value">
-                    $<span th:text="${#numbers.formatDecimal(totalVentas, 0, 'COMMA', 0, 'POINT')}">0</span>
-                </p>
-                <p class="vp-stat__hint">
-                    <span th:text="${totalVentasCount}">0</span> ventas confirmadas
-                </p>
+                <p class="vp-stat__value"
+                   th:text="${'$' + #numbers.formatDecimal(totalVentas != null ? totalVentas : 0, 1, 'POINT', 0, 'COMMA')}">$0</p>
+                <p class="vp-stat__hint" th:text="${(totalVentasCount != null ? totalVentasCount : 0) + ' ventas pagadas'}">0 ventas pagadas</p>
             </article>
 
             <article class="vp-stat vp-stat--amber">
-                <div class="vp-stat__icon"><i class="fas fa-box-open"></i></div>
+                <div class="vp-stat__icon"><i class="fa-solid fa-clipboard-list" aria-hidden="true"></i></div>
                 <p class="vp-stat__label">Por preparar</p>
-                <p class="vp-stat__value" th:text="${porPreparar}">0</p>
-                <p class="vp-stat__hint">Pedidos que esperan tu despacho</p>
+                <p class="vp-stat__value" th:text="${porPreparar != null ? porPreparar : 0}">0</p>
+                <p class="vp-stat__hint">Pagados, listos para alistar</p>
             </article>
 
             <article class="vp-stat vp-stat--blue">
-                <div class="vp-stat__icon"><i class="fas fa-spinner"></i></div>
+                <div class="vp-stat__icon"><i class="fa-solid fa-box-open" aria-hidden="true"></i></div>
                 <p class="vp-stat__label">En preparación</p>
-                <p class="vp-stat__value" th:text="${enProceso}">0</p>
-                <p class="vp-stat__hint">Pedidos que estás alistando</p>
+                <p class="vp-stat__value" th:text="${enProceso != null ? enProceso : 0}">0</p>
+                <p class="vp-stat__hint">Empacando productos</p>
             </article>
 
-            <article class="vp-stat" style="border-top: 3px solid #27ae60;">
-                <div class="vp-stat__icon"><i class="fas fa-box-archive"></i></div>
+            <article class="vp-stat vp-stat--featured">
+                <div class="vp-stat__icon"><i class="fa-solid fa-box-archive" aria-hidden="true"></i></div>
                 <p class="vp-stat__label">Listos para recoger</p>
-                <p class="vp-stat__value" th:text="${listosParaRecoger}">0</p>
-                <p class="vp-stat__hint">Listos en tienda o para transportista</p>
+                <p class="vp-stat__value" th:text="${listosParaRecoger != null ? listosParaRecoger : 0}">0</p>
+                <p class="vp-stat__hint">Esperando transportista</p>
             </article>
 
             <article class="vp-stat">
-                <div class="vp-stat__icon"><i class="fas fa-circle-check"></i></div>
-                <p class="vp-stat__label">Entregados</p>
-                <p class="vp-stat__value" th:text="${entregados}">0</p>
-                <p class="vp-stat__hint">Ventas finalizadas correctamente</p>
+                <div class="vp-stat__icon"><i class="fa-solid fa-truck-fast" aria-hidden="true"></i></div>
+                <p class="vp-stat__label">En camino / entregados</p>
+                <p class="vp-stat__value" th:text="${(enCamino != null ? enCamino : 0) + ' / ' + (entregados != null ? entregados : 0)}">0 / 0</p>
+                <p class="vp-stat__hint">Despachados al cliente</p>
             </article>
         </section>
 
         <section class="vp-card" style="margin-top: 24px;">
             <div class="vp-toolbar">
                 <nav class="vp-tabs" aria-label="Filtrar ventas por estado">
-                    <a th:href="@{/vendedor/ventas(estado='todas')}" class="vp-tab"
-                        th:classappend="${filtroActivo == 'todas' ? 'is-active' : ''}">
-                        Todas <span class="vp-tab__count" th:text="${totalVentasCount}">0</span>
+                    <a th:href="@{/vendedor/ventas(estado='todas', q=${busqueda})}"
+                       class="vp-tab"
+                       th:classappend="${filtroActivo == 'todas'} ? 'is-active' : ''">
+                        Todas <span class="vp-tab__count" th:text="${totalVentasCount != null ? totalVentasCount : 0}">0</span>
                     </a>
-                    <a th:href="@{/vendedor/ventas(estado='preparar')}" class="vp-tab"
-                        th:classappend="${filtroActivo == 'preparar' ? 'is-active' : ''}">
-                        Por preparar <span class="vp-tab__count" th:text="${porPreparar}">0</span>
+                    <a th:href="@{/vendedor/ventas(estado='preparar', q=${busqueda})}"
+                       class="vp-tab"
+                       th:classappend="${filtroActivo == 'preparar'} ? 'is-active' : ''">
+                        Por preparar <span class="vp-tab__count" th:text="${porPreparar != null ? porPreparar : 0}">0</span>
                     </a>
-                    <a th:href="@{/vendedor/ventas(estado='proceso')}" class="vp-tab"
-                        th:classappend="${filtroActivo == 'proceso' ? 'is-active' : ''}">
-                        En preparación <span class="vp-tab__count" th:text="${enProceso}">0</span>
+                    <a th:href="@{/vendedor/ventas(estado='proceso', q=${busqueda})}"
+                       class="vp-tab"
+                       th:classappend="${filtroActivo == 'proceso'} ? 'is-active' : ''">
+                        En preparación <span class="vp-tab__count" th:text="${enProceso != null ? enProceso : 0}">0</span>
                     </a>
-                    <a th:href="@{/vendedor/ventas(estado='listo')}" class="vp-tab"
-                        th:classappend="${filtroActivo == 'listo' ? 'is-active' : ''}">
-                        Listos para recoger <span class="vp-tab__count" th:text="${listosParaRecoger}">0</span>
+                    <a th:href="@{/vendedor/ventas(estado='listo', q=${busqueda})}"
+                       class="vp-tab"
+                       th:classappend="${filtroActivo == 'listo' or filtroActivo == 'listos'} ? 'is-active' : ''">
+                        Listos para recoger <span class="vp-tab__count" th:text="${listosParaRecoger != null ? listosParaRecoger : 0}">0</span>
                     </a>
-                    <a th:href="@{/vendedor/ventas(estado='enviado')}" class="vp-tab"
-                        th:classappend="${filtroActivo == 'enviado' ? 'is-active' : ''}">
-                        Enviados <span class="vp-tab__count" th:text="${enCamino}">0</span>
+                    <a th:href="@{/vendedor/ventas(estado='enviado', q=${busqueda})}"
+                       class="vp-tab"
+                       th:classappend="${filtroActivo == 'enviado'} ? 'is-active' : ''">
+                        En camino <span class="vp-tab__count" th:text="${enCamino != null ? enCamino : 0}">0</span>
                     </a>
-                    <a th:href="@{/vendedor/ventas(estado='entregado')}" class="vp-tab"
-                        th:classappend="${filtroActivo == 'entregado' ? 'is-active' : ''}">
-                        Entregados <span class="vp-tab__count" th:text="${entregados}">0</span>
+                    <a th:href="@{/vendedor/ventas(estado='entregado', q=${busqueda})}"
+                       class="vp-tab"
+                       th:classappend="${filtroActivo == 'entregado'} ? 'is-active' : ''">
+                        Entregados <span class="vp-tab__count" th:text="${entregados != null ? entregados : 0}">0</span>
                     </a>
-                    <a th:if="${enRevision > 0}" th:href="@{/vendedor/ventas(estado='revision')}" class="vp-tab"
-                        th:classappend="${filtroActivo == 'revision' ? 'is-active' : ''}">
+                    <a th:if="${enRevision != null and enRevision > 0}"
+                       th:href="@{/vendedor/ventas(estado='revision', q=${busqueda})}"
+                       class="vp-tab"
+                       th:classappend="${filtroActivo == 'revision'} ? 'is-active' : ''">
                         En revisión <span class="vp-tab__count" th:text="${enRevision}">0</span>
                     </a>
-                    <a th:if="${cancelados > 0}" th:href="@{/vendedor/ventas(estado='cancelado')}" class="vp-tab"
-                        th:classappend="${filtroActivo == 'cancelado' ? 'is-active' : ''}">
+                    <a th:if="${cancelados != null and cancelados > 0}"
+                       th:href="@{/vendedor/ventas(estado='cancelado', q=${busqueda})}"
+                       class="vp-tab"
+                       th:classappend="${filtroActivo == 'cancelado' or filtroActivo == 'cancelados'} ? 'is-active' : ''">
                         Cancelados <span class="vp-tab__count" th:text="${cancelados}">0</span>
                     </a>
                 </nav>
 
-                <form th:action="@{/vendedor/ventas}" method="get" class="vp-search" role="search">
-                    <i class="fas fa-magnifying-glass"></i>
-                    <input type="search" name="q" th:value="${busqueda}" placeholder="Buscar por factura o cliente"
-                        aria-label="Buscar ventas">
+                <form th:action="@{/vendedor/ventas}" method="get" class="vp-search">
                     <input type="hidden" name="estado" th:value="${filtroActivo}">
+                    <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+                    <input type="search" name="q" th:value="${busqueda}"
+                           placeholder="Factura, comprador, producto...">
                 </form>
             </div>
 
-            <div th:if="${pedidos == null or pedidos.isEmpty()}" class="vp-empty">
-                <i class="fas fa-receipt"></i>
-                <h3
-                    th:text="${(busqueda != null and !busqueda.isEmpty()) ? 'No encontramos ventas con esa búsqueda' : (filtroActivo != 'todas' ? 'No hay ventas en este estado' : 'Aún no tienes ventas confirmadas')}">
-                    Aún no tienes ventas confirmadas
-                </h3>
-                <p>
-                    Los pedidos aparecen aquí únicamente cuando el comprador completa el pago.
-                    Si acabas de iniciar una compra, espera la confirmación de Wompi.
+            <div th:if="${pedidos == null or #lists.isEmpty(pedidos)}" class="vp-empty">
+                <i class="fa-solid fa-box-open" aria-hidden="true"></i>
+                <h3>No hay ventas en esta vista</h3>
+                <p th:if="${busqueda != null and !busqueda.isEmpty()}">
+                    No encontramos pedidos que coincidan con "<strong th:text="${busqueda}"></strong>".
                 </p>
-                <a th:href="@{/vendedor/ventas(estado='todas')}" class="vp-btn vp-btn--outline vp-btn--sm">
-                    <i class="fas fa-rotate-left"></i> Ver todas las ventas
+                <p th:if="${busqueda == null or busqueda.isEmpty()}">
+                    Cuando un comprador pague productos de tu tienda, el pedido aparecerá aquí para que lo prepares.
+                </p>
+                <a th:if="${filtroActivo != 'todas' or (busqueda != null and !busqueda.isEmpty())}"
+                   th:href="@{/vendedor/ventas}" class="vp-btn vp-btn--outline vp-btn--sm">
+                    Ver todas las ventas
                 </a>
             </div>
 
-            <div th:if="${pedidos != null and !pedidos.isEmpty()}" class="vp-table-wrap">
+            <div th:if="${pedidos != null and !#lists.isEmpty(pedidos)}" class="vp-table-wrap">
                 <table class="vp-table">
                     <thead>
                         <tr>
                             <th>Pedido</th>
-                            <th>Cliente</th>
                             <th>Fecha</th>
+                            <th>Comprador</th>
                             <th>Productos</th>
+                            <th>Entrega</th>
                             <th>Total</th>
                             <th>Estado</th>
-                            <th></th>
+                            <th>Acción</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr th:each="pedido : ${pedidos}">
+                        <tr th:each="p : ${pedidos}">
                             <td>
-                                <a th:href="@{/vendedor/ventas/pedido/{id}(id=${pedido.id})}" class="vp-invoice"
-                                    th:text="${pedido.numeroFactura}">CLT-000000</a>
+                                <a th:href="@{/vendedor/ventas/pedido/{id}(id=${p.id})}"
+                                   class="vp-invoice"
+                                   th:text="${p.numeroFactura != null ? p.numeroFactura : '#' + #strings.substring(p.id, 0, 8)}">CLT-000000</a>
+                                <span class="vp-muted" th:text="${p.pago != null and p.pago.metodo != null ? p.pago.metodo : 'Wompi'}">Wompi</span>
                             </td>
-                            <td th:text="${pedido.comprador != null ? pedido.comprador.nombre : 'Cliente'}">Cliente</td>
-                            <td class="vp-nowrap vp-muted"
-                                th:text="${pedido.fechaPedido != null ? #temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm') : '—'}">
-                                —</td>
-                            <td class="vp-nowrap">
-                                <span th:text="${pedido.items != null ? pedido.items.size() : 0}">0</span>
-                                <span class="vp-muted">ítem(s)</span>
-                            </td>
-                            <td class="vp-amount">
-                                $<span
-                                    th:text="${#numbers.formatDecimal(pedido.total, 0, 'COMMA', 0, 'POINT')}">0</span>
+                            <td class="vp-nowrap"
+                                th:text="${p.fechaPedido != null ? #temporals.format(p.fechaPedido, 'dd/MM/yyyy HH:mm') : '-'}">01/01/2026</td>
+                            <td>
+                                <strong th:text="${p.comprador != null and p.comprador.nombre != null ? p.comprador.nombre : 'Comprador'}">Comprador</strong>
                             </td>
                             <td>
-                                <span class="vp-badge" th:classappend="'vp-badge--' + ${pedido.estadoCss}"
-                                    th:text="${pedido.estadoEtiqueta}">Confirmado</span>
+                                <span th:if="${p.items != null and !#lists.isEmpty(p.items)}"
+                                      th:text="${(p.items[0].nombreSnapshot != null ? p.items[0].nombreSnapshot : 'Producto') + (#lists.size(p.items) > 1 ? ' +' + (#lists.size(p.items) - 1) + ' más' : '')}">
+                                    Producto
+                                </span>
+                                <span th:if="${p.items == null or #lists.isEmpty(p.items)}" class="vp-muted">Sin ítems</span>
+                            </td>
+                            <td th:text="${p.direccionEntrega != null and p.direccionEntrega.ciudad != null ? (p.direccionEntrega.ciudad + (p.direccionEntrega.direccion != null ? ' · ' + p.direccionEntrega.direccion : '')) : (p.direccionEntrega != null and p.direccionEntrega.direccion != null ? p.direccionEntrega.direccion : 'Envío a domicilio')}">Dirección</td>
+                            <td class="vp-amount"
+                                th:text="${'$' + #numbers.formatDecimal(p.total != null ? p.total : 0, 1, 'POINT', 0, 'COMMA')}">$0</td>
+                            <td>
+                                <span class="vp-badge"
+                                      th:classappend="'vp-badge--' + ${p.estadoCss}"
+                                      th:text="${p.estadoEtiqueta}">
+                                    Confirmado
+                                </span>
                             </td>
                             <td class="vp-nowrap">
-                                <a th:href="@{/vendedor/ventas/pedido/{id}(id=${pedido.id})}"
-                                    class="vp-btn vp-btn--outline vp-btn--sm">
-                                    <i class="fas fa-arrow-right"></i> Gestionar
+                                <a th:href="@{/vendedor/ventas/pedido/{id}(id=${p.id})}" class="vp-btn vp-btn--outline vp-btn--sm">
+                                    Ver y gestionar
                                 </a>
                             </td>
                         </tr>
@@ -194,15 +210,10 @@
             </div>
         </section>
 
-        <div class="vp-note" style="margin-top: 18px;">
-            <i class="fas fa-circle-info"></i>
-            <span>Los pedidos con pago pendiente o rechazado no se muestran como ventas. Así tu panel refleja únicamente
-                ingresos confirmados.</span>
-        </div>
         <footer class="vs-footer">
             <div class="vs-footer__brand">
-                <i class="fas fa-seedling" style="color: var(--vs-green);"></i>
-                <span>Cultivus Colombia · Gestión de Ventas</span>
+                <i class="fas fa-seedling" aria-hidden="true"></i>
+                <span>Cultivus Colombia · Gestión de Ventas y Despachos</span>
             </div>
             <div class="vs-footer__links">
                 <span>&copy; 2025 Cultivus. Todos los derechos reservados.</span>

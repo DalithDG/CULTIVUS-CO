@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- Fragmento de estilos compartidos para billetera y retiros -->
+<th:block th:fragment="estilosBilleteraRetiros">
+    <style>
+        .bw-card {
+            border-radius: 18px;
+            border: 1px solid #e2ece4;
+            padding: 20px 22px;
+            background: #ffffff;
+            box-shadow: 0 4px 18px -4px rgba(15, 52, 27, 0.06), 0 1px 3px rgba(15, 52, 27, 0.04);
+        }
+        .bw-card__value {
+            font-variant-numeric: tabular-nums;
+            letter-spacing: -0.02em;
+        }
+        .bw-card.bw-card--disponible,
+        .bw-card--disponible {
+            background: linear-gradient(135deg, #0a351a 0%, #14552a 58%, #1f7a3a 100%) !important;
+            border-color: #14552a !important;
+            color: #ffffff !important;
+            box-shadow: 0 18px 38px -20px rgba(10, 53, 26, 0.55);
+        }
+        .bw-card.bw-card--disponible .bw-card__label,
+        .bw-card--disponible .bw-card__label {
+            color: rgba(255, 255, 255, 0.88) !important;
+        }
+        .bw-card.bw-card--disponible .bw-card__value,
+        .bw-card--disponible .bw-card__value {
+            color: #ffffff !important;
+            font-size: 1.95rem;
+        }
+        .bw-card.bw-card--disponible .bw-card__hint,
+        .bw-card--disponible .bw-card__hint {
+            color: rgba(255, 255, 255, 0.82) !important;
+        }
+        .bw-card.bw-card--retencion {
+            background: #f4fbf6;
+            border-color: #cfe0d3;
+        }
+        .bw-card.bw-card--retencion .bw-card__value {
+            color: #14552a;
+        }
+        .bw-card.bw-card--proceso {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border-color: #fde68a;
+        }
+        .bw-card.bw-card--proceso .bw-card__value {
+            color: #b45309;
+        }
+        .bw-card.bw-card--retirado .bw-card__value {
+            color: #111e15;
+        }
+        .bw-badge--LIBERACION { background: #e9f6ed; color: #14552a; }
+        .bw-badge--RETIRO_RESERVADO { background: #fef3c7; color: #b45309; }
+        .bw-badge--RETIRO_PAGADO { background: #eff6ff; color: #1d4ed8; }
+        .bw-badge--RETIRO_REVERTIDO { background: #f3e8ff; color: #6b21a8; }
+        .bw-badge--REVERSO { background: #fee2e2; color: #b91c1c; }
+
+        .bw-alert {
+            padding: 15px 18px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            font-size: 0.92rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .bw-alert--error {
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+        }
+        .bw-alert--ok {
+            background: #e9f6ed;
+            border: 1px solid #bfe3c9;
+            color: #14552a;
+        }
+
+        .bw-panels {
+            display: grid;
+            grid-template-columns: 1fr 1.35fr;
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+        @media (max-width: 860px) {
+            .bw-panels { grid-template-columns: 1fr; }
+        }
+        .bw-panel {
+            background: #ffffff;
+            border: 1px solid #e2ece4;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 4px 18px -4px rgba(15, 52, 27, 0.06), 0 1px 3px rgba(15, 52, 27, 0.04);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        .bw-panel__header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+        .bw-panel__title {
+            font-size: 1.05rem;
+            font-weight: 800;
+            letter-spacing: -0.01em;
+            color: #111e15;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .bw-panel__title i {
+            color: #1f7a3a;
+        }
+        .bw-min-pill {
+            font-size: 0.78rem;
+            color: #5e7264;
+            font-weight: 700;
+            background: #f5f9f6;
+            border: 1px solid #e2ece4;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-variant-numeric: tabular-nums;
+        }
+        .bw-bank-box {
+            background: #f5f9f6;
+            border: 1px solid #e2ece4;
+            border-radius: 14px;
+            padding: 15px 16px;
+        }
+        .bw-bank-box__entity {
+            font-weight: 700;
+            color: #111e15;
+            font-size: 0.98rem;
+        }
+        .bw-bank-box__entity--empty {
+            color: #5e7264;
+        }
+        .bw-bank-box__meta {
+            color: #5e7264;
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+        .bw-bank-box__mask {
+            display: inline-block;
+            margin-top: 8px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 0.88rem;
+            font-weight: 700;
+            background: #e9f6ed;
+            color: #14552a;
+            border: 1px solid #cfe0d3;
+            padding: 4px 10px;
+            border-radius: 8px;
+            letter-spacing: 0.05em;
+            font-variant-numeric: tabular-nums;
+        }
+        .bw-dest-line {
+            font-size: 0.86rem;
+            color: #5e7264;
+            margin-bottom: 12px;
+        }
+        .bw-dest-line strong {
+            color: #111e15;
+        }
+        .bw-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 44px;
+            padding: 10px 18px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-decoration: none;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: background 180ms cubic-bezier(0.4, 0, 0.2, 1), border-color 180ms cubic-bezier(0.4, 0, 0.2, 1), transform 180ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 180ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .bw-btn--block {
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .bw-btn--sm {
+            min-height: 38px;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            border-radius: 10px;
+        }
+        .bw-btn--primary {
+            background: #1f7a3a;
+            color: #ffffff;
+            box-shadow: 0 6px 16px -6px rgba(31, 122, 58, 0.45);
+        }
+        .bw-btn--primary:hover:not(:disabled) {
+            background: #14552a;
+            transform: translateY(-1px);
+        }
+        .bw-btn--outline {
+            background: #ffffff;
+            color: #14552a;
+            border-color: #cfe0d3;
+        }
+        .bw-btn--outline:hover:not(:disabled) {
+            background: #f4fbf6;
+            border-color: #1f7a3a;
+        }
+        .bw-btn:disabled {
+            background: #eef2ef;
+            color: #5e7264;
+            border-color: #e2ece4;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+        .bw-retiro-form-row {
+            display: flex;
+            gap: 10px;
+            align-items: stretch;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .bw-retiro-input-wrap {
+            flex: 1 1 200px;
+            min-width: 180px;
+            position: relative;
+        }
+        .bw-retiro-input-wrap span.bw-currency {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #5e7264;
+            font-weight: 700;
+        }
+        .bw-retiro-input {
+            width: 100%;
+            min-height: 46px;
+            box-sizing: border-box;
+            padding: 10px 14px 10px 30px;
+            border: 1px solid #cfe0d3;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #111e15;
+            font-variant-numeric: tabular-nums;
+            background: #ffffff;
+        }
+        .bw-retiro-input:disabled {
+            background: #f5f9f6;
+            color: #5e7264;
+            cursor: not-allowed;
+        }
+        .bw-retiro-notice {
+            background: #fef3c7;
+            border: 1px solid #fde68a;
+            color: #b45309;
+            padding: 12px 14px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .bw-retiro-notice i {
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+        .bw-ret-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 11px;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+        .bw-ret-status--PENDIENTE { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+        .bw-ret-status--APROBADO { background: #e9f6ed; color: #14552a; border: 1px solid rgba(31, 122, 58, 0.22); }
+        .bw-ret-status--RECHAZADO { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+        .bw-detail-rejected { color: #b91c1c; font-size: 0.84rem; font-weight: 500; }
+        .bw-detail-approved { color: #243529; font-size: 0.84rem; font-variant-numeric: tabular-nums; }
+        .bw-detail-pending { color: #5e7264; font-size: 0.84rem; }
+        .bw-dash-muted { color: #5e7264; }
+        .bw-section-block { margin-bottom: 32px; }
+        .bw-section-heading {
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: #111e15;
+            margin: 0 0 12px;
+        }
+        .bw-th-right, .bw-td-right { text-align: right; }
+        .bw-td-amount { text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
+        .bw-empty__icon { font-size: 1.8rem; color: #cfe0d3; margin-bottom: 8px; display: block; }
+        .bw-empty__text { margin: 6px 0 0; }
+
+        @media (max-width: 768px) {
+            .bw-retiro-form-row {
+                flex-direction: column;
+            }
+            .bw-retiro-form-row .bw-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</th:block>
+
+<!-- Fragmento de Tarjetas de Saldo (Disponible protagonista primero, secundarias después) -->
+<section th:fragment="tarjetasSaldos(mostrarFletesEnRuta)" class="bw-saldos" aria-label="Saldos por estado">
+    <div class="bw-card bw-card--disponible" id="saldo-disponible">
+        <div class="bw-card__label"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Disponible</div>
+        <div class="bw-card__value">$<span th:text="${#numbers.formatDecimal(billetera != null ? billetera.saldoDisponible : 0.0, 0, 'COMMA', 2, 'POINT')}">0.00</span></div>
+        <div class="bw-card__hint">Listo para retirar a tu cuenta bancaria</div>
+    </div>
+    <div class="bw-card bw-card--retencion" id="saldo-retencion">
+        <div class="bw-card__label"><i class="fa-solid fa-hourglass-half" aria-hidden="true"></i> En retención</div>
+        <div class="bw-card__value">$<span th:text="${#numbers.formatDecimal(billetera != null ? billetera.saldoRetencion : 0.0, 0, 'COMMA', 2, 'POINT')}">0.00</span></div>
+        <div class="bw-card__hint">Pendiente de cumplir ventana de reclamos</div>
+    </div>
+    <div class="bw-card bw-card--proceso" id="saldo-en-proceso">
+        <div class="bw-card__label"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> En proceso de retiro</div>
+        <div class="bw-card__value">$<span th:text="${#numbers.formatDecimal(billetera != null ? billetera.saldoEnProcesoRetiro : 0.0, 0, 'COMMA', 2, 'POINT')}">0.00</span></div>
+        <div class="bw-card__hint">Reservado mientras el administrador revisa</div>
+    </div>
+    <div class="bw-card bw-card--retirado" id="saldo-retirado">
+        <div class="bw-card__label"><i class="fa-solid fa-arrow-up-from-bracket" aria-hidden="true"></i> Retirado</div>
+        <div class="bw-card__value">$<span th:text="${#numbers.formatDecimal(billetera != null ? billetera.saldoRetirado : 0.0, 0, 'COMMA', 2, 'POINT')}">0.00</span></div>
+        <div class="bw-card__hint">Total ya transferido a tu cuenta</div>
+    </div>
+    <div th:if="${mostrarFletesEnRuta}" class="bw-card" id="fletes-en-ruta">
+        <div class="bw-card__label"><i class="fa-solid fa-truck" aria-hidden="true"></i> Fletes en ruta</div>
+        <div class="bw-card__value">$<span th:text="${#numbers.formatDecimal((fletesEnRuta != null ? fletesEnRuta : 0) / 100.0, 0, 'COMMA', 2, 'POINT')}">0.00</span></div>
+        <div class="bw-card__hint">Informativo, envíos aún no entregados</div>
+    </div>
+</section>
+
+<!-- Fragmento de Apartado Cuenta Bancaria + Bloque Solicitar Retiro -->
+<div th:fragment="seccionCuentaYSolicitudRetiro(cuentaBancariaUrl, solicitarRetiroUrl)">
+    <div th:if="${error}" class="bw-alert bw-alert--error" role="alert">
+        <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+        <span th:text="${error}">Error</span>
+    </div>
+    <div th:if="${mensaje}" class="bw-alert bw-alert--ok" role="status">
+        <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+        <span th:text="${mensaje}">Éxito</span>
+    </div>
+
+    <div class="bw-panels">
+        <!-- Apartado fijo: Cuenta bancaria -->
+        <div class="bw-panel" id="apartado-cuenta-bancaria">
+            <div>
+                <div class="bw-panel__header">
+                    <h2 class="bw-panel__title">
+                        <i class="fa-solid fa-building-columns" aria-hidden="true"></i>
+                        <span>Cuenta bancaria</span>
+                    </h2>
+                </div>
+
+                <div th:if="${cuentaRetiro != null and cuentaRetiro.esCompleta()}" class="bw-bank-box">
+                    <div class="bw-bank-box__entity" th:text="${cuentaRetiro.nombreEntidad}">Bancolombia</div>
+                    <div class="bw-bank-box__meta">
+                        <span th:text="${cuentaRetiro.tipo.etiqueta}">Cuenta de ahorros</span> ·
+                        <span th:text="${cuentaRetiro.titular}">Titular</span>
+                    </div>
+                    <div class="bw-bank-box__mask" th:text="${cuentaRetiro.numeroEnmascarado}">****1234</div>
+                </div>
+
+                <div th:if="${cuentaRetiro == null or !cuentaRetiro.esCompleta()}" class="bw-bank-box">
+                    <div class="bw-bank-box__entity bw-bank-box__entity--empty">Aún no has agregado una cuenta</div>
+                    <div class="bw-bank-box__meta">
+                        Registra tu cuenta bancaria o billetera digital para poder retirar tu saldo disponible.
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <a th:href="@{${cuentaBancariaUrl}}" class="bw-btn bw-btn--outline bw-btn--block">
+                    <i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>
+                    <span th:text="${cuentaRetiro != null and cuentaRetiro.esCompleta() ? 'Cambiar cuenta' : 'Agregar cuenta'}">Agregar cuenta</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Bloque: Solicitar retiro -->
+        <div class="bw-panel" id="bloque-solicitar-retiro">
+            <div>
+                <div class="bw-panel__header">
+                    <h2 class="bw-panel__title">
+                        <i class="fa-solid fa-money-bill-transfer" aria-hidden="true"></i>
+                        <span>Solicitar retiro</span>
+                    </h2>
+                    <span class="bw-min-pill">
+                        Mínimo: $<span th:text="${#numbers.formatInteger(retiroMinimoCop != null ? retiroMinimoCop : 50000, 1, 'POINT')}">50.000</span> COP
+                    </span>
+                </div>
+
+                <!-- Caso 1: Sin cuenta bancaria completa -->
+                <div th:if="${cuentaRetiro == null or !cuentaRetiro.esCompleta()}">
+                    <div class="bw-retiro-notice">
+                        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                        <span>Para solicitar un retiro primero debes registrar los datos completos de tu cuenta bancaria.</span>
+                    </div>
+                    <a th:href="@{${cuentaBancariaUrl}}" class="bw-btn bw-btn--primary bw-btn--block">
+                        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                        <span>Agregar cuenta bancaria</span>
+                    </a>
+                </div>
+
+                <!-- Caso 2: Con cuenta bancaria completa -->
+                <div th:if="${cuentaRetiro != null and cuentaRetiro.esCompleta()}">
+                    <div class="bw-dest-line">
+                        Destino: <strong th:text="${cuentaRetiro.resumenEnmascarado}">Bancolombia (****1234)</strong>
+                    </div>
+
+                    <div th:if="${tieneRetiroPendiente}" class="bw-retiro-notice">
+                        <i class="fa-solid fa-hourglass-half" aria-hidden="true"></i>
+                        <span>Ya tienes una solicitud de retiro pendiente de aprobación. Podrás crear otra cuando sea resuelta.</span>
+                    </div>
+
+                    <div th:if="${!tieneRetiroPendiente and !alcanzaMinimoRetiro}" class="bw-retiro-notice">
+                        <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                        <span>Tu saldo disponible no alcanza el monto mínimo de retiro ($<span th:text="${#numbers.formatInteger(retiroMinimoCop != null ? retiroMinimoCop : 50000, 1, 'POINT')}">50.000</span> COP).</span>
+                    </div>
+
+                    <form th:action="@{${solicitarRetiroUrl}}" method="post" id="formSolicitarRetiro">
+                        <input type="hidden" name="retirarTodo" id="inputRetirarTodo" value="false">
+                        <div class="bw-retiro-form-row">
+                            <div class="bw-retiro-input-wrap">
+                                <span class="bw-currency" aria-hidden="true">$</span>
+                                <input type="number" name="montoPesos" id="inputMontoPesos"
+                                       class="bw-retiro-input"
+                                       aria-label="Monto a retirar en pesos colombianos"
+                                       step="1"
+                                       th:min="${retiroMinimoCop != null ? retiroMinimoCop : 50000}"
+                                       th:max="${saldoDisponiblePesos != null ? saldoDisponiblePesos : 0}"
+                                       placeholder="Monto en COP (sin centavos)"
+                                       th:disabled="${!puedeSolicitarRetiro}">
+                            </div>
+                            <button type="button" class="bw-btn bw-btn--outline"
+                                    th:disabled="${!puedeSolicitarRetiro}"
+                                    th:data-disponible="${saldoDisponiblePesos != null ? saldoDisponiblePesos : 0}"
+                                    onclick="aplicarRetirarTodo(this)">
+                                Retirar todo
+                            </button>
+                            <button type="submit" class="bw-btn bw-btn--primary"
+                                    th:disabled="${!puedeSolicitarRetiro}"
+                                    onclick="document.getElementById('inputRetirarTodo').value='false';">
+                                <i class="fa-solid fa-paper-plane" aria-hidden="true"></i>
+                                <span>Solicitar retiro</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function aplicarRetirarTodo(btn) {
+            const disponible = btn.getAttribute('data-disponible');
+            const inputMonto = document.getElementById('inputMontoPesos');
+            const inputTodo = document.getElementById('inputRetirarTodo');
+            const form = document.getElementById('formSolicitarRetiro');
+            if (inputMonto && disponible) {
+                inputMonto.value = disponible;
+            }
+            if (inputTodo) {
+                inputTodo.value = 'true';
+            }
+            if (form) {
+                form.submit();
+            }
+        }
+    </script>
+</div>
+
+<!-- Fragmento de Historial de Solicitudes de Retiro -->
+<div th:fragment="seccionHistorialRetiros(comprobanteBaseUrl)" class="bw-section-block">
+    <h2 class="bw-section-heading">Historial de retiros</h2>
+    <div class="bw-table-wrap">
+        <div class="bw-empty" th:if="${solicitudesRetiro == null or solicitudesRetiro.isEmpty()}">
+            <i class="fa-solid fa-money-check-dollar bw-empty__icon" aria-hidden="true"></i>
+            <p class="bw-empty__text">Aún no has realizado solicitudes de retiro.</p>
+        </div>
+        <table class="bw-table" th:if="${solicitudesRetiro != null and !solicitudesRetiro.isEmpty()}">
+            <thead>
+                <tr>
+                    <th>Fecha solicitud</th>
+                    <th>Cuenta destino</th>
+                    <th>Estado</th>
+                    <th>Detalle / Motivo</th>
+                    <th class="bw-th-right">Monto</th>
+                    <th class="bw-th-right">Comprobante</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="sr : ${solicitudesRetiro}">
+                    <td th:text="${sr.fechaSolicitud != null ? #temporals.format(sr.fechaSolicitud, 'dd/MM/yyyy HH:mm') : '—'}">01/01/2026</td>
+                    <td th:text="${sr.cuentaDestino != null ? sr.cuentaDestino.resumenEnmascarado : '—'}">Bancolombia (****1234)</td>
+                    <td>
+                        <span class="bw-ret-status" th:classappend="'bw-ret-status--' + ${sr.estado}">
+                            <i class="fa-solid"
+                               th:classappend="${sr.estado == T(com.example.demo.Model.SolicitudRetiro.Estado).PENDIENTE ? 'fa-clock' : (sr.estado == T(com.example.demo.Model.SolicitudRetiro.Estado).APROBADO ? 'fa-circle-check' : 'fa-circle-xmark')}"
+                               aria-hidden="true"></i>
+                            <span th:text="${sr.estado == T(com.example.demo.Model.SolicitudRetiro.Estado).PENDIENTE ? 'Pendiente' : (sr.estado == T(com.example.demo.Model.SolicitudRetiro.Estado).APROBADO ? 'Aprobado' : 'Rechazado')}">
+                                Pendiente
+                            </span>
+                        </span>
+                    </td>
+                    <td>
+                        <span th:if="${sr.rechazado}" class="bw-detail-rejected"
+                              th:text="'Motivo: ' + ${sr.motivoRechazo}">Motivo</span>
+                        <span th:if="${sr.aprobado}" class="bw-detail-approved"
+                              th:text="'Comprobante ' + ${sr.numeroComprobante}">RET-2026-000001</span>
+                        <span th:if="${sr.pendiente}" class="bw-detail-pending">En revisión por administración</span>
+                    </td>
+                    <td class="bw-td-amount"
+                        th:text="'$' + ${#numbers.formatDecimal(sr.monto, 0, 'COMMA', 2, 'POINT')}">$50,000.00</td>
+                    <td class="bw-td-right">
+                        <a th:if="${sr.aprobado}"
+                           th:href="@{${comprobanteBaseUrl} + '/' + ${sr.id} + '/comprobante'}"
+                           class="bw-btn bw-btn--outline bw-btn--sm">
+                            <i class="fa-solid fa-file-invoice" aria-hidden="true"></i>
+                            <span>Ver comprobante</span>
+                        </a>
+                        <span th:if="${!sr.aprobado}" class="bw-dash-muted">—</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Fragmento para etiqueta legible de EstadoSaldo en tabla de movimientos -->
+<span th:fragment="etiquetaEstadoSaldo(estadoSaldo)">
+    <th:block th:if="${estadoSaldo != null}">
+        <span th:switch="${estadoSaldo.name()}">
+            <span th:case="'EN_RETENCION'">En retención</span>
+            <span th:case="'DISPONIBLE'">Disponible</span>
+            <span th:case="'EN_PROCESO_RETIRO'">En proceso de retiro</span>
+            <span th:case="'RETIRADO'">Retirado</span>
+            <span th:case="*" th:text="${estadoSaldo}">—</span>
+        </span>
+    </th:block>
+    <span th:if="${estadoSaldo == null}">—</span>
+</span>
+
+</body>
+</html>

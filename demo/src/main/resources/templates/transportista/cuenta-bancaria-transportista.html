@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Cuenta Bancaria · Transportista | Cultivus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/header.css}">
+    <link rel="stylesheet" th:href="@{/footer.css}">
+    <link rel="stylesheet" th:href="@{/transportista-panel.css}">
+</head>
+<body class="tp-body">
+    <header th:replace="~{fragments/header-transportista :: siteHeader}"></header>
+
+    <main class="tp-container tp-container--narrow">
+        <div th:replace="~{fragments/cuenta-bancaria-form :: formularioCuentaBancaria(@{/transportista/cuenta-bancaria}, @{/transportista/billetera})}"></div>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
+</body>
+</html>

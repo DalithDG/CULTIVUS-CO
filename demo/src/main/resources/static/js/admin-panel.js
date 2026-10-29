@@ -2,7 +2,7 @@
  * Panel de administración de Cultivus.
  *
  * Cada sección es una página independiente: este script solo gestiona el
- * sidebar, los submenús y el estado colapsado. No oculta ni muestra páginas.
+ * sidebar, los submenús, el menú de usuario y el estado colapsado.
  */
 (function () {
     "use strict";
@@ -10,7 +10,7 @@
     var CLAVE_COLAPSADO = "cultivus-admin-sidebar-colapsado";
     var sidebar = document.getElementById("adminSidebar");
     var overlay = document.getElementById("adminOverlay");
-    var toggle = document.getElementById("adminMenuToggle");
+    var toggle = document.getElementById("adminMenuToggle") || document.getElementById("admSidebarToggle");
 
     function esMovil() {
         return window.innerWidth <= 1024;
@@ -87,6 +87,30 @@
         });
     });
 
+    // Menú desplegable de cuenta de administrador en topbar.
+    var userMenu = document.getElementById("admUserMenu");
+    var userTrigger = document.getElementById("admUserTrigger");
+
+    function cerrarUserMenu() {
+        if (!userMenu) return;
+        userMenu.classList.remove("is-open");
+        if (userTrigger) userTrigger.setAttribute("aria-expanded", "false");
+    }
+
+    if (userMenu && userTrigger) {
+        userTrigger.addEventListener("click", function (e) {
+            e.stopPropagation();
+            var abierto = userMenu.classList.toggle("is-open");
+            userTrigger.setAttribute("aria-expanded", abierto ? "true" : "false");
+        });
+
+        document.addEventListener("click", function (e) {
+            if (!userMenu.contains(e.target)) {
+                cerrarUserMenu();
+            }
+        });
+    }
+
     // Al volver a escritorio, limpiar el estado móvil.
     var ultimoModoMovil = esMovil();
     window.addEventListener("resize", function () {
@@ -99,8 +123,11 @@
 
     // Cerrar con Escape.
     document.addEventListener("keydown", function (evento) {
-        if (evento.key === "Escape" && esMovil()) {
-            cerrarSidebar();
+        if (evento.key === "Escape") {
+            cerrarUserMenu();
+            if (esMovil()) {
+                cerrarSidebar();
+            }
         }
     });
 })();

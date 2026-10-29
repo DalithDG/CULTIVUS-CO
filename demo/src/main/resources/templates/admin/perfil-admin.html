@@ -43,7 +43,7 @@
                         <div class="admin-card__head">
                             <h2><i class="fas fa-id-badge" aria-hidden="true"></i> Información del Administrador</h2>
                         </div>
-                        <ul class="admin-pending-list" style="margin-top: 8px;">
+                        <ul class="admin-pending-list">
                             <li>
                                 <span>Nombre completo</span>
                                 <strong th:text="${admin != null ? admin.nombre : 'Administrador'}">Administrador</strong>
@@ -54,9 +54,11 @@
                             </li>
                             <li>
                                 <span>Rol y nivel</span>
-                                <strong style="color: #166534;"
-                                    th:text="${admin != null and admin.perfilAdmin != null ? 'ADMIN (' + admin.perfilAdmin.nivelPermisos + ')' : 'ADMIN (SUPER_ADMIN)'}">
-                                    ADMIN (SUPER_ADMIN)
+                                <strong>
+                                    <span class="badge badge-role"
+                                          th:text="${admin != null and admin.perfilAdmin != null ? 'ADMIN (' + admin.perfilAdmin.nivelPermisos + ')' : 'ADMIN (SUPER_ADMIN)'}">
+                                        ADMIN (SUPER_ADMIN)
+                                    </span>
                                 </strong>
                             </li>
                             <li>
@@ -67,7 +69,7 @@
                             </li>
                             <li>
                                 <span>Estado de la cuenta</span>
-                                <strong style="color: #15803d;">Activa · Acceso Total</strong>
+                                <strong><span class="badge badge-active"><i class="fas fa-check-circle" aria-hidden="true"></i> Activa · Acceso Total</span></strong>
                             </li>
                         </ul>
                     </section>
@@ -78,34 +80,26 @@
                             <h2><i class="fas fa-pen-to-square" aria-hidden="true"></i> Actualizar mi Perfil</h2>
                         </div>
 
-                        <form th:action="@{/admin/perfil/actualizar}" method="post"
-                              style="display: flex; flex-direction: column; gap: 14px; margin-top: 10px;">
+                        <form th:action="@{/admin/perfil/actualizar}" method="post" class="adm-form-stack">
 
-                            <div>
-                                <label for="nombre" style="display:block; font-weight:600; font-size:0.88rem; margin-bottom:5px; color:#1f2937;">
-                                    Nombre completo
-                                </label>
+                            <div class="adm-field">
+                                <label for="nombre">Nombre completo *</label>
                                 <input type="text" id="nombre" name="nombre" required
                                        th:value="${admin != null ? admin.nombre : ''}"
-                                       style="width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:0.92rem;">
+                                       class="adm-input">
                             </div>
 
-                            <div>
-                                <label for="email" style="display:block; font-weight:600; font-size:0.88rem; margin-bottom:5px; color:#1f2937;">
-                                    Correo electrónico
-                                </label>
+                            <div class="adm-field">
+                                <label for="email">Correo electrónico *</label>
                                 <input type="email" id="email" name="email" required
                                        th:value="${admin != null ? admin.email : ''}"
-                                       style="width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:0.92rem;">
+                                       class="adm-input">
                             </div>
 
-                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
-                                <div>
-                                    <label for="departamento" style="display:block; font-weight:600; font-size:0.88rem; margin-bottom:5px; color:#1f2937;">
-                                        Departamento
-                                    </label>
-                                    <select id="departamento" name="departamento"
-                                            style="width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:0.92rem;">
+                            <div class="adm-form-grid-2">
+                                <div class="adm-field">
+                                    <label for="departamento">Departamento</label>
+                                    <select id="departamento" name="departamento" class="adm-select">
                                         <option value="">Seleccionar</option>
                                         <option th:each="dept : ${departamentos}"
                                                 th:value="${dept.nombre}"
@@ -114,31 +108,27 @@
                                         </option>
                                     </select>
                                 </div>
-                                <div>
-                                    <label for="ciudad" style="display:block; font-weight:600; font-size:0.88rem; margin-bottom:5px; color:#1f2937;">
-                                        Ciudad / Municipio
-                                    </label>
+                                <div class="adm-field">
+                                    <label for="ciudad">Ciudad / Municipio</label>
                                     <input type="text" id="ciudad" name="ciudad"
                                            th:value="${admin != null and admin.ubicacion != null ? admin.ubicacion.ciudad : ''}"
                                            placeholder="Ej. Cartagena"
-                                           style="width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:0.92rem;">
+                                           class="adm-input">
                                 </div>
                             </div>
 
-                            <div>
-                                <label for="contrasena" style="display:block; font-weight:600; font-size:0.88rem; margin-bottom:5px; color:#1f2937;">
-                                    Nueva contraseña (opcional)
-                                </label>
+                            <div class="adm-field">
+                                <label for="contrasena">Nueva contraseña (opcional)</label>
                                 <input type="password" id="contrasena" name="contrasena"
                                        placeholder="Dejar en blanco para conservar la actual"
-                                       style="width:100%; padding:10px 12px; border:1px solid #d1d5db; border-radius:8px; font-size:0.92rem;">
-                                <small style="color:#6b7280; font-size:0.78rem;">Mínimo 8 caracteres, mayúscula, minúscula, número y símbolo.</small>
+                                       class="adm-input">
+                                <small>Mínimo 8 caracteres, mayúscula, minúscula, número y símbolo.</small>
                             </div>
 
-                            <div style="display:flex; gap:10px; margin-top:6px;">
-                                <button type="submit" class="admin-btn"
-                                        style="background:#166534; color:#fff; border:none; padding:10px 18px; border-radius:8px; font-weight:600; cursor:pointer;">
-                                    <i class="fas fa-save" aria-hidden="true"></i> Guardar cambios
+                            <div>
+                                <button type="submit" class="admin-btn admin-btn--primary">
+                                    <i class="fas fa-save" aria-hidden="true"></i>
+                                    <span>Guardar cambios</span>
                                 </button>
                             </div>
                         </form>

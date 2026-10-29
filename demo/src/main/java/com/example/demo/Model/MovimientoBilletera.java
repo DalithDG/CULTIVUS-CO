@@ -24,7 +24,7 @@ import java.time.LocalDateTime;
 public final class MovimientoBilletera {
 
     public enum Tipo {
-        ABONO, COMISION, AJUSTE, REVERSO
+        ABONO, COMISION, AJUSTE, REVERSO, LIBERACION, RETIRO_RESERVADO, RETIRO_PAGADO, RETIRO_REVERTIDO
     }
 
     @Id
@@ -70,11 +70,22 @@ public final class MovimientoBilletera {
     @Field("clave_idempotencia")
     private final String claveIdempotencia;
 
-    @PersistenceCreator
+    @Field("solicitud_retiro_id")
+    private final String solicitudRetiroId;
+
     public MovimientoBilletera(String id, String billeteraId, String usuarioId, Billetera.Rol rol,
                                Tipo tipo, Billetera.EstadoSaldo estadoSaldo, long montoCentavos,
                                String pedidoId, String compraId, LocalDateTime fecha,
                                String descripcion, String claveIdempotencia) {
+        this(id, billeteraId, usuarioId, rol, tipo, estadoSaldo, montoCentavos,
+                pedidoId, compraId, fecha, descripcion, claveIdempotencia, null);
+    }
+
+    @PersistenceCreator
+    public MovimientoBilletera(String id, String billeteraId, String usuarioId, Billetera.Rol rol,
+                               Tipo tipo, Billetera.EstadoSaldo estadoSaldo, long montoCentavos,
+                               String pedidoId, String compraId, LocalDateTime fecha,
+                               String descripcion, String claveIdempotencia, String solicitudRetiroId) {
         this.id = id;
         this.billeteraId = billeteraId;
         this.usuarioId = usuarioId;
@@ -87,15 +98,23 @@ public final class MovimientoBilletera {
         this.fecha = fecha;
         this.descripcion = descripcion;
         this.claveIdempotencia = claveIdempotencia;
+        this.solicitudRetiroId = solicitudRetiroId;
     }
 
     /** Crea un movimiento nuevo con id propio y fecha actual. */
     public static MovimientoBilletera nuevo(Billetera billetera, Tipo tipo, Billetera.EstadoSaldo estadoSaldo,
                                             long montoCentavos, String pedidoId, String compraId,
                                             String descripcion, String claveIdempotencia) {
+        return nuevo(billetera, tipo, estadoSaldo, montoCentavos, pedidoId, compraId, descripcion, claveIdempotencia, null);
+    }
+
+    /** Crea un movimiento nuevo con id propio, fecha actual y solicitud de retiro asociada. */
+    public static MovimientoBilletera nuevo(Billetera billetera, Tipo tipo, Billetera.EstadoSaldo estadoSaldo,
+                                            long montoCentavos, String pedidoId, String compraId,
+                                            String descripcion, String claveIdempotencia, String solicitudRetiroId) {
         return new MovimientoBilletera(new org.bson.types.ObjectId().toHexString(), billetera.getId(),
                 billetera.getUsuarioId(), billetera.getRol(), tipo, estadoSaldo, montoCentavos,
-                pedidoId, compraId, LocalDateTime.now(), descripcion, claveIdempotencia);
+                pedidoId, compraId, LocalDateTime.now(), descripcion, claveIdempotencia, solicitudRetiroId);
     }
 
     public String getId() { return id; }
@@ -110,6 +129,7 @@ public final class MovimientoBilletera {
     public LocalDateTime getFecha() { return fecha; }
     public String getDescripcion() { return descripcion; }
     public String getClaveIdempotencia() { return claveIdempotencia; }
+    public String getSolicitudRetiroId() { return solicitudRetiroId; }
 
     // Helpers de vista
     public double getMonto() { return montoCentavos / 100.0; }

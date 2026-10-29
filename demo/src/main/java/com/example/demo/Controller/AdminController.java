@@ -52,6 +52,9 @@ public class AdminController {
     @Autowired(required = false)
     private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
+    @Autowired(required = false)
+    private com.example.demo.services.RetiroService retiroService;
+
     // Roles disponibles — ya no hay tabla de roles
     private static final List<String> ROLES = Arrays.asList(
             "COMPRADOR", "VENDEDOR", "TRANSPORTISTA", "ADMIN");
@@ -90,6 +93,14 @@ public class AdminController {
         model.addAttribute("catalogoPendienteCount", catalogoService.obtenerCantidadCatalogoPendiente());
         model.addAttribute("transportistasPendientesCount", adminService.obtenerCantidadTransportistasPendientes());
         model.addAttribute("transportistas", adminService.obtenerTodosLosTransportistas());
+        long retirosPendientesCount = 0L;
+        if (retiroService != null) {
+            try {
+                retirosPendientesCount = retiroService.contarPendientes();
+            } catch (Exception ignored) {
+            }
+        }
+        model.addAttribute("retirosPendientesCount", retirosPendientesCount);
 
         // Default empty pages to avoid NPE in Thymeleaf
         model.addAttribute("usuarios", org.springframework.data.domain.Page.empty());
@@ -102,6 +113,7 @@ public class AdminController {
         model.addAttribute("mensajesPaginados", org.springframework.data.domain.Page.empty());
         model.addAttribute("mensajesRecibidosPaginados", org.springframework.data.domain.Page.empty());
         model.addAttribute("catalogoPendiente", org.springframework.data.domain.Page.empty());
+        model.addAttribute("retiros", org.springframework.data.domain.Page.empty());
 
         // Paginación dinámica según la pestaña activa
         if ("usuarios".equals(activePage)) {
@@ -129,6 +141,23 @@ public class AdminController {
             model.addAttribute("mensajesRecibidosPaginados", msgs);
         } else if ("moderacion".equals(activePage)) {
             model.addAttribute("catalogoPendiente", catalogoService.listarPendientesPaginados(page, 50));
+        } else if ("retiros".equals(activePage)) {
+            String filtro = (filterParam == null || filterParam.isBlank()) ? "PENDIENTE" : filterParam.trim().toUpperCase();
+            com.example.demo.Model.SolicitudRetiro.Estado estadoEnum = null;
+            if (!"TODOS".equals(filtro)) {
+                try {
+                    estadoEnum = com.example.demo.Model.SolicitudRetiro.Estado.valueOf(filtro);
+                } catch (IllegalArgumentException e) {
+                    estadoEnum = com.example.demo.Model.SolicitudRetiro.Estado.PENDIENTE;
+                    filtro = "PENDIENTE";
+                }
+            }
+            if (retiroService != null) {
+                model.addAttribute("retiros", retiroService.listarParaAdmin(
+                        estadoEnum,
+                        org.springframework.data.domain.PageRequest.of(Math.max(0, page), 50)));
+            }
+            model.addAttribute("estadoFiltro", filtro);
         }
         
         model.addAttribute("searchQuery", search);
@@ -839,5 +868,102 @@ public class AdminController {
         }
 
         return "redirect:/admin/moderacion";
+    }
+
+    // ==================== RETIROS SIMULADOS (US-24 / Fase 6 y 7) ====================
+
+    @GetMapping("/retiros")
+    public String mostrarRetiros(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(value = "estado", defaultValue = "PENDIENTE") String estado,
+            HttpSession session,
+            Model model,
+            RedirectAttributes redirectAttributes) {
+
+        if (!verificarAdmin(session, redirectAttributes)) {
+            return "redirect:/usuario/login";
+        }
+
+        Usuario admin = (Usuario) session.getAttribute("usuarioLogueado");
+        cargarDatosDashboard(model, admin, "retiros", page, null, estado);
+        model.addAttribute("activePage", "retiros");
+
+        return "admin/retiros";
+    }
+
+    @PostMapping("/retiros/{id}/aprobar")
+    public String aprobarRetiro(
+            @PathVariable("id") String id,
+            @RequestParam(value = "referencia", required = false) String referencia,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        if (!verificarAdmin(session, redirectAttributes)) {
+            return "redirect:/usuario/login";
+        }
+
+        Usuario admin = (Usuario) session.getAttribute("usuarioLogueado");
+        try {
+            com.example.demo.Model.SolicitudRetiro aprobada = retiroService.aprobarRetiro(
+                    id,
+                    admin.getId(),
+                    admin.getNombre(),
+                    referencia);
+            redirectAttributes.addFlashAttribute("mensaje",
+                    "Retiro aprobado exitosamente. Comprobante generado: " + aprobada.getNumeroComprobante());
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al aprobar el retiro: " + e.getMessage());
+        }
+
+        return "redirect:/admin/retiros";
+    }
+
+    @PostMapping("/retiros/{id}/rechazar")
+    public String rechazarRetiro(
+            @PathVariable("id") String id,
+            @RequestParam(value = "motivo", required = false) String motivo,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        if (!verificarAdmin(session, redirectAttributes)) {
+            return "redirect:/usuario/login";
+        }
+
+        Usuario admin = (Usuario) session.getAttribute("usuarioLogueado");
+        try {
+            retiroService.rechazarRetiro(id, admin.getId(), admin.getNombre(), motivo);
+            redirectAttributes.addFlashAttribute("mensaje",
+                    "Solicitud de retiro rechazada. El saldo ha sido devuelto a disponible.");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al rechazar el retiro: " + e.getMessage());
+        }
+
+        return "redirect:/admin/retiros";
+    }
+
+    @GetMapping("/retiros/{id}/comprobante")
+    public String verComprobanteRetiroAdmin(
+            @PathVariable("id") String id,
+            HttpSession session,
+            Model model,
+            RedirectAttributes redirectAttributes) {
+
+        if (!verificarAdmin(session, redirectAttributes)) {
+            return "redirect:/usuario/login";
+        }
+
+        try {
+            com.example.demo.Model.SolicitudRetiro solicitud = retiroService.obtenerComprobanteParaAdmin(id);
+            model.addAttribute("solicitud", solicitud);
+            model.addAttribute("volverUrl", "/admin/retiros");
+            return "comprobante-retiro";
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/admin/retiros";
+        }
     }
 }

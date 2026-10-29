@@ -183,7 +183,18 @@ public class DataLoader implements CommandLineRunner {
         configService.guardarConfig("HORAS_MAX_SIN_TRANSPORTISTA", "24",
                 "Horas máximas para que un envío consiga transportista antes de pasar a SIN_TRANSPORTISTA", "NUMBER");
 
+        sembrarSiNoExiste("VENTANA_RECLAMOS_MINUTOS", "1440",
+                "Ventana de tiempo en minutos tras la entrega para que se libere el saldo de retencion a disponible", "NUMBER");
+        sembrarSiNoExiste("RETIRO_MINIMO_COP", "50000",
+                "Monto minimo en COP para solicitar un retiro de la billetera", "NUMBER");
+
         logger.info("✅ Parámetros de configuración inicializados.");
+    }
+
+    private void sembrarSiNoExiste(String clave, String valor, String descripcion, String tipo) {
+        if (configService.obtenerValor(clave, null) == null) {
+            configService.guardarConfig(clave, valor, descripcion, tipo);
+        }
     }
 
     private void inicializarZonasYTarifas() {

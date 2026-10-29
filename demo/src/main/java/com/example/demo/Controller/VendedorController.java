@@ -45,8 +45,11 @@ public class VendedorController {
     @Autowired(required = false)
     private com.example.demo.services.UbicacionService ubicacionService;
 
+    @Autowired(required = false)
+    private com.example.demo.services.RetiroService retiroService;
+
     /**
-     * US-22: saldos por estado y movimientos de la billetera del vendedor.
+     * US-22 / US-24: saldos por estado, retiros y movimientos de la billetera del vendedor.
      * Solo lectura: no hay endpoints para editar ni borrar movimientos.
      */
     @GetMapping("/billetera")
@@ -63,14 +66,129 @@ public class VendedorController {
             return "redirect:/vendedor/registro";
         }
 
-        model.addAttribute("usuario", usuario);
-        model.addAttribute("billetera", billeteraService != null
+        if (usuarioRepository != null && usuario.getId() != null) {
+            usuario = usuarioRepository.findById(usuario.getId()).orElse(usuario);
+            session.setAttribute("usuarioLogueado", usuario);
+        }
+
+        Billetera billetera = billeteraService != null
                 ? billeteraService.obtenerOCrearBilleteraVendedor(usuario.getId())
-                : null);
+                : null;
+        PerfilVendedor perfil = usuario.getPerfilVendedor();
+        com.example.demo.Model.embebidos.CuentaBancaria cuentaRetiro = perfil != null ? perfil.getCuentaRetiro() : null;
+
+        long retiroMinimoCop = com.example.demo.services.RetiroService.RETIRO_MINIMO_DEFECTO_COP;
+        boolean tieneRetiroPendiente = false;
+        java.util.List<com.example.demo.Model.SolicitudRetiro> solicitudesRetiro = java.util.List.of();
+
+        if (retiroService != null) {
+            try {
+                retiroMinimoCop = retiroService.obtenerRetiroMinimoCop();
+                tieneRetiroPendiente = retiroService.existeSolicitudPendiente(usuario.getId(), Billetera.Rol.VENDEDOR);
+                solicitudesRetiro = retiroService.listarPorUsuarioYRol(usuario.getId(), Billetera.Rol.VENDEDOR);
+            } catch (Exception ignored) {
+                // En entornos de prueba sin Mongo de retiros activo se usan valores por defecto
+            }
+        }
+
+        long saldoDisponibleCentavos = billetera != null ? billetera.getSaldoDisponibleCentavos() : 0L;
+        long saldoDisponiblePesos = saldoDisponibleCentavos / 100L;
+        boolean alcanzaMinimoRetiro = saldoDisponibleCentavos >= (retiroMinimoCop * 100L);
+        boolean puedeSolicitarRetiro = cuentaRetiro != null
+                && cuentaRetiro.esCompleta()
+                && !tieneRetiroPendiente
+                && alcanzaMinimoRetiro;
+
+        model.addAttribute("usuario", usuario);
+        model.addAttribute("billetera", billetera);
         model.addAttribute("movimientos", billeteraService != null
                 ? billeteraService.listarMovimientosVendedor(usuario.getId())
                 : java.util.List.of());
+        model.addAttribute("cuentaRetiro", cuentaRetiro);
+        model.addAttribute("retiroMinimoCop", retiroMinimoCop);
+        model.addAttribute("tieneRetiroPendiente", tieneRetiroPendiente);
+        model.addAttribute("solicitudesRetiro", solicitudesRetiro);
+        model.addAttribute("saldoDisponiblePesos", saldoDisponiblePesos);
+        model.addAttribute("alcanzaMinimoRetiro", alcanzaMinimoRetiro);
+        model.addAttribute("puedeSolicitarRetiro", puedeSolicitarRetiro);
         return "vendedor/billetera-vendedor";
+    }
+
+    /**
+     * US-24 / Fase 5: Solicita un retiro simulado desde el saldo disponible del vendedor.
+     */
+    @PostMapping("/retiros/solicitar")
+    public String solicitarRetiro(
+            @RequestParam(value = "montoPesos", required = false) String montoPesosTexto,
+            @RequestParam(value = "retirarTodo", defaultValue = "false") boolean retirarTodo,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuario == null) {
+            redirectAttributes.addFlashAttribute("error", "Debe iniciar sesión primero");
+            return "redirect:/usuario/login";
+        }
+        if (!vendedorService.esVendedor(usuario.getId())) {
+            redirectAttributes.addFlashAttribute("error", "Debe registrarse como vendedor primero");
+            return "redirect:/vendedor/registro";
+        }
+
+        if (retiroService == null) {
+            redirectAttributes.addFlashAttribute("error", "El servicio de retiros no está disponible en este momento");
+            return "redirect:/vendedor/billetera";
+        }
+
+        try {
+            com.example.demo.Model.SolicitudRetiro solicitud = retiroService.solicitarRetiro(
+                    usuario.getId(),
+                    Billetera.Rol.VENDEDOR,
+                    montoPesosTexto,
+                    retirarTodo);
+            redirectAttributes.addFlashAttribute("mensaje",
+                    "Solicitud de retiro registrada por $"
+                            + String.format(java.util.Locale.GERMANY, "%,d", solicitud.getMontoPesos())
+                            + " COP hacia " + solicitud.getCuentaDestino().getResumenEnmascarado()
+                            + ". Queda pendiente de aprobación del administrador.");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "No se pudo procesar tu solicitud de retiro: " + e.getMessage());
+        }
+
+        return "redirect:/vendedor/billetera";
+    }
+
+    /**
+     * US-24 / Fase 5 y 7: Muestra el comprobante imprimible de un retiro aprobado del vendedor.
+     */
+    @GetMapping("/retiros/{id}/comprobante")
+    public String verComprobanteRetiro(
+            @PathVariable("id") String solicitudId,
+            HttpSession session,
+            Model model,
+            RedirectAttributes redirectAttributes) {
+
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuario == null) {
+            redirectAttributes.addFlashAttribute("error", "Debe iniciar sesión primero");
+            return "redirect:/usuario/login";
+        }
+        if (!vendedorService.esVendedor(usuario.getId())) {
+            redirectAttributes.addFlashAttribute("error", "Debe registrarse como vendedor primero");
+            return "redirect:/vendedor/registro";
+        }
+
+        try {
+            com.example.demo.Model.SolicitudRetiro solicitud = retiroService.obtenerComprobanteParaUsuario(
+                    solicitudId, usuario.getId(), Billetera.Rol.VENDEDOR);
+            model.addAttribute("solicitud", solicitud);
+            model.addAttribute("volverUrl", "/vendedor/billetera");
+            return "comprobante-retiro";
+        } catch (SecurityException | IllegalArgumentException | IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            return "redirect:/vendedor/billetera";
+        }
     }
 
     /**
@@ -131,29 +249,16 @@ public class VendedorController {
                 redirectAttributes.addFlashAttribute("error", "La dirección del negocio es obligatoria");
                 return "redirect:/vendedor/registro";
             }
-            if (cuentaBancaria != null && !cuentaBancaria.isBlank()
-                    && cuentaBancaria.length() < 8) {
-                redirectAttributes.addFlashAttribute("error",
-                        "La cuenta bancaria debe tener mínimo 8 dígitos");
-                return "redirect:/vendedor/registro";
-            }
-            if (cuentaBancaria != null && !cuentaBancaria.isBlank()) {
-                if (banco == null || banco.trim().isEmpty()) {
-                    redirectAttributes.addFlashAttribute("error",
-                            "Debe indicar el banco de la cuenta");
-                    return "redirect:/vendedor/registro";
-                }
-            }
 
-            // Crear perfil — retorna el Usuario actualizado con perfil embebido
+            // US-24: La cuenta bancaria no se pide ni valida en el registro (los parámetros opcionales se ignoran)
             Usuario usuarioActualizado = vendedorService.crearPerfilVendedor(
                     usuario.getId(),
                     razonSocial,
                     telefonoContacto,
                     direccionNegocio,
                     descripcionNegocio,
-                    cuentaBancaria,
-                    banco,
+                    null,
+                    null,
                     tipoProductos);
 
             // Actualizar sesión con usuario que ya tiene el perfil embebido
@@ -361,6 +466,142 @@ public class VendedorController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Error al actualizar el perfil");
             return "redirect:/vendedor/editar";
+        }
+    }
+
+    /**
+     * US-24 / Fase 2: Pantalla "Mi cuenta bancaria" del vendedor.
+     * Muestra la cuenta actual enmascarada y preselecciona el banco desde el texto legado si solo hay ese dato.
+     */
+    @GetMapping("/cuenta-bancaria")
+    public String mostrarCuentaBancaria(HttpSession session, Model model,
+            RedirectAttributes redirectAttributes) {
+
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuario == null) {
+            redirectAttributes.addFlashAttribute("error", "Debe iniciar sesión primero");
+            return "redirect:/usuario/login";
+        }
+        if (!vendedorService.esVendedor(usuario.getId())) {
+            redirectAttributes.addFlashAttribute("error", "Debe registrarse como vendedor primero");
+            return "redirect:/vendedor/registro";
+        }
+
+        if (usuarioRepository != null && usuario.getId() != null) {
+            usuario = usuarioRepository.findById(usuario.getId()).orElse(usuario);
+            session.setAttribute("usuarioLogueado", usuario);
+        }
+
+        PerfilVendedor perfil = usuario.getPerfilVendedor();
+        com.example.demo.Model.embebidos.CuentaBancaria cuentaActual = perfil != null ? perfil.getCuentaRetiro() : null;
+
+        model.addAttribute("usuario", usuario);
+        model.addAttribute("bancos", com.example.demo.Model.Banco.values());
+        model.addAttribute("tiposCuenta", com.example.demo.Model.TipoCuenta.values());
+        model.addAttribute("tiposDocumento", com.example.demo.Model.TipoDocumento.values());
+        model.addAttribute("cuentaActual", cuentaActual);
+        model.addAttribute("cuentaLegadaEnmascarada", perfil != null ? perfil.getCuentaBancariaEnmascarada() : null);
+        model.addAttribute("bancoLegadoTexto", perfil != null ? perfil.getBanco() : null);
+
+        if (!model.containsAttribute("bancoSeleccionado")) {
+            if (cuentaActual != null && cuentaActual.getBanco() != null) {
+                model.addAttribute("bancoSeleccionado", cuentaActual.getBanco().name());
+                model.addAttribute("bancoOtroNombre", cuentaActual.getBancoOtroNombre());
+                model.addAttribute("tipoSeleccionado", cuentaActual.getTipo() != null ? cuentaActual.getTipo().name() : null);
+                model.addAttribute("titular", cuentaActual.getTitular());
+                model.addAttribute("tipoDocumentoSeleccionado", cuentaActual.getTipoDocumento() != null ? cuentaActual.getTipoDocumento().name() : null);
+                model.addAttribute("numeroDocumento", cuentaActual.getNumeroDocumento());
+            } else if (perfil != null && perfil.getBanco() != null && !perfil.getBanco().isBlank()) {
+                com.example.demo.Model.Banco.ResultadoMapeo mapeo = com.example.demo.Model.Banco.mapearTextoLibre(perfil.getBanco());
+                if (mapeo != null) {
+                    model.addAttribute("bancoSeleccionado", mapeo.getBanco().name());
+                    model.addAttribute("bancoOtroNombre", mapeo.getBancoOtroNombre());
+                }
+                model.addAttribute("titular", usuario.getNombre());
+            } else {
+                model.addAttribute("titular", usuario.getNombre());
+            }
+        }
+
+        return "vendedor/cuenta-bancaria-vendedor";
+    }
+
+    /**
+     * US-24 / Fase 2: Guarda la cuenta bancaria del vendedor y vuelve a la billetera.
+     */
+    @PostMapping("/cuenta-bancaria")
+    public String guardarCuentaBancaria(
+            @RequestParam(value = "banco", required = false) String bancoStr,
+            @RequestParam(value = "bancoOtroNombre", required = false) String bancoOtroNombre,
+            @RequestParam(value = "tipo", required = false) String tipoStr,
+            @RequestParam(value = "numero", required = false) String numero,
+            @RequestParam(value = "titular", required = false) String titular,
+            @RequestParam(value = "tipoDocumento", required = false) String tipoDocumentoStr,
+            @RequestParam(value = "numeroDocumento", required = false) String numeroDocumento,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuario == null) {
+            redirectAttributes.addFlashAttribute("error", "Debe iniciar sesión primero");
+            return "redirect:/usuario/login";
+        }
+        if (!vendedorService.esVendedor(usuario.getId())) {
+            redirectAttributes.addFlashAttribute("error", "Debe registrarse como vendedor primero");
+            return "redirect:/vendedor/registro";
+        }
+
+        try {
+            com.example.demo.Model.Banco banco = parseBanco(bancoStr);
+            com.example.demo.Model.TipoCuenta tipo = parseTipoCuenta(tipoStr);
+            com.example.demo.Model.TipoDocumento tipoDoc = parseTipoDocumento(tipoDocumentoStr);
+
+            com.example.demo.Model.embebidos.CuentaBancaria nueva = new com.example.demo.Model.embebidos.CuentaBancaria(
+                    banco, bancoOtroNombre, tipo, numero, titular, tipoDoc, numeroDocumento);
+
+            Usuario actualizado = vendedorService.guardarCuentaBancaria(usuario.getId(), nueva);
+            session.setAttribute("usuarioLogueado", actualizado);
+
+            redirectAttributes.addFlashAttribute("mensaje",
+                    "Cuenta bancaria guardada exitosamente: " + nueva.getResumenEnmascarado());
+            return "redirect:/vendedor/billetera";
+
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+            redirectAttributes.addFlashAttribute("bancoSeleccionado", bancoStr);
+            redirectAttributes.addFlashAttribute("bancoOtroNombre", bancoOtroNombre);
+            redirectAttributes.addFlashAttribute("tipoSeleccionado", tipoStr);
+            redirectAttributes.addFlashAttribute("titular", titular);
+            redirectAttributes.addFlashAttribute("tipoDocumentoSeleccionado", tipoDocumentoStr);
+            redirectAttributes.addFlashAttribute("numeroDocumento", numeroDocumento);
+            return "redirect:/vendedor/cuenta-bancaria";
+        }
+    }
+
+    private com.example.demo.Model.Banco parseBanco(String valor) {
+        if (valor == null || valor.isBlank()) return null;
+        try {
+            return com.example.demo.Model.Banco.valueOf(valor.trim());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    private com.example.demo.Model.TipoCuenta parseTipoCuenta(String valor) {
+        if (valor == null || valor.isBlank()) return null;
+        try {
+            return com.example.demo.Model.TipoCuenta.valueOf(valor.trim());
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    private com.example.demo.Model.TipoDocumento parseTipoDocumento(String valor) {
+        if (valor == null || valor.isBlank()) return null;
+        try {
+            return com.example.demo.Model.TipoDocumento.valueOf(valor.trim());
+        } catch (IllegalArgumentException e) {
+            return null;
         }
     }
 

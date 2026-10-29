@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<div th:fragment="formularioCuentaBancaria(postUrl, cancelarUrl)" class="cb-wrapper">
+    <style>
+        .cb-wrapper {
+            max-width: 720px;
+            margin: 0 auto;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        .cb-card {
+            background: #ffffff;
+            border: 1px solid #e2ece4;
+            border-radius: 22px;
+            box-shadow: 0 4px 18px -4px rgba(15, 52, 27, 0.06), 0 1px 3px rgba(15, 52, 27, 0.04);
+            padding: 32px;
+        }
+        .cb-header {
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e2ece4;
+        }
+        .cb-header__eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #14552a;
+            background: #e9f6ed;
+            border: 1px solid rgba(31, 122, 58, 0.18);
+            padding: 5px 11px;
+            border-radius: 999px;
+            margin-bottom: 10px;
+        }
+        .cb-header h1 {
+            margin: 0 0 6px;
+            font-size: 1.55rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: #111e15;
+        }
+        .cb-header p {
+            margin: 0;
+            font-size: 0.94rem;
+            color: #5e7264;
+            line-height: 1.5;
+        }
+        .cb-card .cb-current,
+        .cb-current {
+            background: linear-gradient(135deg, #f4fbf6 0%, #e9f6ed 100%);
+            border: 1.5px solid #bfe3c9;
+            color: #111e15;
+            border-radius: 18px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            box-shadow: 0 8px 22px -12px rgba(15, 52, 27, 0.14);
+        }
+        .cb-card .cb-current__label,
+        .cb-current__label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #1f7a3a;
+            margin-bottom: 4px;
+            font-weight: 800;
+        }
+        .cb-card .cb-current__bank,
+        .cb-current__bank {
+            font-size: 1.18rem;
+            font-weight: 800;
+            color: #0a351a;
+        }
+        .cb-card .cb-current__meta,
+        .cb-current__meta {
+            font-size: 0.86rem;
+            color: #243529;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+        .cb-card .cb-current__number,
+        .cb-current__number {
+            font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 1.02rem;
+            font-weight: 800;
+            background: #ffffff;
+            border: 1px solid #bfe3c9;
+            padding: 8px 14px;
+            border-radius: 12px;
+            letter-spacing: 0.06em;
+            color: #14552a;
+            font-variant-numeric: tabular-nums;
+            box-shadow: 0 2px 6px rgba(15, 52, 27, 0.06);
+        }
+        .cb-empty-banner {
+            background: #f5f9f6;
+            border: 1px dashed #cfe0d3;
+            border-radius: 14px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #243529;
+            font-size: 0.9rem;
+        }
+        .cb-empty-banner__icon--info {
+            color: #1d4ed8;
+            font-size: 1.15rem;
+            flex-shrink: 0;
+        }
+        .cb-empty-banner__icon--muted {
+            color: #5e7264;
+            font-size: 1.15rem;
+            flex-shrink: 0;
+        }
+        .cb-alert {
+            padding: 14px 18px;
+            border-radius: 14px;
+            margin-bottom: 20px;
+            font-size: 0.92rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .cb-alert--error {
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+        }
+        .cb-alert--ok {
+            background: #e9f6ed;
+            border: 1px solid #bfe3c9;
+            color: #14552a;
+        }
+        .cb-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+        .cb-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .cb-field--full {
+            grid-column: 1 / -1;
+        }
+        .cb-field label {
+            font-size: 0.86rem;
+            font-weight: 700;
+            color: #111e15;
+        }
+        .cb-field input,
+        .cb-field select {
+            width: 100%;
+            min-height: 46px;
+            box-sizing: border-box;
+            padding: 11px 14px;
+            border: 1px solid #cfe0d3;
+            border-radius: 12px;
+            font-size: 1rem;
+            color: #111e15;
+            background: #ffffff;
+            transition: border-color 180ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 180ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .cb-field input:focus,
+        .cb-field select:focus {
+            outline: none;
+            border-color: #1f7a3a;
+            box-shadow: 0 0 0 3px rgba(31, 122, 58, 0.16);
+        }
+        .cb-hint {
+            font-size: 0.78rem;
+            color: #5e7264;
+            line-height: 1.4;
+        }
+        .cb-actions {
+            margin-top: 28px;
+            padding-top: 20px;
+            border-top: 1px solid #e2ece4;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .cb-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 44px;
+            padding: 11px 20px;
+            border-radius: 12px;
+            font-size: 0.92rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            border: 1px solid transparent;
+            transition: background 180ms cubic-bezier(0.4, 0, 0.2, 1), border-color 180ms cubic-bezier(0.4, 0, 0.2, 1), transform 180ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 180ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .cb-btn--primary {
+            background: #1f7a3a;
+            color: #ffffff;
+            box-shadow: 0 6px 16px -6px rgba(31, 122, 58, 0.45);
+        }
+        .cb-btn--primary:hover {
+            background: #14552a;
+            transform: translateY(-1px);
+        }
+        .cb-btn--ghost {
+            background: #f5f9f6;
+            color: #243529;
+            border-color: #e2ece4;
+        }
+        .cb-btn--ghost:hover {
+            background: #e9f6ed;
+            border-color: #cfe0d3;
+        }
+        @media (max-width: 600px) {
+            .cb-grid { grid-template-columns: 1fr; }
+            .cb-card { padding: 22px 18px; border-radius: 18px; }
+            .cb-actions {
+                flex-direction: column-reverse;
+                align-items: stretch;
+            }
+            .cb-btn {
+                width: 100%;
+            }
+        }
+    </style>
+
+    <div class="cb-card">
+        <div class="cb-header">
+            <div class="cb-header__eyebrow">
+                <i class="fa-solid fa-building-columns" aria-hidden="true"></i>
+                <span>Datos de Retiro</span>
+            </div>
+            <h1>Mi cuenta bancaria</h1>
+            <p>Configura la cuenta o billetera digital donde recibirás los retiros de tu saldo disponible.</p>
+        </div>
+
+        <div th:if="${error}" class="cb-alert cb-alert--error" role="alert">
+            <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+            <span th:text="${error}">Error</span>
+        </div>
+        <div th:if="${mensaje}" class="cb-alert cb-alert--ok" role="status">
+            <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+            <span th:text="${mensaje}">Guardado</span>
+        </div>
+
+        <!-- Resumen de cuenta actual (siempre enmascarada) -->
+        <div th:if="${cuentaActual != null and cuentaActual.esCompleta()}" class="cb-current">
+            <div>
+                <div class="cb-current__label">Cuenta registrada actualmente</div>
+                <div class="cb-current__bank" th:text="${cuentaActual.nombreEntidad}">Bancolombia</div>
+                <div class="cb-current__meta">
+                    <span th:text="${cuentaActual.tipo.etiqueta}">Cuenta de ahorros</span> ·
+                    Titular: <span th:text="${cuentaActual.titular}">Nombre</span>
+                    (<span th:text="${cuentaActual.tipoDocumento}">CC</span>)
+                </div>
+            </div>
+            <div class="cb-current__number" th:text="${cuentaActual.numeroEnmascarado}">****1234</div>
+        </div>
+
+        <div th:if="${(cuentaActual == null or !cuentaActual.esCompleta()) and cuentaLegadaEnmascarada != null}" class="cb-empty-banner">
+            <i class="fa-solid fa-circle-info cb-empty-banner__icon--info" aria-hidden="true"></i>
+            <div>
+                Tienes un registro anterior (<strong th:text="${bancoLegadoTexto != null ? bancoLegadoTexto : 'Banco'}">Banco</strong>
+                · <strong th:text="${cuentaLegadaEnmascarada}">****1234</strong>). Completa todos los campos para habilitar retiros.
+            </div>
+        </div>
+
+        <div th:if="${(cuentaActual == null or !cuentaActual.esCompleta()) and cuentaLegadaEnmascarada == null}" class="cb-empty-banner">
+            <i class="fa-solid fa-wallet cb-empty-banner__icon--muted" aria-hidden="true"></i>
+            <span>Aún no has agregado una cuenta bancaria para retiros.</span>
+        </div>
+
+        <form th:action="${postUrl}" method="post" id="formCuentaBancaria" novalidate>
+            <div class="cb-grid">
+                <!-- Entidad bancaria -->
+                <div class="cb-field">
+                    <label for="banco">Entidad financiera *</label>
+                    <select id="banco" name="banco" required onchange="actualizarReglasBanco()">
+                        <option value="">Selecciona una entidad...</option>
+                        <option th:each="b : ${bancos}"
+                                th:value="${b.name()}"
+                                th:data-billetera="${b.esBilleteraDigital()}"
+                                th:text="${b.esBilleteraDigital() ? (b.nombreVisible + ' (Billetera digital)') : b.nombreVisible}"
+                                th:selected="${bancoSeleccionado != null and bancoSeleccionado == b.name()}">
+                            Bancolombia
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Tipo de cuenta -->
+                <div class="cb-field">
+                    <label for="tipo">Tipo de cuenta *</label>
+                    <select id="tipo" name="tipo" required>
+                        <option value="">Selecciona el tipo...</option>
+                        <option th:each="tc : ${tiposCuenta}"
+                                th:value="${tc.name()}"
+                                th:text="${tc.etiqueta}"
+                                th:selected="${tipoSeleccionado != null and tipoSeleccionado == tc.name()}">
+                            Cuenta de ahorros
+                        </option>
+                    </select>
+                    <span class="cb-hint" id="hintTipoCuenta">Para Nequi, Daviplata o Dale! usa Depósito electrónico.</span>
+                </div>
+
+                <!-- ¿Cuál entidad? (Solo para OTRO) -->
+                <div class="cb-field cb-field--full" id="grupoBancoOtro"
+                     th:style="${bancoSeleccionado == 'OTRO'} ? 'display:flex;' : 'display:none;'">
+                    <label for="bancoOtroNombre">¿Cuál entidad? *</label>
+                    <input type="text" id="bancoOtroNombre" name="bancoOtroNombre"
+                           minlength="3" maxlength="60"
+                           th:value="${bancoOtroNombre}"
+                           placeholder="Ej: Scotiabank Colpatria, Banco Itaú, Lulo Bank...">
+                    <span class="cb-hint">Nombre de la entidad bancaria o cooperativa (entre 3 y 60 caracteres).</span>
+                </div>
+
+                <!-- Número de cuenta / celular -->
+                <div class="cb-field cb-field--full">
+                    <label for="numero" id="labelNumeroCuenta">Número de cuenta *</label>
+                    <input type="text" id="numero" name="numero" required
+                           inputmode="numeric" autocomplete="off"
+                           th:placeholder="${cuentaActual != null and cuentaActual.numeroEnmascarado != null ? ('Actual: ' + cuentaActual.numeroEnmascarado + ' — ingresa el número completo para guardar') : 'Solo dígitos (sin espacios ni guiones)'}">
+                    <span class="cb-hint" id="hintNumeroCuenta">Solo números (6 a 20 dígitos para bancos; celular de 10 dígitos iniciado en 3 para billeteras digitales).</span>
+                </div>
+
+                <!-- Titular -->
+                <div class="cb-field cb-field--full">
+                    <label for="titular">Nombre completo del titular *</label>
+                    <input type="text" id="titular" name="titular" required
+                           minlength="3" maxlength="100"
+                           th:value="${titular}"
+                           placeholder="Tal como figura en la entidad bancaria">
+                </div>
+
+                <!-- Tipo de documento -->
+                <div class="cb-field">
+                    <label for="tipoDocumento">Tipo de documento *</label>
+                    <select id="tipoDocumento" name="tipoDocumento" required>
+                        <option value="">Selecciona...</option>
+                        <option th:each="td : ${tiposDocumento}"
+                                th:value="${td.name()}"
+                                th:text="${td.etiqueta}"
+                                th:selected="${tipoDocumentoSeleccionado != null and tipoDocumentoSeleccionado == td.name()}">
+                            CC
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Número de documento -->
+                <div class="cb-field">
+                    <label for="numeroDocumento">Número de documento *</label>
+                    <input type="text" id="numeroDocumento" name="numeroDocumento" required
+                           minlength="5" maxlength="15"
+                           th:value="${numeroDocumento}"
+                           placeholder="5 a 15 caracteres alfanuméricos">
+                </div>
+            </div>
+
+            <div class="cb-actions">
+                <a th:href="${cancelarUrl}" class="cb-btn cb-btn--ghost">
+                    <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+                    <span>Volver a la billetera</span>
+                </a>
+                <button type="submit" class="cb-btn cb-btn--primary">
+                    <i class="fa-solid fa-floppy-disk" aria-hidden="true"></i>
+                    <span>Guardar cuenta bancaria</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function actualizarReglasBanco() {
+            const selectBanco = document.getElementById('banco');
+            const selectTipo = document.getElementById('tipo');
+            const grupoOtro = document.getElementById('grupoBancoOtro');
+            const inputOtro = document.getElementById('bancoOtroNombre');
+            const labelNumero = document.getElementById('labelNumeroCuenta');
+            const hintNumero = document.getElementById('hintNumeroCuenta');
+
+            if (!selectBanco) return;
+            const valor = selectBanco.value;
+            const option = selectBanco.options[selectBanco.selectedIndex];
+            const esBilletera = option && option.getAttribute('data-billetera') === 'true';
+
+            if (valor === 'OTRO') {
+                grupoOtro.style.display = 'flex';
+                if (inputOtro) inputOtro.required = true;
+            } else {
+                grupoOtro.style.display = 'none';
+                if (inputOtro) inputOtro.required = false;
+            }
+
+            if (esBilletera) {
+                if (selectTipo) selectTipo.value = 'DEPOSITO_ELECTRONICO';
+                if (labelNumero) labelNumero.textContent = 'Número de celular de la billetera *';
+                if (hintNumero) hintNumero.textContent = 'Celular de 10 dígitos que empiece por 3 (ej. 3001234567).';
+            } else {
+                if (labelNumero) labelNumero.textContent = 'Número de cuenta *';
+                if (hintNumero) hintNumero.textContent = 'Solo dígitos, entre 6 y 20 números (sin guiones ni espacios).';
+            }
+        }
+        document.addEventListener('DOMContentLoaded', actualizarReglasBanco);
+    </script>
+</div>
+
+</body>
+</html>
