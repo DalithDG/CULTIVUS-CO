@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head th:replace="~{admin/fragments/head :: head('Catálogo de Productos')}"></head>
@@ -67,7 +67,7 @@
                                     <td>
                                         <img th:if="${p.imagenUrl != null and !p.imagenUrl.isEmpty()}" th:src="${p.imagenUrl}" alt="img"
                                              class="adm-thumb"
-                                             onerror="this.src='/images/placeholder.jpg'">
+                                             onerror="this.src='/images/placeholder.svg'">
                                         <span th:if="${p.imagenUrl == null or p.imagenUrl.isEmpty()}" class="adm-muted">
                                             <i class="fas fa-leaf" aria-hidden="true"></i>
                                         </span>

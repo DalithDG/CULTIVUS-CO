@@ -1,4 +1,4 @@
-/* ========================================
+﻿/* ========================================
    CULTIVUS - HEADER
    ======================================== */
 
@@ -920,6 +920,7 @@
   right: -100%;
   width: 300px;
   height: 100vh;
+  height: 100dvh;
   background: var(--hd-white);
   box-shadow: -4px 0 16px rgba(0, 0, 0, 0.1);
   z-index: 2000;
@@ -1154,8 +1155,9 @@
   }
 
   .search-dropdown {
-    width: calc(100vw - 40px);
-    right: -20px;
+    width: min(calc(100vw - 40px), 100%);
+    max-width: 100%;
+    right: 0;
   }
 }
 

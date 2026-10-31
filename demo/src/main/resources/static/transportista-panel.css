@@ -1,4 +1,4 @@
-/* ==========================================================================
+﻿/* ==========================================================================
    Cultivus · Panel del Transportista (transportista-panel.css)
    Lenguaje visual unificado con vendedor-panel.css, vendedor-sidebar.css
    y admin-panel-v2.css, aplicando directrices de Apple HIG (Claridad,
@@ -66,6 +66,7 @@ html {
 body.tp-body {
     margin: 0;
     min-height: 100vh;
+  min-height: 100dvh;
     background: var(--tp-bg);
     color: var(--tp-ink);
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;

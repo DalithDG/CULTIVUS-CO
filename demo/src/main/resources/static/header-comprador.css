@@ -880,3 +880,42 @@ body.menu-open::before {
   }
 }
 
+
+/* ── 12. Adaptaciones iPad y Móvil ─────────────────────────────────────────── */
+@media (min-width: 1025px) and (max-width: 1280px) {
+  .header--comprador .header-container {
+    gap: 12px;
+    padding: 0 16px;
+  }
+  .header--comprador .header-nav {
+    gap: 2px;
+  }
+  .header--comprador .nav-link {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+  .header--comprador .header-search {
+    flex: 0 1 210px;
+  }
+  .header--comprador .header-actions {
+    gap: 8px;
+  }
+}
+
+.mobile-menu--comprador .header-search {
+  display: block !important;
+  width: 100% !important;
+  margin: 0 0 10px 0 !important;
+}
+
+.mobile-menu--comprador .header-search form {
+  width: 100% !important;
+  background: rgba(48, 55, 45, 0.06) !important;
+}
+
+@media (max-width: 768px) {
+  .header--comprador .header-search__input,
+  .mobile-menu--comprador .header-search__input {
+    font-size: 16px !important;
+  }
+}

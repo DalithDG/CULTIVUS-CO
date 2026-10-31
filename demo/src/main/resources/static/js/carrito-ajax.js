@@ -147,7 +147,8 @@
         } else {
           // Si el servidor pide redirigir al login
           if (data && data.redirectLogin) {
-            window.location.href = '/usuario/login';
+            var currentUrl = encodeURIComponent(window.location.pathname + window.location.search);
+            window.location.href = '/usuario/login?redirect=' + currentUrl + '&mensaje=' + encodeURIComponent('Inicia sesión para comprar');
             return;
           }
           mostrarToast((data && data.error) ? data.error : 'Error al agregar al carrito', 'error');

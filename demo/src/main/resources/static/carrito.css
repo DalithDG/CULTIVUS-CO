@@ -643,3 +643,27 @@
     animation: none !important;
   }
 }
+
+
+/* Mobile Cart Touch Optimization */
+@media (max-width: 768px) {
+  .cart-page input,
+  .cart-page select,
+  .cart-page textarea {
+    font-size: 16px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .cart-summary .cart-btn {
+    width: 100%;
+    min-height: 48px;
+    font-size: 1rem;
+    border-radius: 12px;
+  }
+
+  .cart-remove {
+    min-height: 44px;
+    padding: 8px 12px;
+  }
+}

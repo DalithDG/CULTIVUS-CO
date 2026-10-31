@@ -1,4 +1,4 @@
-/* ========================================
+﻿/* ========================================
    CULTIVUS REGISTRO - DISEÑO DE DOS COLUMNAS
    Hero Section + Formulario
    ======================================== */
@@ -45,6 +45,7 @@
 
 body {
   min-height: 100vh;
+  min-height: 100dvh;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI",
     Roboto, "Helvetica Neue", Arial, sans-serif;
   background: linear-gradient(135deg,

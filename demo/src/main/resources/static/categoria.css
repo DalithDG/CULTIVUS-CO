@@ -81,7 +81,7 @@
     position: relative;
     width: 100%;
     min-height: 380px;
-    background: #1e3816 url('/images/banner-categoria.jpg') center center / cover no-repeat;
+    background: #1e3816 url('/images/banner-categoria-opt.jpg') center center / cover no-repeat;
     display: flex;
     align-items: center;
     padding: 48px 0 52px;
@@ -1123,4 +1123,60 @@
         width: 100%;
         justify-content: space-between;
     }
+}
+
+@media (max-width: 768px) {
+  .cat-hero {
+    background-image: url('/images/banner-categoria-mobile.jpg') !important;
+  }
+}
+
+
+/* iOS Safari auto-zoom prevention & Category horizontal chips */
+@media (max-width: 768px) {
+  input, select, textarea, .cat-search-box__input, .cat-sort-select {
+    font-size: 16px !important;
+  }
+
+  .cat-sidebar {
+    padding: 16px;
+    margin-bottom: 20px;
+    border-radius: var(--cult-radius-md, 16px);
+  }
+
+  .cat-filter-group {
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+  }
+
+  .cat-checkbox-list {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    gap: 8px;
+    padding-bottom: 6px;
+  }
+
+  .cat-checkbox-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .cat-checkbox-label {
+    flex: 0 0 auto;
+    background: #f8fafc;
+    border: 1px solid var(--cult-border);
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 0.85rem;
+    min-height: 44px;
+    box-sizing: border-box;
+    white-space: nowrap;
+  }
+
+  .cat-search-box {
+    width: 100%;
+  }
 }

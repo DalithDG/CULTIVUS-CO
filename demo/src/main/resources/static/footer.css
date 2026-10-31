@@ -131,11 +131,15 @@
   opacity: 0.85;
 }
 
-.footer-brand-logo {
-  height: 36px;
-  width: auto;
-  object-fit: contain;
-  display: block;
+.footer-brand-logo,
+.footer-brand-link img,
+img.footer-brand-logo {
+  height: 36px !important;
+  max-height: 36px !important;
+  width: auto !important;
+  max-width: 130px !important;
+  object-fit: contain !important;
+  display: block !important;
 }
 
 .footer-brand-desc {
@@ -287,11 +291,16 @@
   font-size: 15px;
 }
 
-.footer-wompi-logo {
-  height: 22px;
-  width: auto;
-  object-fit: contain;
-  vertical-align: middle;
+.footer-wompi-logo,
+.footer-payments-intro img.footer-wompi-logo {
+  height: 23px !important;
+  max-height: 23px !important;
+  max-width: 95px !important;
+  width: auto !important;
+  object-fit: contain !important;
+  vertical-align: middle !important;
+  display: inline-block !important;
+  flex-shrink: 0 !important;
 }
 
 .footer-payment-chips {
@@ -399,9 +408,35 @@
 }
 
 @media (max-width: 520px) {
+  .footer-container {
+    padding: 0 16px;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  }
+
   .footer-benefits {
     grid-template-columns: 1fr;
     gap: 14px;
+  }
+
+  .footer-benefit-title,
+  .footer-benefit-sub {
+    white-space: normal;
+  }
+
+  .footer-payments-intro {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 12.5px;
+    line-height: 1.4;
+  }
+
+  .footer-payment-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    width: 100%;
   }
 
   .footer-main-grid {

@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Resultados de Búsqueda | Cultivus</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -121,7 +121,7 @@
                         <a th:href="@{/producto/{id}(id=${producto.id})}" class="product-card__img-wrap">
                             <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}" 
                                  class="product-card__img" loading="lazy"
-                                 onerror="this.src='/images/placeholder.jpg'">
+                                 onerror="this.src='/images/placeholder.svg'">
                             <span class="ui-chip ui-chip--gold product-card__badge" th:if="${producto.totalVendedores > 0}"
                                   th:text="${producto.totalVendedores + ' Oferta(s)'}"></span>
                         </a>

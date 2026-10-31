@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title th:text="${oferta != null ? oferta.nombreProducto + ' | Cultivus' : 'Detalle de Oferta | Cultivus'}">Detalle Oferta | Cultivus</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -57,11 +57,11 @@
                         </button>
                     </div>
 
-                    <img th:src="${oferta.imagenUrl != null and !oferta.imagenUrl.isBlank()} ? ${oferta.imagenUrl} : (${producto != null and producto.imagenUrl != null} ? producto.imagenUrl : '/images/placeholder.jpg')"
+                    <img th:src="${oferta.imagenUrl != null and !oferta.imagenUrl.isBlank()} ? ${oferta.imagenUrl} : (${producto != null and producto.imagenUrl != null} ? producto.imagenUrl : '/images/placeholder.svg')"
                          th:alt="${oferta.nombreProducto}"
                          id="mainProductImage"
                          class="product-gallery__img"
-                         onerror="this.src='/images/placeholder.jpg'">
+                         onerror="this.src='/images/placeholder.svg'">
                 </div>
             </div>
 

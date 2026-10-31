@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description"
         content="Cultivus - Explora nuestras categorías de productos agrícolas frescos y de calidad directamente del campo a tu mesa.">
     <title>Cultivus - Catálogo de Productos</title>
@@ -161,7 +161,7 @@
                         <a th:href="@{/producto/{id}(id=${producto.id})}" class="product-card__img-wrap">
                             <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}"
                                  class="product-card__img" loading="lazy"
-                                 onerror="this.src='/images/Verduras.jpg'">
+                                 onerror="this.src='/images/Verduras-opt.jpg'">
                             <span class="ui-chip ui-chip--green product-card__badge"
                                   th:if="${producto.totalVendedores == null or producto.totalVendedores <= 1}">
                                 <i class="fas fa-leaf"></i> 100% Natural

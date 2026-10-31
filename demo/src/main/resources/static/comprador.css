@@ -62,7 +62,7 @@ a {
   color: #fff;
   background:
     linear-gradient(90deg, rgba(10, 40, 15, 0.55) 0%, rgba(10, 40, 15, 0.2) 55%, rgba(10, 40, 15, 0) 100%),
-    url("/images/hero-comprador.jpg") center / cover no-repeat,
+    url("/images/hero-background.jpg") center / cover no-repeat,
     linear-gradient(135deg, #2f6f23, #5a9a2f);
 }
 

@@ -329,3 +329,11 @@
   }
 }
 
+
+
+/* iOS Safari auto-zoom prevention */
+@media (max-width: 768px) {
+  input, select, textarea, .perfil-input, .form-control {
+    font-size: 16px !important;
+  }
+}

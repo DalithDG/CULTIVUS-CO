@@ -1079,3 +1079,39 @@
   }
 }
 
+
+
+/* Mobile Landscape & Low-Height Screen Support */
+@media (max-height: 500px) {
+  .about-page .about-hero {
+    height: auto;
+    min-height: 100dvh;
+    padding-top: 60px;
+    padding-bottom: 30px;
+  }
+
+  .about-page .about-hero__scroll-indicator {
+    display: none;
+  }
+
+  .about-page .about-hero__title {
+    font-size: 2rem;
+  }
+
+  .about-page .about-hero__lead {
+    font-size: 0.95rem;
+    margin-bottom: 16px;
+  }
+
+  .about-page #sobre-nosotros,
+  .about-page #que-es,
+  .about-page #como-funciona,
+  .about-page #para-quien,
+  .about-page #compromisos,
+  .about-page #cifras,
+  .about-page #productores,
+  .about-page #unete,
+  .about-page section[id] {
+    scroll-margin-top: 100px;
+  }
+}

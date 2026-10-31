@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Miel | Cultivus</title>
   <link rel="stylesheet" th:href="@{/style.css}" />
   <link rel="stylesheet" th:href="@{/categorias.css}" />
@@ -30,7 +30,7 @@
         <div th:each="producto : ${productos}" class="producto-card">
           <div class="producto-image">
             <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}"
-              onerror="this.src='/images/placeholder.jpg'" />
+              onerror="this.src='/images/placeholder.svg'" />
           </div>
           <div class="producto-info">
             <h3 th:text="${producto.nombre}">Nombre del Producto</h3>

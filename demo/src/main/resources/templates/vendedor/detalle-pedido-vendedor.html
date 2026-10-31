@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Detalle de Venta | Cultivus</title>
     <link rel="stylesheet" th:href="@{/header.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
@@ -69,7 +69,7 @@
                                                 <img th:if="${detalle.imagenSnapshot != null and !detalle.imagenSnapshot.isEmpty()}"
                                                      th:src="${detalle.imagenSnapshot}"
                                                      th:alt="${detalle.nombreSnapshot}"
-                                                     onerror="this.src='/images/placeholder.jpg'">
+                                                     onerror="this.src='/images/placeholder.svg'">
                                                 <i th:if="${detalle.imagenSnapshot == null or detalle.imagenSnapshot.isEmpty()}"
                                                    class="fa-solid fa-seedling" aria-hidden="true"></i>
                                             </div>

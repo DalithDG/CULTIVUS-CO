@@ -276,3 +276,11 @@
   }
 }
 
+
+
+/* iOS Safari auto-zoom prevention */
+@media (max-width: 768px) {
+  input, select, textarea, .cb-input, .cb-select {
+    font-size: 16px !important;
+  }
+}

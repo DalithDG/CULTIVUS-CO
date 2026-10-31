@@ -1,4 +1,4 @@
-// Funcionalidad común de cabecera: menú móvil y sombra al hacer scroll.
+// Funcionalidad común de cabecera: menú móvil, dropdowns táctiles y sombra al hacer scroll.
 // Se carga una sola vez por página a través del fragmento de header.
 (function () {
     function initMobileMenu() {
@@ -35,6 +35,33 @@
         });
     }
 
+    function initTouchDropdowns() {
+        const dropdowns = document.querySelectorAll('.nav-dropdown');
+        dropdowns.forEach(function (dd) {
+            const toggle = dd.querySelector('.nav-dropdown__toggle');
+            if (!toggle) return;
+
+            toggle.addEventListener('click', function (e) {
+                const isTouch = window.matchMedia('(hover: none) and (pointer: coarse)').matches || window.innerWidth <= 1024;
+                if (isTouch) {
+                    if (!dd.classList.contains('is-open')) {
+                        e.preventDefault();
+                        dropdowns.forEach(function (other) { if (other !== dd) other.classList.remove('is-open'); });
+                        dd.classList.add('is-open');
+                    }
+                }
+            });
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.nav-dropdown')) {
+                document.querySelectorAll('.nav-dropdown.is-open').forEach(function (dd) {
+                    dd.classList.remove('is-open');
+                });
+            }
+        });
+    }
+
     function initStickyHeader() {
         const header = document.getElementById('mainHeader');
         if (!header) return;
@@ -47,10 +74,12 @@
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', function () {
             initMobileMenu();
+            initTouchDropdowns();
             initStickyHeader();
         });
     } else {
         initMobileMenu();
+        initTouchDropdowns();
         initStickyHeader();
     }
 })();

@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Mis Productos · Vendedor | Cultivus</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" th:href="@{/header.css}">
@@ -51,7 +51,7 @@
                 <div th:each="producto : ${ofertas}" class="product-card">
                     <div class="card-image-wrapper">
                         <img th:src="${producto.imagenUrl}" th:alt="${producto.nombreProducto}"
-                            onerror="this.src='/images/placeholder.jpg'">
+                            onerror="this.src='/images/placeholder.svg'">
                         <div class="status-overlay">
                             <span th:if="${producto.disponible}" class="badge-premium badge-active">
                                 <i class="fas fa-check-circle" aria-hidden="true"></i> Activo

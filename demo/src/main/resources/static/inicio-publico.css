@@ -882,7 +882,7 @@ body {
 .ip-cta-vendor__bg {
   position: absolute;
   inset: 0;
-  background: url('/images/ImageIndex3.jpg') center/cover no-repeat;
+  background: url('/images/ImageIndex3-opt.jpg') center/cover no-repeat;
   filter: blur(1px) brightness(.4);
 }
 
@@ -989,7 +989,7 @@ body {
 .ip-cta-transport__bg {
   position: absolute;
   inset: 0;
-  background: url('/images/ImageIndex2.jpg') center/cover no-repeat;
+  background: url('/images/ImageIndex2-opt.jpg') center/cover no-repeat;
   filter: blur(1px) brightness(.32);
 }
 
@@ -1201,5 +1201,31 @@ body {
   .ip-trust-item {
     border-left: none;
     justify-content: flex-start;
+  }
+}
+@media (max-width: 768px) {
+  .ip-cta-vendor__bg {
+    background-image: url('/images/ImageIndex3-mobile.jpg') !important;
+  }
+  .ip-cta-transport__bg {
+    background-image: url('/images/ImageIndex2-mobile.jpg') !important;
+  }
+}
+
+
+/* Mobile Card & Touch Optimization */
+@media (max-width: 640px) {
+  .ip-prod-card__add {
+    min-width: 44px;
+    min-height: 44px;
+  }
+  .ip-prod-card__view {
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 380px) {
+  .ip-products__grid {
+    grid-template-columns: 1fr;
   }
 }

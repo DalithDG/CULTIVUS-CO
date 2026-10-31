@@ -799,3 +799,71 @@
   }
 }
 
+
+
+/* iOS Safari auto-zoom prevention */
+@media (max-width: 768px) {
+  input, select, textarea, .cat-search__input, .filter-select {
+    font-size: 16px !important;
+  }
+}
+
+
+/* Responsive Category Chips & Mobile Layout */
+@media (max-width: 768px) {
+  .catalog-sidebar {
+    padding: 16px;
+    margin-bottom: 20px;
+    border-radius: 16px;
+  }
+
+  .filter-group {
+    margin-bottom: 16px;
+  }
+
+  .filter-checkbox-list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    gap: 8px;
+    padding-bottom: 6px;
+    margin: 0 -4px;
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+
+  .filter-checkbox-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .filter-checkbox-item {
+    flex: 0 0 auto;
+    background: var(--c-surface-secondary, rgba(54, 122, 69, 0.06));
+    border: 1px solid var(--c-line, rgba(0, 0, 0, 0.08));
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    white-space: nowrap;
+    min-height: 44px;
+    box-sizing: border-box;
+  }
+
+  .filter-checkbox-item input[type="checkbox"] {
+    margin-right: 6px;
+    accent-color: var(--c-green);
+  }
+
+  .cat-search-box,
+  .catalog-search-wrap {
+    width: 100%;
+  }
+
+  .cat-hero__title {
+    font-size: clamp(1.8rem, 5vw, 2.4rem);
+  }
+}

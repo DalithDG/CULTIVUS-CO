@@ -1,4 +1,4 @@
-/* ========================================
+﻿/* ========================================
    CULTIVUS - REGISTRO VENDEDOR PREMIUM
    ======================================== */
 
@@ -27,6 +27,7 @@ body {
     color: var(--text-main);
     background: var(--bg-light);
     min-height: 100vh;
+  min-height: 100dvh;
 }
 
 /* ── Main Layout ── */

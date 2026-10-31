@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description"
         content="Cultivus - Explora nuestras categorías de productos agrícolas frescos y de calidad directamente del campo a tu mesa.">
     <title>Cultivus - Explora Nuestras Categorías</title>
@@ -122,7 +122,7 @@
                     <a th:href="@{/frutas}" class="cat-card-pill">
                         <div class="cat-card-pill__img-wrap">
                             <img th:src="@{/images/frutas.webp}" alt="Frutas" class="cat-card-pill__img"
-                                onerror="this.src='/images/ImageIndex2.jpg'">
+                                onerror="this.src='/images/ImageIndex2-opt.jpg'">
                         </div>
                         <div class="cat-card-pill__bar">
                             <div class="cat-card-pill__info">
@@ -136,7 +136,7 @@
                     <!-- 2. Verduras -->
                     <a th:href="@{/verduras}" class="cat-card-pill">
                         <div class="cat-card-pill__img-wrap">
-                            <img th:src="@{/images/Verduras.jpg}" alt="Verduras" class="cat-card-pill__img">
+                            <img th:src="@{/images/Verduras-opt.jpg}" alt="Verduras" class="cat-card-pill__img">
                         </div>
                         <div class="cat-card-pill__bar">
                             <div class="cat-card-pill__info">
@@ -165,7 +165,7 @@
                     <a th:href="@{/carnes}" class="cat-card-pill">
                         <div class="cat-card-pill__img-wrap">
                             <img th:src="@{/images/carnes y aves.png}" alt="Carnes" class="cat-card-pill__img"
-                                onerror="this.src='/images/ImageIndex3.jpg'">
+                                onerror="this.src='/images/ImageIndex3-opt.jpg'">
                         </div>
                         <div class="cat-card-pill__bar">
                             <div class="cat-card-pill__info">
@@ -180,7 +180,7 @@
                     <a th:href="@{/granos}" class="cat-card-pill">
                         <div class="cat-card-pill__img-wrap">
                             <img th:src="@{/images/granos y cereales.png}" alt="Granos" class="cat-card-pill__img"
-                                onerror="this.src='/images/ImagenIndex4.jpg'">
+                                onerror="this.src='/images/ImagenIndex4-opt.jpg'">
                         </div>
                         <div class="cat-card-pill__bar">
                             <div class="cat-card-pill__info">
@@ -195,7 +195,7 @@
                     <a th:href="@{/bebidas}" class="cat-card-pill">
                         <div class="cat-card-pill__img-wrap">
                             <img th:src="@{/images/bebidas.webp}" alt="Bebidas" class="cat-card-pill__img"
-                                onerror="this.src='/images/ImageIndex2.jpg'">
+                                onerror="this.src='/images/ImageIndex2-opt.jpg'">
                         </div>
                         <div class="cat-card-pill__bar">
                             <div class="cat-card-pill__info">
@@ -210,7 +210,7 @@
                     <a th:href="@{/condimentos}" class="cat-card-pill">
                         <div class="cat-card-pill__img-wrap">
                             <img th:src="@{/images/condimentos.png}" alt="Condimentos" class="cat-card-pill__img"
-                                onerror="this.src='/images/Verduras.jpg'">
+                                onerror="this.src='/images/Verduras-opt.jpg'">
                         </div>
                         <div class="cat-card-pill__bar">
                             <div class="cat-card-pill__info">
@@ -225,7 +225,7 @@
                     <a th:href="@{/otros}" class="cat-card-pill">
                         <div class="cat-card-pill__img-wrap">
                             <img th:src="@{/images/panaderia.png}" alt="Otros" class="cat-card-pill__img"
-                                onerror="this.src='/images/imageIndex.jpg'">
+                                onerror="this.src='/images/imageIndex-opt.jpg'">
                         </div>
                         <div class="cat-card-pill__bar">
                             <div class="cat-card-pill__info">
@@ -399,7 +399,7 @@
                                         </button>
 
                                         <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}" class="cat-card__img"
-                                            onerror="this.src='/images/Verduras.jpg'">
+                                            onerror="this.src='/images/Verduras-opt.jpg'">
                                     </div>
 
                                     <div class="cat-card__content">

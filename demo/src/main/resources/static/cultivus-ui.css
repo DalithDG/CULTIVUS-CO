@@ -797,3 +797,165 @@
   outline-offset: 2px !important;
 }
 
+
+/* ── 15. Sistema de Adaptabilidad Responsive (Apple Design & Cross-Platform) ── */
+
+/* Prevención global de desbordes horizontales */
+.auth-page,
+.home-page,
+.catalog-page,
+.product-page,
+.profile-page,
+.notif-page,
+.about-page,
+.order-detail-page,
+.cart-page,
+.checkout-page,
+.confirm-page,
+.orders-page {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  overflow-x: clip;
+}
+
+/* Responsive media defaults (acotado al contenido de main; headers y footers conservan sus dimensiones exactas) */
+main img,
+.ui-container img:not(.site-footer img):not(.site-header img),
+.product-card img,
+.product-gallery img {
+  max-width: 100%;
+  height: auto;
+}
+
+.footer-brand-logo,
+.footer-brand-link img,
+.site-footer .footer-brand-logo {
+  height: 36px !important;
+  max-height: 36px !important;
+  width: auto !important;
+  max-width: 130px !important;
+  object-fit: contain !important;
+  display: block !important;
+}
+
+.footer-wompi-logo,
+.footer-payments-intro img,
+.site-footer .footer-wompi-logo {
+  height: 23px !important;
+  max-height: 23px !important;
+  max-width: 95px !important;
+  width: auto !important;
+  object-fit: contain !important;
+  vertical-align: middle !important;
+  display: inline-block !important;
+  flex-shrink: 0 !important;
+}
+
+.site-footer .pay-chip img {
+  max-height: 18px !important;
+  max-width: 70px !important;
+  width: auto !important;
+  height: auto !important;
+  object-fit: contain !important;
+}
+
+/* Enlaces largos, referencias y correos nunca rompen el layout */
+.ui-truncate-wrap,
+.voucher-ref,
+.user-email-wrap,
+.order-code {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Tablas con scroll horizontal suave y seguro */
+.table-container,
+.table-responsive,
+.voucher-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 20px;
+  border-radius: var(--radius-md, 16px);
+  background: var(--c-surface, #fff);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+}
+
+/* Prevención del zoom automático en iOS Safari (<= 768px) */
+@media (max-width: 768px) {
+  .ui-input,
+  .ui-select,
+  .ui-textarea,
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  input[type="search"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+
+  .ui-field-wrap.has-icon .ui-input,
+  .ui-field-wrap.has-icon .ui-select {
+    font-size: 16px !important;
+  }
+}
+
+/* Formularios a una sola columna en móviles (<= 640px) */
+@media (max-width: 640px) {
+  .ui-form-row,
+  .form-row,
+  .grid-2,
+  .grid-3 {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .ui-btn {
+    width: 100%;
+    min-height: 48px;
+  }
+
+  .ui-btn--inline {
+    width: auto;
+  }
+}
+
+/* Áreas táctiles seguras (>= 44px) y soporte a hover condicional */
+@media (pointer: coarse) {
+  .ui-btn,
+  .qty-stepper__btn,
+  .cat-pill,
+  .segmented-control__btn {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Pantallas bajas (móvil apaisado: max-height 500px) */
+@media (max-height: 500px) and (orientation: landscape) {
+  :root {
+    --header-height: 48px;
+  }
+  .header-premium {
+    height: 48px !important;
+  }
+  .header-logo img,
+  .header-logo svg {
+    max-height: 28px !important;
+  }
+  .ui-container {
+    padding-top: 16px !important;
+  }
+}
+
+/* Safe areas en bordes inferiores */
+.safe-bottom,
+.sticky-pay-bar,
+.checkout-sticky-footer,
+.tp-bottom-bar {
+  padding-bottom: max(16px, env(safe-area-inset-bottom)) !important;
+}

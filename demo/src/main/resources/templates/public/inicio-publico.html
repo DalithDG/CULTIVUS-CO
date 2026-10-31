@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description"
         content="Cultivus - Productos agrícolas frescos directamente de productores locales a tu hogar. Calidad garantizada, precios justos.">
     <title>Cultivus - Conectamos el Campo con Tu Mesa</title>
@@ -62,7 +62,7 @@
 
                 <div class="home-hero__visual" aria-hidden="true">
                     <div class="home-hero__image-card">
-                        <img th:src="@{/images/ImagenIndex4.jpg}" alt="Cultivus campo colombiano"
+                        <img th:src="@{/images/ImagenIndex4-opt.jpg}" alt="Cultivus campo colombiano"
                              onerror="this.src='/images/hero-background.jpg'">
                     </div>
                     <div class="home-hero__float-card">
@@ -133,7 +133,7 @@
                        class="cat-tile" th:id="'cat-' + ${cat.id}">
                         <div class="cat-tile__img-wrap">
                             <img th:src="${n.contains('fruta') ? '/images/frutas.webp' :
-                                          n.contains('verdura') ? '/images/Verduras.jpg' :
+                                          n.contains('verdura') ? '/images/Verduras-opt.jpg' :
                                           (n.contains('lácteo') or n.contains('lacteo')) ? '/images/lacteos.jpg' :
                                           n.contains('carne') ? '/images/carnes y aves.png' :
                                           n.contains('grano') ? '/images/granos y cereales.png' :
@@ -159,7 +159,7 @@
                         <i class="fas fa-chevron-right cat-tile__arrow"></i>
                     </a>
                     <a th:href="@{/category}" class="cat-tile">
-                        <div class="cat-tile__img-wrap"><img th:src="@{/images/Verduras.jpg}" alt="Verduras"></div>
+                        <div class="cat-tile__img-wrap"><img th:src="@{/images/Verduras-opt.jpg}" alt="Verduras"></div>
                         <div class="cat-tile__info"><h3 class="cat-tile__title">Verduras</h3><span class="cat-tile__desc">De la huerta</span></div>
                         <i class="fas fa-chevron-right cat-tile__arrow"></i>
                     </a>

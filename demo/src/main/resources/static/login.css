@@ -1,4 +1,4 @@
-:root {
+﻿:root {
   --cultivus-primary: #6b7c2e;
   --cultivus-secondary: #7d9a3c;
   --cultivus-dark: #5a6825;
@@ -41,6 +41,7 @@
 
 body {
   min-height: 100vh;
+  min-height: 100dvh;
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI",
     Roboto, "Helvetica Neue", Arial, sans-serif;
   background: linear-gradient(

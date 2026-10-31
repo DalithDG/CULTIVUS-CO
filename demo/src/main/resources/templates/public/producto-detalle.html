@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title th:text="${producto != null ? producto.nombre + ' | Cultivus' : 'Detalle Producto | Cultivus'}">Detalle Producto | Cultivus</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -56,7 +56,7 @@
                     <img th:src="${producto.imagenUrl}"
                          th:alt="${producto.nombre}"
                          class="product-gallery__img"
-                         onerror="this.src='/images/placeholder.jpg'">
+                         onerror="this.src='/images/placeholder.svg'">
                 </div>
             </div>
 
@@ -159,10 +159,10 @@
             <div class="product-grid" th:if="${ofertas != null and !ofertas.isEmpty()}">
                 <article class="product-card" th:each="oferta : ${ofertas}">
                     <a th:href="@{/oferta/{id}(id=${oferta.id})}" class="product-card__img-wrap">
-                        <img th:src="${oferta.imagenUrl != null and !oferta.imagenUrl.isBlank()} ? ${oferta.imagenUrl} : (${producto.imagenUrl != null} ? producto.imagenUrl : '/images/placeholder.jpg')"
+                        <img th:src="${oferta.imagenUrl != null and !oferta.imagenUrl.isBlank()} ? ${oferta.imagenUrl} : (${producto.imagenUrl != null} ? producto.imagenUrl : '/images/placeholder.svg')"
                              th:alt="${oferta.nombreProducto}"
                              class="product-card__img"
-                             onerror="this.src='/images/placeholder.jpg'">
+                             onerror="this.src='/images/placeholder.svg'">
                         <span class="ui-chip ui-chip--green product-card__badge">
                             <i class="fas fa-leaf"></i> Cosecha
                         </span>

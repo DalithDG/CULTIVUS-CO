@@ -1,4 +1,4 @@
-/* --- Estilo base global --- */
+﻿/* --- Estilo base global --- */
 * {
   margin: 0;
   padding: 0;
@@ -10,6 +10,7 @@
 /* --- Fondo con imagen centrada y difuminada --- */
 body {
   height: 100vh;
+  height: 100dvh;
   background: url("/demo/src/main/resources/static/images/imageIndex.jpg") no-repeat center center/cover;
   display: flex;
   justify-content: center;

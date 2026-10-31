@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    Panel del vendedor · Cultivus (vendedor-panel.css)
    Lenguaje visual unificado con transportista-panel.css,
    vendedor-sidebar.css y admin-panel-v2.css, aplicando
@@ -43,6 +43,7 @@
 body.vp-page {
     margin: 0;
     min-height: 100vh;
+  min-height: 100dvh;
     background: var(--vp-bg);
     color: var(--vp-ink);
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
@@ -1289,4 +1290,12 @@ body:not(.vista-avanzada) .vp-order-row { padding-top: 18px; padding-bottom: 18p
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
     }
+}
+
+
+/* iOS Safari auto-zoom prevention */
+@media (max-width: 768px) {
+  input, select, textarea, .vp-input, .vp-select, .vp-search__input {
+    font-size: 16px !important;
+  }
 }

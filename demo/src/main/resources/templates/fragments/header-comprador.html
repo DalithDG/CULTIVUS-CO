@@ -79,7 +79,7 @@
             <!-- Acciones -->
             <div class="header-actions">
 
-                <!-- Panel Admin o Panel Vendedor -->
+                <!-- Panel Admin o Panel Vendedor o Vender en Cultivus -->
                 <th:block th:if="${session.usuarioLogueado != null}">
                     <a th:if="${session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).ADMIN)}"
                         th:href="@{/admin/dashboard}" class="btn-sell highlight" title="Ir al panel de administrador">
@@ -90,6 +90,11 @@
                         th:href="@{/vendedor/dashboard}" class="btn-sell highlight" title="Ir al panel de vendedor">
                         <i class="fas fa-store"></i>
                         <span>Panel Vendedor</span>
+                    </a>
+                    <a th:if="${!session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).ADMIN) and !session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).VENDEDOR)}"
+                        th:href="@{/vendedor/registro}" class="btn-sell highlight" title="Vender en Cultivus">
+                        <i class="fas fa-store"></i>
+                        <span>Vender en Cultivus</span>
                     </a>
                 </th:block>
 
@@ -241,6 +246,10 @@
             <a th:if="${session.usuarioLogueado != null and session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).VENDEDOR)}"
                th:href="@{/vendedor/dashboard}" class="mobile-highlight">
                 <i class="fas fa-store"></i> Panel Vendedor
+            </a>
+            <a th:if="${session.usuarioLogueado != null and !session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).VENDEDOR) and !session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).ADMIN)}"
+               th:href="@{/vendedor/registro}" class="mobile-highlight">
+                <i class="fas fa-store"></i> Vender en Cultivus
             </a>
             <a th:if="${session.usuarioLogueado == null or session.usuarioLogueado.puedeComprar()}"
                th:href="@{/usuario/pedidos}"

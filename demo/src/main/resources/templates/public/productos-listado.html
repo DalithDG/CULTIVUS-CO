@@ -1,10 +1,10 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Catálogo de Productos | Cultivus</title>
     <link rel="stylesheet" th:href="@{/style.css}">
     <link rel="stylesheet" th:href="@{/header.css}">
@@ -194,7 +194,7 @@
         <div th:if="${productos != null and !productos.isEmpty()}" class="productos-grid">
             <div th:each="producto : ${productos}" class="producto-card">
                 <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}"
-                    onerror="this.src='/images/placeholder.jpg'">
+                    onerror="this.src='/images/placeholder.svg'">
                 <div class="producto-body">
                     <h3 th:text="${producto.nombre}">Nombre del producto</h3>
                     <div class="producto-precio"

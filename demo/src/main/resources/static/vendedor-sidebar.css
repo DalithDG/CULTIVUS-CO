@@ -1,4 +1,4 @@
-/* ============================================================
+﻿/* ============================================================
    Panel Vendedor con Sidebar — Cultivus (vendedor-sidebar.css)
    Lenguaje visual unificado con transportista-panel.css,
    vendedor-panel.css y admin-panel-v2.css, aplicando
@@ -55,6 +55,7 @@ body.vs-layout {
     background: var(--vs-bg);
     color: var(--vs-ink);
     min-height: 100vh;
+  min-height: 100dvh;
     overflow-x: hidden;
     line-height: 1.5;
 }
@@ -1964,4 +1965,12 @@ html.texto-grande .vs-nav-item { font-size: 0.95rem; }
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
     }
+}
+
+
+/* iOS Safari auto-zoom prevention */
+@media (max-width: 768px) {
+  input, select, textarea, .vs-search__input {
+    font-size: 16px !important;
+  }
 }

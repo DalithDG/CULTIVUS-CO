@@ -1,4 +1,4 @@
-/* ================================================================
+﻿/* ================================================================
    CULTIVUS - REGISTRO NEW CSS
    Diseno basado en el mismo estilo split-screen de login_new
    Layout: panel izquierdo 58% imagen+logo | panel derecho 42% form
@@ -599,6 +599,7 @@ body {
         flex-direction: column;
         height: auto;
         min-height: 100vh;
+  min-height: 100dvh;
     }
     .panel-left {
         width: 100%;

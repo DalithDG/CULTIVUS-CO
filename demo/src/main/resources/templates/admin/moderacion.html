@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head th:replace="~{admin/fragments/head :: head('Moderación')}"></head>
@@ -46,7 +46,7 @@
                                 <tr th:each="cp : ${catalogoPendiente.content}">
                                     <td>
                                         <img th:src="${cp.imagenUrl}" alt="img" class="adm-thumb--lg"
-                                            onerror="this.src='/images/placeholder.jpg'">
+                                            onerror="this.src='/images/placeholder.svg'">
                                     </td>
                                     <td><span class="adm-cell-title" th:text="${cp.nombre}">Nombre</span></td>
                                     <td><span class="badge badge-category" th:text="${cp.categoria != null ? cp.categoria.nombre : '-'}">Cat</span></td>
