@@ -10,7 +10,7 @@
             <!-- Logo con slogan -->
             <div class="header-logo">
                 <a th:href="@{/usuario/inicio}">
-                    <img th:src="@{/images/ImagotipoCultivus.png}" alt="Cultivus">
+                    <img th:src="@{/images/imagotipo_transparente.png}" alt="Cultivus">
                 </a>
             </div>
 
@@ -65,23 +65,12 @@
             <!-- Acciones -->
             <div class="header-actions">
 
-                <!-- Botón Vender / Panel Admin -->
+                <!-- Panel Admin (si aplica) -->
                 <th:block th:if="${session.usuarioLogueado != null and session.usuarioLogueado.rol != null}">
                     <a th:if="${session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).ADMIN)}"
                         th:href="@{/admin/dashboard}" class="btn-sell highlight" title="Ir al panel de administrador">
                         <i class="fas fa-user-shield"></i>
                         <span>Panel Admin</span>
-                    </a>
-                    <a th:if="${session.usuarioLogueado.rol.name() == 'COMPRADOR'}" th:href="@{/vendedor/registro}"
-                        class="btn-sell" title="Registrarse como vendedor">
-                        <i class="fas fa-store"></i>
-                        <span>Vender</span>
-                    </a>
-                </th:block>
-                <th:block th:if="${session.usuarioLogueado == null or session.usuarioLogueado.rol == null}">
-                    <a th:href="@{/vendedor/registro}" class="btn-sell" title="Vender en Cultivus">
-                        <i class="fas fa-store"></i>
-                        <span>Vender</span>
                     </a>
                 </th:block>
 
@@ -207,8 +196,6 @@
             <a th:href="@{/usuario/pedidos}"><i class="fas fa-box"></i> Mis pedidos</a>
 
             <th:block th:if="${session.usuarioLogueado != null and session.usuarioLogueado.rol != null}">
-                <a th:if="${session.usuarioLogueado.rol.name() == 'COMPRADOR'}" th:href="@{/vendedor/registro}"
-                    class="mobile-highlight"><i class="fas fa-store"></i> Convertirse en vendedor</a>
                 <a th:if="${session.usuarioLogueado.rol.name() == 'COMPRADOR'}" th:href="@{/transportista/registro}"
                     class="mobile-highlight"><i class="fas fa-truck-fast"></i> Conviértete en transportista</a>
             </th:block>

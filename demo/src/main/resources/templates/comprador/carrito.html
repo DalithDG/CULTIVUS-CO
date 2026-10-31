@@ -8,335 +8,180 @@
     <title>Carrito de Compras - Cultivus</title>
     <link rel="stylesheet" th:href="@{/style.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f6f8;
-            margin: 0;
-            padding: 0;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
-
-        h1 {
-            color: #27ae60;
-            margin-bottom: 30px;
-        }
-
-        .carrito-layout {
-            display: grid;
-            grid-template-columns: 1fr 350px;
-            gap: 30px;
-        }
-
-        .productos-section {
-            background: white;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        .resumen-section {
-            background: white;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            height: fit-content;
-            position: sticky;
-            top: 100px;
-        }
-
-        .producto-item {
-            display: flex;
-            gap: 20px;
-            padding: 20px;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .producto-item:last-child {
-            border-bottom: none;
-        }
-
-        .producto-imagen {
-            width: 120px;
-            height: 120px;
-            object-fit: cover;
-            border-radius: 8px;
-        }
-
-        .producto-info {
-            flex: 1;
-        }
-
-        .producto-nombre {
-            font-size: 18px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 8px;
-        }
-
-        .producto-precio {
-            font-size: 16px;
-            color: #27ae60;
-            font-weight: 600;
-        }
-
-        .cantidad-control {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin: 15px 0;
-        }
-
-        .btn-cantidad {
-            width: 35px;
-            height: 35px;
-            border: 1px solid #ddd;
-            background: white;
-            border-radius: 5px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .btn-cantidad:hover {
-            background: #f0f0f0;
-        }
-
-        .cantidad-input {
-            width: 60px;
-            text-align: center;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 8px;
-        }
-
-        .btn-eliminar {
-            background: #dc3545;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-
-        .btn-eliminar:hover {
-            background: #c82333;
-        }
-
-        .resumen-titulo {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 20px;
-            color: #333;
-        }
-
-        .resumen-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 15px;
-            color: #666;
-        }
-
-        .resumen-total {
-            display: flex;
-            justify-content: space-between;
-            font-size: 24px;
-            font-weight: bold;
-            color: #27ae60;
-            padding-top: 20px;
-            border-top: 2px solid #e0e0e0;
-            margin-top: 20px;
-        }
-
-        .btn-pagar {
-            width: 100%;
-            padding: 15px;
-            background: #27ae60;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 20px;
-            transition: background 0.3s;
-        }
-
-        .btn-pagar:hover {
-            background: #1ef378;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            background: white;
-            border-radius: 12px;
-        }
-
-        .empty-state i {
-            font-size: 64px;
-            color: #ccc;
-            margin-bottom: 20px;
-        }
-
-        .alert {
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-        }
-
-        .alert-success {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .alert-error {
-            background: #f8d7da;
-            color: #721c24;
-        }
-
-        @media (max-width: 768px) {
-            .carrito-layout {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
     <link rel="stylesheet" th:href="@{/header.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
+    <link rel="stylesheet" th:href="@{/checkout-tokens.css}">
+    <link rel="stylesheet" th:href="@{/carrito.css}">
 </head>
 
 <body>
     <header th:replace="~{fragments/header :: siteHeader}"></header>
 
-    <div class="container">
-        <h1><i class="fa-solid fa-cart-shopping"></i> Carrito de Compras</h1>
+    <main class="cart-page">
+        <div class="cart-page__inner">
+            <div class="cart-header">
+                <ol class="checkout-steps" aria-label="Progreso de compra">
+                    <li class="checkout-steps__item is-current" aria-current="step"><span class="checkout-steps__num">1</span> Carrito</li>
+                    <li class="checkout-steps__item"><span class="checkout-steps__num">2</span> Entrega y pago</li>
+                    <li class="checkout-steps__item"><span class="checkout-steps__num">3</span> Confirmación</li>
+                </ol>
+                <h1 class="cart-title">Tu carrito</h1>
+                <p class="cart-subtitle" th:if="${detalles != null && !detalles.isEmpty()}">
+                    <span th:text="${detalles.size()}">1</span>
+                    <span th:text="${detalles.size() == 1 ? 'producto' : 'productos'}">producto</span>
+                    de <span th:text="${itemsPorVendedor.size()}">1</span>
+                    <span th:text="${itemsPorVendedor.size() == 1 ? 'vendedor' : 'vendedores'}">vendedor</span>
+                </p>
+            </div>
 
-        <div th:if="${mensaje}" class="alert alert-success" th:text="${mensaje}"></div>
-        <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+            <div th:if="${mensaje}" class="cart-alert cart-alert--success" role="status">
+                <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+                <span th:text="${mensaje}"></span>
+            </div>
+            <div th:if="${error}" class="cart-alert cart-alert--error" role="alert">
+                <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+                <span th:text="${error}"></span>
+            </div>
 
-        <div th:if="${detalles == null || detalles.isEmpty()}" class="empty-state">
-            <i class="fa-solid fa-shopping-cart"></i>
-            <h3>Tu carrito está vacío</h3>
-            <p>Agrega productos para comenzar a comprar</p>
-            <a th:href="@{/}"
-                style="display: inline-block; margin-top: 20px; padding: 12px 24px; background: #27ae60; color: white; text-decoration: none; border-radius: 8px;">
-                <i class="fa-solid fa-arrow-left"></i> Continuar Comprando
-            </a>
-        </div>
+            <div th:if="${detalles == null || detalles.isEmpty()}" class="cart-empty">
+                <div class="cart-empty__icon" aria-hidden="true"><i class="fa-solid fa-basket-shopping"></i></div>
+                <h2 class="cart-empty__title">Tu carrito está vacío</h2>
+                <p class="cart-empty__text">Agrega productos para comenzar a comprar</p>
+                <a th:href="@{/}" class="cart-btn cart-btn--inline">
+                    Seguir explorando
+                </a>
+            </div>
 
-        <div th:if="${detalles != null && !detalles.isEmpty()}" class="carrito-layout">
-            <div class="productos-section">
-                <h2 style="margin-bottom: 20px;">Productos en tu Carrito</h2>
+            <div th:if="${detalles != null && !detalles.isEmpty()}" class="cart-layout">
+                <div class="cart-list">
 
-                <!-- Agrupación de productos por vendedor (US-21 Item 6) -->
-                <div th:each="entry : ${itemsPorVendedor}" class="vendedor-grupo"
-                     style="margin-bottom: 24px; border: 1.5px solid #e2e8f0; border-radius: 10px; overflow: hidden; background: #ffffff;">
-                    <div style="background: #f8fafc; padding: 12px 18px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between;">
-                        <span style="font-weight: 700; color: #1e293b; font-size: 15px;">
-                            <i class="fa-solid fa-store" style="color: #27ae60; margin-right: 8px;"></i>
-                            Vendedor: <span th:text="${entry.key}">Vendedor</span>
-                        </span>
-                        <span style="font-size: 12px; color: #64748b; background: #ffffff; padding: 3px 10px; border-radius: 20px; border: 1px solid #e2e8f0; font-weight: 600;">
-                            <span th:text="${entry.value.size()}">1</span> producto(s)
-                        </span>
-                    </div>
-
-                    <div th:each="detalle : ${entry.value}" class="producto-item">
-                        <img th:src="${detalle.imagenUrl}"
-                             th:alt="${detalle.nombre}"
-                             class="producto-imagen"
-                             onerror="this.src='/images/placeholder.jpg'">
-
-                        <div class="producto-info">
-                            <div class="producto-nombre" th:text="${detalle.nombre}"></div>
-
-                            <div class="producto-precio">
-                                $<span th:text="${#numbers.formatDecimal(
-                                    detalle.precioUnitario, 0, 'COMMA', 0, 'POINT')}">0</span>
-                                x <span th:text="${(detalle.cantidad % 1 == 0 ? #numbers.formatDecimal(detalle.cantidad, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(detalle.cantidad, 1, 'POINT', 2, 'COMMA'))} + ' ' + ${detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : ''}">1</span>
-                            </div>
-                            
-                            <!-- Nota de compra mínima (Informativo) -->
-                            <div class="compra-minima-nota" style="font-size: 0.8rem; color: #888; margin-top: 5px;">
-                                <i class="fa-solid fa-circle-info"></i> Mínimo requerido: 
-                                <span th:text="${(detalle.cantidad % 1 == 0 ? #numbers.formatDecimal(detalle.cantidad, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(detalle.cantidad, 1, 'POINT', 2, 'COMMA'))}">1</span> / 
-                                <span th:text="${(detalle.compraMinima != null ? (detalle.compraMinima % 1 == 0 ? #numbers.formatDecimal(detalle.compraMinima, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(detalle.compraMinima, 1, 'POINT', 2, 'COMMA')) : '1')}">1</span> 
-                                <span th:text="${detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : ''}">unid</span>
-                            </div>
-
-                            <div class="cantidad-control">
-                                <form th:action="@{/carrito/actualizar}" method="post"
-                                    style="display: flex; align-items: center; gap: 10px;">
-                                    <input type="hidden" name="ofertaId"
-                                        th:value="${detalle.ofertaId != null ? detalle.ofertaId : detalle.productoId}">
-                                    <button type="button" class="btn-cantidad"
-                                        onclick="cambiarCantidad(this, -1)">
-                                        <i class="fa-solid fa-minus"></i>
-                                    </button>
-                                    <input type="number" name="cantidad"
-                                        th:value="${detalle.cantidad}"
-                                        min="0.01" max="9999" step="any"
-                                        class="cantidad-input">
-                                    <button type="button" class="btn-cantidad"
-                                        onclick="cambiarCantidad(this, +1)">
-                                        <i class="fa-solid fa-plus"></i>
-                                    </button>
-                                </form>
-
-                                <form th:action="@{/carrito/eliminar}" method="post"
-                                    style="margin-left: auto;">
-                                    <input type="hidden" name="ofertaId"
-                                        th:value="${detalle.ofertaId != null ? detalle.ofertaId : detalle.productoId}">
-                                    <button type="submit" class="btn-eliminar">
-                                        <i class="fa-solid fa-trash"></i> Eliminar
-                                    </button>
-                                </form>
+                    <!-- Agrupación de productos por vendedor (US-21 Item 6) -->
+                    <section th:each="entry : ${itemsPorVendedor}" class="cart-vendor vendedor-grupo">
+                        <div class="cart-vendor__head">
+                            <h2 class="cart-vendor__name">
+                                <span class="cart-vendor__icon" aria-hidden="true"><i class="fa-solid fa-store"></i></span>
+                                <span class="cart-vendor__title" th:text="${entry.key}">Vendedor</span>
+                            </h2>
+                            <div class="cart-vendor__chips">
+                                <span class="cart-chip">
+                                    <span th:text="${entry.value.size()}">1</span>
+                                    <span th:text="${entry.value.size() == 1 ? 'producto' : 'productos'}">producto</span>
+                                </span>
+                                <th:block th:if="${tieneCiudad && desgloseEnvio != null}">
+                                    <th:block th:each="d : ${desgloseEnvio}">
+                                        <span th:if="${d.vendedorNombre == entry.key}" class="cart-chip cart-chip--ship">
+                                            <i class="fa-solid fa-truck-fast" aria-hidden="true"></i>
+                                            Envío ~$<span th:text="${#numbers.formatDecimal(d.tarifaCentavos / 100.0, 0, 'COMMA', 0, 'POINT')}">0</span>
+                                        </span>
+                                    </th:block>
+                                </th:block>
                             </div>
                         </div>
-                    </div>
-                </div>
-            </div>
 
-            <div class="resumen-section">
-                <div class="resumen-titulo">Resumen del Pedido</div>
-                <div class="resumen-item">
-                    <span>Subtotal:</span>
-                    <span>$<span th:text="${#numbers.formatDecimal(
-                        subtotal, 0, 'COMMA', 0, 'POINT')}">0</span></span>
+                        <article th:each="detalle : ${entry.value}" class="cart-item">
+                            <img th:src="${detalle.imagenUrl}"
+                                 th:alt="${detalle.nombre}"
+                                 class="cart-item__img"
+                                 onerror="this.onerror=null;this.src='/images/placeholder.svg'">
+
+                            <div class="cart-item__body">
+                                <h3 class="cart-item__name" th:text="${detalle.nombre}"></h3>
+
+                                <p class="cart-item__price">
+                                    $<span th:text="${#numbers.formatDecimal(
+                                        detalle.precioUnitario, 0, 'COMMA', 0, 'POINT')}">0</span>
+                                    × <span th:text="${(detalle.cantidad % 1 == 0 ? #numbers.formatDecimal(detalle.cantidad, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(detalle.cantidad, 1, 'POINT', 2, 'COMMA'))} + ' ' + ${detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : ''}">1</span>
+                                </p>
+
+                                <!-- Nota de compra mínima (Informativo) -->
+                                <p class="cart-item__min compra-minima-nota">
+                                    <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                                    <span>Compra mínima:
+                                        <span th:text="${(detalle.compraMinima != null ? (detalle.compraMinima % 1 == 0 ? #numbers.formatDecimal(detalle.compraMinima, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(detalle.compraMinima, 1, 'POINT', 2, 'COMMA')) : '1')}">1</span>
+                                        <span th:text="${detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : ''}">unid</span>
+                                    </span>
+                                </p>
+
+                                <div class="cart-item__controls">
+                                    <form th:action="@{/carrito/actualizar}" method="post" class="cart-item__qty-form">
+                                        <input type="hidden" name="ofertaId"
+                                            th:value="${detalle.ofertaId != null ? detalle.ofertaId : detalle.productoId}">
+                                        <div class="cart-stepper">
+                                            <button type="button" class="cart-stepper__btn"
+                                                th:classappend="${detalle.cantidad <= (detalle.compraMinima != null ? detalle.compraMinima : 1)} ? 'is-min'"
+                                                aria-label="Disminuir cantidad"
+                                                onclick="cambiarCantidad(this, -1)">
+                                                <i class="fa-solid fa-minus" aria-hidden="true"></i>
+                                            </button>
+                                            <input type="number" name="cantidad"
+                                                th:value="${detalle.cantidad}"
+                                                min="0.01" max="9999" step="any"
+                                                aria-label="Cantidad"
+                                                class="cart-stepper__input">
+                                            <button type="button" class="cart-stepper__btn"
+                                                aria-label="Aumentar cantidad"
+                                                onclick="cambiarCantidad(this, +1)">
+                                                <i class="fa-solid fa-plus" aria-hidden="true"></i>
+                                            </button>
+                                        </div>
+                                    </form>
+
+                                    <form th:action="@{/carrito/eliminar}" method="post" class="cart-item__remove-form">
+                                        <input type="hidden" name="ofertaId"
+                                            th:value="${detalle.ofertaId != null ? detalle.ofertaId : detalle.productoId}">
+                                        <button type="submit" class="cart-remove">
+                                            <i class="fa-regular fa-trash-can" aria-hidden="true"></i> Eliminar
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <div class="cart-item__total">
+                                $<span th:text="${#numbers.formatDecimal(detalle.precioUnitario * detalle.cantidad, 0, 'COMMA', 0, 'POINT')}">0</span>
+                            </div>
+                        </article>
+                    </section>
                 </div>
-                <div class="resumen-item">
-                    <span>Envío:</span>
-                    <span th:if="${tieneCiudad}">
-                        $<span th:text="${#numbers.formatDecimal(envioEstimado, 0, 'COMMA', 0, 'POINT')}">0</span>
-                        <small style="color:#888;">(estimado)</small>
-                    </span>
-                    <span th:unless="${tieneCiudad}" style="color:#888; font-size:13px;">
-                        Se calcula al ingresar tu direccion
-                    </span>
-                </div>
-                <div class="resumen-total">
-                    <span>Total:</span>
-                    <span>$<span th:text="${#numbers.formatDecimal(
-                        total, 0, 'COMMA', 0, 'POINT')}">0</span></span>
-                </div>
-                <a th:href="@{/pago}" class="btn-pagar"
-                    style="text-decoration: none; display: block; text-align: center;">
-                    <i class="fa-solid fa-credit-card"></i> Proceder al Pago
-                </a>
-                <a th:href="@{/}"
-                    style="display: block; text-align: center; margin-top: 15px; color: #27ae60; text-decoration: none;">
-                    <i class="fa-solid fa-arrow-left"></i> Continuar Comprando
-                </a>
+
+                <aside class="cart-summary" aria-labelledby="cart-summary-title">
+                    <h2 class="cart-summary__title" id="cart-summary-title">Resumen del pedido</h2>
+                    <dl class="cart-summary__list">
+                        <div class="cart-summary__row">
+                            <dt>Subtotal</dt>
+                            <dd>$<span th:text="${#numbers.formatDecimal(
+                                subtotal, 0, 'COMMA', 0, 'POINT')}">0</span></dd>
+                        </div>
+                        <div class="cart-summary__row">
+                            <dt>Envío</dt>
+                            <dd th:if="${tieneCiudad}">
+                                $<span th:text="${#numbers.formatDecimal(envioEstimado, 0, 'COMMA', 0, 'POINT')}">0</span>
+                                <small>(estimado)</small>
+                            </dd>
+                            <dd th:unless="${tieneCiudad}">—</dd>
+                        </div>
+                    </dl>
+                    <p class="cart-summary__note" th:unless="${tieneCiudad}">
+                        <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
+                        <span>Se calcula al ingresar tu dirección</span>
+                    </p>
+                    <dl class="cart-summary__total">
+                        <dt>Total</dt>
+                        <dd>$<span th:text="${#numbers.formatDecimal(
+                            total, 0, 'COMMA', 0, 'POINT')}">0</span></dd>
+                    </dl>
+                    <a th:href="@{/pago}" class="cart-btn">
+                        <i class="fa-solid fa-credit-card" aria-hidden="true"></i> Proceder al pago
+                    </a>
+                    <a th:href="@{/}" class="cart-link">
+                        <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Continuar comprando
+                    </a>
+                    <p class="cart-trust">
+                        <i class="fa-solid fa-lock" aria-hidden="true"></i> Pago seguro con Wompi
+                    </p>
+                </aside>
             </div>
         </div>
-    </div>
+    </main>
 
     <script>
         /**

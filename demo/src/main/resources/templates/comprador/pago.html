@@ -9,681 +9,297 @@
     <link rel="stylesheet" th:href="@{/header.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        :root {
-            --primary: #27ae60;
-            --primary-dark: #1e8449;
-            --primary-light: #e8f8f0;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-            --border-color: #e2e8f0;
-            --bg-page: #f8fafc;
-            --card-bg: #ffffff;
-            --danger: #ef4444;
-            --danger-bg: #fef2f2;
-            --radius: 12px;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
-            --shadow-md: 0 4px 14px -2px rgba(0,0,0,0.08);
-        }
-
-        body {
-            background-color: var(--bg-page);
-            color: var(--text-main);
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-        }
-
-        .checkout-container {
-            max-width: 1180px;
-            margin: 30px auto 60px;
-            padding: 0 20px;
-        }
-
-        .checkout-header {
-            margin-bottom: 25px;
-        }
-
-        .btn-volver {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            margin-bottom: 12px;
-            transition: color 0.2s;
-        }
-
-        .btn-volver:hover {
-            color: var(--primary);
-        }
-
-        .checkout-title {
-            font-size: 26px;
-            font-weight: 700;
-            color: var(--text-main);
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .checkout-title i {
-            color: var(--primary);
-        }
-
-        .checkout-subtitle {
-            font-size: 14px;
-            color: var(--text-muted);
-            margin-top: 4px;
-        }
-
-        /* ── Grid principal ── */
-        .checkout-grid {
-            display: grid;
-            grid-template-columns: 1fr 400px;
-            gap: 28px;
-            align-items: start;
-        }
-
-        /* ── Cards ── */
-        .card-checkout {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            padding: 28px;
-            box-shadow: var(--shadow-md);
-            border: 1px solid var(--border-color);
-        }
-
-        .card-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: var(--text-main);
-            margin: 0 0 20px 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .card-title i {
-            color: var(--primary);
-        }
-
-        /* ── Formulario de Entrega ── */
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 16px;
-        }
-
-        .form-row.single {
-            grid-template-columns: 1fr;
-        }
-
-        .form-field {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-        }
-
-        .form-field label {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-main);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .form-field label span.required {
-            color: var(--danger);
-        }
-
-        .form-input, .form-select, .form-textarea {
-            width: 100%;
-            padding: 11px 14px;
-            border: 1.5px solid var(--border-color);
-            border-radius: 8px;
-            font-size: 14px;
-            color: var(--text-main);
-            background: #ffffff;
-            transition: all 0.2s;
-            box-sizing: border-box;
-            outline: none;
-        }
-
-        .form-input:focus, .form-select:focus, .form-textarea:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.12);
-        }
-
-        .form-textarea {
-            resize: vertical;
-            min-height: 70px;
-        }
-
-        .input-hint {
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        /* ── Banner de Cobertura y Disponibilidad ── */
-        .info-cobertura {
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            border-radius: 8px;
-            padding: 14px 16px;
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            margin-bottom: 20px;
-            font-size: 13px;
-            color: #166534;
-        }
-
-        .info-cobertura i {
-            font-size: 18px;
-            color: var(--primary);
-            margin-top: 1px;
-        }
-
-        /* ── Caja de Pago Seguro Wompi ── */
-        .wompi-box {
-            background: #fafaf9;
-            border: 1.5px solid #e7e5e4;
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 24px;
-        }
-
-        .wompi-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 12px;
-        }
-
-        .wompi-logo-badge {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 15px;
-            font-weight: 700;
-            color: #1c1917;
-        }
-
-        .badge-seguro {
-            background: #e0f2fe;
-            color: #0369a1;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .wompi-desc {
-            font-size: 13px;
-            color: var(--text-muted);
-            line-height: 1.5;
-            margin-bottom: 14px;
-        }
-
-        .payment-methods-badges {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-bottom: 18px;
-        }
-
-        .pay-badge {
-            background: #ffffff;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            padding: 5px 10px;
-            font-size: 12px;
-            font-weight: 600;
-            color: #475569;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .btn-pagar {
-            width: 100%;
-            padding: 15px 20px;
-            background: linear-gradient(135deg, #27ae60 0%, #219a52 100%);
-            color: #ffffff;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            transition: all 0.25s ease;
-            box-shadow: 0 4px 12px rgba(39, 174, 96, 0.25);
-        }
-
-        .btn-pagar:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 18px rgba(39, 174, 96, 0.35);
-            background: linear-gradient(135deg, #219a52 0%, #1e8449 100%);
-        }
-
-        .btn-pagar:disabled {
-            background: #94a3b8;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        /* ── Columna Derecha: Resumen de Compra ── */
-        .resumen-card {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            padding: 24px;
-            box-shadow: var(--shadow-md);
-            border: 1px solid var(--border-color);
-            position: sticky;
-            top: 90px;
-        }
-
-        .resumen-items-list {
-            max-height: 280px;
-            overflow-y: auto;
-            margin-bottom: 20px;
-            padding-right: 4px;
-        }
-
-        .item-resumen {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            padding: 12px 0;
-            border-bottom: 1px solid #f1f5f9;
-        }
-
-        .item-resumen:last-child {
-            border-bottom: none;
-        }
-
-        .item-img {
-            width: 52px;
-            height: 52px;
-            border-radius: 8px;
-            object-fit: cover;
-            border: 1px solid var(--border-color);
-            flex-shrink: 0;
-        }
-
-        .item-details {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .item-name {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-main);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            margin-bottom: 3px;
-        }
-
-        .item-subtext {
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        .item-total {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-main);
-            text-align: right;
-            white-space: nowrap;
-        }
-
-        .totales-tabla {
-            border-top: 1.5px dashed var(--border-color);
-            padding-top: 16px;
-            margin-top: 10px;
-        }
-
-        .linea-total {
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px;
-            color: var(--text-muted);
-            margin-bottom: 10px;
-        }
-
-        .linea-total.destacado {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--primary);
-            padding-top: 12px;
-            border-top: 1px solid var(--border-color);
-            margin-top: 10px;
-            margin-bottom: 0;
-        }
-
-        .badge-fresco {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            color: #15803d;
-            background: #f0fdf4;
-            padding: 10px 14px;
-            border-radius: 8px;
-            margin-top: 18px;
-        }
-
-        /* ── Alertas ── */
-        .alert-box {
-            padding: 14px 16px;
-            border-radius: 8px;
-            font-size: 14px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .alert-danger {
-            background: var(--danger-bg);
-            color: #991b1b;
-            border: 1px solid #fecaca;
-        }
-
-        @media (max-width: 860px) {
-            .checkout-grid {
-                grid-template-columns: 1fr;
-            }
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-            .resumen-card {
-                position: static;
-            }
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/checkout-tokens.css}">
+    <link rel="stylesheet" th:href="@{/pago.css}">
 </head>
 <body>
     <header th:replace="~{fragments/header :: siteHeader}"></header>
 
-    <div class="checkout-container">
-        <div class="checkout-header">
-            <a th:href="@{/carrito}" class="btn-volver">
-                <i class="fa-solid fa-arrow-left"></i> Modificar productos del carrito
-            </a>
-            <h1 class="checkout-title">
-                <i class="fa-solid fa-credit-card"></i> Entrega y Pago
-            </h1>
-            <p class="checkout-subtitle">Ingresa tus datos de envío para procesar tu orden con Wompi de Bancolombia.</p>
-        </div>
+    <main class="checkout-page">
+        <div class="checkout-page__inner">
+            <div class="checkout-header">
+                <ol class="checkout-steps" aria-label="Progreso de compra">
+                    <li class="checkout-steps__item is-done"><span class="checkout-steps__num"><i class="fa-solid fa-check" aria-hidden="true"></i></span> Carrito</li>
+                    <li class="checkout-steps__item is-current" aria-current="step"><span class="checkout-steps__num">2</span> Entrega y pago</li>
+                    <li class="checkout-steps__item"><span class="checkout-steps__num">3</span> Confirmación</li>
+                </ol>
+                <a th:href="@{/carrito}" class="checkout-back">
+                    <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Volver al carrito
+                </a>
+                <h1 class="checkout-title">Entrega y pago</h1>
+                <p class="checkout-subtitle">Ingresa tus datos de envío para procesar tu orden con Wompi de Bancolombia.</p>
+            </div>
 
-        <div th:if="${error}" class="alert-box alert-danger">
-            <i class="fa-solid fa-triangle-exclamation"></i>
-            <span th:text="${error}"></span>
-        </div>
+            <div th:if="${error}" class="checkout-alert" role="alert">
+                <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                <span th:text="${error}"></span>
+            </div>
 
-        <div th:if="${wompiError}" class="alert-box alert-danger">
-            <i class="fa-solid fa-circle-exclamation"></i>
-            <span th:text="${wompiError}"></span>
-        </div>
+            <div th:if="${wompiError}" class="checkout-alert" role="alert">
+                <i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i>
+                <span th:text="${wompiError}"></span>
+            </div>
 
-        <!-- Alerta dinámica de validación JS -->
-        <div id="alertJs" class="alert-box alert-danger" style="display: none;">
-            <i class="fa-solid fa-triangle-exclamation"></i>
-            <span id="alertJsText"></span>
-        </div>
+            <!-- Alerta dinámica de validación JS -->
+            <div id="alertJs" class="checkout-alert" style="display: none;" aria-live="polite">
+                <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                <span id="alertJsText"></span>
+            </div>
 
-        <div class="checkout-grid">
+            <div class="checkout-grid">
 
-            <!-- ── Columna Izquierda: Datos de Entrega y Pasarela ── -->
-            <div class="card-checkout">
-                <h2 class="card-title">
-                    <i class="fa-solid fa-location-dot"></i> Información de Entrega
-                </h2>
+                <!-- ── Columna Izquierda: Datos de Entrega y Pasarela ── -->
+                <section class="checkout-card" aria-labelledby="entrega-title">
+                    <h2 class="checkout-card__title" id="entrega-title">Información de entrega</h2>
 
-                <!-- Aviso de Cobertura Regional -->
-                <div class="info-cobertura">
-                    <i class="fa-solid fa-truck-ramp-box"></i>
-                    <div>
-                        <strong>Cobertura Regional: Departamento de Bolívar</strong>
-                        <div style="margin-top: 3px; color: #15803d;">
+                    <!-- Aviso de Cobertura Regional -->
+                    <div class="coverage-note">
+                        <i class="fa-solid fa-truck-ramp-box" aria-hidden="true"></i>
+                        <div>
+                            <strong>Cobertura regional: departamento de Bolívar</strong>
                             Envíos directos desde las fincas productoras a tu mesa.
                         </div>
                     </div>
-                </div>
 
-                <form id="formCheckout">
-                    <!-- Token CSRF inyectado por Thymeleaf -->
-                    <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <form id="formCheckout">
+                        <!-- Token CSRF inyectado por Thymeleaf -->
+                        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
 
-
-                    <!-- Fila 1: Receptor y Teléfono -->
-                    <div class="form-row">
-                        <div class="form-field">
-                            <label for="receptor">
-                                <i class="fa-solid fa-user"></i> Nombre de quien recibe <span class="required">*</span>
-                            </label>
-                            <input type="text" id="receptor" name="receptor" class="form-input"
-                                   th:value="${usuario != null ? usuario.nombre : ''}"
-                                   placeholder="Ej: Carlos Pérez" required>
-                        </div>
-                        <div class="form-field">
-                            <label for="telefono">
-                                <i class="fa-solid fa-phone"></i> Teléfono de contacto <span class="required">*</span>
-                            </label>
-                            <input type="tel" id="telefono" name="telefono" class="form-input"
-                                   placeholder="Ej: 300 123 4567" required>
-                            <span class="input-hint">Para coordinar la entrega con el repartidor.</span>
-                        </div>
-                    </div>
-
-                    <!-- Fila 2: Departamento y Municipio -->
-                    <div class="form-row">
-                        <div class="form-field">
-                            <label for="departamento">
-                                <i class="fa-solid fa-map"></i> Departamento
-                            </label>
-                            <select id="departamento" name="departamento" class="form-select" readonly>
-                                <option value="Bolívar" selected>Bolívar (Cobertura Regional)</option>
-                            </select>
-                        </div>
-                        <div class="form-field">
-                            <label for="ciudad">
-                                <i class="fa-solid fa-city"></i> Ciudad / Municipio <span class="required">*</span>
-                            </label>
-                            <select id="ciudad" name="ciudad" class="form-select" required>
-                                <optgroup label="Zona 1 - Dique">
-                                    <option value="Cartagena" selected>Cartagena</option>
-                                    <option value="Turbaco">Turbaco</option>
-                                    <option value="Arjona">Arjona</option>
-                                    <option value="Turbaná">Turbaná</option>
-                                    <option value="Santa Rosa">Santa Rosa</option>
-                                    <option value="Santa Catalina">Santa Catalina</option>
-                                    <option value="Villanueva">Villanueva</option>
-                                    <option value="Calamar">Calamar</option>
-                                    <option value="Mahates">Mahates</option>
-                                    <option value="San Cristóbal">San Cristóbal</option>
-                                    <option value="San Estanislao">San Estanislao</option>
-                                    <option value="Clemencia">Clemencia</option>
-                                    <option value="Arroyohondo">Arroyohondo</option>
-                                </optgroup>
-                                <optgroup label="Zona 2 - Montes de María">
-                                    <option value="El Carmen de Bolívar">El Carmen de Bolívar</option>
-                                    <option value="San Jacinto">San Jacinto</option>
-                                    <option value="San Juan Nepomuceno">San Juan Nepomuceno</option>
-                                    <option value="María la Baja">María la Baja</option>
-                                    <option value="El Guamo">El Guamo</option>
-                                    <option value="Soplaviento">Soplaviento</option>
-                                    <option value="Zambrano">Zambrano</option>
-                                </optgroup>
-                                <optgroup label="Zona 3 - Mojana">
-                                    <option value="Magangué">Magangué</option>
-                                    <option value="Achí">Achí</option>
-                                    <option value="Córdoba">Córdoba</option>
-                                    <option value="Montecristo">Montecristo</option>
-                                    <option value="Pinillos">Pinillos</option>
-                                    <option value="San Jacinto del Cauca">San Jacinto del Cauca</option>
-                                    <option value="Tiquisio">Tiquisio</option>
-                                </optgroup>
-                                <optgroup label="Zona 4 - Depresión Momposina">
-                                    <option value="Mompox">Mompox</option>
-                                    <option value="Cicuco">Cicuco</option>
-                                    <option value="Talaigua Nuevo">Talaigua Nuevo</option>
-                                    <option value="Hatillo de Loba">Hatillo de Loba</option>
-                                    <option value="Margarita">Margarita</option>
-                                    <option value="San Fernando">San Fernando</option>
-                                </optgroup>
-                                <optgroup label="Zona 5 - Loba">
-                                    <option value="Altos del Rosario">Altos del Rosario</option>
-                                    <option value="Barranco de Loba">Barranco de Loba</option>
-                                    <option value="El Peñón">El Peñón</option>
-                                    <option value="San Martín de Loba">San Martín de Loba</option>
-                                    <option value="Regidor">Regidor</option>
-                                    <option value="Río Viejo">Río Viejo</option>
-                                    <option value="Norosí">Norosí</option>
-                                </optgroup>
-                                <optgroup label="Zona 6 - Magdalena Medio">
-                                    <option value="Arenal">Arenal</option>
-                                    <option value="Cantagallo">Cantagallo</option>
-                                    <option value="Morales">Morales</option>
-                                    <option value="San Pablo">San Pablo</option>
-                                    <option value="Santa Rosa del Sur">Santa Rosa del Sur</option>
-                                    <option value="Simití">Simití</option>
-                                </optgroup>
-                                <option value="Otro municipio de Bolívar">Otro municipio de Bolívar</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Fila 3: Dirección de la casa -->
-                    <div class="form-row single">
-                        <div class="form-field">
-                            <label for="direccion">
-                                <i class="fa-solid fa-house"></i> Dirección de entrega (Casa, apto, barrio) <span class="required">*</span>
-                            </label>
-                            <input type="text" id="direccion" name="direccion" class="form-input"
-                                   placeholder="Ej: Cra 14 # 35-22, Barrio Manga, Conjunto Las Flores Apto 302" required>
-                        </div>
-                    </div>
-
-                    <!-- Fila 4: Código Postal (Opcional) y Notas de Entrega -->
-                    <div class="form-row">
-                        <div class="form-field">
-                            <label for="codigoPostal">
-                                <i class="fa-solid fa-envelopes-bulk"></i> Código Postal (Opcional)
-                            </label>
-                            <input type="text" id="codigoPostal" name="codigoPostal" class="form-input"
-                                   placeholder="Ej: 130001">
-                        </div>
-                        <div class="form-field">
-                            <label for="notas">
-                                <i class="fa-solid fa-comment-dots"></i> Indicaciones adicionales (Opcional)
-                            </label>
-                            <input type="text" id="notas" name="notas" class="form-input"
-                                   placeholder="Ej: Dejar en portería o tocar timbre blanco">
-                        </div>
-                    </div>
-
-                    <!-- Caja de Wompi -->
-                    <div class="wompi-box">
-                        <div class="wompi-header">
-                            <div class="wompi-logo-badge">
-                                <i class="fa-solid fa-shield-halved" style="color: var(--primary);"></i>
-                                Pasarela Wompi · Bancolombia
+                        <!-- Bloque: Contacto -->
+                        <div class="form-block">
+                            <h3 class="form-block__title">Contacto</h3>
+                            <div class="form-row">
+                                <div class="form-field">
+                                    <label for="receptor">Nombre de quien recibe <span class="required">*</span></label>
+                                    <div class="field-control">
+                                        <i class="fa-regular fa-user" aria-hidden="true"></i>
+                                        <input type="text" id="receptor" name="receptor" class="form-input"
+                                               th:value="${usuario != null ? usuario.nombre : ''}"
+                                               placeholder="Ej: Carlos Pérez" required>
+                                    </div>
+                                </div>
+                                <div class="form-field">
+                                    <label for="telefono">Teléfono de contacto <span class="required">*</span></label>
+                                    <div class="field-control">
+                                        <i class="fa-solid fa-phone" aria-hidden="true"></i>
+                                        <input type="tel" id="telefono" name="telefono" class="form-input"
+                                               placeholder="Ej: 300 123 4567" required>
+                                    </div>
+                                    <span class="input-hint">Para coordinar la entrega con el repartidor.</span>
+                                </div>
                             </div>
-                            <span class="badge-seguro">
-                                <i class="fa-solid fa-lock"></i> Pago 100% Seguro
-                            </span>
                         </div>
-                        <p class="wompi-desc">
-                            Al hacer clic, se abrirá el widget oficial y seguro de Wompi. Tus datos bancarios están protegidos y encriptados.
+
+                        <!-- Bloque: Dirección -->
+                        <div class="form-block">
+                            <h3 class="form-block__title">Dirección</h3>
+                            <div class="form-row">
+                                <div class="form-field">
+                                    <label for="departamento">Departamento</label>
+                                    <div class="field-control">
+                                        <i class="fa-solid fa-map" aria-hidden="true"></i>
+                                        <select id="departamento" name="departamento" class="form-select" readonly
+                                                aria-readonly="true" tabindex="-1">
+                                            <option value="Bolívar" selected>Bolívar (Cobertura regional)</option>
+                                        </select>
+                                        <i class="fa-solid fa-lock field-control__lock" aria-hidden="true"></i>
+                                    </div>
+                                </div>
+                                <div class="form-field">
+                                    <label for="ciudad">Ciudad / Municipio <span class="required">*</span></label>
+                                    <div class="field-control">
+                                        <i class="fa-solid fa-city" aria-hidden="true"></i>
+                                        <select id="ciudad" name="ciudad" class="form-select" required>
+                                            <optgroup label="Zona 1 - Dique">
+                                                <option value="Cartagena" selected>Cartagena</option>
+                                                <option value="Turbaco">Turbaco</option>
+                                                <option value="Arjona">Arjona</option>
+                                                <option value="Turbaná">Turbaná</option>
+                                                <option value="Santa Rosa">Santa Rosa</option>
+                                                <option value="Santa Catalina">Santa Catalina</option>
+                                                <option value="Villanueva">Villanueva</option>
+                                                <option value="Calamar">Calamar</option>
+                                                <option value="Mahates">Mahates</option>
+                                                <option value="San Cristóbal">San Cristóbal</option>
+                                                <option value="San Estanislao">San Estanislao</option>
+                                                <option value="Clemencia">Clemencia</option>
+                                                <option value="Arroyohondo">Arroyohondo</option>
+                                            </optgroup>
+                                            <optgroup label="Zona 2 - Montes de María">
+                                                <option value="El Carmen de Bolívar">El Carmen de Bolívar</option>
+                                                <option value="San Jacinto">San Jacinto</option>
+                                                <option value="San Juan Nepomuceno">San Juan Nepomuceno</option>
+                                                <option value="María la Baja">María la Baja</option>
+                                                <option value="El Guamo">El Guamo</option>
+                                                <option value="Soplaviento">Soplaviento</option>
+                                                <option value="Zambrano">Zambrano</option>
+                                            </optgroup>
+                                            <optgroup label="Zona 3 - Mojana">
+                                                <option value="Magangué">Magangué</option>
+                                                <option value="Achí">Achí</option>
+                                                <option value="Córdoba">Córdoba</option>
+                                                <option value="Montecristo">Montecristo</option>
+                                                <option value="Pinillos">Pinillos</option>
+                                                <option value="San Jacinto del Cauca">San Jacinto del Cauca</option>
+                                                <option value="Tiquisio">Tiquisio</option>
+                                            </optgroup>
+                                            <optgroup label="Zona 4 - Depresión Momposina">
+                                                <option value="Mompox">Mompox</option>
+                                                <option value="Cicuco">Cicuco</option>
+                                                <option value="Talaigua Nuevo">Talaigua Nuevo</option>
+                                                <option value="Hatillo de Loba">Hatillo de Loba</option>
+                                                <option value="Margarita">Margarita</option>
+                                                <option value="San Fernando">San Fernando</option>
+                                            </optgroup>
+                                            <optgroup label="Zona 5 - Loba">
+                                                <option value="Altos del Rosario">Altos del Rosario</option>
+                                                <option value="Barranco de Loba">Barranco de Loba</option>
+                                                <option value="El Peñón">El Peñón</option>
+                                                <option value="San Martín de Loba">San Martín de Loba</option>
+                                                <option value="Regidor">Regidor</option>
+                                                <option value="Río Viejo">Río Viejo</option>
+                                                <option value="Norosí">Norosí</option>
+                                            </optgroup>
+                                            <optgroup label="Zona 6 - Magdalena Medio">
+                                                <option value="Arenal">Arenal</option>
+                                                <option value="Cantagallo">Cantagallo</option>
+                                                <option value="Morales">Morales</option>
+                                                <option value="San Pablo">San Pablo</option>
+                                                <option value="Santa Rosa del Sur">Santa Rosa del Sur</option>
+                                                <option value="Simití">Simití</option>
+                                            </optgroup>
+                                            <option value="Otro municipio de Bolívar">Otro municipio de Bolívar</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-row form-row--single">
+                                <div class="form-field">
+                                    <label for="direccion">Dirección de entrega (casa, apto, barrio) <span class="required">*</span></label>
+                                    <div class="field-control">
+                                        <i class="fa-solid fa-house" aria-hidden="true"></i>
+                                        <input type="text" id="direccion" name="direccion" class="form-input"
+                                               placeholder="Ej: Cra 14 # 35-22, Barrio Manga, Conjunto Las Flores Apto 302" required>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-field">
+                                    <label for="codigoPostal">Código postal <span class="optional">(opcional)</span></label>
+                                    <div class="field-control">
+                                        <i class="fa-solid fa-envelopes-bulk" aria-hidden="true"></i>
+                                        <input type="text" id="codigoPostal" name="codigoPostal" class="form-input"
+                                               placeholder="Ej: 130001">
+                                    </div>
+                                </div>
+                                <div class="form-field">
+                                    <label for="notas">Indicaciones adicionales <span class="optional">(opcional)</span></label>
+                                    <div class="field-control">
+                                        <i class="fa-regular fa-comment-dots" aria-hidden="true"></i>
+                                        <input type="text" id="notas" name="notas" class="form-input"
+                                               placeholder="Ej: Dejar en portería o tocar timbre blanco">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Caja de Wompi -->
+                        <div class="pay-box">
+                            <div class="pay-box__head">
+                                <h3 class="pay-box__title">
+                                    <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+                                    Pasarela Wompi · Bancolombia
+                                </h3>
+                                <span class="pay-badge-secure">
+                                    <i class="fa-solid fa-lock" aria-hidden="true"></i> Pago seguro
+                                </span>
+                            </div>
+                            <p class="pay-box__desc">
+                                Al hacer clic, se abrirá el widget oficial y seguro de Wompi. Tus datos bancarios están protegidos y encriptados.
+                            </p>
+                            <div class="pay-methods">
+                                <span class="cart-chip"><i class="fa-solid fa-credit-card" aria-hidden="true"></i> Tarjeta</span>
+                                <span class="cart-chip"><i class="fa-solid fa-building-columns" aria-hidden="true"></i> PSE</span>
+                                <span class="cart-chip"><i class="fa-solid fa-mobile-screen" aria-hidden="true"></i> Nequi</span>
+                                <span class="cart-chip"><i class="fa-solid fa-money-bill-transfer" aria-hidden="true"></i> Bancolombia</span>
+                            </div>
+                        </div>
+
+                        <div class="pay-action">
+                            <button type="button" id="btnPagar" class="pay-btn">
+                                <i class="fa-solid fa-lock"></i>
+                                Pagar con Wompi · $<span id="btnPagarTotal" th:text="${#numbers.formatDecimal(total, 0, 'COMMA', 0, 'POINT')}">0</span> COP
+                            </button>
+                        </div>
+                    </form>
+                </section>
+
+                <!-- ── Columna Derecha: Resumen de la Orden ── -->
+                <aside class="order-summary" aria-labelledby="resumen-title">
+                    <h2 class="order-summary__title" id="resumen-title">Resumen de compra</h2>
+
+                    <div class="order-items">
+                        <div th:each="detalle : ${detalles}" class="order-item">
+                            <img th:src="${detalle.imagenUrl}"
+                                 th:alt="${detalle.nombre}"
+                                 class="order-item__img"
+                                 onerror="this.onerror=null;this.src='/images/placeholder.svg'">
+                            <div>
+                                <div class="order-item__name" th:text="${detalle.nombre}">Nombre Producto</div>
+                                <div class="order-item__vendor"
+                                     th:if="${detalle.vendedorNombre != null && !#strings.isEmpty(detalle.vendedorNombre)}"
+                                     th:text="${detalle.vendedorNombre}">Vendedor</div>
+                                <div class="order-item__sub">
+                                    <span th:text="${detalle.cantidad}">1</span>
+                                    <span th:text="${detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : 'unid'}"></span>
+                                    × $<span th:text="${#numbers.formatDecimal(detalle.precioUnitario, 0, 'COMMA', 0, 'POINT')}">0</span>
+                                </div>
+                            </div>
+                            <div class="order-item__total">
+                                $<span th:text="${#numbers.formatDecimal(detalle.subtotal, 0, 'COMMA', 0, 'POINT')}">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="order-totals">
+                        <div class="order-row">
+                            <span>Subtotal productos</span>
+                            <span>$<span th:text="${#numbers.formatDecimal(subtotal, 0, 'COMMA', 0, 'POINT')}">0</span></span>
+                        </div>
+                        <div class="order-row">
+                            <span>Envío (departamental)</span>
+                            <span>$<span id="displayEnvio" th:text="${#numbers.formatDecimal(costoEnvio, 0, 'COMMA', 0, 'POINT')}">0</span></span>
+                        </div>
+                        <ul id="desgloseEnvio" class="ship-list" th:if="${desgloseEnvio != null and !desgloseEnvio.empty}">
+                            <li th:each="d : ${desgloseEnvio}" class="ship-item">
+                                <div class="ship-item__main">
+                                    <span class="ship-item__vendor" th:text="${d.vendedorNombre}">Vendedor</span>
+                                    <span class="ship-item__route" th:text="${(d.ciudadOrigen != null ? d.ciudadOrigen : 'Origen') + ' (Zona ' + (d.zonaOrigen != null ? d.zonaOrigen : '-') + ') → ' + (d.ciudadDestino != null ? d.ciudadDestino : 'Destino') + ' (Zona ' + (d.zonaDestino != null ? d.zonaDestino : '-') + ')'}">Origen → Destino</span>
+                                    <span class="ship-chip" th:if="${d.tarifaPorDefecto}">Tarifa estándar</span>
+                                </div>
+                                <span class="ship-item__price">$<span th:text="${#numbers.formatDecimal(d.tarifaCentavos / 100.0, 0, 'COMMA', 0, 'POINT')}">0</span></span>
+                            </li>
+                        </ul>
+                        <p class="order-note">
+                            El costo de envío se calcula por cada vendedor según la zona de recogida y tu zona de entrega.
                         </p>
-                        <div class="payment-methods-badges">
-                            <span class="pay-badge"><i class="fa-solid fa-credit-card"></i> Tarjeta Débito / Crédito</span>
-                            <span class="pay-badge"><i class="fa-solid fa-building-columns"></i> PSE</span>
-                            <span class="pay-badge"><i class="fa-solid fa-mobile-screen"></i> Nequi</span>
-                            <span class="pay-badge"><i class="fa-solid fa-money-bill-transfer"></i> Bancolombia</span>
+                        <div class="order-row order-row--total">
+                            <span>Total</span>
+                            <span>$<span id="displayTotal" th:text="${#numbers.formatDecimal(total, 0, 'COMMA', 0, 'POINT')}">0</span></span>
                         </div>
-
-                        <button type="button" id="btnPagar" class="btn-pagar">
-                            <i class="fa-solid fa-lock"></i>
-                            Pagar con Wompi · $<span id="btnPagarTotal" th:text="${#numbers.formatDecimal(total, 0, 'COMMA', 0, 'POINT')}">0</span> COP
-                        </button>
                     </div>
-                </form>
+
+                    <div class="fresh-badge">
+                        <i class="fa-solid fa-leaf" aria-hidden="true"></i>
+                        <span>Productos frescos y directos del campo colombiano</span>
+                    </div>
+                </aside>
+
             </div>
-
-            <!-- ── Columna Derecha: Resumen de la Orden ── -->
-            <div class="resumen-card">
-                <h3 class="card-title" style="margin-bottom: 16px;">
-                    <i class="fa-solid fa-basket-shopping"></i> Resumen de Compra
-                </h3>
-
-                <div class="resumen-items-list">
-                    <div th:each="detalle : ${detalles}" class="item-resumen">
-                        <img th:src="${detalle.imagenUrl}"
-                             th:alt="${detalle.nombre}"
-                             class="item-img"
-                             onerror="this.src='/images/placeholder.jpg'">
-                        <div class="item-details">
-                            <div class="item-name" th:text="${detalle.nombre}">Nombre Producto</div>
-                            <div class="item-subtext">
-                                <span th:text="${detalle.cantidad}">1</span>
-                                <span th:text="${detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : 'unid'}"></span>
-                                x $<span th:text="${#numbers.formatDecimal(detalle.precioUnitario, 0, 'COMMA', 0, 'POINT')}">0</span>
-                            </div>
-                        </div>
-                        <div class="item-total">
-                            $<span th:text="${#numbers.formatDecimal(detalle.subtotal, 0, 'COMMA', 0, 'POINT')}">0</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="totales-tabla">
-                    <div class="linea-total">
-                        <span>Subtotal productos:</span>
-                        <span>$<span th:text="${#numbers.formatDecimal(subtotal, 0, 'COMMA', 0, 'POINT')}">0</span></span>
-                    </div>
-                    <div class="linea-total">
-                        <span>Envío (departamental):</span>
-                        <span>$<span id="displayEnvio" th:text="${#numbers.formatDecimal(costoEnvio, 0, 'COMMA', 0, 'POINT')}">0</span></span>
-                    </div>
-                    <div id="desgloseEnvio" style="font-size:12px; color:#666; margin:4px 0 8px 0; padding-left:4px;" th:if="${desgloseEnvio != null and !desgloseEnvio.empty}">
-                        <div th:each="d : ${desgloseEnvio}" style="display:flex; justify-content:space-between; gap:8px;">
-                            <span th:text="${d.vendedorNombre} + ' - ' + (${d.ciudadOrigen} != null ? ${d.ciudadOrigen} : 'Origen') + ' (Zona ' + (${d.zonaOrigen} != null ? ${d.zonaOrigen} : '-') + ') -&gt; ' + (${d.ciudadDestino} != null ? ${d.ciudadDestino} : 'Destino') + ' (Zona ' + (${d.zonaDestino} != null ? ${d.zonaDestino} : '-') + ')' + (${d.tarifaPorDefecto} ? ' (Tarifa estandar)' : '')">Vendedor</span>
-                            <span>$<span th:text="${#numbers.formatDecimal(d.tarifaCentavos / 100.0, 0, 'COMMA', 0, 'POINT')}">0</span></span>
-                        </div>
-                    </div>
-                    <div style="font-size:12px; color:#888; margin-bottom:8px; padding-left:4px;">
-                        El costo de envio se calcula por cada vendedor segun la zona de recogida y tu zona de entrega.
-                    </div>
-                    <div class="linea-total destacado">
-                        <span>Total:</span>
-                        <span>$<span id="displayTotal" th:text="${#numbers.formatDecimal(total, 0, 'COMMA', 0, 'POINT')}">0</span></span>
-                    </div>
-                </div>
-
-                <div class="badge-fresco">
-                    <i class="fa-solid fa-seedling"></i>
-                    <span>Productos frescos y directos del campo colombiano.</span>
-                </div>
-            </div>
-
         </div>
-    </div>
+    </main>
 
     <!-- Script Oficial del Widget de Wompi -->
     <script type="text/javascript" src="https://checkout.wompi.co/widget.js"></script>
@@ -705,6 +321,43 @@
             alertBox.style.display = 'none';
         }
 
+        // Construye un <li class="ship-item"> con la misma estructura que el render de Thymeleaf
+        function crearItemDesglose(d, formato) {
+            const origen = (d.ciudadOrigen || 'Origen') + ' (Zona ' + (d.zonaOrigen || '-') + ')';
+            const destino = (d.ciudadDestino || 'Destino') + ' (Zona ' + (d.zonaDestino || '-') + ')';
+
+            const li = document.createElement('li');
+            li.className = 'ship-item';
+
+            const main = document.createElement('div');
+            main.className = 'ship-item__main';
+
+            const vendedor = document.createElement('span');
+            vendedor.className = 'ship-item__vendor';
+            vendedor.textContent = d.vendedorNombre;
+            main.appendChild(vendedor);
+
+            const ruta = document.createElement('span');
+            ruta.className = 'ship-item__route';
+            ruta.textContent = origen + ' \u2192 ' + destino;
+            main.appendChild(ruta);
+
+            if (d.tarifaPorDefecto) {
+                const chip = document.createElement('span');
+                chip.className = 'ship-chip';
+                chip.textContent = 'Tarifa estándar';
+                main.appendChild(chip);
+            }
+
+            const precio = document.createElement('span');
+            precio.className = 'ship-item__price';
+            precio.textContent = '$' + formato.format(d.tarifaCentavos / 100);
+
+            li.appendChild(main);
+            li.appendChild(precio);
+            return li;
+        }
+
         const ciudadSelect = document.getElementById('ciudad');
         if (ciudadSelect) {
             ciudadSelect.addEventListener('change', async function () {
@@ -724,15 +377,7 @@
 
                             const desgloseEl = document.getElementById('desgloseEnvio');
                             if (desgloseEl && Array.isArray(data.desglose)) {
-                                desgloseEl.innerHTML = data.desglose.map(d => {
-                                    const origen = (d.ciudadOrigen || 'Origen') + ' (Zona ' + (d.zonaOrigen || '-') + ')';
-                                    const destino = (d.ciudadDestino || 'Destino') + ' (Zona ' + (d.zonaDestino || '-') + ')';
-                                    const estandar = d.tarifaPorDefecto ? ' (Tarifa estandar)' : '';
-                                    return '<div style="display:flex;justify-content:space-between;gap:8px;">' +
-                                        '<span>' + d.vendedorNombre + ' - ' + origen + ' -&gt; ' + destino + estandar + '</span>' +
-                                        '<span>$' + formato.format(d.tarifaCentavos / 100) + '</span>' +
-                                        '</div>';
-                                }).join('');
+                                desgloseEl.replaceChildren(...data.desglose.map(d => crearItemDesglose(d, formato)));
                             }
                         }
                     }

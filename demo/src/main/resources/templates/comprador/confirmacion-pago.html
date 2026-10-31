@@ -9,374 +9,82 @@
     <link rel="stylesheet" th:href="@{/header.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        :root {
-            --primary: #27ae60;
-            --primary-dark: #1e8449;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-            --border-color: #e2e8f0;
-            --bg-page: #f8fafc;
-            --card-bg: #ffffff;
-            --radius: 12px;
-            --shadow-md: 0 4px 14px -2px rgba(0,0,0,0.08);
-        }
-
-        body {
-            background-color: var(--bg-page);
-            color: var(--text-main);
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-
-        .confirmacion-container {
-            max-width: 860px;
-            margin: 35px auto 60px;
-            padding: 0 20px;
-        }
-
-        .recibo-card {
-            background: var(--card-bg);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow-md);
-            border: 1px solid var(--border-color);
-            overflow: hidden;
-        }
-
-        /* ── Header de Éxito ── */
-        .recibo-header {
-            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-            border-bottom: 1px solid #bbf7d0;
-            padding: 35px 30px;
-            text-align: center;
-        }
-
-        .icon-circulo {
-            width: 72px;
-            height: 72px;
-            background: var(--primary);
-            color: #ffffff;
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 34px;
-            box-shadow: 0 4px 14px rgba(39, 174, 96, 0.35);
-            margin-bottom: 16px;
-        }
-
-        .recibo-titulo {
-            font-size: 26px;
-            font-weight: 700;
-            color: #14532d;
-            margin: 0 0 6px 0;
-        }
-
-        .recibo-subtitulo {
-            font-size: 15px;
-            color: #166534;
-            max-width: 540px;
-            margin: 0 auto;
-        }
-
-        /* ── Cuerpo del Recibo ── */
-        .recibo-body {
-            padding: 30px;
-        }
-
-        /* ── Grid de Metadatos de la Orden ── */
-        .meta-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            background: #f8fafc;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 18px 20px;
-            margin-bottom: 28px;
-        }
-
-        .meta-item {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .meta-label {
-            font-size: 11px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--text-muted);
-        }
-
-        .meta-value {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--text-main);
-        }
-
-        .badge-estado {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 700;
-            width: fit-content;
-        }
-
-        .badge-confirmado {
-            background: #dcfce7;
-            color: #15803d;
-        }
-        .badge-revision {
-            background: #fef3c7;
-            color: #b45309;
-        }
-        .badge-cancelado {
-            background: #fee2e2;
-            color: #b91c1c;
-        }
-        .badge-proceso {
-            background: #e0e7ff;
-            color: #4338ca;
-        }
-
-        /* ── Bloque de Entrega ── */
-        .seccion-bloque {
-            margin-bottom: 26px;
-        }
-
-        .seccion-titulo {
-            font-size: 15px;
-            font-weight: 700;
-            color: var(--text-main);
-            margin: 0 0 12px 0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .seccion-titulo i {
-            color: var(--primary);
-        }
-
-        .entrega-box {
-            background: #f8fafc;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 14px 18px;
-            font-size: 14px;
-            line-height: 1.6;
-            color: #334155;
-        }
-
-        /* ── Tabla de Productos ── */
-        .tabla-productos {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-        }
-
-        .tabla-productos th {
-            text-align: left;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: var(--text-muted);
-            padding: 10px 14px;
-            border-bottom: 1.5px solid var(--border-color);
-        }
-
-        .tabla-productos td {
-            padding: 14px;
-            border-bottom: 1px solid #f1f5f9;
-            font-size: 14px;
-            vertical-align: middle;
-        }
-
-        .producto-celda {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .producto-thumb {
-            width: 48px;
-            height: 48px;
-            border-radius: 6px;
-            object-fit: cover;
-            border: 1px solid var(--border-color);
-        }
-
-        .producto-nombre {
-            font-weight: 600;
-            color: var(--text-main);
-        }
-
-        /* ── Totales y Desglose Financiero ── */
-        .totales-box {
-            background: #f8fafc;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 15px;
-            margin-left: auto;
-            max-width: 360px;
-        }
-
-        .fila-desglose {
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-        }
-
-        .fila-desglose.total-destacado {
-            font-size: 18px;
-            font-weight: 700;
-            color: var(--primary);
-            border-top: 1.5px dashed var(--border-color);
-            padding-top: 12px;
-            margin-top: 12px;
-            margin-bottom: 0;
-        }
-
-        /* ── Botones de Acción ── */
-        .acciones-recibo {
-            display: flex;
-            gap: 14px;
-            margin-top: 30px;
-            padding-top: 25px;
-            border-top: 1px solid var(--border-color);
-        }
-
-        .btn-accion {
-            flex: 1;
-            padding: 13px 18px;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 600;
-            text-align: center;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            cursor: pointer;
-            transition: all 0.2s;
-            border: none;
-        }
-
-        .btn-primario {
-            background: var(--primary);
-            color: #ffffff;
-        }
-
-        .btn-primario:hover {
-            background: var(--primary-dark);
-        }
-
-        .btn-secundario {
-            background: #ffffff;
-            color: var(--text-main);
-            border: 1px solid var(--border-color);
-        }
-
-        .btn-secundario:hover {
-            background: #f1f5f9;
-        }
-
-        @media (max-width: 768px) {
-            .meta-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-            .totales-box {
-                max-width: 100%;
-            }
-            .acciones-recibo {
-                flex-direction: column;
-            }
-        }
-
-        @media print {
-            header, footer, .acciones-recibo, .btn-volver {
-                display: none !important;
-            }
-            .confirmacion-container {
-                margin: 0;
-                padding: 0;
-                max-width: 100%;
-            }
-            .recibo-card {
-                box-shadow: none;
-                border: none;
-            }
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/checkout-tokens.css}">
+    <link rel="stylesheet" th:href="@{/confirmacion-pago.css}">
 </head>
 <body>
     <header th:replace="~{fragments/header :: siteHeader}"></header>
 
-    <div class="confirmacion-container">
+    <main class="confirm-page">
+        <div class="confirm-container">
 
-        <div class="recibo-card">
-            <!-- Header con Icono de Éxito -->
-            <div class="recibo-header">
-                <div class="icon-circulo">
-                    <i class="fa-solid fa-check"></i>
+            <ol class="checkout-steps" aria-label="Progreso de compra">
+                <li class="checkout-steps__item is-done"><span class="checkout-steps__num"><i class="fa-solid fa-check" aria-hidden="true"></i></span> Carrito</li>
+                <li class="checkout-steps__item is-done"><span class="checkout-steps__num"><i class="fa-solid fa-check" aria-hidden="true"></i></span> Entrega y pago</li>
+                <li class="checkout-steps__item is-current" aria-current="step"><span class="checkout-steps__num">3</span> Confirmación</li>
+            </ol>
+
+            <div class="recibo-card">
+                <!-- Header con Icono de Éxito -->
+                <div class="recibo-header">
+                    <div class="icon-circulo" aria-hidden="true">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <h1 class="recibo-titulo">¡Pago confirmado!</h1>
+                    <p class="recibo-subtitulo">
+                        Tu pago ha sido procesado a través de <strong>Wompi (Bancolombia)</strong>. Tu orden fue confirmada y el agricultor ya está preparando tu pedido.
+                    </p>
                 </div>
-                <h1 class="recibo-titulo">¡Pago Confirmado con Éxito!</h1>
-                <p class="recibo-subtitulo">
-                    Tu pago ha sido procesado a través de <strong>Wompi (Bancolombia)</strong>. Tu orden fue confirmada y el agricultor ya está preparando tu pedido.
-                </p>
+
+                <div class="recibo-body">
+
+                    <!-- Resumen corto -->
+                    <div class="meta-grid">
+                        <div class="meta-item">
+                            <span class="meta-label">Referencia de la compra</span>
+                            <span class="meta-value meta-value--ref"
+                                  th:text="${compra != null ? compra.referenciaPago : (pedido.numeroFactura != null ? pedido.numeroFactura : '#' + pedido.id)}">CUL-000</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Total pagado</span>
+                            <span class="meta-value meta-value--total">$<span th:text="${#numbers.formatDecimal(totalCobrado, 0, 'COMMA', 0, 'POINT')}">0</span> COP</span>
+                        </div>
+                    </div>
+
+                    <!-- Una línea por agricultor con su estado -->
+                    <div class="seccion-bloque" th:if="${subPedidos != null and !subPedidos.isEmpty()}">
+                        <div class="seccion-subpedidos-title">
+                            <i class="fa-solid fa-store" aria-hidden="true"></i>
+                            <span>Agricultores de tu pedido (<span th:text="${subPedidos.size()}">0</span>)</span>
+                        </div>
+                        <div th:each="sub : ${subPedidos}" class="subpedido-fila">
+                            <div class="subpedido-info">
+                                <span class="subpedido-icon" aria-hidden="true">
+                                    <i class="fa-solid fa-store"></i>
+                                </span>
+                                <strong class="subpedido-nombre" th:text="${sub.vendedor != null and sub.vendedor.nombre != null ? sub.vendedor.nombre : 'Productor Local'}">Agricultor</strong>
+                            </div>
+                            <span class="badge-estado"
+                                  th:classappend="${sub.estado == 'CONFIRMADO' ? 'badge-confirmado' : (sub.estado == 'EN_REVISION' ? 'badge-revision' : (sub.estado == 'CANCELADO' ? 'badge-cancelado' : 'badge-proceso'))}"
+                                  th:text="${sub.estadoEtiqueta}">Confirmado</span>
+                        </div>
+                    </div>
+
+                    <!-- Botones de Acción -->
+                    <div class="acciones-recibo">
+                        <a th:href="@{/usuario/pedidos}" class="btn-accion btn-primario">
+                            <i class="fa-solid fa-boxes-packing" aria-hidden="true"></i> Ver mis pedidos
+                        </a>
+                        <a th:href="@{/}" class="btn-secundario-link">
+                            <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Seguir comprando en la tienda
+                        </a>
+                    </div>
+
+                </div>
             </div>
 
-            <div class="recibo-body">
-
-                <!-- Resumen corto -->
-                <div class="meta-grid" style="grid-template-columns: 1fr 1fr;">
-                    <div class="meta-item">
-                        <span class="meta-label">Referencia de la compra</span>
-                        <span class="meta-value" style="color: var(--primary);"
-                              th:text="${compra != null ? compra.referenciaPago : (pedido.numeroFactura != null ? pedido.numeroFactura : '#' + pedido.id)}">CUL-000</span>
-                    </div>
-                    <div class="meta-item">
-                        <span class="meta-label">Total pagado</span>
-                        <span class="meta-value">$<span th:text="${#numbers.formatDecimal(totalCobrado, 0, 'COMMA', 0, 'POINT')}">0</span> COP</span>
-                    </div>
-                </div>
-
-                <!-- Una línea por agricultor con su estado -->
-                <div class="seccion-bloque">
-                    <div th:each="sub : ${subPedidos}"
-                         style="display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 4px; border-bottom: 1px solid var(--border-color);">
-                        <span>
-                            <i class="fa-solid fa-store" style="color: var(--primary); margin-right: 6px;"></i>
-                            <strong th:text="${sub.vendedor != null and sub.vendedor.nombre != null ? sub.vendedor.nombre : 'Productor Local'}">Agricultor</strong>
-                        </span>
-                        <span class="badge-estado"
-                              th:classappend="${sub.estado == 'CONFIRMADO' ? 'badge-confirmado' : (sub.estado == 'EN_REVISION' ? 'badge-revision' : (sub.estado == 'CANCELADO' ? 'badge-cancelado' : 'badge-proceso'))}"
-                              th:text="${sub.estadoEtiqueta}">Confirmado</span>
-                    </div>
-                </div>
-
-                <!-- Botón único -->
-                <div class="acciones-recibo">
-                    <a th:href="@{/usuario/pedidos}" class="btn-accion btn-primario">
-                        <i class="fa-solid fa-boxes-packing"></i> Ver mis pedidos
-                    </a>
-                </div>
-
-            </div>
         </div>
-
-    </div>
+    </main>
 
     <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
 </body>

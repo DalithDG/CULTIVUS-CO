@@ -1,0 +1,92 @@
+/* ==========================================================================
+   Tokens compartidos del flujo de compra (carrito -> entrega y pago)
+   Se enlazan en carrito.html y pago.html. Sin reglas globales.
+   ========================================================================== */
+
+.cart-page,
+.checkout-page,
+.confirm-page,
+.orders-page {
+  /* Paleta Cultivus */
+  --c-green: #367A45;          /* acciones principales (blanco sobre él: 5.3:1) */
+  --c-green-dark: #2B6337;     /* hover / active */
+  --c-green-soft: #E6F0E8;     /* fondos tenues del verde */
+  --c-gold: #EABF45;           /* detalles (nunca como texto) */
+  --c-earth: #795548;          /* texto secundario / iconos (7.4:1 sobre blanco) */
+  --c-wheat: #F1E8D3;          /* chips y fondos suaves */
+  --c-wheat-soft: #FAF6EB;
+  --c-ink: #30372D;            /* texto principal (11.6:1 sobre blanco) */
+  --c-line: #E9E2D0;
+  --c-surface: #FFFFFF;
+  --c-danger: #A5382B;
+  --c-danger-soft: #FBEDEA;
+  --c-danger-line: #F0CFC9;
+  --c-gold-soft: #FBF1D0;      /* tinte del amarillo cosecha para chips (texto oscuro encima) */
+  --field-border: #DDD3BA;     /* borde fino beige/gris cálido sobre superficies blancas */
+
+  --radius-lg: 24px;
+  --radius-md: 16px;
+  --radius-sm: 14px;
+  --shadow-sm: 0 1px 2px rgba(48, 55, 45, .05), 0 4px 14px rgba(48, 55, 45, .05);
+  --shadow-md: 0 2px 4px rgba(48, 55, 45, .05), 0 16px 40px rgba(48, 55, 45, .09);
+  --ease: cubic-bezier(.4, 0, .2, 1);
+  --t: 180ms;
+  --header-offset: 96px;
+}
+
+/* ---------- Indicador de pasos (compartido) ---------- */
+.checkout-steps {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  margin: 0 0 20px;
+  padding: 0;
+  list-style: none;
+  font-size: .85rem;
+  font-weight: 500;
+  color: var(--c-earth);
+}
+
+.checkout-steps__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.checkout-steps__item + .checkout-steps__item::before {
+  content: "";
+  width: 20px;
+  height: 1px;
+  background: var(--c-line);
+}
+
+.checkout-steps__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--c-wheat);
+  color: var(--c-earth);
+  font-size: .75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.checkout-steps__item.is-current {
+  color: var(--c-green);
+  font-weight: 600;
+}
+
+.checkout-steps__item.is-current .checkout-steps__num {
+  background: var(--c-green);
+  color: #fff;
+}
+
+.checkout-steps__item.is-done .checkout-steps__num {
+  background: var(--c-green-soft);
+  color: var(--c-green);
+}
+

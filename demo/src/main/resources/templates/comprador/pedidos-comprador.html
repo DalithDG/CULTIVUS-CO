@@ -14,1299 +14,649 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
         integrity="sha512-RXf+QSDCUQs6Q0p2U2uD2OeR5xw8n5T6vCJ7/3zvK3YyEdSpYohhjFExz04szsP1CZq0w0C+YyXWZP8y+e2xUg=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-    <style>
-        /* ─── Reset & base ─── */
-        *, *::before, *::after { box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: #f4f6f9; color: #1a1d23; }
-
-        /* ─── Page wrapper ─── */
-        .mp-page { max-width: 1100px; margin: 0 auto; padding: 36px 20px 60px; }
-
-        /* ─── Page heading ─── */
-        .mp-heading { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
-        .mp-heading h1 { font-size: 1.75rem; font-weight: 800; color: #1a1d23; margin: 0; }
-        .mp-heading-icon {
-            width: 44px; height: 44px;
-            background: linear-gradient(135deg, #27ae60, #1a8f4e);
-            border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            color: #fff; font-size: 1.1rem;
-            box-shadow: 0 4px 12px rgba(39,174,96,.3);
-        }
-
-        /* ─── Toolbar ─── */
-        .mp-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 24px; flex-wrap: wrap; }
-        .mp-tabs { display: flex; gap: 4px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 5px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
-        .mp-tab {
-            padding: 8px 18px; border-radius: 9px; border: none; background: transparent;
-            font-size: 0.87rem; font-weight: 600; color: #64748b; cursor: pointer; transition: all .2s; white-space: nowrap;
-            font-family: 'Inter', sans-serif;
-        }
-        .mp-tab:hover { color: #27ae60; background: #f0faf4; }
-        .mp-tab.active { background: linear-gradient(135deg, #27ae60, #1a8f4e); color: #fff; box-shadow: 0 3px 10px rgba(39,174,96,.35); }
-
-        .mp-filter-btn {
-            display: flex; align-items: center; gap: 8px;
-            padding: 9px 18px; border: 1px solid #e2e8f0; border-radius: 10px;
-            background: #fff; font-size: 0.87rem; font-weight: 600; color: #475569;
-            cursor: pointer; transition: all .2s; box-shadow: 0 1px 4px rgba(0,0,0,.06);
-            font-family: 'Inter', sans-serif;
-        }
-        .mp-filter-btn:hover { border-color: #27ae60; color: #27ae60; }
-
-        /* ─── Count ─── */
-        .mp-count { font-size: 0.84rem; color: #64748b; margin-bottom: 16px; padding-left: 2px; }
-        .mp-count strong { color: #1a1d23; }
-
-        /* ─── Order list ─── */
-        .mp-list { display: flex; flex-direction: column; gap: 16px; }
-
-        /* ─── Order card ─── */
-        .mp-card { background: #fff; border: 1px solid #e8edf3; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,.05); transition: box-shadow .25s, transform .25s; }
-        .mp-card:hover { box-shadow: 0 8px 28px rgba(0,0,0,.10); transform: translateY(-2px); }
-
-        /* Card top bar */
-        .mp-card__top { display: flex; align-items: center; justify-content: space-between; padding: 14px 22px; border-bottom: 1px solid #f0f4f8; background: #fafbfc; }
-        .mp-card__order-id { display: flex; align-items: center; gap: 9px; font-size: 0.95rem; font-weight: 700; color: #1a1d23; }
-        .id-icon { width: 32px; height: 32px; background: linear-gradient(135deg, #27ae60, #1a8f4e); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 0.82rem; flex-shrink: 0; }
-        .mp-card__date { font-size: 0.8rem; color: #94a3b8; margin-top: 1px; }
-        .mp-card__calendar { color: #94a3b8; font-size: 1.1rem; }
-
-        /* Status badge */
-        .mp-badge { display: inline-flex; align-items: center; gap: 5px; padding: 5px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 700; letter-spacing: .3px; white-space: nowrap; }
-        .mp-badge::before { content: ''; width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
-        .mp-badge--pendiente { background: #fff7ed; color: #c2410c; }
-        .mp-badge--pendiente::before { background: #f97316; }
-        .mp-badge--proceso { background: #eff6ff; color: #1d4ed8; }
-        .mp-badge--proceso::before { background: #3b82f6; }
-        .mp-badge--completado { background: #f0fdf4; color: #15803d; }
-        .mp-badge--completado::before { background: #22c55e; }
-        .mp-badge--cancelado { background: #fff1f2; color: #be123c; }
-        .mp-badge--cancelado::before { background: #f43f5e; }
-        .mp-badge--confirmado { background: #ecfdf5; color: #047857; }
-        .mp-badge--confirmado::before { background: #10b981; }
-        .mp-badge--revision { background: #fef2f2; color: #b91c1c; }
-        .mp-badge--revision::before { background: #ef4444; }
-        .mp-badge--enviado { background: #eff6ff; color: #1d4ed8; }
-        .mp-badge--enviado::before { background: #3b82f6; }
-        .mp-badge--listo { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
-        .mp-badge--listo::before { background: #f59e0b; }
-
-        /* Top Logistics Card */
-        .mp-logistics-card {
-            padding: 12px 20px;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            flex-wrap: wrap;
-            font-size: 0.86rem;
-            transition: all .2s ease;
-        }
-        .mp-logistics-card--searching {
-            background: #f0f9ff;
-            border-left: 5px solid #0284c7;
-            color: #0369a1;
-        }
-        .mp-logistics-card--waiting {
-            background: #fffbeb;
-            border-left: 5px solid #d97706;
-            color: #92400e;
-        }
-        .mp-logistics-card--assigned {
-            background: #ecfdf5;
-            border-left: 5px solid #059669;
-            color: #065f46;
-        }
-        .mp-logistics-card--delivered {
-            background: #f0fdf4;
-            border-left: 5px solid #16a34a;
-            color: #166534;
-        }
-        .mp-logistics-card--expired {
-            background: #fef2f2;
-            border-left: 5px solid #dc2626;
-            color: #991b1b;
-        }
-
-        /* Per-Vendor Stepper Timeline */
-        .mp-timeline {
-            margin-top: 12px;
-            padding-top: 12px;
-            border-top: 1px solid #eef2f6;
-            width: 100%;
-        }
-        .mp-timeline__title {
-            font-size: 0.72rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .5px;
-            color: #64748b;
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .mp-stepper {
-            display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            position: relative;
-            gap: 4px;
-        }
-        .mp-stepper::before {
-            content: '';
-            position: absolute;
-            top: 13px;
-            left: 8%;
-            right: 8%;
-            height: 3px;
-            background: #e2e8f0;
-            z-index: 1;
-        }
-        .mp-step {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            position: relative;
-            z-index: 2;
-        }
-        .mp-step__dot {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: #fff;
-            border: 2px solid #cbd5e1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.72rem;
-            color: #94a3b8;
-            margin-bottom: 5px;
-            transition: all .25s ease;
-        }
-        .mp-step__label {
-            font-size: 0.65rem;
-            font-weight: 700;
-            color: #94a3b8;
-            line-height: 1.2;
-            letter-spacing: .2px;
-            max-width: 85px;
-        }
-        .mp-step.completed .mp-step__dot {
-            background: #10b981;
-            border-color: #10b981;
-            color: #fff;
-        }
-        .mp-step.completed .mp-step__label {
-            color: #047857;
-            font-weight: 700;
-        }
-        .mp-step.active .mp-step__dot {
-            background: #059669;
-            border-color: #059669;
-            color: #fff;
-            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.25);
-            animation: stepPulse 2s infinite;
-        }
-        .mp-step.active .mp-step__label {
-            color: #065f46;
-            font-weight: 800;
-        }
-        @keyframes stepPulse {
-            0%, 100% { box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25); }
-            50% { box-shadow: 0 0 0 7px rgba(16, 185, 129, 0.1); }
-        }
-        @media (max-width: 680px) {
-            .mp-stepper {
-                display: flex;
-                flex-direction: column;
-                gap: 10px;
-                align-items: flex-start;
-                padding-left: 6px;
-            }
-            .mp-stepper::before {
-                top: 12px;
-                bottom: 12px;
-                left: 19px;
-                right: auto;
-                width: 3px;
-                height: auto;
-            }
-            .mp-step {
-                flex-direction: row;
-                gap: 12px;
-                text-align: left;
-            }
-            .mp-step__label {
-                max-width: none;
-                font-size: 0.72rem;
-            }
-        }
-
-        /* Card body */
-        .mp-card__body { padding: 18px 22px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
-
-        /* Product image strip */
-        .mp-card__images { display: flex; gap: 6px; flex-shrink: 0; }
-        .mp-card__img { width: 56px; height: 56px; border-radius: 10px; object-fit: cover; border: 1px solid #e8edf3; background: #f4f6f9; display: flex; align-items: center; justify-content: center; color: #b0bec5; font-size: 1.3rem; overflow: hidden; flex-shrink: 0; }
-        .mp-card__img img { width: 100%; height: 100%; object-fit: cover; }
-        .mp-card__img-more { font-size: 0.72rem; font-weight: 700; color: #64748b; }
-
-        /* Info section */
-        .mp-card__info { flex: 1; min-width: 140px; }
-        .mp-card__info-label { font-size: 0.75rem; color: #94a3b8; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 3px; display: flex; align-items: center; gap: 4px; }
-        .mp-card__info-value { font-size: 0.95rem; font-weight: 600; color: #1a1d23; }
-        .mp-card__total { font-size: 1.15rem; font-weight: 800; color: #27ae60; }
-
-        /* Card actions */
-        .mp-card__actions { display: flex; gap: 10px; margin-left: auto; flex-shrink: 0; }
-
-        /* Buttons */
-        .mp-btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 18px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all .2s; white-space: nowrap; text-decoration: none; border: none; font-family: 'Inter', sans-serif; }
-        .mp-btn--primary { background: linear-gradient(135deg, #27ae60, #1a8f4e); color: #fff; box-shadow: 0 3px 10px rgba(39,174,96,.3); }
-        .mp-btn--primary:hover { box-shadow: 0 6px 18px rgba(39,174,96,.45); transform: translateY(-1px); color: #fff; }
-        .mp-btn--outline { background: #fff; color: #475569; border: 1.5px solid #e2e8f0; }
-        .mp-btn--outline:hover { border-color: #27ae60; color: #27ae60; background: #f0faf4; }
-        .mp-btn:disabled, .mp-btn--disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
-
-        /* ─── Empty state ─── */
-        .mp-empty { text-align: center; padding: 80px 20px; background: #fff; border-radius: 16px; border: 1px solid #e8edf3; }
-        .mp-empty-icon { width: 72px; height: 72px; background: #f0fdf4; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: #86efac; margin: 0 auto 18px; }
-        .mp-empty h3 { font-size: 1.2rem; font-weight: 700; color: #1a1d23; margin-bottom: 8px; }
-        .mp-empty p { color: #64748b; font-size: 0.9rem; margin-bottom: 22px; }
-
-        /* ─── Modal ─── */
-        .order-modal {
-            border: none;
-            border-radius: 20px;
-            padding: 0;
-            width: min(94vw, 840px);
-            max-height: 90vh;
-            box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(0, 0, 0, 0.06);
-            background: #fff;
-            overflow: hidden;
-        }
-        .order-modal::backdrop {
-            background: rgba(15, 23, 42, 0.62);
-            backdrop-filter: blur(6px);
-        }
-        /* Respaldo para navegadores sin soporte de <dialog>.showModal() */
-        .order-modal.is-open {
-            display: block;
-            position: fixed;
-            inset: 0;
-            margin: auto;
-            z-index: 9999;
-        }
-        @keyframes modalIn {
-            from { opacity: 0; transform: translateY(18px) scale(.98); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .order-modal[open] {
-            animation: modalIn .26s cubic-bezier(.16, 1, .3, 1) both;
-        }
-        .order-modal__scroll {
-            overflow-y: auto;
-            max-height: 90vh;
-            display: flex;
-            flex-direction: column;
-        }
-        .order-modal__scroll::-webkit-scrollbar {
-            width: 7px;
-        }
-        .order-modal__scroll::-webkit-scrollbar-track {
-            background: #f8fafc;
-        }
-        .order-modal__scroll::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        .order-modal__scroll::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-
-        /* Modal header */
-        .order-modal__header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 28px;
-            background: linear-gradient(135deg, #1e824c 0%, #156239 100%);
-            color: #fff;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-        .order-modal__header-left {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-        .order-modal__header-icon {
-            width: 44px;
-            height: 44px;
-            border-radius: 12px;
-            background: rgba(255, 255, 255, .2);
-            backdrop-filter: blur(4px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            color: #fff;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, .1);
-            flex-shrink: 0;
-        }
-        .order-modal__header h2 {
-            margin: 0;
-            font-size: 1.2rem;
-            font-weight: 800;
-            letter-spacing: -.01em;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #fff;
-        }
-        .order-modal__header p {
-            margin: 4px 0 0;
-            font-size: 0.82rem;
-            opacity: .88;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            color: #fff;
-        }
-        .order-modal__close {
-            border: none;
-            background: rgba(255, 255, 255, .16);
-            color: #fff;
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 1.1rem;
-            transition: all .2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .order-modal__close:hover {
-            background: rgba(255, 255, 255, .3);
-            transform: scale(1.05);
-        }
-
-        /* Modal body */
-        .order-modal__body {
-            padding: 26px 28px;
-            background: #fbfcfd;
-            flex: 1;
-        }
-
-        /* Info cards grid */
-        .order-modal__grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 12px;
-            margin-bottom: 24px;
-        }
-        .omc {
-            background: #fff;
-            border: 1px solid #e9eef4;
-            border-radius: 14px;
-            padding: 14px 16px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, .025);
-            transition: all .2s ease;
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-        .omc:hover {
-            border-color: #cbd5e1;
-            box-shadow: 0 4px 14px rgba(0, 0, 0, .05);
-            transform: translateY(-1px);
-        }
-        .omc__label {
-            font-size: 0.72rem;
-            font-weight: 700;
-            color: #64748b;
-            text-transform: uppercase;
-            letter-spacing: .5px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .omc__label i {
-            color: #27ae60;
-            font-size: 0.85rem;
-        }
-        .omc__value {
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: #1e293b;
-            word-break: break-word;
-        }
-
-        /* Badges for payment state inside modal */
-        .mp-paybadge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 0.76rem;
-            font-weight: 700;
-            letter-spacing: .3px;
-        }
-        .mp-paybadge--completado {
-            background: #ecfdf5;
-            color: #047857;
-            border: 1px solid #a7f3d0;
-        }
-        .mp-paybadge--pendiente {
-            background: #fffbeb;
-            color: #b45309;
-            border: 1px solid #fde68a;
-        }
-        .mp-paybadge--fallido {
-            background: #fef2f2;
-            color: #b91c1c;
-            border: 1px solid #fecaca;
-        }
-
-        /* Divider label */
-        .modal-section-title {
-            font-size: 0.82rem;
-            font-weight: 800;
-            color: #475569;
-            text-transform: uppercase;
-            letter-spacing: .6px;
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .modal-section-title::after {
-            content: '';
-            flex: 1;
-            height: 1px;
-            background: #e2e8f0;
-        }
-
-        /* Products table wrapper */
-        .order-modal__table-wrap {
-            border: 1px solid #e2e8f0;
-            border-radius: 14px;
-            overflow: hidden;
-            background: #fff;
-            margin-bottom: 22px;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, .03);
-        }
-        .order-modal__table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        .order-modal__table thead tr {
-            background: #f8fafc;
-        }
-        .order-modal__table th {
-            padding: 12px 16px;
-            font-size: 0.74rem;
-            font-weight: 700;
-            color: #64748b;
-            text-transform: uppercase;
-            letter-spacing: .5px;
-            text-align: left;
-            border-bottom: 1px solid #e2e8f0;
-        }
-        .order-modal__table th.text-right,
-        .order-modal__table td.text-right {
-            text-align: right;
-        }
-        .order-modal__table td {
-            padding: 13px 16px;
-            font-size: 0.9rem;
-            color: #1e293b;
-            border-bottom: 1px solid #f1f5f9;
-            vertical-align: middle;
-        }
-        .order-modal__table tbody tr:last-child td {
-            border-bottom: none;
-        }
-        .order-modal__table tbody tr:hover td {
-            background: #f8fafc;
-        }
-
-        /* Product cell */
-        .modal-product {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .modal-product__thumb {
-            width: 44px;
-            height: 44px;
-            border-radius: 10px;
-            background: #f1f5f9;
-            border: 1px solid #e2e8f0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            flex-shrink: 0;
-            color: #94a3b8;
-            font-size: 1.1rem;
-        }
-        .modal-product__thumb img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .modal-product__name {
-            font-weight: 600;
-            color: #0f172a;
-            line-height: 1.35;
-        }
-
-        .td-qty {
-            color: #475569;
-            font-weight: 600;
-        }
-        .td-price {
-            color: #64748b;
-            font-weight: 600;
-        }
-        .td-subtotal {
-            font-weight: 800;
-            color: #15803d;
-        }
-
-        /* Summary box */
-        .order-modal__summary {
-            background: #fff;
-            border: 1px solid #e2e8f0;
-            border-radius: 14px;
-            padding: 16px 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, .03);
-            margin-bottom: 4px;
-        }
-        .order-modal__total-card {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 14px 18px;
-            background: linear-gradient(135deg, #f0fdf4, #dcfce7);
-            border: 1px solid #bbf7d0;
-            border-radius: 12px;
-        }
-        .order-modal__total-label {
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: #15803d;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .order-modal__total-val {
-            font-size: 1.35rem;
-            font-weight: 800;
-            color: #15803d;
-        }
-
-        /* Monto pagado chip */
-        .order-modal__paid-chip {
-            display: inline-flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 10px 16px;
-            font-size: 0.88rem;
-            color: #334155;
-        }
-        .order-modal__paid-chip strong {
-            color: #15803d;
-            font-size: 1rem;
-        }
-
-        /* Modal footer */
-        .order-modal__footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 18px 28px;
-            border-top: 1px solid #f1f5f9;
-            background: #fafbfc;
-            position: sticky;
-            bottom: 0;
-            z-index: 10;
-            gap: 12px;
-        }
-        .order-modal__footer-actions {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        /* ─── Flash messages ─── */
-        .flash-msg { position: fixed; top: 90px; right: 22px; padding: 14px 20px; border-radius: 12px; font-size: 0.88rem; font-weight: 600; box-shadow: 0 6px 20px rgba(0,0,0,.13); z-index: 9999; animation: flashIn .3s ease both; }
-        @keyframes flashIn { from{opacity:0;transform:translateX(30px)} to{opacity:1;transform:translateX(0)} }
-        .flash-success { background: #d4edda; color: #155724; border-left: 4px solid #27ae60; }
-        .flash-error   { background: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; }
-
-        /* ─── Responsive ─── */
-        @media (max-width: 680px) {
-            .mp-card__body { flex-direction: column; align-items: flex-start; }
-            .mp-card__actions { margin-left: 0; width: 100%; }
-            .mp-btn { flex: 1; justify-content: center; }
-            .mp-tabs { flex-wrap: wrap; }
-            .order-modal__footer { flex-direction: column-reverse; }
-            .order-modal__footer form { width: 100%; margin: 0; }
-            .order-modal__footer .mp-btn { width: 100%; justify-content: center; }
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/checkout-tokens.css}">
+    <link rel="stylesheet" th:href="@{/pedidos-comprador.css}">
 </head>
 
 <body>
     <header th:replace="~{fragments/header :: siteHeader}"></header>
 
-    <div class="mp-page">
+    <main class="orders-page">
+        <div class="mp-page">
 
-        <!-- Heading -->
-        <div class="mp-heading">
-            <div class="mp-heading-icon"><i class="fa-solid fa-bag-shopping"></i></div>
-            <h1>Mis Pedidos</h1>
-        </div>
-
-        <!-- Toolbar: tabs + filter -->
-        <div class="mp-toolbar">
-            <div class="mp-tabs" role="tablist">
-                <button class="mp-tab active" id="tab-todos"       onclick="filterOrders('todos')"      role="tab">Todos</button>
-                <button class="mp-tab"         id="tab-entregados" onclick="filterOrders('entregados')" role="tab">Entregados</button>
-                <button class="mp-tab"         id="tab-proceso"    onclick="filterOrders('proceso')"    role="tab">En Proceso</button>
-                <button class="mp-tab"         id="tab-pendiente"  onclick="filterOrders('pendiente')"  role="tab">Pendientes</button>
+            <!-- Heading -->
+            <div class="mp-heading">
+                <h1>Mis pedidos</h1>
+                <p class="mp-heading-subtitle">Historial de compras y seguimiento de entregas en tiempo real.</p>
             </div>
-            <button class="mp-filter-btn" onclick="sortByDate()">
-                <i class="fa-solid fa-arrow-down-wide-short"></i> Ordenar
-                <i class="fa-solid fa-chevron-down" style="font-size:.72rem;"></i>
-            </button>
-        </div>
 
-        <!-- Order count -->
-        <p class="mp-count" id="orderCount"></p>
-
-        <!-- Empty state -->
-        <div th:if="${pedidos == null || pedidos.isEmpty()}" class="mp-empty">
-            <div class="mp-empty-icon"><i class="fa-solid fa-box-open"></i></div>
-            <h3>No tienes pedidos aún</h3>
-            <p>Explora la tienda y comienza a comprar los mejores productos frescos.</p>
-            <a th:href="@{/}" class="mp-btn mp-btn--primary">
-                <i class="fa-solid fa-store"></i> Ir a la Tienda
-            </a>
-        </div>
-
-        <!-- Order list -->
-        <div class="mp-list" id="orderList" th:if="${(compras != null and !compras.isEmpty()) or (pedidos != null and !pedidos.isEmpty())}">
-
-            <!-- Compras agrupadas multi-vendedor (US-21 Item 8) -->
-            <th:block th:if="${compras != null and !compras.isEmpty()}">
-                <div th:each="compra : ${compras}"
-                     class="mp-card"
-                     th:data-estado="${compra.estadoFiltro}">
-
-                    <!-- Card top bar -->
-                    <div class="mp-card__top" style="background: linear-gradient(135deg, #f8fafc, #f1f5f9);">
-                        <div style="display:flex;align-items:center;gap:12px;">
-                            <div class="mp-card__order-id">
-                                <div class="id-icon" style="background: linear-gradient(135deg, #16a34a, #15803d);"><i class="fa-solid fa-layer-group"></i></div>
-                                <div>
-                                    <div style="font-weight: 800; font-size: 1.02rem;">
-                                        Compra <span th:text="${compra.referenciaPago}">CUL-XXXXXX</span>
-                                    </div>
-                                    <div class="mp-card__date">
-                                        <i class="fa-regular fa-calendar"></i>
-                                        <span th:text="${#temporals.format(compra.fecha, 'dd/MM/yyyy HH:mm')}">01/01/2026</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <span class="mp-badge"
-                                  th:classappend="'mp-badge--' + ${compra.estadoCss}"
-                                  th:text="${compra.estadoEtiqueta}">
-                            </span>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 14px;">
-                            <div style="text-align: right;">
-                                <div style="font-size: 0.72rem; color: #64748b; font-weight: 600; text-transform: uppercase;">Total Transacción</div>
-                                <div style="font-size: 1.2rem; font-weight: 800; color: #16a34a;">
-                                    $<span th:text="${#numbers.formatDecimal(compra.total, 0, 'COMMA', 0, 'POINT')}">0</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Top Logistics Transport Card (Fase 2) -->
-                    <div class="mp-logistics-card"
-                         th:classappend="${compra.envioLogistica != null ? 
-                                         (compra.envioLogistica.estado == 'ENTREGADO' ? 'mp-logistics-card--delivered' : 
-                                         (compra.envioLogistica.estado == 'SIN_TRANSPORTISTA' ? 'mp-logistics-card--expired' : 
-                                         (compra.envioLogistica.estado == 'ASIGNADO' || compra.envioLogistica.estado == 'EN_RECOGIDA' || compra.envioLogistica.estado == 'EN_ENTREGA' ? 'mp-logistics-card--assigned' : 
-                                         (compra.tieneSubPedidoListoParaRecoger ? 'mp-logistics-card--waiting' : 'mp-logistics-card--searching')))) : 'mp-logistics-card--searching'}">
-
-                        <div style="display: flex; align-items: center; gap: 12px; flex: 1; min-width: 260px;">
-                            <div style="width: 38px; height: 38px; border-radius: 9px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.06); font-size: 1.15rem; flex-shrink: 0;">
-                                <i class="fa-solid fa-truck-fast"></i>
-                            </div>
-                            <div>
-                                <!-- Caso 1: Asignado, en recogida o en entrega -->
-                                 <div th:if="${compra.envioLogistica != null and (compra.envioLogistica.estado == 'ASIGNADO' or compra.envioLogistica.estado == 'EN_RECOGIDA' or compra.envioLogistica.estado == 'EN_ENTREGA')}"
-                                      th:with="t=${compra.envioLogistica.transportista}">
-                                     <span style="font-weight: 800;">Transportista asignado</span><span th:if="${t != null and t.nombreMostrar != null}">:</span>
-                                     <strong th:if="${t != null and t.nombreMostrar != null}" th:text="${t.nombreMostrar}">Carlos Mendoza</strong>
-                                     <span th:if="${t != null and t.telefonoLimpio != null}">
-                                         · <i class="fa-solid fa-phone" style="font-size: .75rem;"></i>
-                                         <a th:href="'tel:' + ${t.telefonoLimpio}" style="font-weight: 700; color: inherit; text-decoration: underline;" th:text="${t.telefonoLimpio}">3101234567</a>
-                                     </span>
-                                     <span th:if="${t != null and t.vehiculoMostrar != null}">
-                                         · <i class="fa-solid fa-motorcycle" style="font-size: .75rem;"></i>
-                                         <span th:text="${t.vehiculoMostrar}">Moto TRA-789</span>
-                                     </span>
-                                 </div>
-
-                                <!-- Caso 2: Entregado -->
-                                <div th:if="${compra.envioLogistica != null and compra.envioLogistica.estado == 'ENTREGADO'}">
-                                    <strong style="color: #15803d;"><i class="fa-solid fa-circle-check"></i> ¡Envío Entregado!</strong>
-                                    <span>Todos los productos de tu compra han llegado a tu dirección.</span>
-                                </div>
-
-                                <!-- Caso 3: Sin transportista (Expirado) -->
-                                <div th:if="${compra.envioLogistica != null and compra.envioLogistica.estado == 'SIN_TRANSPORTISTA'}">
-                                    <strong style="color: #b91c1c;"><i class="fa-solid fa-triangle-exclamation"></i> Sin transportista asignado:</strong>
-                                    <span>El envío no pudo coordinarse a tiempo. El equipo de soporte gestionará tu reembolso manual.</span>
-                                </div>
-
-                                <!-- Caso 4: Buscando o esperando transportista -->
-                                <div th:if="${compra.envioLogistica == null or (compra.envioLogistica.estado == 'PENDIENTE_ASIGNACION')}">
-                                    <span th:if="${compra.tieneSubPedidoListoParaRecoger}">
-                                        <strong><i class="fa-solid fa-clock"></i> Esperando transportista:</strong> El agricultor ya tiene tu pedido listo en finca para recogida.
-                                    </span>
-                                    <span th:unless="${compra.tieneSubPedidoListoParaRecoger}">
-                                        <strong><i class="fa-solid fa-route"></i> Buscando transportista:</strong> Asignando conductor óptimo para recoger tus productos.
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Badge de estado logístico a la derecha -->
-                        <div style="margin-left: auto; flex-shrink: 0;">
-                            <span class="mp-badge"
-                                  th:classappend="${compra.envioLogistica != null ? 'mp-badge--' + compra.envioLogistica.estadoCss : 'mp-badge--pendiente'}"
-                                  th:text="${compra.envioLogistica != null ? compra.envioLogistica.estadoEtiqueta : 'Buscando transportista'}">
-                                Buscando transportista
-                            </span>
-                        </div>
-                    </div>
-
-                    <!-- Sub-pedidos -->
-                    <div style="padding: 16px 20px; background: #ffffff;">
-                        <div style="font-size: 0.78rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
-                            <i class="fa-solid fa-basket-shopping" style="color: #27ae60;"></i>
-                            Sub-pedidos por Agricultor (<span th:text="${compra.subPedidos != null ? compra.subPedidos.size() : 0}">0</span>)
-                        </div>
-
-                        <div style="display: flex; flex-direction: column; gap: 14px;">
-                            <div th:each="sub : ${compra.subPedidos}"
-                                 style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; background: #fbfcfd; display: flex; flex-direction: column; gap: 10px;">
-
-                                <!-- Fila superior del sub-pedido -->
-                                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-                                    <div style="display: flex; align-items: center; gap: 14px; min-width: 220px; flex: 1;">
-                                        <div class="mp-card__images">
-                                            <th:block th:each="item, iter : ${sub.items}" th:if="${iter.index < 2}">
-                                                <div class="mp-card__img" style="width: 44px; height: 44px;">
-                                                    <th:block th:if="${item.imagenSnapshot != null and item.imagenSnapshot != ''}">
-                                                        <img th:src="${item.imagenSnapshot}"
-                                                             th:alt="${item.nombreSnapshot}"
-                                                             onerror="this.parentElement.innerHTML='<i class=\'fa-solid fa-leaf\'></i>'">
-                                                    </th:block>
-                                                    <th:block th:if="${item.imagenSnapshot == null or item.imagenSnapshot == ''}">
-                                                        <i class="fa-solid fa-leaf"></i>
-                                                    </th:block>
-                                                </div>
-                                            </th:block>
-                                        </div>
-                                        <div>
-                                            <div style="font-weight: 700; color: #1e293b; font-size: 0.92rem;">
-                                                <span th:text="${sub.vendedor != null and sub.vendedor.razonSocial != null ? sub.vendedor.razonSocial : (sub.vendedor != null and sub.vendedor.nombre != null ? sub.vendedor.nombre : 'Productor Local')}">Tienda</span>
-                                                <span style="font-size: 0.78rem; color: #64748b; font-weight: normal; margin-left: 6px;" th:text="'(' + ${sub.numeroFactura} + ')'">(CLT-000)</span>
-                                            </div>
-                                            <div style="font-size: 0.8rem; color: #64748b; margin-top: 2px;">
-                                                <span th:text="${sub.items != null ? sub.items.size() : 0}">0</span> artículo(s) · Subtotal: <strong style="color: #15803d;">$<span th:text="${#numbers.formatDecimal(sub.total, 0, 'COMMA', 0, 'POINT')}">0</span></strong>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
-                                        <span class="mp-badge"
-                                              th:classappend="'mp-badge--' + ${sub.estadoCss}"
-                                              th:text="${sub.estadoEtiqueta}">
-                                            Confirmado
-                                        </span>
-                                        <button type="button" class="mp-btn mp-btn--outline" style="padding: 7px 14px; font-size: 0.8rem;"
-                                                th:attr="data-modal-target='pedidoModal-' + ${sub.id}">
-                                            <i class="fa-solid fa-eye"></i> Ver detalle
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- Banner de Cancelación (1.6) -->
-                                <div th:if="${sub.cancelado}" class="mp-banner mp-banner--cancelled" style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 12px 16px; margin-top: 12px; color: #991b1b; display: flex; align-items: center; gap: 10px;">
-                                    <i class="fa-solid fa-ban" style="font-size: 1.2rem;"></i>
-                                    <div>
-                                        <strong>Pedido Cancelado</strong>
-                                        <div style="font-size: 0.85rem;" th:if="${sub.motivoCancelacion != null}" th:text="'Motivo: ' + ${sub.motivoCancelacion}">Motivo de cancelación</div>
-                                    </div>
-                                </div>
-
-                                <!-- Banner de Revisión (1.6) -->
-                                <div th:if="${sub.enRevision}" class="mp-banner mp-banner--revision" style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 12px 16px; margin-top: 12px; color: #92400e; display: flex; align-items: center; gap: 10px;">
-                                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.2rem;"></i>
-                                    <div>
-                                        <strong>Pedido en Revisión</strong>
-                                        <div style="font-size: 0.85rem;" th:text="${sub.motivoRevision != null ? sub.motivoRevision : 'El pago fue recibido pero se está validando el stock para gestión de reembolso.'}">En revisión</div>
-                                    </div>
-                                </div>
-
-                                <!-- Stepper Timeline (oculto en CANCELADO) -->
-                                <div class="mp-timeline" th:if="${sub.mostrarStepper}">
-                                    <div class="mp-timeline__title">
-                                        <i class="fa-solid fa-timeline"></i>
-                                        <span>Seguimiento de preparación y entrega</span>
-                                    </div>
-                                    <!-- Stepper Domicilio (6 pasos) -->
-                                    <div class="mp-stepper">
-                                        <!-- 1. Pagado -->
-                                        <div class="mp-step" th:classappend="${sub.pasoTracking > 1 ? 'completed' : (sub.pasoTracking == 1 ? 'active' : '')}">
-                                            <div class="mp-step__dot"><i th:class="${sub.pasoTracking > 1 ? 'fa-solid fa-check' : 'fa-solid fa-credit-card'}"></i></div>
-                                            <div class="mp-step__label">PAGADO</div>
-                                        </div>
-                                        <!-- 2. Confirmado -->
-                                        <div class="mp-step" th:classappend="${sub.pasoTracking > 2 ? 'completed' : (sub.pasoTracking == 2 ? 'active' : '')}">
-                                            <div class="mp-step__dot"><i th:class="${sub.pasoTracking > 2 ? 'fa-solid fa-check' : 'fa-solid fa-circle-check'}"></i></div>
-                                            <div class="mp-step__label">CONFIRMADO</div>
-                                        </div>
-                                        <!-- 3. Preparando -->
-                                        <div class="mp-step" th:classappend="${sub.pasoTracking > 3 ? 'completed' : (sub.pasoTracking == 3 ? 'active' : '')}">
-                                            <div class="mp-step__dot"><i th:class="${sub.pasoTracking > 3 ? 'fa-solid fa-check' : 'fa-solid fa-box-open'}"></i></div>
-                                            <div class="mp-step__label">PREPARANDO</div>
-                                        </div>
-                                        <!-- 4. Listo para recoger -->
-                                        <div class="mp-step" th:classappend="${sub.pasoTracking > 4 ? 'completed' : (sub.pasoTracking == 4 ? 'active' : '')}">
-                                            <div class="mp-step__dot"><i th:class="${sub.pasoTracking > 4 ? 'fa-solid fa-check' : 'fa-solid fa-box-archive'}"></i></div>
-                                            <div class="mp-step__label">LISTO PARA RECOGER</div>
-                                        </div>
-                                        <!-- 5. En camino -->
-                                        <div class="mp-step" th:classappend="${sub.pasoTracking > 5 ? 'completed' : (sub.pasoTracking == 5 ? 'active' : '')}">
-                                            <div class="mp-step__dot"><i th:class="${sub.pasoTracking > 5 ? 'fa-solid fa-check' : 'fa-solid fa-truck-fast'}"></i></div>
-                                            <div class="mp-step__label">EN CAMINO</div>
-                                        </div>
-                                        <!-- 6. Entregado -->
-                                        <div class="mp-step" th:classappend="${sub.pasoTracking >= 6 ? 'completed' : ''}">
-                                            <div class="mp-step__dot"><i class="fa-solid fa-house-chimney"></i></div>
-                                            <div class="mp-step__label">ENTREGADO</div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                 <!-- Desglose de envío de este vendedor -->
-                                 <div th:if="${sub.envioCentavos != null and sub.envioCentavos > 0}"
-                                      style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; font-size: 0.82rem; color: #475569; background: #f1f5f9; border-radius: 8px; padding: 8px 12px;">
-                                     <span>
-                                         <i class="fa-solid fa-route" style="color: #16a34a;"></i>
-                                         Envío:
-                                         <strong th:text="${sub.zonaOrigenEnvio != null ? 'Zona ' + sub.zonaOrigenEnvio : (sub.ciudadOrigenEnvio != null ? sub.ciudadOrigenEnvio : 'Recogida')}">Zona 1</strong>
-                                         <i class="fa-solid fa-arrow-right" style="font-size: .7rem;"></i>
-                                         <strong th:text="${sub.zonaDestinoEnvio != null ? 'Zona ' + sub.zonaDestinoEnvio : (sub.ciudadDestinoEnvio != null ? sub.ciudadDestinoEnvio : 'Entrega')}">Zona 2</strong>
-                                     </span>
-                                     <strong style="color: #15803d;">$<span th:text="${#numbers.formatDecimal(sub.envio, 0, 'COMMA', 0, 'POINT')}">0</span></strong>
-                                 </div>
-
-                            </div>
-                        </div>
-                         <div th:if="${compra.envioCentavos != null and compra.envioCentavos > 0}"
-                              style="display: flex; justify-content: flex-end; gap: 18px; flex-wrap: wrap; margin-top: 14px; padding-top: 12px; border-top: 1px dashed #cbd5e1; font-size: 0.88rem; color: #475569;">
-                             <span>Productos: <strong>$<span th:text="${#numbers.formatDecimal(compra.subtotal, 0, 'COMMA', 0, 'POINT')}">0</span></strong></span>
-                             <span><i class="fa-solid fa-truck-fast" style="color: #16a34a;"></i> Envío total: <strong>$<span th:text="${#numbers.formatDecimal(compra.envio, 0, 'COMMA', 0, 'POINT')}">0</span></strong></span>
-                         </div>
-                    </div>
+            <!-- Toolbar: tabs + filter -->
+            <div class="mp-toolbar">
+                <div class="mp-tabs" role="tablist">
+                    <button class="mp-tab active" id="tab-todos"       onclick="filterOrders('todos')"      role="tab">Todos</button>
+                    <button class="mp-tab"         id="tab-entregados" onclick="filterOrders('entregados')" role="tab">Entregados</button>
+                    <button class="mp-tab"         id="tab-proceso"    onclick="filterOrders('proceso')"    role="tab">En proceso</button>
+                    <button class="mp-tab"         id="tab-pendiente"  onclick="filterOrders('pendiente')"  role="tab">Pendientes</button>
                 </div>
-            </th:block>
+                <button class="mp-filter-btn" onclick="sortByDate()">
+                    <i class="fa-solid fa-arrow-down-wide-short" aria-hidden="true"></i> Ordenar
+                    <i class="fa-solid fa-chevron-down" style="font-size: .72rem;" aria-hidden="true"></i>
+                </button>
+            </div>
 
-            <!-- Pedidos individuales / legacy (si no hay compras o pedidos huérfanos) -->
-            <th:block th:if="${compras == null || compras.isEmpty() || (pedidosSinCompra != null and !pedidosSinCompra.isEmpty())}">
-                <div th:each="pedido : ${(compras == null || compras.isEmpty()) ? pedidos : pedidosSinCompra}"
-                     class="mp-card"
-                     th:data-estado="${pedido.estado}">
+            <!-- Order count -->
+            <p class="mp-count" id="orderCount"></p>
 
-                    <!-- Card top bar -->
-                    <div class="mp-card__top">
-                        <div style="display:flex;align-items:center;gap:12px;">
-                            <div class="mp-card__order-id">
-                                <div class="id-icon"><i class="fa-solid fa-receipt"></i></div>
-                                <div>
-                                    <div th:text="${pedido.numeroFactura}">CLT-XXXXXX</div>
-                                    <div class="mp-card__date">
-                                        <i class="fa-regular fa-calendar"></i>
-                                        <span th:text="${#temporals.format(pedido.fechaPedido, 'dd/MM/yyyy')}">01/01/2024</span>
+            <!-- Empty state -->
+            <div th:if="${pedidos == null || pedidos.isEmpty()}" class="mp-empty">
+                <div class="mp-empty-icon" aria-hidden="true"><i class="fa-solid fa-box-open"></i></div>
+                <h3>No tienes pedidos aún</h3>
+                <p>Explora la tienda y comienza a comprar los mejores productos frescos.</p>
+                <a th:href="@{/}" class="mp-btn mp-btn--primary">
+                    <i class="fa-solid fa-store" aria-hidden="true"></i> Ir a la tienda
+                </a>
+            </div>
+
+            <!-- Order list -->
+            <div class="mp-list" id="orderList" th:if="${(compras != null and !compras.isEmpty()) or (pedidos != null and !pedidos.isEmpty())}">
+
+                <!-- Compras agrupadas multi-vendedor (US-21 Item 8) -->
+                <th:block th:if="${compras != null and !compras.isEmpty()}">
+                    <div th:each="compra : ${compras}"
+                         class="mp-card"
+                         th:data-estado="${compra.estadoFiltro}">
+
+                        <!-- Card top bar -->
+                        <div class="mp-card__top">
+                            <div class="mp-card__top-left">
+                                <div class="mp-card__order-id">
+                                    <div class="id-icon" aria-hidden="true"><i class="fa-solid fa-layer-group"></i></div>
+                                    <div>
+                                        <div class="mp-card__ref-text">
+                                            Compra <span th:text="${compra.referenciaPago}">CUL-XXXXXX</span>
+                                        </div>
+                                        <div class="mp-card__date">
+                                            <i class="fa-regular fa-calendar" aria-hidden="true"></i>
+                                            <span th:text="${#temporals.format(compra.fecha, 'dd/MM/yyyy HH:mm')}">01/01/2026</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <span class="mp-badge"
+                                      th:classappend="'mp-badge--' + ${compra.estadoCss}"
+                                      th:text="${compra.estadoEtiqueta}">
+                                </span>
+                            </div>
+                            <div class="mp-card__top-right">
+                                <div class="mp-card__total-box">
+                                    <div class="mp-card__total-label">Total</div>
+                                    <div class="mp-card__total-val">
+                                        $<span th:text="${#numbers.formatDecimal(compra.total, 0, 'COMMA', 0, 'POINT')}">0</span>
                                     </div>
                                 </div>
                             </div>
-                            <span class="mp-badge"
-                                  th:classappend="'mp-badge--' + ${pedido.estadoCss}"
-                                  th:text="${pedido.estadoEtiqueta}">
-                            </span>
-                        </div>
-                        <i class="fa-regular fa-calendar-check mp-card__calendar"></i>
-                    </div>
-
-                    <!-- Card body -->
-                    <div class="mp-card__body">
-
-                        <!-- Product image strip -->
-                        <div class="mp-card__images">
-                            <th:block th:each="item, iter : ${pedido.items}" th:if="${iter.index < 2}">
-                                <div class="mp-card__img">
-                                    <th:block th:if="${item.imagenSnapshot != null and item.imagenSnapshot != ''}">
-                                        <img th:src="${item.imagenSnapshot}"
-                                             th:alt="${item.nombreSnapshot}"
-                                             onerror="this.parentElement.innerHTML='<i class=\'fa-solid fa-leaf\'></i>'">
-                                    </th:block>
-                                    <th:block th:if="${item.imagenSnapshot == null or item.imagenSnapshot == ''}">
-                                        <i class="fa-solid fa-leaf"></i>
-                                    </th:block>
-                                </div>
-                            </th:block>
-                            <div class="mp-card__img mp-card__img-more"
-                                 th:if="${pedido.items != null and pedido.items.size() > 2}"
-                                 th:text="'+' + (${pedido.items.size() - 2})">+N</div>
                         </div>
 
-                        <!-- Store info -->
-                        <div class="mp-card__info">
-                            <div class="mp-card__info-label"><i class="fa-solid fa-store"></i> Tienda</div>
-                            <div class="mp-card__info-value"
-                                 th:text="${pedido.vendedor != null and pedido.vendedor.razonSocial != null ? pedido.vendedor.razonSocial : (pedido.vendedor != null and pedido.vendedor.nombre != null ? pedido.vendedor.nombre : 'Productor Local')}">
-                            </div>
-                        </div>
+                        <!-- Top Logistics Transport Card (Fase 2) -->
+                        <div class="mp-logistics-card"
+                             th:classappend="${compra.envioLogistica != null ? 
+                                             (compra.envioLogistica.estado == 'ENTREGADO' ? 'mp-logistics-card--delivered' : 
+                                             (compra.envioLogistica.estado == 'SIN_TRANSPORTISTA' ? 'mp-logistics-card--expired' : 
+                                             (compra.envioLogistica.estado == 'ASIGNADO' || compra.envioLogistica.estado == 'EN_RECOGIDA' || compra.envioLogistica.estado == 'EN_ENTREGA' ? 'mp-logistics-card--assigned' : 
+                                             (compra.tieneSubPedidoListoParaRecoger ? 'mp-logistics-card--waiting' : 'mp-logistics-card--searching')))) : 'mp-logistics-card--searching'}">
 
-                        <!-- Seller name -->
-                        <div class="mp-card__info">
-                            <div class="mp-card__info-label"><i class="fa-solid fa-user"></i> Vendedor</div>
-                            <div class="mp-card__info-value"
-                                 th:text="${pedido.vendedor != null and pedido.vendedor.nombre != null ? pedido.vendedor.nombre : 'Usuario Cultivus'}">
-                            </div>
-                        </div>
-
-                        <!-- Payment method -->
-                        <div class="mp-card__info">
-                            <div class="mp-card__info-label"><i class="fa-solid fa-credit-card"></i> Pago</div>
-                            <div class="mp-card__info-value"
-                                 th:text="${pedido.pago != null and pedido.pago.metodo != null ? pedido.pago.metodo : 'No especificado'}">
-                            </div>
-                        </div>
-
-                        <!-- Items count -->
-                        <div class="mp-card__info">
-                            <div class="mp-card__info-label"><i class="fa-solid fa-boxes-stacked"></i> Artículos</div>
-                            <div class="mp-card__info-value">
-                                <span th:text="${pedido.items != null ? pedido.items.size() : 0}">0</span> ítems
-                            </div>
-                        </div>
-
-                        <!-- Shipping address -->
-                        <div class="mp-card__info">
-                            <div class="mp-card__info-label"><i class="fa-solid fa-location-dot"></i> Dirección</div>
-                            <div class="mp-card__info-value"
-                                 th:text="${pedido.direccionEntrega != null ? ((pedido.direccionEntrega.direccion != null ? pedido.direccionEntrega.direccion : '') + (pedido.direccionEntrega.ciudad != null ? ', ' + pedido.direccionEntrega.ciudad : '')) : 'No especificada'}">
-                            </div>
-                        </div>
-
-                        <!-- Total -->
-                        <div class="mp-card__info">
-                            <div class="mp-card__info-label"><i class="fa-solid fa-tag"></i> Total</div>
-                            <div class="mp-card__total">
-                                $<span th:text="${pedido.total != null ? #numbers.formatDecimal(pedido.total, 0, 'COMMA', 0, 'POINT') : '0'}">0</span>
-                            </div>
-                        </div>
-
-                        <!-- Actions -->
-                        <div class="mp-card__actions">
-                            <button type="button" class="mp-btn mp-btn--outline"
-                                    th:attr="data-modal-target='pedidoModal-' + ${pedido.id}">
-                                <i class="fa-solid fa-eye"></i> Ver detalle
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </th:block>
-
-        </div>
-
-        <!-- Detail modals para todos los pedidos -->
-        <th:block th:if="${pedidos != null}">
-            <div th:each="pedido : ${pedidos}">
-
-                <!-- Detail modal -->
-                <dialog class="order-modal" th:id="'pedidoModal-' + ${pedido.id}">
-                    <div class="order-modal__scroll">
-
-                        <!-- Modal header -->
-                        <div class="order-modal__header">
-                            <div class="order-modal__header-left">
-                                <div class="order-modal__header-icon">
-                                    <i class="fa-solid fa-receipt"></i>
+                            <div class="mp-logistics-card__main">
+                                <div class="mp-logistics-icon" aria-hidden="true">
+                                    <i class="fa-solid fa-truck-fast"></i>
                                 </div>
                                 <div>
-                                    <h2>
-                                        <span>Pedido <span th:text="${pedido.numeroFactura}">CLT-XXXXXX</span></span>
-                                        <span class="mp-badge"
-                                              th:classappend="'mp-badge--' + ${pedido.estadoCss}"
-                                              th:text="${pedido.estadoEtiqueta}">
+                                    <!-- Caso 1: Asignado, en recogida o en entrega -->
+                                     <div th:if="${compra.envioLogistica != null and (compra.envioLogistica.estado == 'ASIGNADO' or compra.envioLogistica.estado == 'EN_RECOGIDA' or compra.envioLogistica.estado == 'EN_ENTREGA')}"
+                                          th:with="t=${compra.envioLogistica.transportista}">
+                                         <span style="font-weight: 700;">Transportista asignado</span><span th:if="${t != null and t.nombreMostrar != null}">:</span>
+                                         <strong th:if="${t != null and t.nombreMostrar != null}" th:text="${t.nombreMostrar}">Carlos Mendoza</strong>
+                                         <span th:if="${t != null and t.telefonoLimpio != null}">
+                                             · <i class="fa-solid fa-phone" style="font-size: .75rem;" aria-hidden="true"></i>
+                                             <a th:href="'tel:' + ${t.telefonoLimpio}" style="font-weight: 600; color: inherit; text-decoration: underline;" th:text="${t.telefonoLimpio}">3101234567</a>
+                                         </span>
+                                         <span th:if="${t != null and t.vehiculoMostrar != null}">
+                                             · <i class="fa-solid fa-motorcycle" style="font-size: .75rem;" aria-hidden="true"></i>
+                                             <span th:text="${t.vehiculoMostrar}">Moto TRA-789</span>
+                                         </span>
+                                     </div>
+
+                                    <!-- Caso 2: Entregado -->
+                                    <div th:if="${compra.envioLogistica != null and compra.envioLogistica.estado == 'ENTREGADO'}">
+                                        <strong style="color: var(--c-green);"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> ¡Envío entregado!</strong>
+                                        <span>Todos los productos de tu compra han llegado a tu dirección.</span>
+                                    </div>
+
+                                    <!-- Caso 3: Sin transportista (Expirado) -->
+                                    <div th:if="${compra.envioLogistica != null and compra.envioLogistica.estado == 'SIN_TRANSPORTISTA'}">
+                                        <strong style="color: var(--c-danger);"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Sin transportista asignado:</strong>
+                                        <span>El envío no pudo coordinarse a tiempo. El equipo de soporte gestionará tu reembolso manual.</span>
+                                    </div>
+
+                                    <!-- Caso 4: Buscando o esperando transportista -->
+                                    <div th:if="${compra.envioLogistica == null or (compra.envioLogistica.estado == 'PENDIENTE_ASIGNACION')}">
+                                        <span th:if="${compra.tieneSubPedidoListoParaRecoger}">
+                                            <strong><i class="fa-solid fa-clock" aria-hidden="true"></i> Esperando transportista:</strong> El agricultor ya tiene tu pedido listo en finca para recogida.
                                         </span>
-                                    </h2>
-                                    <p>
-                                        <i class="fa-regular fa-calendar"></i>
-                                        <span th:text="${#temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm')}">01/01/2026 00:00</span>
-                                    </p>
-                                </div>
-                            </div>
-                            <form method="dialog">
-                                <button class="order-modal__close" aria-label="Cerrar">
-                                    <i class="fa-solid fa-xmark"></i>
-                                </button>
-                            </form>
-                        </div>
-
-                        <!-- Modal body -->
-                        <div class="order-modal__body">
-
-                            <!-- Info cards grid -->
-                            <div class="order-modal__grid">
-                                <!-- 1. Fecha -->
-                                <div class="omc">
-                                    <div class="omc__label"><i class="fa-regular fa-calendar"></i> Fecha</div>
-                                    <div class="omc__value" th:text="${#temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm')}">–</div>
-                                </div>
-                                <!-- 2. Tienda -->
-                                <div class="omc">
-                                    <div class="omc__label"><i class="fa-solid fa-store"></i> Tienda</div>
-                                    <div class="omc__value"
-                                         th:text="${pedido.vendedor != null and pedido.vendedor.razonSocial != null ? pedido.vendedor.razonSocial : (pedido.vendedor != null and pedido.vendedor.nombre != null ? pedido.vendedor.nombre : 'Productor Local')}">–</div>
-                                </div>
-                                <!-- 3. Estado del pedido -->
-                                <div class="omc">
-                                    <div class="omc__label"><i class="fa-solid fa-truck-fast"></i> Estado del pedido</div>
-                                    <div class="omc__value">
-                                        <span class="mp-badge"
-                                              th:classappend="'mp-badge--' + ${pedido.estadoCss}"
-                                              th:text="${pedido.estadoEtiqueta}">
+                                        <span th:unless="${compra.tieneSubPedidoListoParaRecoger}">
+                                            <strong><i class="fa-solid fa-route" aria-hidden="true"></i> Buscando transportista:</strong> Asignando conductor óptimo para recoger tus productos.
                                         </span>
                                     </div>
                                 </div>
-                                <!-- 4. Productos -->
-                                <div class="omc">
-                                    <div class="omc__label"><i class="fa-solid fa-boxes-stacked"></i> Productos</div>
-                                    <div class="omc__value"
-                                         th:text="${(pedido.items != null ? pedido.items.size() : 0) + ' ítems'}">0 ítems</div>
-                                </div>
-                                <!-- 5. Método de pago -->
-                                <div class="omc">
-                                    <div class="omc__label"><i class="fa-solid fa-credit-card"></i> Método de pago</div>
-                                    <div class="omc__value"
-                                         th:text="${pedido.pago != null and pedido.pago.metodo != null ? pedido.pago.metodo : 'No especificado'}">–</div>
-                                </div>
-                                <!-- 6. Estado del pago -->
-                                <div class="omc">
-                                    <div class="omc__label"><i class="fa-solid fa-shield-halved"></i> Estado del pago</div>
-                                    <div class="omc__value">
-                                        <span class="mp-paybadge"
-                                              th:classappend="${pedido.pago != null and (pedido.pago.estado == 'COMPLETADO' or pedido.pago.estado == 'APROBADO' or pedido.pago.estado == 'PAGADO') ? 'mp-paybadge--completado' :
-                                                              (pedido.pago != null and (pedido.pago.estado == 'FALLIDO' or pedido.pago.estado == 'RECHAZADO') ? 'mp-paybadge--fallido' : 'mp-paybadge--pendiente')}"
-                                              th:text="${pedido.pago != null and pedido.pago.estado != null ? pedido.pago.estado : 'PENDIENTE'}">PENDIENTE
-                                        </span>
-                                    </div>
-                                </div>
-                                <!-- Extra: Vendedor -->
-                                <div class="omc">
-                                    <div class="omc__label"><i class="fa-solid fa-user"></i> Vendedor</div>
-                                    <div class="omc__value"
-                                         th:text="${pedido.vendedor != null and pedido.vendedor.nombre != null ? pedido.vendedor.nombre : 'Usuario Cultivus'}">–</div>
-                                </div>
-                                <!-- Extra: Dirección de entrega -->
-                                <div class="omc">
-                                    <div class="omc__label"><i class="fa-solid fa-location-dot"></i> Entrega</div>
-                                    <div class="omc__value"
-                                         th:text="${pedido.direccionEntrega != null ? ((pedido.direccionEntrega.direccion != null ? pedido.direccionEntrega.direccion : '') + (pedido.direccionEntrega.ciudad != null ? ', ' + pedido.direccionEntrega.ciudad : '') + (pedido.direccionEntrega.departamento != null ? ' - ' + pedido.direccionEntrega.departamento : '')) : 'No especificada'}">–</div>
-                                </div>
                             </div>
 
-                            <!-- Banner de Cancelación (1.6) -->
-                            <div th:if="${pedido.cancelado}" class="mp-banner mp-banner--cancelled" style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 12px 16px; margin-bottom: 18px; color: #991b1b; display: flex; align-items: center; gap: 10px;">
-                                <i class="fa-solid fa-ban" style="font-size: 1.2rem;"></i>
-                                <div>
-                                    <strong>Pedido Cancelado</strong>
-                                    <div style="font-size: 0.85rem;" th:if="${pedido.motivoCancelacion != null}" th:text="'Motivo: ' + ${pedido.motivoCancelacion}">Motivo de cancelación</div>
-                                </div>
+                            <!-- Badge de estado logístico a la derecha -->
+                            <div style="margin-left: auto; flex-shrink: 0;">
+                                <span class="mp-badge"
+                                      th:classappend="${compra.envioLogistica != null ? 'mp-badge--' + compra.envioLogistica.estadoCss : 'mp-badge--pendiente'}"
+                                      th:text="${compra.envioLogistica != null ? compra.envioLogistica.estadoEtiqueta : 'Buscando transportista'}">
+                                    Buscando transportista
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Sub-pedidos -->
+                        <div class="mp-subpedidos-section">
+                            <div class="mp-subpedidos-title">
+                                <i class="fa-solid fa-basket-shopping" aria-hidden="true"></i>
+                                Sub-pedidos por agricultor (<span th:text="${compra.subPedidos != null ? compra.subPedidos.size() : 0}">0</span>)
                             </div>
 
-                            <!-- Banner de Revisión (1.6) -->
-                            <div th:if="${pedido.enRevision}" class="mp-banner mp-banner--revision" style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 12px 16px; margin-bottom: 18px; color: #92400e; display: flex; align-items: center; gap: 10px;">
-                                <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.2rem;"></i>
-                                <div>
-                                    <strong>Pedido en Revisión</strong>
-                                    <div style="font-size: 0.85rem;" th:text="${pedido.motivoRevision != null ? pedido.motivoRevision : 'El pago fue recibido pero se está validando el stock para gestión de reembolso.'}">En revisión</div>
-                                </div>
-                            </div>
+                            <div class="mp-subpedidos-list">
+                                <div th:each="sub : ${compra.subPedidos}" class="mp-subpedido-card">
 
-                            <!-- Stepper Timeline inside modal -->
-                            <div th:if="${pedido.mostrarStepper}">
-                                <div class="modal-section-title">Progreso del Pedido</div>
-                                <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px 14px; margin-bottom: 22px;">
-                                    <!-- Stepper Domicilio -->
-                                    <div class="mp-stepper">
-                                        <!-- 1. Pagado -->
-                                        <div class="mp-step" th:classappend="${pedido.pasoTracking > 1 ? 'completed' : (pedido.pasoTracking == 1 ? 'active' : '')}">
-                                            <div class="mp-step__dot"><i th:class="${pedido.pasoTracking > 1 ? 'fa-solid fa-check' : 'fa-solid fa-credit-card'}"></i></div>
-                                            <div class="mp-step__label">PAGADO</div>
-                                        </div>
-                                        <!-- 2. Confirmado -->
-                                        <div class="mp-step" th:classappend="${pedido.pasoTracking > 2 ? 'completed' : (pedido.pasoTracking == 2 ? 'active' : '')}">
-                                            <div class="mp-step__dot"><i th:class="${pedido.pasoTracking > 2 ? 'fa-solid fa-check' : 'fa-solid fa-circle-check'}"></i></div>
-                                            <div class="mp-step__label">CONFIRMADO</div>
-                                        </div>
-                                        <!-- 3. Preparando -->
-                                        <div class="mp-step" th:classappend="${pedido.pasoTracking > 3 ? 'completed' : (pedido.pasoTracking == 3 ? 'active' : '')}">
-                                            <div class="mp-step__dot"><i th:class="${pedido.pasoTracking > 3 ? 'fa-solid fa-check' : 'fa-solid fa-box-open'}"></i></div>
-                                            <div class="mp-step__label">PREPARANDO</div>
-                                        </div>
-                                        <!-- 4. Listo para recoger -->
-                                        <div class="mp-step" th:classappend="${pedido.pasoTracking > 4 ? 'completed' : (pedido.pasoTracking == 4 ? 'active' : '')}">
-                                            <div class="mp-step__dot"><i th:class="${pedido.pasoTracking > 4 ? 'fa-solid fa-check' : 'fa-solid fa-box-archive'}"></i></div>
-                                            <div class="mp-step__label">LISTO PARA RECOGER</div>
-                                        </div>
-                                        <!-- 5. En camino -->
-                                        <div class="mp-step" th:classappend="${pedido.pasoTracking > 5 ? 'completed' : (pedido.pasoTracking == 5 ? 'active' : '')}">
-                                            <div class="mp-step__dot"><i th:class="${pedido.pasoTracking > 5 ? 'fa-solid fa-check' : 'fa-solid fa-truck-fast'}"></i></div>
-                                            <div class="mp-step__label">EN CAMINO</div>
-                                        </div>
-                                        <!-- 6. Entregado -->
-                                        <div class="mp-step" th:classappend="${pedido.pasoTracking >= 6 ? 'completed' : ''}">
-                                            <div class="mp-step__dot"><i class="fa-solid fa-house-chimney"></i></div>
-                                            <div class="mp-step__label">ENTREGADO</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Products table -->
-                            <div class="modal-section-title">Detalle de productos</div>
-                            <div class="order-modal__table-wrap" th:if="${pedido.items != null and !pedido.items.isEmpty()}">
-                                <table class="order-modal__table">
-                                    <thead>
-                                        <tr>
-                                            <th>Producto</th>
-                                            <th>Cantidad</th>
-                                            <th>Precio unitario</th>
-                                            <th class="text-right">Subtotal</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr th:each="item : ${pedido.items}">
-                                            <td>
-                                                <div class="modal-product">
-                                                    <div class="modal-product__thumb">
+                                    <!-- Fila superior del sub-pedido -->
+                                    <div class="mp-subpedido-head">
+                                        <div class="mp-subpedido-store">
+                                            <div class="mp-card__images">
+                                                <th:block th:each="item, iter : ${sub.items}" th:if="${iter.index < 2}">
+                                                    <div class="mp-card__img">
                                                         <th:block th:if="${item.imagenSnapshot != null and item.imagenSnapshot != ''}">
                                                             <img th:src="${item.imagenSnapshot}"
                                                                  th:alt="${item.nombreSnapshot}"
                                                                  onerror="this.parentElement.innerHTML='<i class=\'fa-solid fa-leaf\'></i>'">
                                                         </th:block>
                                                         <th:block th:if="${item.imagenSnapshot == null or item.imagenSnapshot == ''}">
-                                                            <i class="fa-solid fa-leaf"></i>
+                                                            <i class="fa-solid fa-leaf" aria-hidden="true"></i>
                                                         </th:block>
                                                     </div>
-                                                    <div class="modal-product__name"
-                                                         th:text="${item.nombreSnapshot != null ? item.nombreSnapshot : 'Producto'}">Producto</div>
+                                                </th:block>
+                                            </div>
+                                            <div>
+                                                <div class="mp-subpedido-name">
+                                                    <span th:text="${sub.vendedor != null and sub.vendedor.razonSocial != null ? sub.vendedor.razonSocial : (sub.vendedor != null and sub.vendedor.nombre != null ? sub.vendedor.nombre : 'Productor Local')}">Tienda</span>
+                                                    <span class="mp-subpedido-factura" th:text="'(' + ${sub.numeroFactura} + ')'">(CLT-000)</span>
                                                 </div>
-                                            </td>
-                                            <td class="td-qty">
-                                                <span th:text="${item.cantidad != null ? item.cantidad : 0}">0</span>
-                                                <span th:text="${item.unidadAbreviatura != null ? ' ' + item.unidadAbreviatura : ''}"></span>
-                                            </td>
-                                            <td class="td-price"
-                                                th:text="'$' + ${#numbers.formatDecimal(item.precioUnitario != null ? item.precioUnitario : 0, 0, 'COMMA', 0, 'POINT')}">$0</td>
-                                            <td class="td-subtotal text-right"
-                                                th:text="'$' + ${#numbers.formatDecimal(item.subtotal != null ? item.subtotal : 0, 0, 'COMMA', 0, 'POINT')}">$0</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                                                <div class="mp-subpedido-meta">
+                                                    <span th:text="${sub.items != null ? sub.items.size() : 0}">0</span> artículo(s) · Subtotal: <strong>$<span th:text="${#numbers.formatDecimal(sub.total, 0, 'COMMA', 0, 'POINT')}">0</span></strong>
+                                                </div>
+                                            </div>
+                                        </div>
 
-                            <!-- Payment & Total Summary -->
-                            <div class="modal-section-title">Resumen de pago</div>
-                            <div class="order-modal__summary">
-                                <div class="order-modal__total-card">
-                                    <div class="order-modal__total-label">
-                                        <i class="fa-solid fa-coins"></i>
-                                        <span>Precio final del pedido</span>
+                                        <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+                                            <span class="mp-badge"
+                                                  th:classappend="'mp-badge--' + ${sub.estadoCss}"
+                                                  th:text="${sub.estadoEtiqueta}">
+                                                Confirmado
+                                            </span>
+                                            <button type="button" class="mp-btn mp-btn--outline" style="min-height: 36px; padding: 6px 14px; font-size: 0.82rem;"
+                                                    th:attr="data-modal-target='pedidoModal-' + ${sub.id}">
+                                                <i class="fa-solid fa-eye" aria-hidden="true"></i> Ver detalle
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div class="order-modal__total-val">
+
+                                    <!-- Banner de Cancelación (1.6) -->
+                                    <div th:if="${sub.cancelado}" class="mp-banner mp-banner--cancelled">
+                                        <i class="fa-solid fa-ban" style="font-size: 1.2rem;" aria-hidden="true"></i>
+                                        <div>
+                                            <strong>Pedido cancelado</strong>
+                                            <div style="font-size: 0.85rem;" th:if="${sub.motivoCancelacion != null}" th:text="'Motivo: ' + ${sub.motivoCancelacion}">Motivo de cancelación</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Banner de Revisión (1.6) -->
+                                    <div th:if="${sub.enRevision}" class="mp-banner mp-banner--revision">
+                                        <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.2rem;" aria-hidden="true"></i>
+                                        <div>
+                                            <strong>Pedido en revisión</strong>
+                                            <div style="font-size: 0.85rem;" th:text="${sub.motivoRevision != null ? sub.motivoRevision : 'El pago fue recibido pero se está validando el stock para gestión de reembolso.'}">En revisión</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Stepper Timeline (oculto en CANCELADO) -->
+                                    <div class="mp-timeline" th:if="${sub.mostrarStepper}">
+                                        <div class="mp-timeline__title">
+                                            <i class="fa-solid fa-timeline" aria-hidden="true"></i>
+                                            <span>Seguimiento de preparación y entrega</span>
+                                        </div>
+                                        <!-- Stepper Domicilio (6 pasos) -->
+                                        <div class="mp-stepper">
+                                            <!-- 1. Pagado -->
+                                            <div class="mp-step" th:classappend="${sub.pasoTracking > 1 ? 'completed' : (sub.pasoTracking == 1 ? 'active' : '')}">
+                                                <div class="mp-step__dot"><i th:class="${sub.pasoTracking > 1 ? 'fa-solid fa-check' : 'fa-solid fa-credit-card'}" aria-hidden="true"></i></div>
+                                                <div class="mp-step__label">PAGADO</div>
+                                            </div>
+                                            <!-- 2. Confirmado -->
+                                            <div class="mp-step" th:classappend="${sub.pasoTracking > 2 ? 'completed' : (sub.pasoTracking == 2 ? 'active' : '')}">
+                                                <div class="mp-step__dot"><i th:class="${sub.pasoTracking > 2 ? 'fa-solid fa-check' : 'fa-solid fa-circle-check'}" aria-hidden="true"></i></div>
+                                                <div class="mp-step__label">CONFIRMADO</div>
+                                            </div>
+                                            <!-- 3. Preparando -->
+                                            <div class="mp-step" th:classappend="${sub.pasoTracking > 3 ? 'completed' : (sub.pasoTracking == 3 ? 'active' : '')}">
+                                                <div class="mp-step__dot"><i th:class="${sub.pasoTracking > 3 ? 'fa-solid fa-check' : 'fa-solid fa-box-open'}" aria-hidden="true"></i></div>
+                                                <div class="mp-step__label">PREPARANDO</div>
+                                            </div>
+                                            <!-- 4. Listo para recoger -->
+                                            <div class="mp-step" th:classappend="${sub.pasoTracking > 4 ? 'completed' : (sub.pasoTracking == 4 ? 'active' : '')}">
+                                                <div class="mp-step__dot"><i th:class="${sub.pasoTracking > 4 ? 'fa-solid fa-check' : 'fa-solid fa-box-archive'}" aria-hidden="true"></i></div>
+                                                <div class="mp-step__label">LISTO PARA RECOGER</div>
+                                            </div>
+                                            <!-- 5. En camino -->
+                                            <div class="mp-step" th:classappend="${sub.pasoTracking > 5 ? 'completed' : (sub.pasoTracking == 5 ? 'active' : '')}">
+                                                <div class="mp-step__dot"><i th:class="${sub.pasoTracking > 5 ? 'fa-solid fa-check' : 'fa-solid fa-truck-fast'}" aria-hidden="true"></i></div>
+                                                <div class="mp-step__label">EN CAMINO</div>
+                                            </div>
+                                            <!-- 6. Entregado -->
+                                            <div class="mp-step" th:classappend="${sub.pasoTracking >= 6 ? 'completed' : ''}">
+                                                <div class="mp-step__dot"><i class="fa-solid fa-house-chimney" aria-hidden="true"></i></div>
+                                                <div class="mp-step__label">ENTREGADO</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                     <!-- Desglose de envío de este vendedor -->
+                                     <div th:if="${sub.envioCentavos != null and sub.envioCentavos > 0}" class="mp-envio-vendedor">
+                                         <span>
+                                             <i class="fa-solid fa-route" style="color: var(--c-green); margin-right: 4px;" aria-hidden="true"></i>
+                                             Envío:
+                                             <strong th:text="${sub.zonaOrigenEnvio != null ? 'Zona ' + sub.zonaOrigenEnvio : (sub.ciudadOrigenEnvio != null ? sub.ciudadOrigenEnvio : 'Recogida')}">Zona 1</strong>
+                                             <i class="fa-solid fa-arrow-right" style="font-size: .7rem; margin: 0 4px;" aria-hidden="true"></i>
+                                             <strong th:text="${sub.zonaDestinoEnvio != null ? 'Zona ' + sub.zonaDestinoEnvio : (sub.ciudadDestinoEnvio != null ? sub.ciudadDestinoEnvio : 'Entrega')}">Zona 2</strong>
+                                         </span>
+                                         <strong>$<span th:text="${#numbers.formatDecimal(sub.envio, 0, 'COMMA', 0, 'POINT')}">0</span></strong>
+                                     </div>
+
+                                </div>
+                            </div>
+                             <div th:if="${compra.envioCentavos != null and compra.envioCentavos > 0}" class="mp-compra-totales-pie">
+                                 <span>Productos: <strong>$<span th:text="${#numbers.formatDecimal(compra.subtotal, 0, 'COMMA', 0, 'POINT')}">0</span></strong></span>
+                                 <span><i class="fa-solid fa-truck-fast" style="color: var(--c-green); margin-right: 4px;" aria-hidden="true"></i> Envío total: <strong>$<span th:text="${#numbers.formatDecimal(compra.envio, 0, 'COMMA', 0, 'POINT')}">0</span></strong></span>
+                             </div>
+                        </div>
+                    </div>
+                </th:block>
+
+                <!-- Pedidos individuales / legacy (si no hay compras o pedidos huérfanos) -->
+                <th:block th:if="${compras == null || compras.isEmpty() || (pedidosSinCompra != null and !pedidosSinCompra.isEmpty())}">
+                    <div th:each="pedido : ${(compras == null || compras.isEmpty()) ? pedidos : pedidosSinCompra}"
+                         class="mp-card"
+                         th:data-estado="${pedido.estado}">
+
+                        <!-- Card top bar -->
+                        <div class="mp-card__top">
+                            <div class="mp-card__top-left">
+                                <div class="mp-card__order-id">
+                                    <div class="id-icon" aria-hidden="true"><i class="fa-solid fa-receipt"></i></div>
+                                    <div>
+                                        <div class="mp-card__ref-text" th:text="${pedido.numeroFactura}">CLT-XXXXXX</div>
+                                        <div class="mp-card__date">
+                                            <i class="fa-regular fa-calendar" aria-hidden="true"></i>
+                                            <span th:text="${#temporals.format(pedido.fechaPedido, 'dd/MM/yyyy')}">01/01/2024</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <span class="mp-badge"
+                                      th:classappend="'mp-badge--' + ${pedido.estadoCss}"
+                                      th:text="${pedido.estadoEtiqueta}">
+                                </span>
+                            </div>
+                            <div class="mp-card__top-right">
+                                <div class="mp-card__total-box">
+                                    <div class="mp-card__total-label">Total</div>
+                                    <div class="mp-card__total-val">
                                         $<span th:text="${pedido.total != null ? #numbers.formatDecimal(pedido.total, 0, 'COMMA', 0, 'POINT') : '0'}">0</span>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
 
-                                <!-- Monto pagado cuando aplica -->
-                                <div class="order-modal__paid-chip"
-                                     th:if="${pedido.pago != null and pedido.pago.monto != null}">
-                                    <div>
-                                        <i class="fa-solid fa-circle-check" style="color: #27ae60; margin-right: 6px;"></i>
-                                        <span>Monto pagado:</span>
+                        <!-- Card body -->
+                        <div class="mp-card__body">
+
+                            <!-- Product image strip -->
+                            <div class="mp-card__images">
+                                <th:block th:each="item, iter : ${pedido.items}" th:if="${iter.index < 2}">
+                                    <div class="mp-card__img">
+                                        <th:block th:if="${item.imagenSnapshot != null and item.imagenSnapshot != ''}">
+                                            <img th:src="${item.imagenSnapshot}"
+                                                 th:alt="${item.nombreSnapshot}"
+                                                 onerror="this.parentElement.innerHTML='<i class=\'fa-solid fa-leaf\'></i>'">
+                                        </th:block>
+                                        <th:block th:if="${item.imagenSnapshot == null or item.imagenSnapshot == ''}">
+                                            <i class="fa-solid fa-leaf" aria-hidden="true"></i>
+                                        </th:block>
                                     </div>
-                                    <strong>$<span th:text="${#numbers.formatDecimal(pedido.pago.monto, 0, 'COMMA', 0, 'POINT')}">0</span></strong>
+                                </th:block>
+                                <div class="mp-card__img mp-card__img-more"
+                                     th:if="${pedido.items != null and pedido.items.size() > 2}"
+                                     th:text="'+' + (${pedido.items.size() - 2})">+N</div>
+                            </div>
+
+                            <!-- Store info -->
+                            <div class="mp-card__info">
+                                <div class="mp-card__info-label"><i class="fa-solid fa-store" aria-hidden="true"></i> Tienda</div>
+                                <div class="mp-card__info-value"
+                                     th:text="${pedido.vendedor != null and pedido.vendedor.razonSocial != null ? pedido.vendedor.razonSocial : (pedido.vendedor != null and pedido.vendedor.nombre != null ? pedido.vendedor.nombre : 'Productor Local')}">
                                 </div>
                             </div>
 
-                        </div>
+                            <!-- Seller name -->
+                            <div class="mp-card__info">
+                                <div class="mp-card__info-label"><i class="fa-solid fa-user" aria-hidden="true"></i> Vendedor</div>
+                                <div class="mp-card__info-value"
+                                     th:text="${pedido.vendedor != null and pedido.vendedor.nombre != null ? pedido.vendedor.nombre : 'Usuario Cultivus'}">
+                                </div>
+                            </div>
 
-                        <!-- Modal footer -->
-                        <div class="order-modal__footer">
-                            <form method="dialog">
-                                <button class="mp-btn mp-btn--outline">
-                                    <i class="fa-solid fa-xmark"></i> Cerrar
+                            <!-- Payment method -->
+                            <div class="mp-card__info">
+                                <div class="mp-card__info-label"><i class="fa-solid fa-credit-card" aria-hidden="true"></i> Pago</div>
+                                <div class="mp-card__info-value"
+                                     th:text="${pedido.pago != null and pedido.pago.metodo != null ? pedido.pago.metodo : 'No especificado'}">
+                                </div>
+                            </div>
+
+                            <!-- Items count -->
+                            <div class="mp-card__info">
+                                <div class="mp-card__info-label"><i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i> Artículos</div>
+                                <div class="mp-card__info-value">
+                                    <span th:text="${pedido.items != null ? pedido.items.size() : 0}">0</span> ítems
+                                </div>
+                            </div>
+
+                            <!-- Shipping address -->
+                            <div class="mp-card__info">
+                                <div class="mp-card__info-label"><i class="fa-solid fa-location-dot" aria-hidden="true"></i> Dirección</div>
+                                <div class="mp-card__info-value"
+                                     th:text="${pedido.direccionEntrega != null ? ((pedido.direccionEntrega.direccion != null ? pedido.direccionEntrega.direccion : '') + (pedido.direccionEntrega.ciudad != null ? ', ' + pedido.direccionEntrega.ciudad : '')) : 'No especificada'}">
+                                </div>
+                            </div>
+
+                            <!-- Total -->
+                            <div class="mp-card__info">
+                                <div class="mp-card__info-label"><i class="fa-solid fa-tag" aria-hidden="true"></i> Total</div>
+                                <div class="mp-card__total">
+                                    $<span th:text="${pedido.total != null ? #numbers.formatDecimal(pedido.total, 0, 'COMMA', 0, 'POINT') : '0'}">0</span>
+                                </div>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="mp-card__actions">
+                                <button type="button" class="mp-btn mp-btn--outline"
+                                        th:attr="data-modal-target='pedidoModal-' + ${pedido.id}">
+                                    <i class="fa-solid fa-eye" aria-hidden="true"></i> Ver detalle
                                 </button>
-                            </form>
-                            <a th:href="@{/usuario/pedidos/{id}(id=${pedido.id})}"
-                               class="mp-btn mp-btn--primary">
-                                <i class="fa-solid fa-file-invoice"></i> Ver Factura Completa
-                            </a>
+                            </div>
                         </div>
                     </div>
-                </dialog>
+                </th:block>
+
             </div>
-        </th:block>
-    </div>
+
+            <!-- Detail modals para todos los pedidos -->
+            <th:block th:if="${pedidos != null}">
+                <div th:each="pedido : ${pedidos}">
+
+                    <!-- Detail modal -->
+                    <dialog class="order-modal" th:id="'pedidoModal-' + ${pedido.id}">
+                        <div class="order-modal__scroll">
+
+                            <!-- Modal header -->
+                            <div class="order-modal__header">
+                                <div class="order-modal__header-left">
+                                    <div class="order-modal__header-icon" aria-hidden="true">
+                                        <i class="fa-solid fa-receipt"></i>
+                                    </div>
+                                    <div>
+                                        <h2>
+                                            <span>Pedido <span th:text="${pedido.numeroFactura}">CLT-XXXXXX</span></span>
+                                            <span class="mp-badge"
+                                                  th:classappend="'mp-badge--' + ${pedido.estadoCss}"
+                                                  th:text="${pedido.estadoEtiqueta}">
+                                            </span>
+                                        </h2>
+                                        <p>
+                                            <i class="fa-regular fa-calendar" aria-hidden="true"></i>
+                                            <span th:text="${#temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm')}">01/01/2026 00:00</span>
+                                        </p>
+                                    </div>
+                                </div>
+                                <form method="dialog">
+                                    <button class="order-modal__close" aria-label="Cerrar">
+                                        <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+                                    </button>
+                                </form>
+                            </div>
+
+                            <!-- Modal body -->
+                            <div class="order-modal__body">
+
+                                <!-- Info cards grid -->
+                                <div class="order-modal__grid">
+                                    <!-- 1. Fecha -->
+                                    <div class="omc">
+                                        <div class="omc__label"><i class="fa-regular fa-calendar" aria-hidden="true"></i> Fecha</div>
+                                        <div class="omc__value" th:text="${#temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm')}">–</div>
+                                    </div>
+                                    <!-- 2. Tienda -->
+                                    <div class="omc">
+                                        <div class="omc__label"><i class="fa-solid fa-store" aria-hidden="true"></i> Tienda</div>
+                                        <div class="omc__value"
+                                             th:text="${pedido.vendedor != null and pedido.vendedor.razonSocial != null ? pedido.vendedor.razonSocial : (pedido.vendedor != null and pedido.vendedor.nombre != null ? pedido.vendedor.nombre : 'Productor Local')}">–</div>
+                                    </div>
+                                    <!-- 3. Estado del pedido -->
+                                    <div class="omc">
+                                        <div class="omc__label"><i class="fa-solid fa-truck-fast" aria-hidden="true"></i> Estado del pedido</div>
+                                        <div class="omc__value">
+                                            <span class="mp-badge"
+                                                  th:classappend="'mp-badge--' + ${pedido.estadoCss}"
+                                                  th:text="${pedido.estadoEtiqueta}">
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <!-- 4. Productos -->
+                                    <div class="omc">
+                                        <div class="omc__label"><i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i> Productos</div>
+                                        <div class="omc__value"
+                                             th:text="${(pedido.items != null ? pedido.items.size() : 0) + ' ítems'}">0 ítems</div>
+                                    </div>
+                                    <!-- 5. Método de pago -->
+                                    <div class="omc">
+                                        <div class="omc__label"><i class="fa-solid fa-credit-card" aria-hidden="true"></i> Método de pago</div>
+                                        <div class="omc__value"
+                                             th:text="${pedido.pago != null and pedido.pago.metodo != null ? pedido.pago.metodo : 'No especificado'}">–</div>
+                                    </div>
+                                    <!-- 6. Estado del pago -->
+                                    <div class="omc">
+                                        <div class="omc__label"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Estado del pago</div>
+                                        <div class="omc__value">
+                                            <span class="mp-paybadge"
+                                                  th:classappend="${pedido.pago != null and (pedido.pago.estado == 'COMPLETADO' or pedido.pago.estado == 'APROBADO' or pedido.pago.estado == 'PAGADO') ? 'mp-paybadge--completado' :
+                                                                  (pedido.pago != null and (pedido.pago.estado == 'FALLIDO' or pedido.pago.estado == 'RECHAZADO') ? 'mp-paybadge--fallido' : 'mp-paybadge--pendiente')}"
+                                                  th:text="${pedido.pago != null and pedido.pago.estado != null ? pedido.pago.estado : 'PENDIENTE'}">PENDIENTE
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <!-- Extra: Vendedor -->
+                                    <div class="omc">
+                                        <div class="omc__label"><i class="fa-solid fa-user" aria-hidden="true"></i> Vendedor</div>
+                                        <div class="omc__value"
+                                             th:text="${pedido.vendedor != null and pedido.vendedor.nombre != null ? pedido.vendedor.nombre : 'Usuario Cultivus'}">–</div>
+                                    </div>
+                                    <!-- Extra: Dirección de entrega -->
+                                    <div class="omc">
+                                        <div class="omc__label"><i class="fa-solid fa-location-dot" aria-hidden="true"></i> Entrega</div>
+                                        <div class="omc__value"
+                                             th:text="${pedido.direccionEntrega != null ? ((pedido.direccionEntrega.direccion != null ? pedido.direccionEntrega.direccion : '') + (pedido.direccionEntrega.ciudad != null ? ', ' + pedido.direccionEntrega.ciudad : '') + (pedido.direccionEntrega.departamento != null ? ' - ' + pedido.direccionEntrega.departamento : '')) : 'No especificada'}">–</div>
+                                    </div>
+                                </div>
+
+                                <!-- Banner de Cancelación (1.6) -->
+                                <div th:if="${pedido.cancelado}" class="mp-banner mp-banner--cancelled" style="margin-bottom: 20px;">
+                                    <i class="fa-solid fa-ban" style="font-size: 1.2rem;" aria-hidden="true"></i>
+                                    <div>
+                                        <strong>Pedido cancelado</strong>
+                                        <div style="font-size: 0.85rem;" th:if="${pedido.motivoCancelacion != null}" th:text="'Motivo: ' + ${pedido.motivoCancelacion}">Motivo de cancelación</div>
+                                    </div>
+                                </div>
+
+                                <!-- Banner de Revisión (1.6) -->
+                                <div th:if="${pedido.enRevision}" class="mp-banner mp-banner--revision" style="margin-bottom: 20px;">
+                                    <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.2rem;" aria-hidden="true"></i>
+                                    <div>
+                                        <strong>Pedido en revisión</strong>
+                                        <div style="font-size: 0.85rem;" th:text="${pedido.motivoRevision != null ? pedido.motivoRevision : 'El pago fue recibido pero se está validando el stock para gestión de reembolso.'}">En revisión</div>
+                                    </div>
+                                </div>
+
+                                <!-- Stepper Timeline inside modal -->
+                                <div th:if="${pedido.mostrarStepper}">
+                                    <div class="modal-section-title">Progreso del pedido</div>
+                                    <div style="background: var(--c-surface); border: 1px solid var(--field-border); border-radius: 14px; padding: 18px 16px; margin-bottom: 22px;">
+                                        <!-- Stepper Domicilio -->
+                                        <div class="mp-stepper">
+                                            <!-- 1. Pagado -->
+                                            <div class="mp-step" th:classappend="${pedido.pasoTracking > 1 ? 'completed' : (pedido.pasoTracking == 1 ? 'active' : '')}">
+                                                <div class="mp-step__dot"><i th:class="${pedido.pasoTracking > 1 ? 'fa-solid fa-check' : 'fa-solid fa-credit-card'}" aria-hidden="true"></i></div>
+                                                <div class="mp-step__label">PAGADO</div>
+                                            </div>
+                                            <!-- 2. Confirmado -->
+                                            <div class="mp-step" th:classappend="${pedido.pasoTracking > 2 ? 'completed' : (pedido.pasoTracking == 2 ? 'active' : '')}">
+                                                <div class="mp-step__dot"><i th:class="${pedido.pasoTracking > 2 ? 'fa-solid fa-check' : 'fa-solid fa-circle-check'}" aria-hidden="true"></i></div>
+                                                <div class="mp-step__label">CONFIRMADO</div>
+                                            </div>
+                                            <!-- 3. Preparando -->
+                                            <div class="mp-step" th:classappend="${pedido.pasoTracking > 3 ? 'completed' : (pedido.pasoTracking == 3 ? 'active' : '')}">
+                                                <div class="mp-step__dot"><i th:class="${pedido.pasoTracking > 3 ? 'fa-solid fa-check' : 'fa-solid fa-box-open'}" aria-hidden="true"></i></div>
+                                                <div class="mp-step__label">PREPARANDO</div>
+                                            </div>
+                                            <!-- 4. Listo para recoger -->
+                                            <div class="mp-step" th:classappend="${pedido.pasoTracking > 4 ? 'completed' : (pedido.pasoTracking == 4 ? 'active' : '')}">
+                                                <div class="mp-step__dot"><i th:class="${pedido.pasoTracking > 4 ? 'fa-solid fa-check' : 'fa-solid fa-box-archive'}" aria-hidden="true"></i></div>
+                                                <div class="mp-step__label">LISTO PARA RECOGER</div>
+                                            </div>
+                                            <!-- 5. En camino -->
+                                            <div class="mp-step" th:classappend="${pedido.pasoTracking > 5 ? 'completed' : (pedido.pasoTracking == 5 ? 'active' : '')}">
+                                                <div class="mp-step__dot"><i th:class="${pedido.pasoTracking > 5 ? 'fa-solid fa-check' : 'fa-solid fa-truck-fast'}" aria-hidden="true"></i></div>
+                                                <div class="mp-step__label">EN CAMINO</div>
+                                            </div>
+                                            <!-- 6. Entregado -->
+                                            <div class="mp-step" th:classappend="${pedido.pasoTracking >= 6 ? 'completed' : ''}">
+                                                <div class="mp-step__dot"><i class="fa-solid fa-house-chimney" aria-hidden="true"></i></div>
+                                                <div class="mp-step__label">ENTREGADO</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Products table -->
+                                <div class="modal-section-title">Detalle de productos</div>
+                                <div class="order-modal__table-wrap" th:if="${pedido.items != null and !pedido.items.isEmpty()}">
+                                    <table class="order-modal__table">
+                                        <thead>
+                                            <tr>
+                                                <th>Producto</th>
+                                                <th>Cantidad</th>
+                                                <th>Precio unitario</th>
+                                                <th class="text-right">Subtotal</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr th:each="item : ${pedido.items}">
+                                                <td>
+                                                    <div class="modal-product">
+                                                        <div class="modal-product__thumb">
+                                                            <th:block th:if="${item.imagenSnapshot != null and item.imagenSnapshot != ''}">
+                                                                <img th:src="${item.imagenSnapshot}"
+                                                                     th:alt="${item.nombreSnapshot}"
+                                                                     onerror="this.parentElement.innerHTML='<i class=\'fa-solid fa-leaf\'></i>'">
+                                                            </th:block>
+                                                            <th:block th:if="${item.imagenSnapshot == null or item.imagenSnapshot == ''}">
+                                                                <i class="fa-solid fa-leaf" aria-hidden="true"></i>
+                                                            </th:block>
+                                                        </div>
+                                                        <div class="modal-product__name"
+                                                             th:text="${item.nombreSnapshot != null ? item.nombreSnapshot : 'Producto'}">Producto</div>
+                                                    </div>
+                                                </td>
+                                                <td class="td-qty">
+                                                    <span th:text="${item.cantidad != null ? item.cantidad : 0}">0</span>
+                                                    <span th:text="${item.unidadAbreviatura != null ? ' ' + item.unidadAbreviatura : ''}"></span>
+                                                </td>
+                                                <td class="td-price"
+                                                    th:text="'$' + ${#numbers.formatDecimal(item.precioUnitario != null ? item.precioUnitario : 0, 0, 'COMMA', 0, 'POINT')}">$0</td>
+                                                <td class="td-subtotal text-right"
+                                                    th:text="'$' + ${#numbers.formatDecimal(item.subtotal != null ? item.subtotal : 0, 0, 'COMMA', 0, 'POINT')}">$0</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Payment & Total Summary -->
+                                <div class="modal-section-title">Resumen de pago</div>
+                                <div class="order-modal__summary">
+                                    <div class="order-modal__total-card">
+                                        <div class="order-modal__total-label">
+                                            <i class="fa-solid fa-coins" aria-hidden="true"></i>
+                                            <span>Precio final del pedido</span>
+                                        </div>
+                                        <div class="order-modal__total-val">
+                                            $<span th:text="${pedido.total != null ? #numbers.formatDecimal(pedido.total, 0, 'COMMA', 0, 'POINT') : '0'}">0</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Monto pagado cuando aplica -->
+                                    <div class="order-modal__paid-chip"
+                                         th:if="${pedido.pago != null and pedido.pago.monto != null}">
+                                        <div>
+                                            <i class="fa-solid fa-circle-check" style="color: var(--c-green); margin-right: 6px;" aria-hidden="true"></i>
+                                            <span>Monto pagado:</span>
+                                        </div>
+                                        <strong>$<span th:text="${#numbers.formatDecimal(pedido.pago.monto, 0, 'COMMA', 0, 'POINT')}">0</span></strong>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <!-- Modal footer -->
+                            <div class="order-modal__footer">
+                                <form method="dialog">
+                                    <button class="mp-btn mp-btn--outline">
+                                        <i class="fa-solid fa-xmark" aria-hidden="true"></i> Cerrar
+                                    </button>
+                                </form>
+                                <a th:href="@{/usuario/pedidos/{id}(id=${pedido.id})}"
+                                   class="mp-btn mp-btn--primary">
+                                    <i class="fa-solid fa-file-invoice" aria-hidden="true"></i> Ver factura completa
+                                </a>
+                            </div>
+                        </div>
+                    </dialog>
+                </div>
+            </th:block>
+        </div>
+    </main>
 
     <!-- Flash messages -->
-    <div th:if="${mensaje}" class="flash-msg flash-success">
-        <i class="fa-solid fa-circle-check"></i> <span th:text="${mensaje}"></span>
+    <div th:if="${mensaje}" class="flash-msg flash-success" role="status">
+        <i class="fa-solid fa-circle-check" aria-hidden="true"></i> <span th:text="${mensaje}"></span>
     </div>
-    <div th:if="${error}" class="flash-msg flash-error">
-        <i class="fa-solid fa-triangle-exclamation"></i> <span th:text="${error}"></span>
+    <div th:if="${error}" class="flash-msg flash-error" role="alert">
+        <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> <span th:text="${error}"></span>
     </div>
 
     <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
@@ -1321,12 +671,13 @@
 
         function filterOrders(tab) {
             document.querySelectorAll('.mp-tab').forEach(b => b.classList.remove('active'));
-            document.getElementById('tab-' + tab).classList.add('active');
+            const activeTab = document.getElementById('tab-' + tab);
+            if (activeTab) activeTab.classList.add('active');
             const cards = document.querySelectorAll('#orderList .mp-card');
             let visible = 0;
             cards.forEach(card => {
                 const estado = (card.dataset.estado || '').toUpperCase();
-                const show = tabMap[tab](estado);
+                const show = tabMap[tab] ? tabMap[tab](estado) : true;
                 card.style.display = show ? '' : 'none';
                 if (show) visible++;
             });

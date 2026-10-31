@@ -1,0 +1,420 @@
+/* ==========================================================================
+   Confirmación de Pago (Comprobante) — Cultivus
+   Acotado bajo .confirm-page. Tokens en checkout-tokens.css.
+   ========================================================================== */
+
+.confirm-page {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Segoe UI", sans-serif;
+  color: var(--c-ink);
+  background: var(--c-wheat-soft);
+  min-height: 75vh;
+  padding: 48px 20px 80px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.confirm-page *,
+.confirm-page *::before,
+.confirm-page *::after {
+  box-sizing: border-box;
+}
+
+.confirm-container {
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+/* Indicador de pasos arriba si se incluye */
+.confirm-container .checkout-steps {
+  justify-content: center;
+  margin-bottom: 28px;
+}
+
+/* ---------- Tarjeta Principal ---------- */
+.recibo-card {
+  background: var(--c-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--field-border);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+}
+
+/* ---------- Header de Éxito ---------- */
+.recibo-header {
+  padding: 44px 32px 32px;
+  text-align: center;
+  border-bottom: 1px solid var(--c-line);
+  background: var(--c-surface);
+}
+
+.icon-circulo {
+  width: 72px;
+  height: 72px;
+  background: var(--c-green-soft);
+  color: var(--c-green);
+  border: 2px solid rgba(54, 122, 69, 0.2);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  margin-bottom: 20px;
+  animation: checkPop 0.4s var(--ease) both;
+}
+
+@keyframes checkPop {
+  0% {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.08);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.recibo-titulo {
+  font-size: clamp(1.6rem, 3vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--c-ink);
+  margin: 0 0 10px;
+  line-height: 1.2;
+}
+
+.recibo-subtitulo {
+  font-size: 0.95rem;
+  color: var(--c-earth);
+  line-height: 1.5;
+  max-width: 520px;
+  margin: 0 auto;
+}
+
+.recibo-subtitulo strong {
+  color: var(--c-ink);
+  font-weight: 600;
+}
+
+/* ---------- Cuerpo del Recibo ---------- */
+.recibo-body {
+  padding: 32px;
+}
+
+/* ---------- Bloque de Resumen (Meta Grid) ---------- */
+.meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  background: var(--c-surface);
+  border: 1px solid var(--field-border);
+  border-radius: var(--radius-md);
+  padding: 18px 24px;
+  margin-bottom: 28px;
+}
+
+.meta-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.meta-label {
+  font-size: 0.76rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--c-earth);
+}
+
+.meta-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--c-ink);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.meta-value--ref {
+  color: var(--c-green);
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.98rem;
+}
+
+.meta-value--total {
+  font-size: 1.5rem;
+  color: var(--c-ink);
+}
+
+/* ---------- Lista de Agricultores (Subpedidos) ---------- */
+.seccion-bloque {
+  margin-bottom: 28px;
+}
+
+.seccion-subpedidos-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--c-earth);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.subpedido-fila {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--c-surface);
+  border: 1px solid var(--field-border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 10px;
+  transition: border-color var(--t) var(--ease);
+}
+
+.subpedido-fila:last-child {
+  margin-bottom: 0;
+}
+
+.subpedido-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.subpedido-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--c-wheat-soft);
+  border: 1px solid var(--c-line);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--c-earth);
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.subpedido-nombre {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--c-ink);
+}
+
+/* ---------- Badges de Estado ---------- */
+.badge-estado {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  letter-spacing: -0.01em;
+}
+
+.badge-confirmado {
+  background: var(--c-green-soft);
+  color: #234F2D;
+  border: 1px solid #C9DECE;
+}
+
+.badge-revision {
+  background: var(--c-gold-soft);
+  color: var(--c-ink);
+  border: 1px solid #E4D29F;
+}
+
+.badge-proceso {
+  background: var(--c-gold-soft);
+  color: var(--c-ink);
+  border: 1px solid #E4D29F;
+}
+
+.badge-cancelado {
+  background: var(--c-danger-soft);
+  color: var(--c-danger);
+  border: 1px solid var(--c-danger-line);
+}
+
+/* ---------- Botones de Acción ---------- */
+.acciones-recibo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--c-line);
+}
+
+.btn-accion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 52px;
+  padding: 0 24px;
+  border-radius: var(--radius-sm);
+  font-size: 1.02rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--t) var(--ease), transform var(--t) var(--ease),
+              box-shadow var(--t) var(--ease);
+  border: none;
+  box-sizing: border-box;
+}
+
+.btn-primario {
+  background: var(--c-green);
+  color: #ffffff;
+}
+
+.btn-primario:hover {
+  background: var(--c-green-dark);
+  box-shadow: 0 6px 16px rgba(54, 122, 69, .28);
+  color: #ffffff;
+}
+
+.btn-primario:active {
+  transform: scale(0.985);
+  box-shadow: none;
+}
+
+.btn-primario:focus-visible {
+  outline: 3px solid var(--c-gold);
+  outline-offset: 3px;
+}
+
+.btn-secundario-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  color: var(--c-earth);
+  font-size: 0.92rem;
+  font-weight: 500;
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  transition: color var(--t) var(--ease), background var(--t) var(--ease);
+}
+
+.btn-secundario-link:hover {
+  color: var(--c-green);
+  background: rgba(54, 122, 69, 0.06);
+}
+
+.btn-secundario-link:focus-visible {
+  outline: 3px solid var(--c-green);
+  outline-offset: 2px;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 640px) {
+  .confirm-page {
+    padding: 24px 16px 56px;
+  }
+
+  .recibo-header {
+    padding: 32px 20px 24px;
+  }
+
+  .recibo-body {
+    padding: 22px 18px;
+  }
+
+  .meta-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 16px 18px;
+  }
+
+  .subpedido-fila {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .badge-estado {
+    align-self: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .confirm-page *,
+  .confirm-page *::before,
+  .confirm-page *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* ---------- Modo Impresión ---------- */
+@media print {
+  header,
+  footer,
+  .acciones-recibo,
+  .checkout-steps,
+  .btn-secundario-link {
+    display: none !important;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  .confirm-page {
+    padding: 0 !important;
+    min-height: auto !important;
+    background: #ffffff !important;
+  }
+
+  .confirm-container {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .recibo-card {
+    border: 1px solid #cccccc !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+
+  .recibo-header {
+    border-bottom: 1px solid #cccccc !important;
+    padding: 24px !important;
+  }
+
+  .icon-circulo {
+    border: 1px solid #000000 !important;
+    color: #000000 !important;
+    background: transparent !important;
+    animation: none !important;
+  }
+
+  .meta-grid,
+  .subpedido-fila {
+    border: 1px solid #cccccc !important;
+    background: transparent !important;
+  }
+
+  .badge-estado {
+    border: 1px solid #000000 !important;
+    background: transparent !important;
+    color: #000000 !important;
+  }
+}
+
