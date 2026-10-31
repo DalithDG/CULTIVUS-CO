@@ -1,10 +1,11 @@
-<header th:fragment="siteHeader" class="site-header">
+<header th:fragment="siteHeader" class="site-header site-header--comprador">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/header-comprador.css}">
 
-    <div class="header-premium" id="mainHeader">
+    <div class="header-premium header--comprador" id="mainHeader">
         <div class="header-container">
 
             <!-- Logo con slogan -->
@@ -16,13 +17,20 @@
 
             <!-- Navegación principal: Inicio, Categorías, Ofertas, Productores -->
             <nav class="header-nav">
-                <a th:href="@{/usuario/inicio}" class="nav-link active">
+                <a th:href="@{/usuario/inicio}"
+                   class="nav-link"
+                   th:classappend="${currentPath != null and (currentPath == '/usuario/inicio' or currentPath == '/' or currentPath == '/inicio')} ? ' active' : ''"
+                   th:attr="aria-current=${currentPath != null and (currentPath == '/usuario/inicio' or currentPath == '/' or currentPath == '/inicio')} ? 'page' : null">
                     <i class="fas fa-home"></i>
                     <span>Inicio</span>
                 </a>
 
                 <div class="nav-dropdown">
-                    <a th:href="@{/category}" class="nav-link nav-dropdown__toggle" aria-haspopup="true">
+                    <a th:href="@{/category}"
+                       class="nav-link nav-dropdown__toggle"
+                       th:classappend="${currentPath != null and (#strings.startsWith(currentPath, '/category') or #strings.startsWith(currentPath, '/categoria'))} ? ' active' : ''"
+                       th:attr="aria-current=${currentPath != null and (#strings.startsWith(currentPath, '/category') or #strings.startsWith(currentPath, '/categoria'))} ? 'page' : null"
+                       aria-haspopup="true">
                         <i class="fas fa-th-large"></i>
                         <span>Categorías</span>
                         <i class="fas fa-chevron-down nav-dropdown__caret"></i>
@@ -38,12 +46,18 @@
                     </div>
                 </div>
 
-                <a th:href="@{/ofertas}" class="nav-link">
+                <a th:href="@{/ofertas}"
+                   class="nav-link"
+                   th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/ofertas')} ? ' active' : ''"
+                   th:attr="aria-current=${currentPath != null and #strings.startsWith(currentPath, '/ofertas')} ? 'page' : null">
                     <i class="fas fa-tag"></i>
                     <span>Ofertas</span>
                 </a>
 
-                <a th:href="@{/productores#productores}" class="nav-link">
+                <a th:href="@{/productores#productores}"
+                   class="nav-link"
+                   th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/productores')} ? ' active' : ''"
+                   th:attr="aria-current=${currentPath != null and #strings.startsWith(currentPath, '/productores')} ? 'page' : null">
                     <i class="fas fa-seedling"></i>
                     <span>Productores</span>
                 </a>
@@ -54,7 +68,7 @@
             <div class="header-search header-search--wide">
                 <form th:action="@{/buscar}" method="get" role="search">
                     <i class="fas fa-search header-search__icon"></i>
-                    <input type="search" name="q" placeholder="Buscar productos, productores o categorias..."
+                    <input type="search" name="q" placeholder="Buscar productos o productores"
                         autocomplete="off" aria-label="Buscar productos">
                     <button type="submit" aria-label="Buscar" class="header-search__btn">
                         <i class="fas fa-search"></i>
@@ -65,12 +79,17 @@
             <!-- Acciones -->
             <div class="header-actions">
 
-                <!-- Panel Admin (si aplica) -->
-                <th:block th:if="${session.usuarioLogueado != null and session.usuarioLogueado.rol != null}">
+                <!-- Panel Admin o Panel Vendedor -->
+                <th:block th:if="${session.usuarioLogueado != null}">
                     <a th:if="${session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).ADMIN)}"
                         th:href="@{/admin/dashboard}" class="btn-sell highlight" title="Ir al panel de administrador">
                         <i class="fas fa-user-shield"></i>
                         <span>Panel Admin</span>
+                    </a>
+                    <a th:if="${session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).VENDEDOR)}"
+                        th:href="@{/vendedor/dashboard}" class="btn-sell highlight" title="Ir al panel de vendedor">
+                        <i class="fas fa-store"></i>
+                        <span>Panel Vendedor</span>
                     </a>
                 </th:block>
 
@@ -79,7 +98,10 @@
                     <button class="btn-account" id="accountMenuBtn" type="button" aria-haspopup="true"
                         aria-expanded="false" aria-controls="accountMenuPanel" aria-label="Menú de perfil de usuario">
                         <div class="account-avatar">
-                            <i class="fas fa-user"></i>
+                            <span th:if="${session.usuarioLogueado != null and session.usuarioLogueado.nombre != null and #strings.length(session.usuarioLogueado.nombre) > 0}"
+                                  th:text="${#strings.substring(session.usuarioLogueado.nombre, 0, 1).toUpperCase()}">U</span>
+                            <i th:unless="${session.usuarioLogueado != null and session.usuarioLogueado.nombre != null and #strings.length(session.usuarioLogueado.nombre) > 0}"
+                               class="fas fa-user"></i>
                         </div>
                         <div class="account-info">
                             <span class="account-greeting">Hola,</span>
@@ -94,7 +116,10 @@
                         <!-- Cabecera de usuario autenticado -->
                         <div class="account-panel__user" th:if="${session.usuarioLogueado != null}">
                             <div class="account-panel__user-icon">
-                                <i class="fas fa-user-circle"></i>
+                                <span th:if="${session.usuarioLogueado != null and session.usuarioLogueado.nombre != null and #strings.length(session.usuarioLogueado.nombre) > 0}"
+                                      th:text="${#strings.substring(session.usuarioLogueado.nombre, 0, 1).toUpperCase()}">U</span>
+                                <i th:unless="${session.usuarioLogueado != null and session.usuarioLogueado.nombre != null and #strings.length(session.usuarioLogueado.nombre) > 0}"
+                                   class="fas fa-user-circle"></i>
                             </div>
                             <div class="account-panel__user-meta">
                                 <span class="account-panel__user-name"
@@ -119,14 +144,22 @@
                             <span class="account-panel__text">Panel de Administración</span>
                         </a>
 
+                        <!-- Enlace a Panel Vendedor si es Vendedor -->
+                        <a th:if="${session.usuarioLogueado != null and session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).VENDEDOR)}"
+                           th:href="@{/vendedor/dashboard}" class="account-panel__link" role="menuitem">
+                            <span class="account-panel__icon-box"><i class="fas fa-store"></i></span>
+                            <span class="account-panel__text">Panel de Vendedor</span>
+                        </a>
+
                         <!-- Opción 2: Billetera -->
                         <a th:href="@{/usuario/billetera}" class="account-panel__link" role="menuitem">
                             <span class="account-panel__icon-box"><i class="fas fa-wallet"></i></span>
                             <span class="account-panel__text">Billetera</span>
                         </a>
 
-                        <!-- Opción 3: Mis pedidos -->
-                        <a th:href="@{/usuario/pedidos}" class="account-panel__link" role="menuitem">
+                        <!-- Opción 3: Mis pedidos (solo si puede comprar) -->
+                        <a th:if="${session.usuarioLogueado == null or session.usuarioLogueado.puedeComprar()}"
+                           th:href="@{/usuario/pedidos}" class="account-panel__link" role="menuitem">
                             <span class="account-panel__icon-box"><i class="fas fa-box"></i></span>
                             <span class="account-panel__text">Mis pedidos</span>
                         </a>
@@ -149,8 +182,9 @@
                         th:text="${notificacionesCount}">0</span>
                 </a>
 
-                <!-- Carrito de compras con badge dinámico -->
-                <a th:href="@{/carrito}" class="btn-icon btn-cart" title="Carrito de compras"
+                <!-- Carrito de compras con badge dinámico (solo si puede comprar) -->
+                <a th:if="${session.usuarioLogueado == null or session.usuarioLogueado.puedeComprar()}"
+                   th:href="@{/carrito}" class="btn-icon btn-cart" title="Carrito de compras"
                     aria-label="Ver carrito de compras">
                     <i class="fas fa-shopping-cart"></i>
                     <span class="cart-badge" th:text="${carritoCount != null ? carritoCount : 0}">0</span>
@@ -167,7 +201,7 @@
     </div>
 
     <!-- Menú móvil accesible -->
-    <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+    <div class="mobile-menu mobile-menu--comprador" id="mobileMenu" aria-hidden="true">
         <div class="mobile-menu-header">
             <span>Menú</span>
             <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Cerrar menú">
@@ -178,7 +212,10 @@
             <!-- Tarjeta de usuario en móvil -->
             <div class="mobile-user-card" th:if="${session.usuarioLogueado != null}">
                 <div class="mobile-user-avatar">
-                    <i class="fas fa-user"></i>
+                    <span th:if="${session.usuarioLogueado != null and session.usuarioLogueado.nombre != null and #strings.length(session.usuarioLogueado.nombre) > 0}"
+                          th:text="${#strings.substring(session.usuarioLogueado.nombre, 0, 1).toUpperCase()}">U</span>
+                    <i th:unless="${session.usuarioLogueado != null and session.usuarioLogueado.nombre != null and #strings.length(session.usuarioLogueado.nombre) > 0}"
+                       class="fas fa-user"></i>
                 </div>
                 <div class="mobile-user-info">
                     <span class="mobile-user-name" th:text="${session.usuarioLogueado.nombre}">Usuario</span>
@@ -187,21 +224,38 @@
                 </div>
             </div>
 
-            <a th:href="@{/usuario/inicio}"><i class="fas fa-home"></i> Inicio</a>
-            <a th:href="@{/category}"><i class="fas fa-th-large"></i> Categorías</a>
-            <a th:href="@{/ofertas}"><i class="fas fa-tag"></i> Ofertas</a>
+            <a th:href="@{/usuario/inicio}"
+               th:classappend="${currentPath != null and (currentPath == '/usuario/inicio' or currentPath == '/' or currentPath == '/inicio')} ? ' active' : ''"><i class="fas fa-home"></i> Inicio</a>
+            <a th:href="@{/category}"
+               th:classappend="${currentPath != null and (#strings.startsWith(currentPath, '/category') or #strings.startsWith(currentPath, '/categoria'))} ? ' active' : ''"><i class="fas fa-th-large"></i> Categorías</a>
+            <a th:href="@{/ofertas}"
+               th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/ofertas')} ? ' active' : ''"><i class="fas fa-tag"></i> Ofertas</a>
+            <a th:href="@{/productores#productores}"
+               th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/productores')} ? ' active' : ''"><i class="fas fa-seedling"></i> Productores</a>
             <div class="mobile-divider"></div>
 
-            <a th:href="@{/usuario/perfil}"><i class="fas fa-user"></i> Mi perfil</a>
-            <a th:href="@{/usuario/pedidos}"><i class="fas fa-box"></i> Mis pedidos</a>
+            <a th:href="@{/usuario/perfil}"
+               th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/usuario/perfil')} ? ' active' : ''"><i class="fas fa-user"></i> Mi perfil</a>
+            <a th:href="@{/usuario/billetera}"
+               th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/usuario/billetera')} ? ' active' : ''"><i class="fas fa-wallet"></i> Billetera</a>
+            <a th:if="${session.usuarioLogueado != null and session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).VENDEDOR)}"
+               th:href="@{/vendedor/dashboard}" class="mobile-highlight">
+                <i class="fas fa-store"></i> Panel Vendedor
+            </a>
+            <a th:if="${session.usuarioLogueado == null or session.usuarioLogueado.puedeComprar()}"
+               th:href="@{/usuario/pedidos}"
+               th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/usuario/pedidos')} ? ' active' : ''"><i class="fas fa-box"></i> Mis pedidos</a>
 
             <th:block th:if="${session.usuarioLogueado != null and session.usuarioLogueado.rol != null}">
                 <a th:if="${session.usuarioLogueado.rol.name() == 'COMPRADOR'}" th:href="@{/transportista/registro}"
                     class="mobile-highlight"><i class="fas fa-truck-fast"></i> Conviértete en transportista</a>
             </th:block>
 
-            <a th:href="@{/usuario/notificaciones}"><i class="fas fa-bell"></i> Notificaciones</a>
-            <a th:href="@{/carrito}"><i class="fas fa-shopping-cart"></i> Carrito</a>
+            <a th:href="@{/usuario/notificaciones}"
+               th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/usuario/notificaciones')} ? ' active' : ''"><i class="fas fa-bell"></i> Notificaciones</a>
+            <a th:if="${session.usuarioLogueado == null or session.usuarioLogueado.puedeComprar()}"
+               th:href="@{/carrito}"
+               th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/carrito')} ? ' active' : ''"><i class="fas fa-shopping-cart"></i> Carrito</a>
 
             <div class="mobile-divider"></div>
 

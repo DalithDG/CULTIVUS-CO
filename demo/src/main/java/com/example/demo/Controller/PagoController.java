@@ -78,6 +78,16 @@ public class PagoController {
 
     private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(PagoController.class);
 
+    private Usuario obtenerUsuarioActual(HttpSession session) {
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuario != null && usuario.getId() != null && usuarioRepository != null) {
+            Usuario fresco = usuarioRepository.findById(usuario.getId()).orElse(usuario);
+            session.setAttribute("usuarioLogueado", fresco);
+            return fresco;
+        }
+        return usuario;
+    }
+
     /**
      * Muestra el formulario de pago
      */
@@ -85,11 +95,15 @@ public class PagoController {
     public String mostrarPago(HttpSession session, Model model,
             RedirectAttributes redirectAttributes) {
 
-        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        Usuario usuario = obtenerUsuarioActual(session);
         if (usuario == null) {
             redirectAttributes.addFlashAttribute("error",
                     "Debe iniciar sesión para realizar el pago");
             return "redirect:/usuario/login";
+        }
+        if (!usuario.puedeComprar()) {
+            redirectAttributes.addFlashAttribute("error", Usuario.MENSAJE_VENDEDOR_NO_PUEDE_COMPRAR);
+            return "redirect:/vendedor/dashboard";
         }
 
         // Obtener carrito del usuario
@@ -264,10 +278,14 @@ public class PagoController {
             @RequestBody(required = false) java.util.Map<String, String> payload,
             HttpSession session) {
         try {
-            Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+            Usuario usuario = obtenerUsuarioActual(session);
             if (usuario == null) {
                 return org.springframework.http.ResponseEntity.status(401).body(
                         java.util.Map.of("ok", false, "error", "Debe iniciar sesión para realizar el pago"));
+            }
+            if (!usuario.puedeComprar()) {
+                return org.springframework.http.ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body(
+                        java.util.Map.of("ok", false, "error", Usuario.MENSAJE_VENDEDOR_NO_PUEDE_COMPRAR));
             }
 
             Carrito carrito = carritoRepository.findByUsuarioId(usuario.getId())
@@ -276,6 +294,23 @@ public class PagoController {
             if (carrito.getItems().isEmpty()) {
                 return org.springframework.http.ResponseEntity.badRequest().body(
                         java.util.Map.of("ok", false, "error", "Su carrito está vacío"));
+            }
+
+            // Validar que ninguna oferta en el carrito pertenezca al usuario (defensa contra compras de propios productos)
+            for (ProductoCarrito item : carrito.getItems()) {
+                if (usuario.getId() != null) {
+                    if (usuario.getId().equals(item.getVendedorId())) {
+                        return org.springframework.http.ResponseEntity.badRequest().body(
+                                java.util.Map.of("ok", false, "error", "No puedes comprar tus propios productos (" + item.getNombre() + ")"));
+                    }
+                    if (item.getOfertaId() != null) {
+                        OfertaVendedor oferta = ofertaRepository.findById(item.getOfertaId()).orElse(null);
+                        if (oferta != null && oferta.getVendedor() != null && usuario.getId().equals(oferta.getVendedor().getId())) {
+                            return org.springframework.http.ResponseEntity.badRequest().body(
+                                    java.util.Map.of("ok", false, "error", "No puedes comprar tus propios productos (" + item.getNombre() + ")"));
+                        }
+                    }
+                }
             }
 
             double limiteMaximo = configService.obtenerValorDouble("LIMITE_COMPRA_MAX", 5000000.0);
@@ -505,10 +540,14 @@ public class PagoController {
     public org.springframework.http.ResponseEntity<?> calcularEnvio(
             @RequestParam(value = "ciudad", required = false) String ciudad,
             HttpSession session) {
-        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        Usuario usuario = obtenerUsuarioActual(session);
         if (usuario == null) {
             return org.springframework.http.ResponseEntity.status(401).body(
                     java.util.Map.of("ok", false, "error", "No autenticado"));
+        }
+        if (!usuario.puedeComprar()) {
+            return org.springframework.http.ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body(
+                    java.util.Map.of("ok", false, "error", Usuario.MENSAJE_VENDEDOR_NO_PUEDE_COMPRAR));
         }
         Carrito carrito = carritoRepository.findByUsuarioId(usuario.getId()).orElse(null);
         if (carrito == null) {

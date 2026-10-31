@@ -6,7 +6,15 @@
 .cart-page,
 .checkout-page,
 .confirm-page,
-.orders-page {
+.orders-page,
+.auth-page,
+.home-page,
+.catalog-page,
+.product-page,
+.profile-page,
+.notif-page,
+.about-page,
+.order-detail-page {
   /* Paleta Cultivus */
   --c-green: #367A45;          /* acciones principales (blanco sobre él: 5.3:1) */
   --c-green-dark: #2B6337;     /* hover / active */

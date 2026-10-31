@@ -1,0 +1,279 @@
+/* ==========================================================================
+   Cultivus - Comprobante de Retiro (Apple Design)
+   Reutilizado para comprobantes imprimibles de Vendedores y Transportistas
+   ========================================================================== */
+
+:root {
+  --cp-bg: #FAF6EB;
+  --cp-surface: #FFFFFF;
+  --cp-border: #E9E2D0;
+  --cp-border-dashed: #DDD3BA;
+  --cp-text: #30372D;
+  --cp-muted: #795548;
+  --cp-accent: #367A45;
+  --cp-accent-dark: #2B6337;
+  --cp-accent-soft: #EBF3ED;
+  --cp-warning-bg: #FDF6E2;
+  --cp-warning-border: #EABF45;
+  --cp-warning-text: #614805;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 40px 16px 64px;
+  background: var(--cp-bg);
+  color: var(--cp-text);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.cp-container {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.cp-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background 180ms ease, border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+}
+
+.cp-btn:focus-visible {
+  outline: 2px solid var(--cp-accent);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(54, 122, 69, 0.20);
+}
+
+.cp-btn--back {
+  background: var(--cp-surface);
+  color: var(--cp-text);
+  border-color: var(--cp-border);
+}
+
+.cp-btn--back:hover {
+  background: #FAF6EB;
+  border-color: #DDD3BA;
+}
+
+.cp-btn--print {
+  background: var(--cp-accent);
+  color: #FFFFFF;
+  box-shadow: 0 4px 14px -3px rgba(54, 122, 69, 0.4);
+}
+
+.cp-btn--print:hover {
+  background: var(--cp-accent-dark);
+  transform: translateY(-1px);
+}
+
+.cp-card {
+  background: var(--cp-surface);
+  border: 1px solid var(--cp-border);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px -6px rgba(48, 55, 45, 0.08), 0 2px 6px rgba(48, 55, 45, 0.04);
+}
+
+.cp-sim-banner {
+  background: var(--cp-warning-bg);
+  border-bottom: 1px solid rgba(234, 191, 69, 0.4);
+  color: var(--cp-warning-text);
+  padding: 12px 24px;
+  font-size: 0.86rem;
+  font-weight: 600;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.cp-header {
+  padding: 32px 36px 24px;
+  border-bottom: 1px dashed var(--cp-border-dashed);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.cp-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--cp-accent);
+}
+
+.cp-doc-title {
+  font-size: 1.45rem;
+  font-weight: 800;
+  margin: 10px 0 6px;
+  color: var(--cp-text);
+  letter-spacing: -0.02em;
+}
+
+.cp-doc-num {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--cp-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.cp-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--cp-accent-soft);
+  color: var(--cp-accent);
+  border: 1px solid rgba(54, 122, 69, 0.25);
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.cp-amount-section {
+  padding: 28px 36px;
+  background: var(--cp-accent-soft);
+  border-bottom: 1px solid rgba(54, 122, 69, 0.15);
+  text-align: center;
+}
+
+.cp-amount-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--cp-accent);
+}
+
+.cp-amount-value {
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: #30372D;
+  margin-top: 6px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.cp-body {
+  padding: 32px 36px;
+}
+
+.cp-section-title {
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--cp-muted);
+  margin: 0 0 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--cp-border);
+}
+
+.cp-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px 28px;
+  margin-bottom: 30px;
+}
+
+.cp-grid--last {
+  margin-bottom: 0;
+}
+
+@media (max-width: 560px) {
+  .cp-grid { grid-template-columns: 1fr; }
+  .cp-header, .cp-body, .cp-amount-section, .cp-footer {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
+
+.cp-field__label {
+  font-size: 0.8rem;
+  color: var(--cp-muted);
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.cp-field__value {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--cp-text);
+  word-break: break-word;
+  font-variant-numeric: tabular-nums;
+}
+
+.cp-field__value--mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.cp-footer {
+  padding: 20px 36px;
+  background: #FAF6EB;
+  border-top: 1px solid var(--cp-border);
+  font-size: 0.82rem;
+  color: var(--cp-muted);
+  text-align: center;
+}
+
+@media print {
+  body {
+    background: #FFFFFF !important;
+    padding: 0 !important;
+  }
+  .cp-toolbar {
+    display: none !important;
+  }
+  .cp-card {
+    box-shadow: none !important;
+    border: 1px solid #DDD3BA !important;
+    border-radius: 8px !important;
+  }
+  .cp-sim-banner {
+    border-bottom: 1px solid #EABF45 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .cp-amount-section {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .cp-status-badge {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+

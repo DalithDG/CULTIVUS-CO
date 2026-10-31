@@ -1,474 +1,356 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${producto.nombre} + ' | Cultivus'">Detalle Producto | Cultivus</title>
+    <title th:text="${producto != null ? producto.nombre + ' | Cultivus' : 'Detalle Producto | Cultivus'}">Detalle Producto | Cultivus</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
-    <link rel="stylesheet" th:href="@{/header.css}">
-    <link rel="stylesheet" th:href="@{/carulla-exito.css}">
-    <link rel="stylesheet" th:href="@{/paginas-publicas.css}">
+    <link rel="stylesheet" th:href="@{/checkout-tokens.css}">
+    <link rel="stylesheet" th:href="@{/cultivus-ui.css}">
+    <link rel="stylesheet" th:href="@{/product-apple.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
 </head>
-<body>
-    <!-- Encabezado general -->
-    <header th:replace="~{fragments/header :: siteHeader}"></header>
 
-    <!-- Migas de pan estilo Carulla (Image 1) -->
-    <div class="carulla-breadcrumb-wrapper" th:if="${producto != null}">
-        <nav class="carulla-breadcrumb" aria-label="Breadcrumb">
-            <a th:href="@{/}">Inicio</a>
-            <span class="separator">/</span>
+<body class="product-page">
+
+    <!-- HEADER INSTITUCIONAL -->
+    <th:block th:replace="~{fragments/header :: siteHeader}"></th:block>
+
+    <main class="ui-container product-main" th:if="${producto != null}">
+
+        <!-- BREADCRUMB -->
+        <nav class="ui-breadcrumb" aria-label="Migas de pan">
+            <a th:href="@{/}"><i class="fas fa-home"></i> Inicio</a>
+            <span class="sep">/</span>
             <a th:href="@{/category}">Catálogo</a>
-            <span class="separator" th:if="${producto.categoria != null}">/</span>
+            <span class="sep" th:if="${producto.categoria != null}">/</span>
             <a th:if="${producto.categoria != null}"
                th:href="@{/category(categoria=${producto.categoria.id})}"
                th:text="${producto.categoria.nombre}">Categoría</a>
-            <span class="separator">/</span>
-            <span class="active" th:text="${producto.nombre}">Nombre Producto</span>
+            <span class="sep">/</span>
+            <span class="current" th:text="${producto.nombre}">Nombre Producto</span>
         </nav>
-    </div>
 
-    <!-- Contenido Principal -->
-    <main class="carulla-detail-container" th:if="${producto != null}">
-        
-        <!-- Hero de Producto (Cabecera estilo Carulla Image 1) -->
-        <div class="carulla-main-grid" style="margin-bottom: 30px;">
-            
-            <!-- Columna Izquierda: Imagen del producto -->
-            <div class="carulla-gallery-col">
-                <div class="carulla-image-card">
-                    <div class="carulla-float-actions">
-                        <button type="button" class="carulla-action-circle" onclick="toggleFavorito(this)" title="Añadir a favoritos" aria-label="Favorito">
+        <!-- LAYOUT DE 2 COLUMNAS: GALERÍA + COMPRA RÁPIDA -->
+        <div class="product-layout">
+
+            <!-- Columna Izquierda: Imagen Principal -->
+            <div class="product-gallery">
+                <div class="product-gallery__card">
+                    <div class="product-gallery__actions">
+                        <button type="button" class="action-circle-btn" onclick="toggleFavorito(this)" title="Añadir a favoritos" aria-label="Favorito">
                             <i class="far fa-heart"></i>
                         </button>
-                        <button type="button" class="carulla-action-circle" onclick="compartirProducto()" title="Compartir producto" aria-label="Compartir">
+                        <button type="button" class="action-circle-btn" onclick="compartirProducto()" title="Compartir producto" aria-label="Compartir">
                             <i class="fas fa-share-alt"></i>
                         </button>
                     </div>
 
                     <img th:src="${producto.imagenUrl}"
                          th:alt="${producto.nombre}"
+                         class="product-gallery__img"
                          onerror="this.src='/images/placeholder.jpg'">
                 </div>
             </div>
 
-            <!-- Columna Central: Información del Producto -->
-            <div class="carulla-info-col">
-                <span class="carulla-sku-code" th:text="'PLU: #' + ${#strings.substring(producto.id, producto.id.length() > 6 ? producto.id.length() - 6 : 0)}">
-                    PLU: #869437
-                </span>
-
-                <h1 class="carulla-product-title" th:text="${producto.nombre}">
-                    Nombre del producto
-                </h1>
-
-                <div class="carulla-unit-price" th:if="${producto.categoria != null}">
-                    <span th:text="${producto.categoria.nombre} + ' • Producto 100% Colombiano'">Frutas y Verduras</span>
+            <!-- Columna Derecha: Información y Opciones de Compra -->
+            <div class="product-info">
+                <div class="product-info__badge-row">
+                    <span class="ui-chip ui-chip--green">
+                        <i class="fas fa-leaf"></i> 100% Colombiano
+                    </span>
+                    <span class="ui-chip ui-chip--wheat"
+                          th:text="'PLU: #' + ${#strings.substring(producto.id, producto.id.length() > 6 ? producto.id.length() - 6 : 0)}">
+                        PLU: #869437
+                    </span>
                 </div>
 
-                <!-- Bloque de Precio Mínimo -->
-                <div class="carulla-price-group">
-                    <div class="carulla-discount-row" th:if="${producto.precioMinimo != null}">
-                        <span class="carulla-discount-pill">OFERTAS DISPONIBLES</span>
-                        <span class="carulla-old-price"
-                              th:text="'$' + ${#numbers.formatDecimal(producto.precioMinimo * 1.2, 0, 'COMMA', 0, 'POINT')}">
-                            $0
+                <h1 class="product-info__title" th:text="${producto.nombre}">Nombre del Producto</h1>
+
+                <p class="product-info__meta" th:if="${producto.categoria != null}">
+                    <span th:text="${producto.categoria.nombre}">Frutas</span>
+                    <span>•</span>
+                    <span>Cosecha local garantizada</span>
+                </p>
+
+                <!-- Tarjeta de Precio -->
+                <div class="price-card">
+                    <div class="price-card__row">
+                        <span class="price-card__main" th:if="${producto.precioMinimo != null}"
+                              th:text="'Desde $' + ${#numbers.formatDecimal(producto.precioMinimo, 0, 'COMMA', 0, 'POINT')}">
+                            Desde $0
+                        </span>
+                        <span class="price-card__unit" th:if="${producto.precioMinimo != null}"
+                              th:text="'/ ' + (${producto.unidadMedida != null} ? producto.unidadMedida : 'unid')">
+                            / kg
+                        </span>
+                        <span class="price-card__main" th:if="${producto.precioMinimo == null}" style="font-size: 1.3rem; color: var(--c-earth);">
+                            Sin ofertas activas
                         </span>
                     </div>
 
-                    <div class="carulla-main-price" th:if="${producto.precioMinimo != null}"
-                         th:text="'Desde $' + ${#numbers.formatDecimal(producto.precioMinimo, 0, 'COMMA', 0, 'POINT')} + ' / ' + (${producto.unidadMedida != null} ? producto.unidadMedida : 'unid')">
-                        Desde $0 / kg
-                    </div>
-                    <div class="carulla-main-price" th:if="${producto.precioMinimo == null}" style="color: #999; font-size: 1.5rem;">
-                        Sin ofertas activas en este momento
-                    </div>
+                    <p class="price-card__seller" th:if="${producto.totalVendedores != null and producto.totalVendedores > 0}">
+                        <i class="fas fa-store" style="color: var(--c-green);"></i>
+                        <span><strong th:text="${producto.totalVendedores}">0</strong> productores tienen cosechas disponibles de este producto</span>
+                    </p>
 
-                    <div class="carulla-puntos-tag" th:if="${producto.totalVendedores != null and producto.totalVendedores > 0}">
-                        <i class="fas fa-store" style="color: #27ae60;"></i>
-                        <span><strong><span th:text="${producto.totalVendedores}">0</span> productores</strong> ofrecen este producto ahora mismo</span>
-                    </div>
+                    <p th:if="${producto.descripcion != null}" style="margin: 14px 0 0; font-size: 0.95rem; line-height: 1.5; color: var(--c-ink);"
+                       th:text="${producto.descripcion}">
+                        Descripción del producto.
+                    </p>
                 </div>
 
-                <p class="carulla-description-text" style="margin: 0 0 10px;" th:text="${producto.descripcion}">
-                    Descripción del producto.
-                </p>
-
-                <a href="#productos-disponibles" class="carulla-scroll-link" style="font-size:0.95rem; font-weight:700;">
-                    <i class="fas fa-arrow-down"></i> Ver los productos y vendedores disponibles abajo
+                <!-- Llamado a la Acción hacia las ofertas -->
+                <a href="#productos-disponibles" class="ui-btn ui-btn--primary ui-btn--lg" style="margin-bottom: 20px;">
+                    <i class="fas fa-basket-shopping"></i> Ver ofertas de productores (<span th:text="${totalOfertas != null ? totalOfertas : 0}">0</span>)
                 </a>
-            </div>
 
-            <!-- Columna Derecha: Resumen de Compra Rápida -->
-            <div class="carulla-sidebar-box">
-                <div class="carulla-delivery-block">
-                    <h4>Condiciones de entrega:</h4>
-                    <div class="carulla-delivery-row">
-                        <i class="fas fa-truck"></i>
-                        <div>
-                            <strong>Envío directo:</strong> Directo desde las fincas y huertos locales.
+                <!-- Beneficios y Garantías -->
+                <div class="perks-card">
+                    <div class="perk-row">
+                        <div class="perk-row__icon"><i class="fas fa-truck-fast"></i></div>
+                        <div class="perk-row__content">
+                            <strong>Envío Directo</strong>
+                            <span>Despachado desde fincas y huertos aliados</span>
                         </div>
                     </div>
-                    <div class="carulla-delivery-row">
-                        <i class="fas fa-store"></i>
-                        <div>
-                            <strong>Disponible:</strong> Compra en línea y despacho programado.
+                    <div class="perk-row">
+                        <div class="perk-row__icon"><i class="fas fa-shield-halved"></i></div>
+                        <div class="perk-row__content">
+                            <strong>Garantía de Pago Seguro</strong>
+                            <span>Protección total en cada transacción con Wompi</span>
                         </div>
                     </div>
-                </div>
-
-                <div class="carulla-sidebar-divider"></div>
-
-                <div class="carulla-delivery-block">
-                    <h4>Garantía Cultivus</h4>
-                    <div class="carulla-delivery-row">
-                        <i class="fas fa-shield-alt" style="color:#27ae60;"></i>
-                        <div>
-                            <strong>Pago Seguro:</strong> Protección total del comprador en cada pedido.
+                    <div class="perk-row">
+                        <div class="perk-row__icon"><i class="fas fa-seedling"></i></div>
+                        <div class="perk-row__content">
+                            <strong>Frescura y Calidad</strong>
+                            <span>Cosechado en su punto óptimo</span>
                         </div>
                     </div>
                 </div>
 
-                <a href="#productos-disponibles" class="carulla-btn-primary carulla-btn-orange" style="text-decoration:none;">
-                    <i class="fas fa-shopping-basket"></i> Elegir producto
-                </a>
             </div>
-
         </div>
 
         <!-- ══════════════════════════════════════════════════════════════ -->
-        <!-- SECCIÓN DE PRODUCTOS DIRECTOS (Estilo Éxito y Carulla Image 3) -->
+        <!-- SECCIÓN DE PRODUCTORES CON OFERTAS DISPONIBLES               -->
         <!-- ══════════════════════════════════════════════════════════════ -->
-        <section class="exito-grid-section" id="productos-disponibles">
-            <div class="exito-section-header">
+        <section id="productos-disponibles" style="margin-bottom: 48px; scroll-margin-top: 100px;">
+            <div class="section-header">
                 <div>
-                    <h2 class="exito-section-title">
-                        <i class="fas fa-boxes-stacked" style="color: #f26822;"></i>
-                        Productos disponibles (<span th:text="${totalOfertas != null ? totalOfertas : 0}">0</span>)
+                    <h2 class="section-header__title">
+                        Ofertas Disponibles (<span th:text="${totalOfertas != null ? totalOfertas : 0}">0</span>)
                     </h2>
-                    <p class="exito-section-subtitle">
-                        Elige directamente el producto de tu preferencia y agrégalo de inmediato a tu carrito.
+                    <p class="section-header__subtitle">
+                        Elige directamente al productor local de tu preferencia y apoya al campo.
                     </p>
                 </div>
             </div>
 
-            <!-- Grid de Tarjetas Éxito (Image 3) -->
-            <div class="exito-products-grid" th:if="${ofertas != null and !ofertas.isEmpty()}">
-                
-                <article class="exito-card" th:each="oferta : ${ofertas}">
-                    
-                    <!-- Barra superior: Badge promocional + Favorito -->
-                    <div class="exito-card__top">
-                        <span class="exito-promo-badge">
-                            <i class="fas fa-leaf"></i> 100% FRESCO
-                        </span>
-                        <button type="button" class="exito-fav-btn" onclick="toggleFavorito(this)" title="Añadir a favoritos" aria-label="Favorito">
-                            <i class="far fa-heart"></i>
-                        </button>
-                    </div>
-
-                    <!-- Imagen del producto (Enlace al detalle) -->
-                    <a th:href="@{/oferta/{id}(id=${oferta.id})}" class="exito-card__image-wrap" style="text-decoration:none;">
+            <!-- Grid de Ofertas -->
+            <div class="product-grid" th:if="${ofertas != null and !ofertas.isEmpty()}">
+                <article class="product-card" th:each="oferta : ${ofertas}">
+                    <a th:href="@{/oferta/{id}(id=${oferta.id})}" class="product-card__img-wrap">
                         <img th:src="${oferta.imagenUrl != null and !oferta.imagenUrl.isBlank()} ? ${oferta.imagenUrl} : (${producto.imagenUrl != null} ? producto.imagenUrl : '/images/placeholder.jpg')"
                              th:alt="${oferta.nombreProducto}"
-                             class="exito-card__img"
+                             class="product-card__img"
                              onerror="this.src='/images/placeholder.jpg'">
+                        <span class="ui-chip ui-chip--green product-card__badge">
+                            <i class="fas fa-leaf"></i> Cosecha
+                        </span>
                     </a>
 
-                    <!-- Nombre del Producto -->
-                    <a th:href="@{/oferta/{id}(id=${oferta.id})}" style="text-decoration:none;">
-                        <h3 class="exito-card__title" th:text="${oferta.nombreProducto}">
-                            Nombre del producto
-                        </h3>
-                    </a>
-
-                    <!-- Precio por unidad -->
-                    <div class="exito-card__unit-price">
-                        <span th:text="'(' + (${producto.unidadMedida != null} ? ${producto.unidadMedida} : 'Kg') + ' a $' + ${#numbers.formatDecimal(oferta.precio, 0, 'COMMA', 0, 'POINT')} + ')'">
-                            (Kg a $ 1.500)
+                    <div class="product-card__body">
+                        <span class="product-card__producer">
+                            Vendido por:
+                            <strong th:text="${oferta.vendedor.razonSocial != null and !oferta.vendedor.razonSocial.isEmpty()} ? ${oferta.vendedor.razonSocial} : ${oferta.vendedor.nombre}">Finca La Ruiz</strong>
+                            <i th:if="${oferta.vendedor.verificado}" class="fas fa-check-circle" style="color: var(--c-green);" title="Verificado"></i>
                         </span>
+
+                        <a th:href="@{/oferta/{id}(id=${oferta.id})}" style="text-decoration:none; color:inherit;">
+                            <h3 class="product-card__title" th:text="${oferta.nombreProducto}">Nombre de la oferta</h3>
+                        </a>
+
+                        <div class="product-card__price-row">
+                            <span class="product-card__price"
+                                  th:text="'$' + ${#numbers.formatDecimal(oferta.precio, 0, 'COMMA', 0, 'POINT')}">
+                                $1.500
+                            </span>
+                            <span class="product-card__unit"
+                                  th:text="'/ ' + (${producto.unidadMedida != null} ? producto.unidadMedida : 'kg')">
+                                / kg
+                            </span>
+                        </div>
+
+                        <div class="product-card__actions">
+                            <!-- Si puede comprar -->
+                            <form th:if="${session.usuarioLogueado == null or session.usuarioLogueado.puedeComprar()}"
+                                  th:action="@{/carrito/agregar}" method="post">
+                                <input type="hidden" name="ofertaId" th:value="${oferta.id}">
+                                <input type="hidden" name="cantidad" th:value="${oferta.compraMinima != null ? oferta.compraMinima : 1}">
+                                <button type="submit" class="ui-btn ui-btn--primary ui-btn--full ui-btn--sm">
+                                    <i class="fas fa-cart-plus"></i> Agregar
+                                </button>
+                            </form>
+                            <!-- Si es vendedor (no puede comprar) -->
+                            <button th:if="${session.usuarioLogueado != null and !session.usuarioLogueado.puedeComprar()}"
+                                    type="button" class="ui-btn ui-btn--vendor-blocked ui-btn--full ui-btn--sm" disabled
+                                    title="Con cuenta de vendedor no puedes realizar compras">
+                                <i class="fas fa-store-slash"></i> Cuenta Vendedor
+                            </button>
+                        </div>
                     </div>
-
-                    <!-- Fila de Descuento (Image 3: Pastilla negra -15% y precio tachado) -->
-                    <div class="exito-card__discount-row">
-                        <span class="exito-discount-pill">-15%</span>
-                        <span class="exito-card__crossed-price"
-                              th:text="'$' + ${#numbers.formatDecimal(oferta.precio * 1.18, 0, 'COMMA', 0, 'POINT')}">
-                            $1.800
-                        </span>
-                    </div>
-
-                    <!-- Precio Principal Naranja Grande -->
-                    <div class="exito-card__price-row">
-                        <span class="exito-card__main-price"
-                              th:text="'$' + ${#numbers.formatDecimal(oferta.precio, 0, 'COMMA', 0, 'POINT')}">
-                            $1.500
-                        </span>
-                    </div>
-
-                    <!-- Precio "Otros" (Estilo Éxito Image 3) -->
-                    <div class="exito-card__other-price"
-                         th:text="'$' + ${#numbers.formatDecimal(oferta.precio * 1.05, 0, 'COMMA', 0, 'POINT')} + ' Otros'">
-                        $1.600 Otros
-                    </div>
-
-                    <!-- Vendido por: (Finca / Vendedor) -->
-                    <div class="exito-card__seller">
-                        Vendido por: 
-                        <strong>
-                            <span th:text="${oferta.vendedor.razonSocial != null and !oferta.vendedor.razonSocial.isEmpty()} ? ${oferta.vendedor.razonSocial} : ${oferta.vendedor.nombre}">Finca La Ruiz</span>
-                        </strong>
-                        <span th:if="${oferta.vendedor.verificado}" style="color:#27ae60;" title="Verificado">✓</span>
-                    </div>
-
-                    <!-- Botón Naranja Vibrante "Agregar 🛒" (Exacto Image 3) -->
-                    <form th:action="@{/carrito/agregar}" method="post">
-                        <input type="hidden" name="ofertaId" th:value="${oferta.id}">
-                        <input type="hidden" name="cantidad" th:value="${oferta.compraMinima != null ? oferta.compraMinima : 1}">
-                        <button type="submit" class="exito-btn-add">
-                            Agregar <i class="fas fa-shopping-cart"></i>
-                        </button>
-                    </form>
-
                 </article>
-
             </div>
 
-            <!-- Paginación de ofertas -->
-            <nav class="pub-pagination" th:if="${totalPages != null and totalPages > 1}"
-                 aria-label="Paginación de vendedores">
-                <a class="pub-page-btn"
-                   th:classappend="${currentPage <= 0 ? 'is-disabled' : ''}"
-                   th:href="@{/producto/{id}(id=${producto.id}, page=${currentPage - 1}, size=${size})} + '#productos-disponibles'"
-                   th:attr="aria-disabled=${currentPage <= 0 ? 'true' : null}"
-                   rel="prev">
+            <!-- Paginación de ofertas si aplica -->
+            <div class="ui-pagination" th:if="${totalPages != null and totalPages > 1}">
+                <a class="ui-btn ui-btn--secondary ui-btn--sm"
+                   th:classappend="${currentPage <= 0 ? 'ui-btn--disabled' : ''}"
+                   th:href="@{/producto/{id}(id=${producto.id}, page=${currentPage - 1}, size=${size})} + '#productos-disponibles'">
                     <i class="fas fa-chevron-left"></i> Anterior
                 </a>
 
-                <div class="pub-page-numbers">
-                    <a th:if="${startPage > 0}" class="pub-page-num"
-                       th:href="@{/producto/{id}(id=${producto.id}, page=0, size=${size})} + '#productos-disponibles'"
-                       th:text="1">1</a>
-                    <span th:if="${startPage > 1}" class="pub-page-ellipsis" aria-hidden="true">…</span>
+                <span style="font-size: 0.9rem; font-weight: 600; color: var(--c-earth); padding: 0 8px;"
+                      th:text="'Página ' + (${currentPage + 1}) + ' de ' + ${totalPages}">
+                    Página 1 de 1
+                </span>
 
-                    <a th:each="p : ${#numbers.sequence(startPage, endPage)}"
-                       class="pub-page-num"
-                       th:classappend="${p == currentPage ? 'is-active' : ''}"
-                       th:href="@{/producto/{id}(id=${producto.id}, page=${p}, size=${size})} + '#productos-disponibles'"
-                       th:attr="aria-current=${p == currentPage ? 'page' : null}"
-                       th:text="${p + 1}">1</a>
-
-                    <span th:if="${endPage < totalPages - 2}" class="pub-page-ellipsis" aria-hidden="true">…</span>
-                    <a th:if="${endPage < totalPages - 1}" class="pub-page-num"
-                       th:href="@{/producto/{id}(id=${producto.id}, page=${totalPages - 1}, size=${size})} + '#productos-disponibles'"
-                       th:text="${totalPages}">1</a>
-                </div>
-
-                <a class="pub-page-btn"
-                   th:classappend="${currentPage + 1 >= totalPages ? 'is-disabled' : ''}"
-                   th:href="@{/producto/{id}(id=${producto.id}, page=${currentPage + 1}, size=${size})} + '#productos-disponibles'"
-                   th:attr="aria-disabled=${currentPage + 1 >= totalPages ? 'true' : null}"
-                   rel="next">
+                <a class="ui-btn ui-btn--secondary ui-btn--sm"
+                   th:classappend="${currentPage + 1 >= totalPages ? 'ui-btn--disabled' : ''}"
+                   th:href="@{/producto/{id}(id=${producto.id}, page=${currentPage + 1}, size=${size})} + '#productos-disponibles'">
                     Siguiente <i class="fas fa-chevron-right"></i>
-                </a>
-
-                <p class="pub-pagination__summary">
-                    Mostrando <strong th:text="${mostrandoDesde}">1</strong>–<strong
-                        th:text="${mostrandoHasta}">8</strong> de <strong th:text="${totalOfertas}">0</strong>
-                    vendedores
-                </p>
-            </nav>
-
-            <!-- Estado si no hay ofertas disponibles -->
-            <div th:if="${ofertas == null or ofertas.isEmpty()}" style="background:#fff; border-radius:16px; padding:50px 20px; text-align:center; box-shadow:var(--shadow-card);">
-                <i class="fas fa-store-slash" style="font-size:3rem; color:#d1d5db; margin-bottom:15px;"></i>
-                <h3 style="color:#1f2937; margin:0 0 8px;">Actualmente no hay productos disponibles</h3>
-                <p style="color:#6b7280; max-width:480px; margin:0 auto 20px;">
-                    Ningún agricultor tiene cosechas listas de este producto en este momento. Te invitamos a revisar más tarde o explorar productos similares en nuestro catálogo.
-                </p>
-                <a th:href="@{/category}" class="carulla-btn-primary" style="display:inline-flex; width:auto; text-decoration:none;">
-                    Ver otros productos en el catálogo
                 </a>
             </div>
 
+            <!-- Estado Vacío si no hay ofertas -->
+            <div class="ui-empty" th:if="${ofertas == null or ofertas.isEmpty()}">
+                <div class="ui-empty__icon"><i class="fas fa-store-slash"></i></div>
+                <h3 class="ui-empty__title">Sin cosechas disponibles por el momento</h3>
+                <p class="ui-empty__desc">
+                    Ningún agricultor tiene lotes activos de este producto en este momento. Te invitamos a revisar más tarde o explorar productos similares en el catálogo.
+                </p>
+                <a th:href="@{/category}" class="ui-btn ui-btn--secondary">
+                    Explorar el catálogo
+                </a>
+            </div>
         </section>
 
         <!-- ══════════════════════════════════════════════════════════════ -->
-        <!-- NAVEGACIÓN ENTRE PRODUCTOS (Anterior / Siguiente)             -->
+        <!-- DETALLES TÉCNICOS / ESPECIFICACIONES (Acordeón Limpio)        -->
         <!-- ══════════════════════════════════════════════════════════════ -->
+        <section class="accordion-section" id="detalles-producto">
+            <div class="accordion-header is-open" onclick="toggleAcordeon(this)">
+                <h2>Especificaciones y Detalles</h2>
+                <i class="fas fa-chevron-up"></i>
+            </div>
+
+            <div class="accordion-content" id="acordeonContenido">
+                <div class="specs-grid">
+                    <div class="spec-pill">
+                        <div class="spec-pill__label">Referencia</div>
+                        <div class="spec-pill__value" th:text="'CUL-' + ${#strings.substring(producto.id, producto.id.length() > 8 ? producto.id.length() - 8 : 0)}">
+                            CUL-0001
+                        </div>
+                    </div>
+                    <div class="spec-pill">
+                        <div class="spec-pill__label">País de Origen</div>
+                        <div class="spec-pill__value">Colombia</div>
+                    </div>
+                    <div class="spec-pill">
+                        <div class="spec-pill__label">Categoría</div>
+                        <div class="spec-pill__value" th:text="${producto.categoria != null ? producto.categoria.nombre : 'General'}">
+                            Frutas
+                        </div>
+                    </div>
+                    <div class="spec-pill">
+                        <div class="spec-pill__label">Unidad de Medida</div>
+                        <div class="spec-pill__value" th:text="${producto.unidadMedida != null ? producto.unidadMedida : 'Kilogramo'}">
+                            Kg
+                        </div>
+                    </div>
+                    <div class="spec-pill">
+                        <div class="spec-pill__label">Tipo de Venta</div>
+                        <div class="spec-pill__value" th:text="${producto.tipoVenta == 'PESO' ? 'Por Peso' : 'Por Unidad / Paquete'}">
+                            Por Peso
+                        </div>
+                    </div>
+                    <div class="spec-pill">
+                        <div class="spec-pill__label">Stock Disponible</div>
+                        <div class="spec-pill__value" th:text="${producto.stockTotal != null ? ((producto.stockTotal % 1 == 0 ? #numbers.formatDecimal(producto.stockTotal, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(producto.stockTotal, 1, 'POINT', 1, 'COMMA')) + ' ' + (producto.unidadMedida != null ? producto.unidadMedida : 'unidades')) : '0 unidades'}">
+                            0 unidades
+                        </div>
+                    </div>
+                    <div class="spec-pill">
+                        <div class="spec-pill__label">Conservación</div>
+                        <div class="spec-pill__value">Refrigerado / Fresco</div>
+                    </div>
+                    <div class="spec-pill">
+                        <div class="spec-pill__label">Instrucciones de Uso</div>
+                        <div class="spec-pill__value">Lavar con abundante agua antes de consumir.</div>
+                    </div>
+                </div>
+
+                <div class="product-description-text" th:if="${producto.descripcion != null}">
+                    <p th:text="${producto.descripcion}">Descripción completa del producto.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- NAVEGACIÓN ENTRE PRODUCTOS (Anterior / Catálogo / Siguiente) -->
         <nav class="prod-nav-strip" aria-label="Navegar entre productos" th:if="${productoAnterior != null or productoSiguiente != null}">
-            <a class="prod-nav-btn prod-nav-btn--prev"
-               th:if="${productoAnterior != null}"
-               th:href="@{/producto/{id}(id=${productoAnterior.id})}">
-                <span class="prod-nav-arrow"><i class="fas fa-chevron-left"></i></span>
-                <span class="prod-nav-content">
+            <a class="prod-nav-btn" th:if="${productoAnterior != null}" th:href="@{/producto/{id}(id=${productoAnterior.id})}">
+                <i class="fas fa-chevron-left"></i>
+                <span>
                     <small>Producto anterior</small>
                     <strong th:text="${productoAnterior.nombre}">Nombre</strong>
                 </span>
             </a>
-            <a class="prod-nav-btn prod-nav-btn--placeholder" th:if="${productoAnterior == null}"
-               th:href="@{/category}" style="opacity:0.4; pointer-events:none;">
-                <span class="prod-nav-arrow"><i class="fas fa-chevron-left"></i></span>
-                <span class="prod-nav-content"><small>Primer producto</small></span>
-            </a>
+            <span th:if="${productoAnterior == null}"></span>
 
             <a class="prod-nav-center" th:href="@{/category}">
-                <i class="fas fa-th-large"></i> Ver catálogo completo
+                <i class="fas fa-border-all"></i> Catálogo completo
             </a>
 
-            <a class="prod-nav-btn prod-nav-btn--next"
-               th:if="${productoSiguiente != null}"
-               th:href="@{/producto/{id}(id=${productoSiguiente.id})}">
-                <span class="prod-nav-content" style="text-align:right;">
+            <a class="prod-nav-btn" th:if="${productoSiguiente != null}" th:href="@{/producto/{id}(id=${productoSiguiente.id})}">
+                <span style="text-align: right;">
                     <small>Producto siguiente</small>
                     <strong th:text="${productoSiguiente.nombre}">Nombre</strong>
                 </span>
-                <span class="prod-nav-arrow"><i class="fas fa-chevron-right"></i></span>
+                <i class="fas fa-chevron-right"></i>
             </a>
-            <a class="prod-nav-btn prod-nav-btn--placeholder" th:if="${productoSiguiente == null}"
-               th:href="@{/category}" style="opacity:0.4; pointer-events:none;">
-                <span class="prod-nav-content" style="text-align:right;"><small>Último producto</small></span>
-                <span class="prod-nav-arrow"><i class="fas fa-chevron-right"></i></span>
-            </a>
+            <span th:if="${productoSiguiente == null}"></span>
         </nav>
-
-        <!-- ══════════════════════════════════════════════════════════════ -->
-        <!-- ACORDEÓN: DETALLES DEL PRODUCTO (Image 1)                      -->
-        <!-- ══════════════════════════════════════════════════════════════ -->
-        <section class="carulla-details-accordion" id="detalles-producto">
-            <div class="carulla-accordion-header is-open" onclick="toggleAcordeon(this)">
-                <h2 class="carulla-accordion-title">Detalles del producto</h2>
-                <i class="fas fa-chevron-up carulla-accordion-chevron"></i>
-            </div>
-
-            <div class="carulla-accordion-content" id="acordeonContenido">
-                <div class="carulla-specs-grid">
-                    <div class="carulla-spec-pill">
-                        <div class="carulla-spec-label">Referencia</div>
-                        <div class="carulla-spec-val" th:text="'CUL-' + ${#strings.substring(producto.id, producto.id.length() > 8 ? producto.id.length() - 8 : 0)}">
-                            ATENDIDA**
-                        </div>
-                    </div>
-
-                    <div class="carulla-spec-pill">
-                        <div class="carulla-spec-label">País de Origen</div>
-                        <div class="carulla-spec-val">Colombia</div>
-                    </div>
-
-                    <div class="carulla-spec-pill">
-                        <div class="carulla-spec-label">Categoría</div>
-                        <div class="carulla-spec-val" th:text="${producto.categoria != null ? producto.categoria.nombre : 'General'}">
-                            Frutas
-                        </div>
-                    </div>
-
-                    <div class="carulla-spec-pill">
-                        <div class="carulla-spec-label">Unidad de Medida</div>
-                        <div class="carulla-spec-val" th:text="${producto.unidadMedida != null ? producto.unidadMedida : 'Kilogramo'}">
-                            Kg
-                        </div>
-                    </div>
-
-                    <div class="carulla-spec-pill">
-                        <div class="carulla-spec-label">Tipo de Venta</div>
-                        <div class="carulla-spec-val" th:text="${producto.tipoVenta == 'PESO' ? 'Por Peso' : 'Por Paquete/Unidad'}">
-                            Por Peso
-                        </div>
-                    </div>
-
-                    <div class="carulla-spec-pill">
-                        <div class="carulla-spec-label">Stock Total Disponible</div>
-                        <div class="carulla-spec-val" th:text="${producto.stockTotal != null ? ((producto.stockTotal % 1 == 0 ? #numbers.formatDecimal(producto.stockTotal, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(producto.stockTotal, 1, 'POINT', 1, 'COMMA')) + ' ' + (producto.unidadMedida != null ? producto.unidadMedida : 'unidades')) : '0 unidades'}">
-                            0
-                        </div>
-                    </div>
-
-                    <div class="carulla-spec-pill">
-                        <div class="carulla-spec-label">Conservación</div>
-                        <div class="carulla-spec-val">Refrigerado / Fresco</div>
-                    </div>
-
-                    <div class="carulla-spec-pill">
-                        <div class="carulla-spec-label">Instrucciones De Uso</div>
-                        <div class="carulla-spec-val">Lavar con abundante agua antes de consumir.</div>
-                    </div>
-                </div>
-
-                <div class="carulla-description-text">
-                    <p th:text="${producto.descripcion}">
-                        Descripción completa del producto.
-                    </p>
-                </div>
-            </div>
-        </section>
-
-        <!-- Tira de Confianza de Carulla (Image 1 Bottom) -->
-        <div class="carulla-trust-strip">
-            <div class="carulla-trust-item">
-                <div class="carulla-trust-icon">
-                    <i class="fas fa-leaf"></i>
-                </div>
-                <div class="carulla-trust-text">
-                    Más de 100 mil productos
-                    <small>Directos del campo colombiano</small>
-                </div>
-            </div>
-            <div class="carulla-trust-item">
-                <div class="carulla-trust-icon">
-                    <i class="fas fa-lock"></i>
-                </div>
-                <div class="carulla-trust-text">
-                    Compras seguras
-                    <small>Garantía y protección en tu pago</small>
-                </div>
-            </div>
-            <div class="carulla-trust-item">
-                <div class="carulla-trust-icon">
-                    <i class="fas fa-coins"></i>
-                </div>
-                <div class="carulla-trust-text">
-                    Acumulas Puntos Cultivus
-                    <small>Ahorra con cada pedido</small>
-                </div>
-            </div>
-            <div class="carulla-trust-item">
-                <div class="carulla-trust-icon">
-                    <i class="fas fa-credit-card"></i>
-                </div>
-                <div class="carulla-trust-text">
-                    Paga en línea o en efectivo
-                    <small>Wompi, PSE, tarjetas o contraentrega</small>
-                </div>
-            </div>
-        </div>
 
     </main>
 
-    <!-- Estado vacío si el producto no existe -->
-    <div class="carulla-detail-container" th:if="${producto == null}" style="text-align: center; padding: 60px 20px;">
-        <i class="fas fa-box-open" style="font-size: 3rem; color: #ccc; margin-bottom: 20px;"></i>
-        <h2>Producto no encontrado</h2>
-        <p style="color: #666;">El producto que estás buscando no existe o fue retirado de la plataforma.</p>
-        <a th:href="@{/category}" class="carulla-btn-primary" style="display:inline-flex; width:auto; margin-top:20px;">
-            Ir al catálogo
-        </a>
-    </div>
+    <!-- Estado si el producto no existe -->
+    <main class="ui-container" th:if="${producto == null}">
+        <div class="ui-empty">
+            <div class="ui-empty__icon"><i class="fas fa-box-open"></i></div>
+            <h2 class="ui-empty__title">Producto no encontrado</h2>
+            <p class="ui-empty__desc">El producto que buscas no existe o ya no se encuentra disponible.</p>
+            <a th:href="@{/category}" class="ui-btn ui-btn--primary">
+                Ir al catálogo
+            </a>
+        </div>
+    </main>
 
-    <!-- Pie de página general -->
-    <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
+    <!-- FOOTER INSTITUCIONAL -->
+    <th:block th:replace="~{fragments/footer :: siteFooter}"></th:block>
 
-    <!-- Scripts de interactividad -->
+    <!-- SCRIPTS -->
     <script>
         function toggleAcordeon(header) {
             header.classList.toggle('is-open');
-            const chevron = header.querySelector('.carulla-accordion-chevron');
             const content = document.getElementById('acordeonContenido');
             if (content) {
                 content.classList.toggle('is-collapsed');
@@ -499,4 +381,5 @@
         }
     </script>
 </body>
+
 </html>

@@ -1,0 +1,799 @@
+/* ==========================================================================
+   CULTIVUS - COMPONENTES UI COMPARTIDOS (Apple Design System)
+   Acotado estrictamente bajo los contenedores de página de Cultivus:
+   .auth-page, .home-page, .catalog-page, .product-page,
+   .profile-page, .notif-page, .about-page, .order-detail-page
+   ========================================================================== */
+
+@import url('/header-tokens.css');
+
+/* ── 1. Base y Tipografía por Contenedor ─────────────────────────────────────── */
+.auth-page,
+.home-page,
+.catalog-page,
+.product-page,
+.profile-page,
+.notif-page,
+.about-page,
+.order-detail-page {
+  font-family: var(--font-system);
+  color: var(--c-ink);
+  background-color: var(--c-wheat-soft);
+  min-height: 80vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.auth-page *,
+.home-page *,
+.catalog-page *,
+.product-page *,
+.profile-page *,
+.notif-page *,
+.about-page *,
+.order-detail-page * {
+  box-sizing: border-box;
+}
+
+/* Contenedor centralizado */
+.ui-container {
+  max-width: 1240px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 36px 24px 64px;
+}
+
+.ui-container--narrow {
+  max-width: 880px;
+}
+
+.ui-container--compact {
+  max-width: 520px;
+}
+
+/* Jerarquía tipográfica */
+.ui-title-1 {
+  font-size: clamp(2rem, 3.8vw, 2.75rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: var(--c-ink);
+  margin: 0 0 8px;
+}
+
+.ui-title-2 {
+  font-size: clamp(1.4rem, 2.5vw, 1.85rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--c-ink);
+  margin: 0 0 6px;
+}
+
+.ui-title-3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--c-ink);
+  margin: 0 0 4px;
+}
+
+.ui-subtitle {
+  font-size: 1rem;
+  color: var(--c-earth);
+  line-height: 1.5;
+  margin: 0 0 24px;
+}
+
+.ui-tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 2. Botones (Apple Human Interface Guidelines) ──────────────────────────── */
+.ui-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 20px;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all var(--t-duration) var(--ease-apple);
+  white-space: nowrap;
+}
+
+.ui-btn--pill {
+  border-radius: var(--radius-full);
+}
+
+.ui-btn--sm {
+  height: 38px;
+  padding: 0 14px;
+  font-size: 0.85rem;
+  border-radius: 10px;
+}
+
+.ui-btn--lg {
+  height: 52px;
+  padding: 0 24px;
+  font-size: 1.05rem;
+}
+
+.ui-btn--full {
+  width: 100%;
+}
+
+/* Primario: Verde Cultivus */
+.ui-btn--primary {
+  background: var(--c-green);
+  color: #FFFFFF !important;
+  box-shadow: 0 2px 8px rgba(54, 122, 69, 0.22);
+}
+
+.ui-btn--primary:hover {
+  background: var(--c-green-dark);
+  box-shadow: 0 4px 14px rgba(54, 122, 69, 0.3);
+  transform: translateY(-1px);
+}
+
+.ui-btn--primary:active {
+  transform: translateY(0);
+}
+
+/* Secundario: Tinte Verde Suave */
+.ui-btn--secondary {
+  background: var(--c-green-soft);
+  color: var(--c-green) !important;
+  border-color: rgba(54, 122, 69, 0.22);
+}
+
+.ui-btn--secondary:hover {
+  background: var(--c-green-active);
+  border-color: var(--c-green);
+}
+
+/* Terciario / Fantasma */
+.ui-btn--tertiary {
+  background: transparent;
+  color: var(--c-earth) !important;
+}
+
+.ui-btn--tertiary:hover {
+  background: rgba(48, 55, 45, 0.05);
+  color: var(--c-ink) !important;
+}
+
+/* Peligro / Desaturado */
+.ui-btn--danger {
+  background: var(--c-danger-soft);
+  color: var(--c-danger) !important;
+  border-color: var(--c-danger-line);
+}
+
+.ui-btn--danger:hover {
+  background: #F8D7DA;
+  border-color: #F1AEB5;
+  color: #842029 !important;
+}
+
+/* Estado Deshabilitado */
+.ui-btn:disabled,
+.ui-btn[disabled],
+.ui-btn--disabled {
+  opacity: 0.6;
+  cursor: not-allowed !important;
+  pointer-events: none;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+/* Estado Cuenta de Vendedor (No puede comprar) */
+.ui-btn--vendor-blocked {
+  background: #E8EDE9 !important;
+  color: #6C7A6F !important;
+  border: 1px solid #CFD8D0 !important;
+  cursor: not-allowed !important;
+  pointer-events: none;
+  box-shadow: none !important;
+  font-size: 0.85rem !important;
+}
+
+/* ── 3. Formularios y Campos ─────────────────────────────────────────────────── */
+.ui-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.ui-form-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--c-ink);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ui-form-label .req {
+  color: var(--c-danger);
+  margin-left: 2px;
+}
+
+.ui-field-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.ui-field-wrap > i:first-child {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--c-earth);
+  opacity: 0.65;
+  font-size: 0.95rem;
+  pointer-events: none;
+}
+
+.ui-field-wrap.has-icon .ui-input,
+.ui-field-wrap.has-icon .ui-select {
+  padding-left: 44px;
+}
+
+.ui-input,
+.ui-select,
+.ui-textarea {
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  border: 1px solid var(--field-border);
+  border-radius: 12px;
+  background-color: var(--c-surface);
+  color: var(--c-ink);
+  font-family: inherit;
+  font-size: 0.95rem;
+  transition: border-color var(--t-duration) var(--ease-apple),
+              box-shadow var(--t-duration) var(--ease-apple),
+              background-color var(--t-duration) var(--ease-apple);
+}
+
+.ui-textarea {
+  height: auto;
+  min-height: 100px;
+  padding: 12px 16px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.ui-input::placeholder,
+.ui-textarea::placeholder {
+  color: #8C7A70;
+  opacity: 0.8;
+}
+
+.ui-input:hover,
+.ui-select:hover,
+.ui-textarea:hover {
+  border-color: #C9BC9B;
+}
+
+.ui-input:focus,
+.ui-select:focus,
+.ui-textarea:focus {
+  outline: none;
+  border-color: var(--c-green);
+  box-shadow: 0 0 0 4px rgba(54, 122, 69, 0.18);
+  background-color: var(--c-surface);
+}
+
+.ui-input:disabled,
+.ui-select:disabled,
+.ui-textarea:disabled,
+.ui-input[readonly] {
+  background-color: #F8F5EE;
+  color: var(--c-earth);
+  cursor: not-allowed;
+}
+
+.ui-form-hint {
+  font-size: 0.8rem;
+  color: var(--c-earth);
+  margin-top: 4px;
+}
+
+.ui-form-error {
+  font-size: 0.82rem;
+  color: var(--c-danger);
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+/* ── 4. Tarjetas y Paneles ─────────────────────────────────────────────────── */
+.ui-card {
+  background-color: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  box-shadow: var(--shadow-sm);
+}
+
+.ui-card--compact {
+  padding: 20px;
+  border-radius: var(--radius-md);
+}
+
+.ui-card--hero {
+  padding: 40px;
+  border-radius: var(--radius-xl);
+}
+
+/* ── 5. Chips y Badges ──────────────────────────────────────────────────────── */
+.ui-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.ui-chip--green {
+  background: var(--c-green-soft);
+  color: var(--c-green);
+  border: 1px solid rgba(54, 122, 69, 0.22);
+}
+
+.ui-chip--gold {
+  background: var(--c-gold-soft);
+  color: var(--c-ink);
+  border: 1px solid rgba(234, 191, 69, 0.35);
+}
+
+.ui-chip--wheat {
+  background: var(--c-wheat);
+  color: var(--c-earth);
+  border: 1px solid rgba(121, 85, 72, 0.15);
+}
+
+.ui-chip--danger {
+  background: var(--c-danger-soft);
+  color: var(--c-danger);
+  border: 1px solid var(--c-danger-line);
+}
+
+/* ── 6. Tarjeta de Producto Única ───────────────────────────────────────────── */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 24px;
+}
+
+.product-card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: 18px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  transition: transform var(--t-duration) var(--ease-apple),
+              box-shadow var(--t-duration) var(--ease-apple),
+              border-color var(--t-duration) var(--ease-apple);
+  position: relative;
+  text-decoration: none;
+  color: inherit;
+}
+
+.product-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: rgba(54, 122, 69, 0.22);
+}
+
+.product-card__img-wrap {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #FAF7F0;
+  position: relative;
+}
+
+.product-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 260ms var(--ease-apple);
+}
+
+.product-card:hover .product-card__img {
+  transform: scale(1.03);
+}
+
+.product-card__badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 2;
+}
+
+.product-card__body {
+  padding: 12px 4px 4px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.product-card__producer {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--c-earth);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.product-card__title {
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: var(--c-ink);
+  line-height: 1.3;
+  margin: 0 0 8px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.product-card__price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: auto;
+  padding: 8px 0;
+}
+
+.product-card__price {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--c-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.product-card__unit {
+  font-size: 0.8rem;
+  color: var(--c-earth);
+  font-weight: 500;
+}
+
+.product-card__old-price {
+  font-size: 0.85rem;
+  color: var(--c-earth);
+  opacity: 0.55;
+  text-decoration: line-through;
+  font-variant-numeric: tabular-nums;
+}
+
+.product-card__actions {
+  margin-top: 8px;
+}
+
+/* ── 7. Banners y Alertas ───────────────────────────────────────────────────── */
+.ui-alert {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: 14px;
+  font-size: 0.92rem;
+  line-height: 1.45;
+  margin-bottom: 24px;
+}
+
+.ui-alert i {
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+
+.ui-alert--success {
+  background: var(--c-green-soft);
+  color: var(--c-green-dark);
+  border: 1px solid rgba(54, 122, 69, 0.24);
+}
+
+.ui-alert--success i {
+  color: var(--c-green);
+}
+
+.ui-alert--danger {
+  background: var(--c-danger-soft);
+  color: var(--c-danger);
+  border: 1px solid var(--c-danger-line);
+}
+
+.ui-alert--warning {
+  background: var(--c-gold-soft);
+  color: var(--c-ink);
+  border: 1px solid rgba(234, 191, 69, 0.35);
+}
+
+.ui-alert--warning i {
+  color: #B45309;
+}
+
+/* ── 8. Estados Vacíos ──────────────────────────────────────────────────────── */
+.ui-empty {
+  text-align: center;
+  padding: 56px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-lg);
+}
+
+.ui-empty__icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--c-green-soft);
+  color: var(--c-green);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+}
+
+.ui-empty__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--c-ink);
+  margin: 0;
+}
+
+.ui-empty__desc {
+  font-size: 0.95rem;
+  color: var(--c-earth);
+  max-width: 440px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ── 9. Stepper de Cantidad (Idéntico al Carrito) ────────────────────────────── */
+.qty-stepper {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  border: 1px solid var(--field-border);
+  border-radius: 10px;
+  background: var(--c-surface);
+  overflow: hidden;
+}
+
+.qty-stepper button {
+  width: 38px;
+  height: 100%;
+  border: none;
+  background: transparent;
+  color: var(--c-ink);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: background var(--t-duration) var(--ease-apple),
+              color var(--t-duration) var(--ease-apple);
+}
+
+.qty-stepper button:hover {
+  background: var(--c-green-soft);
+  color: var(--c-green);
+}
+
+.qty-stepper input {
+  width: 46px;
+  height: 100%;
+  border: none;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--c-ink);
+  font-variant-numeric: tabular-nums;
+  outline: none;
+  background: transparent;
+}
+
+/* ── 10. Estrellas de Reseña ────────────────────────────────────────────────── */
+.rating-stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: var(--c-gold);
+  font-size: 0.9rem;
+}
+
+.rating-stars .empty-star {
+  color: #DDD3BA;
+}
+
+/* ── 11. Breadcrumbs ────────────────────────────────────────────────────────── */
+.ui-breadcrumb {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--c-earth);
+  margin-bottom: 20px;
+}
+
+.ui-breadcrumb a {
+  color: var(--c-earth);
+  text-decoration: none;
+  transition: color var(--t-duration) var(--ease-apple);
+}
+
+.ui-breadcrumb a:hover {
+  color: var(--c-green);
+}
+
+.ui-breadcrumb .sep {
+  opacity: 0.5;
+  font-size: 0.7rem;
+}
+
+.ui-breadcrumb .current {
+  color: var(--c-ink);
+  font-weight: 600;
+}
+
+/* ── 12. Paginación y Control Segmentado ─────────────────────────────────────── */
+.ui-segmented {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px;
+  background: rgba(48, 55, 45, 0.06);
+  border-radius: 12px;
+  gap: 4px;
+}
+
+.ui-segmented a,
+.ui-segmented button {
+  padding: 6px 14px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--c-earth);
+  text-decoration: none;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: all var(--t-duration) var(--ease-apple);
+}
+
+.ui-segmented a:hover,
+.ui-segmented button:hover {
+  color: var(--c-ink);
+}
+
+.ui-segmented .is-active {
+  background: var(--c-surface);
+  color: var(--c-ink) !important;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.ui-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 40px;
+}
+
+.ui-pagination a,
+.ui-pagination span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 40px;
+  padding: 0 10px;
+  border-radius: 10px;
+  border: 1px solid var(--c-line);
+  background: var(--c-surface);
+  color: var(--c-ink-muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-decoration: none;
+  transition: all var(--t-duration) var(--ease-apple);
+}
+
+.ui-pagination a:hover {
+  border-color: rgba(54, 122, 69, 0.3);
+  color: var(--c-green);
+  background: var(--c-green-soft);
+}
+
+.ui-pagination .is-active {
+  background: var(--c-green) !important;
+  color: #FFFFFF !important;
+  border-color: var(--c-green) !important;
+}
+
+/* ── 13. Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 18px;
+  }
+}
+
+@media (max-width: 640px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .product-card {
+    padding: 10px;
+    border-radius: 14px;
+  }
+
+  .product-card__title {
+    font-size: 0.9rem;
+  }
+
+  .product-card__price {
+    font-size: 1.1rem;
+  }
+
+  .ui-container {
+    padding: 24px 16px 48px;
+  }
+}
+
+@media (max-width: 380px) {
+  .product-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ── 14. Focus Visible Accesible ────────────────────────────────────────────── */
+.auth-page a:focus-visible,
+.auth-page button:focus-visible,
+.auth-page input:focus-visible,
+.home-page a:focus-visible,
+.home-page button:focus-visible,
+.catalog-page a:focus-visible,
+.catalog-page button:focus-visible,
+.product-page a:focus-visible,
+.product-page button:focus-visible,
+.profile-page a:focus-visible,
+.profile-page button:focus-visible,
+.notif-page a:focus-visible,
+.notif-page button:focus-visible,
+.about-page a:focus-visible,
+.about-page button:focus-visible,
+.order-detail-page a:focus-visible,
+.order-detail-page button:focus-visible {
+  outline: 2px solid var(--c-green) !important;
+  outline-offset: 2px !important;
+}
+

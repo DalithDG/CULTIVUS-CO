@@ -63,6 +63,68 @@ public class VendedorService {
     @Autowired(required = false)
     private PedidoCancelacionService pedidoCancelacionService;
 
+    @Autowired(required = false)
+    private com.example.demo.repository.CarritoRepository carritoRepository;
+
+    @Autowired(required = false)
+    private org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+
+    /**
+     * Registra un nuevo usuario directamente como VENDEDOR (cuando no ha iniciado sesión previamente).
+     */
+    public Usuario registrarNuevoVendedor(
+            String nombre,
+            String email,
+            String contrasena,
+            String razonSocial,
+            String telefonoContacto,
+            String direccionNegocio,
+            String descripcionNegocio,
+            String tipoProductos) {
+
+        if (email == null || email.trim().isEmpty()) {
+            throw new IllegalArgumentException("El correo electrónico es obligatorio");
+        }
+        String emailNorm = email.trim().toLowerCase();
+
+        if (usuarioRepository.existsByEmail(emailNorm)) {
+            throw new IllegalArgumentException("El correo ya se encuentra registrado. Inicia sesión para continuar.");
+        }
+        if (nombre == null || nombre.trim().isEmpty()) {
+            throw new IllegalArgumentException("El nombre completo es obligatorio");
+        }
+        if (contrasena == null || contrasena.trim().length() < 6) {
+            throw new IllegalArgumentException("La contraseña debe tener al menos 6 caracteres");
+        }
+        if (telefonoContacto == null || telefonoContacto.trim().isEmpty()) {
+            throw new IllegalArgumentException("El teléfono de contacto es obligatorio");
+        }
+        if (razonSocial == null || razonSocial.trim().isEmpty()) {
+            throw new IllegalArgumentException("La razón social o nombre de la finca es obligatoria");
+        }
+
+        Usuario nuevo = new Usuario();
+        nuevo.setNombre(nombre.trim());
+        nuevo.setEmail(emailNorm);
+        if (passwordEncoder != null) {
+            nuevo.setContrasena(passwordEncoder.encode(contrasena));
+        } else {
+            nuevo.setContrasena(contrasena);
+        }
+        nuevo.addRole(Role.VENDEDOR);
+
+        PerfilVendedor perfil = new PerfilVendedor();
+        perfil.setRazonSocial(razonSocial.trim());
+        perfil.setTelefonoContacto(telefonoContacto.trim());
+        perfil.setDireccionNegocio(direccionNegocio != null ? direccionNegocio.trim() : "");
+        perfil.setDescripcionNegocio(descripcionNegocio != null ? descripcionNegocio.trim() : "");
+        perfil.setTipoProductos(tipoProductos != null ? tipoProductos.trim() : "Agrícola");
+        perfil.setVerificado(false);
+
+        nuevo.setPerfilVendedor(perfil);
+        return usuarioRepository.save(nuevo);
+    }
+
     /**
      * Crea un perfil de vendedor para un usuario existente
      */
@@ -101,6 +163,14 @@ public class VendedorService {
         usuario.addRole(Role.VENDEDOR);
 
         Usuario guardado = usuarioRepository.save(usuario);
+
+        // US-VENDEDOR: Eliminar carrito activo para no dejar ítems huérfanos al convertirse en vendedor
+        if (carritoRepository != null) {
+            try {
+                carritoRepository.findByUsuarioId(usuarioId).ifPresent(carritoRepository::delete);
+            } catch (Exception ignored) {}
+        }
+
         // Reconstruir Authentication con el nuevo rol (evita 403 sin cerrar sesión)
         securityContextRefreshService.refrescarAutenticacion(guardado.getEmail());
         return guardado;

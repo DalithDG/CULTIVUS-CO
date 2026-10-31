@@ -1,0 +1,301 @@
+/* ==========================================================================
+   CULTIVUS - HEADER & SIDEBAR VENDEDOR (Apple Design System)
+   Complementa y eleva vendedor-sidebar.css sin romper accesibilidad
+   ni funcionalidad existente.
+   ========================================================================== */
+
+@import url('/header-tokens.css');
+
+/* ── 1. Topbar Superior Translúcida ─────────────────────────────────────────── */
+.vs-topbar {
+  background: var(--glass-bg) !important;
+  -webkit-backdrop-filter: var(--glass-blur) !important;
+  backdrop-filter: var(--glass-blur) !important;
+  border-bottom: 1px solid var(--c-line) !important;
+  box-shadow: var(--shadow-subtle) !important;
+  font-family: var(--font-system) !important;
+}
+
+@supports not (backdrop-filter: blur(20px)) {
+  .vs-topbar {
+    background: #FFFFFF !important;
+  }
+}
+
+.vs-topbar__logo img,
+.vs-topbar__logo-img {
+  height: 36px !important;
+  width: auto !important;
+  object-fit: contain !important;
+}
+
+.vs-topbar__badge-vendedor {
+  background: var(--c-green-soft) !important;
+  color: var(--c-green) !important;
+  border: 1px solid rgba(54, 122, 69, 0.22) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.04em !important;
+  padding: 3px 9px !important;
+  border-radius: var(--radius-full) !important;
+}
+
+.vs-topbar__divider {
+  background: var(--c-line) !important;
+  height: 20px !important;
+}
+
+.vs-topbar__breadcrumb {
+  font-size: 13.5px !important;
+  color: var(--c-earth) !important;
+}
+
+.vs-topbar__breadcrumb i {
+  color: var(--c-earth) !important;
+  opacity: 0.55 !important;
+}
+
+.vs-topbar__breadcrumb span#vsBreadcrumbCurrent,
+.vs-topbar__breadcrumb span:last-child {
+  color: var(--c-ink) !important;
+  font-weight: 600 !important;
+}
+
+/* Botón Letra Grande */
+.vs-topbar__accessibility {
+  min-height: 36px !important;
+  padding: 0 12px !important;
+  border-radius: var(--radius-full) !important;
+  border: 1px solid var(--c-line) !important;
+  background: rgba(48, 55, 45, 0.04) !important;
+  color: var(--c-ink-muted) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  transition: all var(--t-duration) var(--ease-apple) !important;
+}
+
+.vs-topbar__accessibility:hover {
+  background: var(--c-green-soft) !important;
+  color: var(--c-green) !important;
+  border-color: rgba(54, 122, 69, 0.22) !important;
+}
+
+.vs-topbar__accessibility[aria-pressed="true"] {
+  background: var(--c-green-active) !important;
+  color: var(--c-green) !important;
+  border-color: var(--c-green) !important;
+  font-weight: 600 !important;
+}
+
+/* Botones de Icono en Topbar */
+.vs-topbar__btn {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 50% !important;
+  border: 1px solid var(--c-line) !important;
+  background: var(--c-surface) !important;
+  color: var(--c-ink-muted) !important;
+  transition: all var(--t-duration) var(--ease-apple) !important;
+}
+
+.vs-topbar__btn:hover {
+  background: var(--c-green-soft) !important;
+  border-color: rgba(54, 122, 69, 0.22) !important;
+  color: var(--c-green) !important;
+}
+
+.vs-topbar__btn[title="Cerrar sesión"]:hover {
+  background: var(--c-danger-soft) !important;
+  border-color: var(--c-danger-line) !important;
+  color: var(--c-danger) !important;
+}
+
+/* Badge Notificaciones (Amarillo cosecha con número oscuro) */
+.vs-topbar__badge {
+  background: var(--c-gold) !important;
+  color: var(--c-ink) !important;
+  border: 2px solid var(--c-surface) !important;
+  font-weight: 700 !important;
+  font-size: 11px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Avatar Topbar */
+.vs-topbar__avatar {
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 50% !important;
+  background: var(--c-green-soft) !important;
+  border: 1px solid rgba(54, 122, 69, 0.22) !important;
+  color: var(--c-green) !important;
+  font-size: 14px !important;
+  transition: all var(--t-duration) var(--ease-apple) !important;
+}
+
+.vs-topbar__avatar:hover {
+  background: var(--c-green-active) !important;
+  box-shadow: 0 0 0 3px var(--c-green-ring) !important;
+}
+
+/* ── 2. Sidebar Lateral Apple HIG ───────────────────────────────────────────── */
+.vs-sidebar {
+  background: var(--c-surface) !important;
+  border-right: 1px solid var(--c-line) !important;
+  font-family: var(--font-system) !important;
+}
+
+/* Tarjeta Vendedor */
+.vs-sidebar__vendor {
+  background: rgba(54, 122, 69, 0.04) !important;
+  border-bottom: 1px solid var(--c-line) !important;
+  padding: 16px !important;
+}
+
+.vs-sidebar__vendor-avatar {
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 12px !important;
+  background: var(--c-green-soft) !important;
+  color: var(--c-green) !important;
+  border: 1px solid rgba(54, 122, 69, 0.22) !important;
+  box-shadow: none !important;
+}
+
+.vs-sidebar__vendor-name {
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: var(--c-ink) !important;
+}
+
+.vs-sidebar__vendor-role {
+  color: var(--c-green) !important;
+  font-size: 11.5px !important;
+  font-weight: 500 !important;
+}
+
+.vs-sidebar__vendor-role::before {
+  background: var(--c-green) !important;
+}
+
+/* Grupos y Separadores */
+.vs-nav-group__label {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: var(--c-earth) !important;
+  letter-spacing: 0.08em !important;
+  opacity: 0.8 !important;
+  padding: 0 14px 6px !important;
+}
+
+.vs-sidebar__sep {
+  height: 1px !important;
+  background: var(--c-line) !important;
+  margin: 6px 14px !important;
+}
+
+/* Ítems de Navegación en Píldora Suave */
+.vs-nav-item {
+  min-height: 42px !important;
+  padding: 8px 12px !important;
+  margin: 2px 10px !important;
+  width: calc(100% - 20px) !important;
+  border-radius: var(--radius-md) !important;
+  font-size: 13.5px !important;
+  font-weight: 500 !important;
+  color: var(--c-ink-muted) !important;
+  transition: all var(--t-duration) var(--ease-apple) !important;
+}
+
+.vs-nav-item__icon {
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 8px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 14px !important;
+  color: var(--c-earth) !important;
+  opacity: 0.75 !important;
+  transition: all var(--t-duration) var(--ease-apple) !important;
+}
+
+.vs-nav-item:hover {
+  background: var(--c-green-soft) !important;
+  color: var(--c-green) !important;
+}
+
+.vs-nav-item:hover .vs-nav-item__icon {
+  color: var(--c-green) !important;
+  opacity: 1 !important;
+  background: rgba(54, 122, 69, 0.08) !important;
+}
+
+/* Ítem Activo Tintado */
+.vs-nav-item.is-active {
+  background: var(--c-green-active) !important;
+  color: var(--c-green) !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+}
+
+.vs-nav-item.is-active .vs-nav-item__icon {
+  color: var(--c-green) !important;
+  opacity: 1 !important;
+  background: rgba(54, 122, 69, 0.12) !important;
+}
+
+/* Badge de Tareas en Sidebar */
+.vs-nav-item__badge {
+  background: var(--c-gold-soft) !important;
+  color: var(--c-ink) !important;
+  border: 1px solid rgba(234, 191, 69, 0.3) !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+}
+
+/* Cerrar Sesión */
+.vs-nav-item--logout {
+  color: var(--c-danger) !important;
+}
+
+.vs-nav-item--logout .vs-nav-item__icon {
+  color: var(--c-danger) !important;
+}
+
+.vs-nav-item--logout:hover {
+  background: var(--c-danger-soft) !important;
+  color: var(--c-danger) !important;
+}
+
+.vs-nav-item--logout:hover .vs-nav-item__icon {
+  color: var(--c-danger) !important;
+  background: rgba(165, 56, 43, 0.1) !important;
+}
+
+/* ── 3. Modo Letra Grande Accesible ─────────────────────────────────────────── */
+html.texto-grande .vs-nav-item {
+  min-height: 48px !important;
+  padding: 10px 14px !important;
+}
+
+html.texto-grande .vs-nav-item__icon {
+  flex-shrink: 0 !important;
+}
+
+html.texto-grande .vs-topbar__accessibility {
+  min-height: 44px !important;
+}
+
+/* ── 4. Overlay y Móvil ─────────────────────────────────────────────────────── */
+.vs-overlay {
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  background: rgba(48, 55, 45, 0.4) !important;
+}
+
+@media (max-width: 768px) {
+  .vs-sidebar {
+    box-shadow: var(--shadow-sheet) !important;
+  }
+}
+

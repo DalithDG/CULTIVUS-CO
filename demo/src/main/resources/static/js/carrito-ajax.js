@@ -37,11 +37,11 @@
     const esExito = tipo === 'success';
 
     toast.style.cssText = `
-      background: ${esExito ? '#27ae60' : '#dc3545'};
+      background: ${esExito ? '#367A45' : '#8A2D25'};
       color: white;
       padding: 14px 20px;
       border-radius: 10px;
-      font-family: 'Segoe UI', sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
       font-size: 14px;
       font-weight: 500;
       box-shadow: 0 4px 20px rgba(0,0,0,0.2);
@@ -131,22 +131,26 @@
       }
     })
       .then(function (res) {
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        return res.json();
+        return res.json().then(function (data) {
+          return { status: res.status, ok: res.ok, data: data };
+        }).catch(function () {
+          return { status: res.status, ok: res.ok, data: { success: false, error: 'Error del servidor (' + res.status + ')' } };
+        });
       })
-      .then(function (data) {
-        if (data.success) {
+      .then(function (result) {
+        var data = result.data;
+        if (result.ok && data && data.success) {
           mostrarToast(data.mensaje || '¡Producto agregado al carrito!', 'success');
           if (typeof data.totalItems === 'number') {
             actualizarContadorCarrito(data.totalItems);
           }
         } else {
           // Si el servidor pide redirigir al login
-          if (data.redirectLogin) {
+          if (data && data.redirectLogin) {
             window.location.href = '/usuario/login';
             return;
           }
-          mostrarToast(data.error || 'Error al agregar al carrito', 'error');
+          mostrarToast((data && data.error) ? data.error : 'Error al agregar al carrito', 'error');
         }
       })
       .catch(function () {

@@ -1,57 +1,58 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${oferta.nombreProducto} + ' | Cultivus'">Detalle Oferta | Cultivus</title>
+    <title th:text="${oferta != null ? oferta.nombreProducto + ' | Cultivus' : 'Detalle de Oferta | Cultivus'}">Detalle Oferta | Cultivus</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
-    <link rel="stylesheet" th:href="@{/header.css}">
-    <link rel="stylesheet" th:href="@{/carulla-exito.css}">
+    <link rel="stylesheet" th:href="@{/checkout-tokens.css}">
+    <link rel="stylesheet" th:href="@{/cultivus-ui.css}">
+    <link rel="stylesheet" th:href="@{/product-apple.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
 </head>
-<body>
-    <!-- Encabezado general de la plataforma -->
-    <header th:replace="~{fragments/header :: siteHeader}"></header>
 
-    <!-- Migas de pan estilo Carulla (Image 1) -->
-    <div class="carulla-breadcrumb-wrapper" th:if="${oferta != null}">
-        <nav class="carulla-breadcrumb" aria-label="Breadcrumb">
-            <a th:href="@{/}">Inicio</a>
-            <span class="separator">/</span>
+<body class="product-page">
+
+    <!-- HEADER INSTITUCIONAL -->
+    <th:block th:replace="~{fragments/header :: siteHeader}"></th:block>
+
+    <main class="ui-container product-main" th:if="${oferta != null}">
+
+        <!-- BREADCRUMB -->
+        <nav class="ui-breadcrumb" aria-label="Migas de pan">
+            <a th:href="@{/}"><i class="fas fa-home"></i> Inicio</a>
+            <span class="sep">/</span>
             <a th:href="@{/category}">Catálogo</a>
-            <span class="separator" th:if="${producto != null and producto.categoria != null}">/</span>
+            <span class="sep" th:if="${producto != null and producto.categoria != null}">/</span>
             <a th:if="${producto != null and producto.categoria != null}"
                th:href="@{/category(categoria=${producto.categoria.id})}"
                th:text="${producto.categoria.nombre}">Categoría</a>
-            <span class="separator" th:if="${producto != null}">/</span>
+            <span class="sep" th:if="${producto != null}">/</span>
             <a th:if="${producto != null}"
                th:href="@{/producto/{id}(id=${producto.id})}"
                th:text="${producto.nombre}">Producto Base</a>
-            <span class="separator">/</span>
-            <span class="active" th:text="${oferta.nombreProducto}">Nombre Oferta</span>
+            <span class="sep">/</span>
+            <span class="current" th:text="${oferta.nombreProducto}">Nombre Oferta</span>
         </nav>
-    </div>
 
-    <!-- Contenedor Principal (Layout de Detalle de Carulla) -->
-    <main class="carulla-detail-container" th:if="${oferta != null}">
-        
-        <div class="carulla-main-grid">
-            
-            <!-- Columna Izquierda: Galería e Imagen (Image 1) -->
-            <div class="carulla-gallery-col">
-                <div class="carulla-image-card">
-                    <!-- Botones flotantes de Favorito y Compartir -->
-                    <div class="carulla-float-actions">
-                        <button type="button" class="carulla-action-circle" onclick="toggleFavorito(this)" title="Añadir a favoritos" aria-label="Favorito">
+        <!-- LAYOUT DE 2 COLUMNAS: GALERÍA + COMPRA -->
+        <div class="product-layout">
+
+            <!-- Columna Izquierda: Imagen de la Oferta -->
+            <div class="product-gallery">
+                <div class="product-gallery__card">
+                    <div class="product-gallery__actions">
+                        <button type="button" class="action-circle-btn" onclick="toggleFavorito(this)" title="Añadir a favoritos" aria-label="Favorito">
                             <i class="far fa-heart"></i>
                         </button>
-                        <button type="button" class="carulla-action-circle" onclick="compartirProducto()" title="Compartir producto" aria-label="Compartir">
+                        <button type="button" class="action-circle-btn" onclick="compartirProducto()" title="Compartir producto" aria-label="Compartir">
                             <i class="fas fa-share-alt"></i>
                         </button>
                     </div>
@@ -59,207 +60,166 @@
                     <img th:src="${oferta.imagenUrl != null and !oferta.imagenUrl.isBlank()} ? ${oferta.imagenUrl} : (${producto != null and producto.imagenUrl != null} ? producto.imagenUrl : '/images/placeholder.jpg')"
                          th:alt="${oferta.nombreProducto}"
                          id="mainProductImage"
+                         class="product-gallery__img"
                          onerror="this.src='/images/placeholder.jpg'">
                 </div>
             </div>
 
-            <!-- Columna Central: Información de Producto y Precios -->
-            <div class="carulla-info-col">
-                <span class="carulla-sku-code" th:text="'SM-PLU: ' + ${#strings.substring(oferta.id, oferta.id.length() > 6 ? oferta.id.length() - 6 : 0)}">
-                    SM-PLU: 869437
-                </span>
-
-                <h1 class="carulla-product-title" th:text="${oferta.nombreProducto}">
-                    Posta o ampolleta fresca
-                </h1>
-
-                <!-- Precio por unidad de medida -->
-                <div class="carulla-unit-price" th:if="${oferta.precio != null}">
-                    <span th:text="'(' + (${producto != null and producto.unidadMedida != null} ? ${producto.unidadMedida} : 'Kg') + ' a $' + ${#numbers.formatDecimal(oferta.precio, 0, 'COMMA', 0, 'POINT')} + ')'">
-                        (Kg a $ 16.040)
+            <!-- Columna Derecha: Información y Compra -->
+            <div class="product-info">
+                <div class="product-info__badge-row">
+                    <span class="ui-chip ui-chip--green">
+                        <i class="fas fa-leaf"></i> Cosecha Directa
+                    </span>
+                    <span class="ui-chip ui-chip--wheat"
+                          th:text="'Lote: #' + ${#strings.substring(oferta.id, oferta.id.length() > 6 ? oferta.id.length() - 6 : 0)}">
+                        Lote: #869437
                     </span>
                 </div>
 
-                <!-- Bloque de Precio y Descuento (Exacto Carulla) -->
-                <div class="carulla-price-group">
-                    <div class="carulla-discount-row">
-                        <span class="carulla-discount-pill">-15%</span>
-                        <span class="carulla-old-price"
-                              th:text="'$' + ${#numbers.formatDecimal(oferta.precio * 1.18, 0, 'COMMA', 0, 'POINT')}">
-                            $20.050
-                        </span>
-                        <i class="fas fa-info-circle carulla-info-icon" title="Precio de referencia estándar de mercado"></i>
-                    </div>
+                <h1 class="product-info__title" th:text="${oferta.nombreProducto}">Nombre de la oferta</h1>
 
-                    <div class="carulla-main-price"
-                         th:text="'$' + ${#numbers.formatDecimal(oferta.precio, 0, 'COMMA', 0, 'POINT')}">
-                        $16.040
-                    </div>
-
-                    <!-- Puntos Cultivus (Estilo Puntos Colombia de Carulla) -->
-                    <div class="carulla-puntos-tag">
-                        <span>Llévalo con</span>
-                        <span class="carulla-puntos-pill" th:text="${#numbers.formatDecimal(oferta.precio / 5, 0, 'COMMA', 0, 'POINT')} + ' Puntos'">4.583 Puntos</span>
-                        <span class="carulla-puntos-logo">C</span>
-                    </div>
-                </div>
-
-                <!-- Información de Vendedor / Finca -->
-                <div class="carulla-seller-tag">
+                <p class="product-info__meta">
                     <span>Vendido por:</span>
-                    <strong>
-                        <span th:text="${oferta.vendedor.razonSocial != null and !oferta.vendedor.razonSocial.isEmpty()} ? ${oferta.vendedor.razonSocial} : ${oferta.vendedor.nombre}">Carulla</span>
+                    <strong th:text="${oferta.vendedor != null and oferta.vendedor.razonSocial != null and !oferta.vendedor.razonSocial.isEmpty()} ? ${oferta.vendedor.razonSocial} : (${oferta.vendedor != null} ? ${oferta.vendedor.nombre} : 'Productor Local')">
+                        Finca Local
                     </strong>
-                    <span class="carulla-badge-verified" th:if="${oferta.vendedor.verificado}">
-                        <i class="fas fa-check-circle"></i> Productor Verificado
-                    </span>
-                </div>
+                    <i th:if="${oferta.vendedor != null and oferta.vendedor.verificado}" class="fas fa-check-circle" style="color: var(--c-green);" title="Productor Verificado"></i>
+                </p>
 
-                <div class="carulla-disclaimer">
-                    Imágenes de referencia. Producto fresco cultivado de manera sostenible y vendido directamente por el productor.
-                </div>
-
-                <a href="#detalles-producto" class="carulla-scroll-link">
-                    Ver detalles del producto
-                </a>
-            </div>
-
-            <!-- Columna Derecha: Tarjeta de Entrega y Acción de Compra (Image 1) -->
-            <div class="carulla-sidebar-box">
-                <div class="carulla-delivery-block">
-                    <h4>Condiciones de entrega:</h4>
-                    <div class="carulla-delivery-row">
-                        <i class="fas fa-truck"></i>
-                        <div>
-                            <strong>Enviado por:</strong>
-                            <span th:text="${oferta.vendedor.razonSocial != null and !oferta.vendedor.razonSocial.isEmpty()} ? ${oferta.vendedor.razonSocial} : ${oferta.vendedor.nombre}">Productor</span>
-                        </div>
+                <!-- Tarjeta de Precio -->
+                <div class="price-card">
+                    <div class="price-card__row">
+                        <span class="price-card__main"
+                              th:text="'$' + ${#numbers.formatDecimal(oferta.precio, 0, 'COMMA', 0, 'POINT')}">
+                            $16.040
+                        </span>
+                        <span class="price-card__unit"
+                              th:text="'/ ' + (${producto != null and producto.unidadMedida != null} ? producto.unidadMedida : 'unid')">
+                            / kg
+                        </span>
                     </div>
-                    <div class="carulla-delivery-row">
-                        <i class="fas fa-store"></i>
-                        <div>
-                            <strong>Disponible para:</strong> Compra y recoge / Envío a domicilio
-                        </div>
+
+                    <div class="price-card__seller">
+                        <i class="fas fa-truck" style="color: var(--c-green);"></i>
+                        <span>Despacho directo desde origen por el productor o la red logística de Cultivus.</span>
                     </div>
                 </div>
-
-                <div class="carulla-sidebar-divider"></div>
-
-                <div class="carulla-delivery-block">
-                    <h4>Información adicional</h4>
-                    <div class="carulla-delivery-row">
-                        <i class="fas fa-seedling" style="color: #27ae60;"></i>
-                        <div>
-                            <strong>Cosecha Local:</strong> Apoyo directo al campesino colombiano y frescura garantizada.
-                        </div>
-                    </div>
-                </div>
-
-                <div class="carulla-sidebar-divider"></div>
 
                 <!-- Formulario de Compra -->
-                <form th:action="@{/carrito/agregar}" method="post">
-                    <input type="hidden" name="ofertaId" th:value="${oferta.id}">
+                <div class="purchase-form">
+                    <!-- Si puede comprar -->
+                    <form th:if="${session.usuarioLogueado == null or session.usuarioLogueado.puedeComprar()}"
+                          th:action="@{/carrito/agregar}" method="post">
+                        <input type="hidden" name="ofertaId" th:value="${oferta.id}">
 
-                    <div style="margin-bottom: 12px;">
-                        <label style="font-size:0.8rem; font-weight:700; color:#555; text-transform:uppercase; margin-bottom:6px; display:block;">
-                            Cantidad:
-                        </label>
-                        <div class="carulla-qty-picker">
-                            <button type="button" onclick="modificarCantidad(-1)">
-                                <i class="fas fa-minus"></i>
-                            </button>
-                            <input type="number" name="cantidad" id="inputCantidad"
-                                   th:value="${oferta.compraMinima != null ? oferta.compraMinima : 1}"
-                                   th:min="${oferta.compraMinima != null ? oferta.compraMinima : 1}"
-                                   th:max="${oferta.stock}"
-                                   step="any"
-                                   readonly>
-                            <button type="button" onclick="modificarCantidad(1)">
-                                <i class="fas fa-plus"></i>
-                            </button>
+                        <div class="purchase-form__qty-row">
+                            <label class="purchase-form__label" for="inputCantidad">Cantidad a comprar:</label>
+                            <div class="qty-stepper">
+                                <button type="button" onclick="modificarCantidad(-1)" aria-label="Disminuir cantidad">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <input type="number" name="cantidad" id="inputCantidad"
+                                       th:value="${oferta.compraMinima != null ? oferta.compraMinima : 1}"
+                                       th:min="${oferta.compraMinima != null ? oferta.compraMinima : 1}"
+                                       th:max="${oferta.stock}"
+                                       step="any"
+                                       readonly>
+                                <button type="button" onclick="modificarCantidad(1)" aria-label="Aumentar cantidad">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
                         </div>
-                        <p class="carulla-min-order-note" th:if="${oferta.compraMinima != null and oferta.compraMinima > 1}">
+
+                        <p class="purchase-form__note" th:if="${oferta.compraMinima != null and oferta.compraMinima > 1}">
                             <i class="fas fa-info-circle"></i> Compra mínima: 
-                            <span th:text="${(oferta.compraMinima % 1 == 0 ? #numbers.formatDecimal(oferta.compraMinima, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(oferta.compraMinima, 1, 'POINT', 1, 'COMMA'))} + ' ' + (${producto != null and producto.unidadMedida != null} ? ${producto.unidadMedida} : 'unid')">1</span>
+                            <strong th:text="${(oferta.compraMinima % 1 == 0 ? #numbers.formatDecimal(oferta.compraMinima, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(oferta.compraMinima, 1, 'POINT', 1, 'COMMA'))} + ' ' + (${producto != null and producto.unidadMedida != null} ? ${producto.unidadMedida} : 'unid')">1</strong>
+                        </p>
+
+                        <button type="submit" class="ui-btn ui-btn--primary ui-btn--full ui-btn--lg" style="margin-top: 16px;">
+                            <i class="fas fa-shopping-cart"></i> Agregar al carrito
+                        </button>
+                    </form>
+
+                    <!-- Si es vendedor (no puede comprar) -->
+                    <div th:if="${session.usuarioLogueado != null and !session.usuarioLogueado.puedeComprar()}">
+                        <button type="button" class="ui-btn ui-btn--vendor-blocked ui-btn--full ui-btn--lg" disabled
+                                title="Con cuenta de vendedor no puedes realizar compras">
+                            <i class="fas fa-store-slash"></i> Cuenta de vendedor
+                        </button>
+                        <p style="font-size: 0.85rem; color: var(--c-earth); margin-top: 8px; text-align: center;">
+                            Con una cuenta de vendedor no puedes realizar compras. Usa una cuenta de comprador.
                         </p>
                     </div>
+                </div>
 
-                    <!-- Botón Morado/Naranja Carulla -->
-                    <button type="submit" class="carulla-btn-primary">
-                        <i class="fas fa-shopping-cart"></i> Agregar al carrito
-                    </button>
-                </form>
+                <!-- Beneficios y Garantías -->
+                <div class="perks-card">
+                    <div class="perk-row">
+                        <div class="perk-row__icon"><i class="fas fa-leaf"></i></div>
+                        <div class="perk-row__content">
+                            <strong>Cosecha Local Directa</strong>
+                            <span>Apoyo sin intermediarios al agricultor</span>
+                        </div>
+                    </div>
+                    <div class="perk-row">
+                        <div class="perk-row__icon"><i class="fas fa-shield-halved"></i></div>
+                        <div class="perk-row__content">
+                            <strong>Compra Protegida Wompi</strong>
+                            <span>Transacción cifrada y garantizada</span>
+                        </div>
+                    </div>
+                </div>
 
             </div>
-
         </div>
 
         <!-- ══════════════════════════════════════════════════════════════ -->
-        <!-- ACORDEÓN: DETALLES DEL PRODUCTO (Exacto Image 1)               -->
+        <!-- DETALLES DEL LOTE Y COSECHA (Acordeón)                        -->
         <!-- ══════════════════════════════════════════════════════════════ -->
-        <section class="carulla-details-accordion" id="detalles-producto">
-            <div class="carulla-accordion-header is-open" onclick="toggleAcordeon(this)">
-                <h2 class="carulla-accordion-title">Detalles del producto</h2>
-                <i class="fas fa-chevron-up carulla-accordion-chevron"></i>
+        <section class="accordion-section" id="detalles-producto">
+            <div class="accordion-header is-open" onclick="toggleAcordeon(this)">
+                <h2>Información de la Cosecha y el Lote</h2>
+                <i class="fas fa-chevron-up"></i>
             </div>
 
-            <div class="carulla-accordion-content" id="acordeonContenido">
-                <!-- Grid de Pastillas / Atributos Técnicos (Image 1) -->
-                <div class="carulla-specs-grid">
-                    <div class="carulla-spec-pill">
-                        <div class="carulla-spec-label">Referencia</div>
-                        <div class="carulla-spec-val" th:text="'CUL-' + ${#strings.substring(oferta.id, oferta.id.length() > 8 ? oferta.id.length() - 8 : 0)}">
-                            ATENDIDA**
+            <div class="accordion-content" id="acordeonContenido">
+                <div class="specs-grid">
+                    <div class="spec-pill">
+                        <div class="spec-pill__label">Referencia Oferta</div>
+                        <div class="spec-pill__value" th:text="'OFR-' + ${#strings.substring(oferta.id, oferta.id.length() > 6 ? oferta.id.length() - 6 : 0)}">
+                            OFR-001
                         </div>
                     </div>
-
-                    <div class="carulla-spec-pill">
-                        <div class="carulla-spec-label">País de Origen</div>
-                        <div class="carulla-spec-val">Colombia</div>
+                    <div class="spec-pill">
+                        <div class="spec-pill__label">Origen</div>
+                        <div class="spec-pill__value">Colombia</div>
                     </div>
-
-                    <div class="carulla-spec-pill">
-                        <div class="carulla-spec-label">Conservación</div>
-                        <div class="carulla-spec-val">Refrigerado / Fresco</div>
-                    </div>
-
-                    <div class="carulla-spec-pill">
-                        <div class="carulla-spec-label">Instrucciones De Uso</div>
-                        <div class="carulla-spec-val">Lavar antes de consumir. Cocinar al gusto.</div>
-                    </div>
-
-                    <div class="carulla-spec-pill">
-                        <div class="carulla-spec-label">Presentación</div>
-                        <div class="carulla-spec-val" th:text="${oferta.descripcionPaquete != null and !oferta.descripcionPaquete.isEmpty() ? oferta.descripcionPaquete : 'Fresco / Estándar'}">
-                            1
+                    <div class="spec-pill">
+                        <div class="spec-pill__label">Presentación</div>
+                        <div class="spec-pill__value" th:text="${oferta.descripcionPaquete != null and !oferta.descripcionPaquete.isEmpty() ? oferta.descripcionPaquete : 'Fresco / Estándar'}">
+                            Fresco
                         </div>
                     </div>
-
-                    <div class="carulla-spec-pill">
-                        <div class="carulla-spec-label">Tipo de Venta</div>
-                        <div class="carulla-spec-val" th:text="${producto != null and producto.tipoVenta == 'PESO' ? 'Por Peso' : 'Por Unidad'}">
-                            Por Peso
-                        </div>
-                    </div>
-
-                    <div class="carulla-spec-pill">
-                        <div class="carulla-spec-label">Stock Disponible</div>
-                        <div class="carulla-spec-val" th:text="${(oferta.stock % 1 == 0 ? #numbers.formatDecimal(oferta.stock, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(oferta.stock, 1, 'POINT', 1, 'COMMA'))} + ' ' + (${producto != null and producto.unidadMedida != null} ? ${producto.unidadMedida} : 'unid')">
+                    <div class="spec-pill">
+                        <div class="spec-pill__label">Stock Disponible</div>
+                        <div class="spec-pill__value" th:text="${(oferta.stock % 1 == 0 ? #numbers.formatDecimal(oferta.stock, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(oferta.stock, 1, 'POINT', 1, 'COMMA'))} + ' ' + (${producto != null and producto.unidadMedida != null} ? producto.unidadMedida : 'unid')">
                             100
                         </div>
                     </div>
-
-                    <div class="carulla-spec-pill">
-                        <div class="carulla-spec-label">Productor Local</div>
-                        <div class="carulla-spec-val" th:text="${oferta.vendedor.razonSocial != null and !oferta.vendedor.razonSocial.isEmpty()} ? ${oferta.vendedor.razonSocial} : ${oferta.vendedor.nombre}">
-                            Finca
+                    <div class="spec-pill">
+                        <div class="spec-pill__label">Tipo de Venta</div>
+                        <div class="spec-pill__value" th:text="${producto != null and producto.tipoVenta == 'PESO' ? 'Por Peso' : 'Por Unidad'}">
+                            Por Peso
                         </div>
+                    </div>
+                    <div class="spec-pill">
+                        <div class="spec-pill__label">Conservación</div>
+                        <div class="spec-pill__value">Fresco / Refrigerado</div>
                     </div>
                 </div>
 
-                <!-- Descripción adicional -->
-                <div class="carulla-description-text">
+                <div class="product-description-text">
                     <p th:if="${oferta.descripcionVendedor != null and !oferta.descripcionVendedor.isEmpty()}" th:text="${oferta.descripcionVendedor}">
                         Notas del agricultor sobre esta cosecha...
                     </p>
@@ -270,87 +230,55 @@
             </div>
         </section>
 
-        <!-- Tarjeta del Productor con Contacto Directo -->
-        <section class="carulla-producer-card" th:if="${oferta.vendedor != null}">
-            <div class="carulla-producer-header">
-                <div class="carulla-producer-avatar">
+        <!-- TARJETA DEL PRODUCTOR CON CONTACTO -->
+        <section class="ui-card" style="margin-bottom: 48px;" th:if="${oferta.vendedor != null}">
+            <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
+                <div style="width: 50px; height: 50px; border-radius: 50%; background: var(--c-green-soft); color: var(--c-green); display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
                     <i class="fas fa-tractor"></i>
                 </div>
-                <div class="carulla-producer-meta">
-                    <h3 th:text="${oferta.vendedor.razonSocial != null and !oferta.vendedor.razonSocial.isEmpty()} ? ${oferta.vendedor.razonSocial} : ${oferta.vendedor.nombre}">Nombre Productor</h3>
-                    <p style="margin:0; font-size:0.85rem; color:#666;" th:if="${oferta.vendedor.descripcionNegocio != null}" th:text="${oferta.vendedor.descripcionNegocio}">
+                <div>
+                    <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--c-ink); margin: 0 0 4px;"
+                        th:text="${oferta.vendedor.razonSocial != null and !oferta.vendedor.razonSocial.isEmpty()} ? ${oferta.vendedor.razonSocial} : ${oferta.vendedor.nombre}">
+                        Nombre Productor
+                    </h3>
+                    <p style="font-size: 0.88rem; color: var(--c-earth); margin: 0;" th:if="${oferta.vendedor.descripcionNegocio != null}"
+                       th:text="${oferta.vendedor.descripcionNegocio}">
                         Agricultor comprometido con la frescura y sostenibilidad.
                     </p>
                 </div>
             </div>
-            <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:14px;">
+
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
                 <a th:if="${oferta.vendedor.telefonoContacto != null and !oferta.vendedor.telefonoContacto.isEmpty()}"
                    th:href="'https://wa.me/' + ${#strings.replace(oferta.vendedor.telefonoContacto, ' ', '')}"
-                   target="_blank" class="carulla-contact-btn carulla-contact-whatsapp">
+                   target="_blank" class="ui-btn ui-btn--secondary ui-btn--sm">
                     <i class="fab fa-whatsapp"></i> Contactar por WhatsApp
                 </a>
-                <a th:href="@{/producto/{id}(id=${oferta.productoCatalogoId})}" class="carulla-contact-btn" style="background:#f3f4f6; color:#374151;">
-                    <i class="fas fa-boxes-stacked"></i> Ver todas las ofertas de este producto
+                <a th:if="${oferta.productoCatalogoId != null}"
+                   th:href="@{/producto/{id}(id=${oferta.productoCatalogoId})}" class="ui-btn ui-btn--tertiary ui-btn--sm">
+                    <i class="fas fa-boxes-stacked"></i> Ver otras ofertas de este producto
                 </a>
             </div>
         </section>
 
-        <!-- Tira de Confianza de Carulla (Image 1 Bottom) -->
-        <div class="carulla-trust-strip">
-            <div class="carulla-trust-item">
-                <div class="carulla-trust-icon">
-                    <i class="fas fa-leaf"></i>
-                </div>
-                <div class="carulla-trust-text">
-                    Más de 100 mil productos
-                    <small>Frescura directa del campo</small>
-                </div>
-            </div>
-            <div class="carulla-trust-item">
-                <div class="carulla-trust-icon">
-                    <i class="fas fa-lock"></i>
-                </div>
-                <div class="carulla-trust-text">
-                    Compras seguras
-                    <small>Protección total en tu pedido</small>
-                </div>
-            </div>
-            <div class="carulla-trust-item">
-                <div class="carulla-trust-icon">
-                    <i class="fas fa-coins"></i>
-                </div>
-                <div class="carulla-trust-text">
-                    Acumulas Puntos Cultivus
-                    <small>Beneficios en cada compra</small>
-                </div>
-            </div>
-            <div class="carulla-trust-item">
-                <div class="carulla-trust-icon">
-                    <i class="fas fa-credit-card"></i>
-                </div>
-                <div class="carulla-trust-text">
-                    Paga en línea o en efectivo
-                    <small>Wompi, PSE, tarjetas o contraentrega</small>
-                </div>
-            </div>
-        </div>
-
     </main>
 
-    <!-- Estado vacío si no existe la oferta -->
-    <div class="carulla-detail-container" th:if="${oferta == null}" style="text-align: center; padding: 60px 20px;">
-        <i class="fas fa-tag" style="font-size: 3rem; color: #ccc; margin-bottom: 20px;"></i>
-        <h2>Oferta no disponible</h2>
-        <p style="color: #666;">La oferta que buscas ya no está activa o fue retirada.</p>
-        <a th:href="@{/category}" class="carulla-btn-primary" style="display:inline-flex; width:auto; margin-top:20px;">
-            Explorar catálogo
-        </a>
-    </div>
+    <!-- Estado si la oferta no existe -->
+    <main class="ui-container" th:if="${oferta == null}">
+        <div class="ui-empty">
+            <div class="ui-empty__icon"><i class="fas fa-tag"></i></div>
+            <h2 class="ui-empty__title">Oferta no disponible</h2>
+            <p class="ui-empty__desc">La oferta que buscas ya no se encuentra activa o fue retirada.</p>
+            <a th:href="@{/category}" class="ui-btn ui-btn--primary">
+                Explorar catálogo
+            </a>
+        </div>
+    </main>
 
-    <!-- Pie de página general -->
-    <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
+    <!-- FOOTER INSTITUCIONAL -->
+    <th:block th:replace="~{fragments/footer :: siteFooter}"></th:block>
 
-    <!-- Script de interactividad -->
+    <!-- SCRIPTS -->
     <script>
         function modificarCantidad(delta) {
             const input = document.getElementById('inputCantidad');
@@ -366,7 +294,6 @@
 
         function toggleAcordeon(header) {
             header.classList.toggle('is-open');
-            const chevron = header.querySelector('.carulla-accordion-chevron');
             const content = document.getElementById('acordeonContenido');
             if (content) {
                 content.classList.toggle('is-collapsed');
@@ -397,4 +324,5 @@
         }
     </script>
 </body>
+
 </html>

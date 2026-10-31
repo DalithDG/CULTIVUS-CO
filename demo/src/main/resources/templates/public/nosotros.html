@@ -5,150 +5,515 @@
     <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Conoce a Cultivus y a los productores que llevan el campo colombiano a tu mesa.">
-    <title>Nosotros y Productores - Cultivus</title>
+    <meta name="description" content="Conoce qué es Cultivus, cómo funciona el marketplace agrícola y descubre a los productores locales de Bolívar que llevan cosechas frescas a tu mesa.">
+    <title>Sobre Nosotros y Productores | Cultivus</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" th:href="@{/header.css}">
-    <link rel="stylesheet" th:href="@{/paginas-publicas.css}">
+
+    <!-- Tokens y Estilos del Sistema Apple Design -->
+    <link rel="stylesheet" th:href="@{/checkout-tokens.css}">
+    <link rel="stylesheet" th:href="@{/cultivus-ui.css}">
+    <link rel="stylesheet" th:href="@{/nosotros.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
+
+    <!-- GSAP & ScrollTrigger (Cargados exclusivamente en esta página con defer) -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js" defer></script>
+    <script th:src="@{/js/nosotros.js}" defer></script>
 </head>
 
-<body>
-    <header th:replace="~{fragments/header :: siteHeader}"></header>
+<body class="about-page">
 
-    <main class="pub-page">
-        <section class="pub-hero">
-            <h1>Nosotros y nuestros Productores</h1>
-            <p>Conectamos el campo colombiano con tu mesa, sin intermediarios y con precios justos.</p>
-        </section>
+    <!-- HEADER INSTITUCIONAL (Fragmento intacto) -->
+    <th:block th:replace="~{fragments/header :: siteHeader}"></th:block>
 
-        <!-- Select para moverse entre secciones de la misma página -->
-        <div class="pub-selector">
-            <div class="pub-container">
-                <label for="seccionSelect"><i class="fas fa-compass"></i> Ir a:</label>
-                <select id="seccionSelect">
-                    <option value="sobre-nosotros">Sobre Nosotros</option>
-                    <option value="productores">Productores</option>
-                </select>
+    <!-- ═══ 1. HERO A PANTALLA COMPLETA (100svh) ═══ -->
+    <section class="about-hero" id="sobre-nosotros" aria-label="Introducción a Cultivus">
+        <picture class="about-hero__bg">
+            <img th:src="@{/images/nosotros/hero-campo.jpg}"
+                 alt="Paisaje agrícola fértil bajo la luz matutina en Bolívar, Colombia"
+                 class="about-hero__img"
+                 width="1440" height="810"
+                 fetchpriority="high" decoding="async">
+        </picture>
+        <div class="about-hero__overlay" aria-hidden="true"></div>
+
+        <div class="about-hero__content">
+            <div class="about-hero__badge">
+                <i class="fas fa-leaf" aria-hidden="true"></i>
+                <span>Comercio Agrícola Directo</span>
+            </div>
+
+            <h1 class="about-hero__title">
+                <span class="about-hero__title-word">Del</span>
+                <span class="about-hero__title-word">campo</span>
+                <span class="about-hero__title-word">a</span>
+                <span class="about-hero__title-word">tu</span>
+                <span class="about-hero__title-word">mesa,</span>
+                <span class="about-hero__title-word">sin</span>
+                <span class="about-hero__title-word">intermediarios</span>
+            </h1>
+
+            <p class="about-hero__lead">
+                Conectamos a las familias campesinas de Bolívar directamente con hogares y negocios que buscan cosechas frescas, comercio justo y origen garantizado.
+            </p>
+
+            <div class="about-hero__actions">
+                <a th:href="@{/ofertas}" class="about-hero__btn-primary">
+                    <i class="fas fa-shopping-bag" aria-hidden="true"></i>
+                    <span>Explorar productos</span>
+                </a>
+                <a href="#productores" class="about-hero__btn-secondary" id="heroBtnProductores">
+                    <i class="fas fa-users" aria-hidden="true"></i>
+                    <span>Conoce a los productores</span>
+                </a>
             </div>
         </div>
 
-        <div class="pub-container">
-            <!-- ═══ SOBRE NOSOTROS ═══ -->
-            <section class="pub-section" id="sobre-nosotros">
-                <h2>Sobre Nosotros</h2>
-                <p class="pub-lead">Cultivus es un marketplace que une a productores locales con compradores que buscan
-                    productos frescos, de calidad y con origen conocido.</p>
-                <div class="pub-grid">
-                    <div class="pub-card">
-                        <div class="pub-card__icon"><i class="fas fa-leaf"></i></div>
-                        <h3>Productos frescos</h3>
-                        <p>Directo del campo a tu hogar, con la frescura que solo el productor puede garantizar.</p>
-                    </div>
-                    <div class="pub-card">
-                        <div class="pub-card__icon"><i class="fas fa-hand-holding-heart"></i></div>
-                        <h3>Apoyo al productor</h3>
-                        <p>Sin intermediarios: el campesino recibe un precio justo por su trabajo.</p>
-                    </div>
-                    <div class="pub-card">
-                        <div class="pub-card__icon"><i class="fas fa-shield-alt"></i></div>
-                        <h3>Compra segura</h3>
-                        <p>Pagos protegidos y seguimiento de tus pedidos en todo momento.</p>
-                    </div>
-                    <div class="pub-card">
-                        <div class="pub-card__icon"><i class="fas fa-truck"></i></div>
-                        <h3>Envíos a todo Colombia</h3>
-                        <p>Entregas rápidas y confiables para que recibas tu pedido donde estés.</p>
-                    </div>
-                </div>
-            </section>
-
-            <!-- ═══ PRODUCTORES ═══ -->
-            <section class="pub-section" id="productores">
-                <h2>Productores</h2>
-                <p class="pub-lead">Las personas y negocios que cultivan y venden en Cultivus.</p>
-                <div class="pub-grid">
-                    <div class="pub-card" th:each="p : ${productores}">
-                        <div class="pub-card__icon"><i class="fas fa-user-tie"></i></div>
-                        <h3>
-                            <span th:text="${p.nombre}">Productor</span>
-                            <i class="fas fa-check-circle" style="color:#6b7c2e;font-size:14px;" title="Verificado"
-                                th:if="${p.verificado}"></i>
-                        </h3>
-                        <p
-                            th:text="${p.descripcion != null and !p.descripcion.isBlank()} ? ${p.descripcion} : 'Productor local de Cultivus.'">
-                            Productor local de Cultivus.</p>
-                        <span class="pub-badge"><i class="fas fa-box"></i>
-                            <span th:text="${p.totalOfertas} + (${p.totalOfertas == 1} ? ' producto' : ' productos')">0
-                                productos</span></span>
-                    </div>
-                    <div class="pub-empty" th:if="${#lists.isEmpty(productores)}">
-                        <i class="fas fa-seedling"></i>
-                        <p>Pronto verás aquí a nuestros productores.</p>
-                    </div>
-                </div>
-
-                <!-- Paginación -->
-                <div class="pub-pagination" th:if="${totalPages != null and totalPages > 1}">
-                    <a class="pub-page-btn"
-                       th:classappend="${page <= 0 ? 'is-disabled' : ''}"
-                       th:href="@{/nosotros(page=${page - 1},size=${size})} + '#productores'">
-                        <i class="fas fa-chevron-left"></i> Anterior
-                    </a>
-
-                    <span class="pub-page-info">
-                        Página <strong th:text="${page + 1}">1</strong> de <strong th:text="${totalPages}">1</strong>
-                        · <span th:text="${totalItems}">0</span> productores
-                    </span>
-
-                    <a class="pub-page-btn"
-                       th:classappend="${page + 1 >= totalPages ? 'is-disabled' : ''}"
-                       th:href="@{/nosotros(page=${page + 1},size=${size})} + '#productores'">
-                        Siguiente <i class="fas fa-chevron-right"></i>
-                    </a>
-                </div>
-            </section>
+        <div class="about-hero__scroll-indicator" aria-hidden="true">
+            <div class="about-hero__scroll-mouse">
+                <div class="about-hero__scroll-wheel"></div>
+            </div>
+            <span>Desliza para explorar</span>
         </div>
+    </section>
+
+    <!-- ═══ BARRA SEGMENTADA STICKY (GLASS) ═══ -->
+    <nav class="about-sticky-nav" aria-label="Navegación de secciones">
+        <div class="about-sticky-nav__inner">
+            <a href="#sobre-nosotros" class="about-sticky-nav__brand">
+                <i class="fas fa-seedling" aria-hidden="true"></i>
+                <span>Cultivus</span>
+            </a>
+
+            <div class="about-segmented" role="tablist">
+                <a href="#sobre-nosotros" id="tabSobreNosotros" class="about-segmented__btn is-active" role="tab">
+                    Sobre Nosotros
+                </a>
+                <a href="#productores" id="tabProductores" class="about-segmented__btn" role="tab">
+                    Nuestros Productores
+                </a>
+            </div>
+
+            <!-- Select oculto para accesibilidad / compatibilidad con scripts legados -->
+            <select id="seccionSelect" class="sr-only" aria-label="Seleccionar sección">
+                <option value="sobre-nosotros">Sobre Nosotros</option>
+                <option value="productores">Productores</option>
+            </select>
+        </div>
+    </nav>
+
+    <main>
+        <!-- ═══ 2. MANIFIESTO: ¿QUÉ ES CULTIVUS? ═══ -->
+        <section class="about-manifesto" id="que-es" aria-labelledby="manifesto-title">
+            <div class="about-manifesto__content">
+                <span class="about-manifesto__lead-chip">
+                    <i class="fas fa-sparkles" aria-hidden="true"></i> Nuestra Propuesta
+                </span>
+
+                <h2 id="manifesto-title" class="about-manifesto__text">
+                    <span class="about-manifesto__word">Cultivus</span>
+                    <span class="about-manifesto__word">es</span>
+                    <span class="about-manifesto__word">un</span>
+                    <span class="about-manifesto__word">marketplace</span>
+                    <span class="about-manifesto__word">que</span>
+                    <span class="about-manifesto__word">conecta</span>
+                    <span class="about-manifesto__word">a</span>
+                    <span class="about-manifesto__word">productores</span>
+                    <span class="about-manifesto__word">agrícolas</span>
+                    <span class="about-manifesto__word">con</span>
+                    <span class="about-manifesto__word">compradores</span>
+                    <span class="about-manifesto__word">que</span>
+                    <span class="about-manifesto__word">buscan</span>
+                    <span class="about-manifesto__word">productos</span>
+                    <span class="about-manifesto__word">frescos,</span>
+                    <span class="about-manifesto__word">de</span>
+                    <span class="about-manifesto__word">calidad</span>
+                    <span class="about-manifesto__word">y</span>
+                    <span class="about-manifesto__word">con</span>
+                    <span class="about-manifesto__word">origen</span>
+                    <span class="about-manifesto__word">conocido.</span>
+                </h2>
+
+                <p class="about-manifesto__body">
+                    Creemos en un modelo donde el campesino recibe una retribución digna por su labor y el comprador disfruta de alimentos recolectados en su punto óptimo de maduración, acortando la cadena de valor mediante tecnología honesta y trazable.
+                </p>
+            </div>
+
+            <div class="about-manifesto__card js-reveal">
+                <picture>
+                    <img th:src="@{/images/nosotros/que-es-cosecha.jpg}"
+                         alt="Cosecha fresca y variada de hortalizas campesinas recién recolectadas"
+                         class="about-manifesto__img"
+                         width="800" height="1000"
+                         loading="lazy" decoding="async">
+                </picture>
+                <div class="about-manifesto__card-caption">
+                    <h4>Cosechas del Día</h4>
+                    <p>Del huerto a tu hogar en tiempos récord.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══ 3. CÓMO FUNCIONA (3 PASOS CON IMAGEN Y NUMERACIÓN) ═══ -->
+        <section class="about-steps-section" id="como-funciona" aria-labelledby="steps-title">
+            <div class="about-steps-section__header">
+                <span class="ui-chip ui-chip--green">Paso a Paso</span>
+                <h2 id="steps-title" class="ui-title-1">¿Cómo funciona Cultivus?</h2>
+                <p class="ui-subtitle">Un proceso claro, seguro y transparente en cada pedido.</p>
+            </div>
+
+            <div class="about-steps-container">
+                <div class="about-steps-grid">
+                    <!-- Columna de Pasos -->
+                    <div class="about-steps-list">
+                        <!-- Paso 01 -->
+                        <article class="about-step-item is-active js-reveal" data-step="0">
+                            <div class="about-step-item__num">01</div>
+                            <h3 class="about-step-item__title">Elige cosechas de productores verificados</h3>
+                            <p class="about-step-item__desc">
+                                Explora las ofertas activas directamente de las fincas de Bolívar. Conoce quién cultiva cada producto, su origen geográfico y su fecha estimada de recolección.
+                            </p>
+                            <img th:src="@{/images/nosotros/paso-1-elige.jpg}"
+                                 alt="Selección de cosechas agrícolas frescas"
+                                 class="about-step-item__mobile-img"
+                                 width="800" height="600"
+                                 loading="lazy" decoding="async">
+                        </article>
+
+                        <!-- Paso 02 -->
+                        <article class="about-step-item js-reveal" data-step="1">
+                            <div class="about-step-item__num">02</div>
+                            <h3 class="about-step-item__title">Paga con total seguridad vía Wompi</h3>
+                            <p class="about-step-item__desc">
+                                Paga mediante tarjeta de crédito o débito, PSE, Nequi o Bancolombia. Tu dinero permanece custodiado en la plataforma hasta que tu pedido llega en perfecto estado.
+                            </p>
+                            <img th:src="@{/images/nosotros/paso-2-paga.jpg}"
+                                 alt="Pago seguro y protegido para alimentos del campo"
+                                 class="about-step-item__mobile-img"
+                                 width="800" height="600"
+                                 loading="lazy" decoding="async">
+                        </article>
+
+                        <!-- Paso 03 -->
+                        <article class="about-step-item js-reveal" data-step="2">
+                            <div class="about-step-item__num">03</div>
+                            <h3 class="about-step-item__title">Recibe con seguimiento en tiempo real</h3>
+                            <p class="about-step-item__desc">
+                                Transportistas locales de nuestra red coordinan la recogida en finca y la entrega hasta tu dirección, con cálculo de envío transparente por cada productor.
+                            </p>
+                            <img th:src="@{/images/nosotros/paso-3-recibe.jpg}"
+                                 alt="Transporte y entrega ágil de productos del campo"
+                                 class="about-step-item__mobile-img"
+                                 width="800" height="600"
+                                 loading="lazy" decoding="async">
+                        </article>
+                    </div>
+
+                    <!-- Columna de Medios (Desktop: Sticky con Crossfade) -->
+                    <div class="about-steps-media" aria-hidden="true">
+                        <div class="about-steps-media__slide is-active" data-slide="0">
+                            <img th:src="@{/images/nosotros/paso-1-elige.jpg}"
+                                 alt="Selección de alimentos agrícolas"
+                                 class="about-steps-media__img"
+                                 width="800" height="600"
+                                 loading="lazy" decoding="async">
+                        </div>
+                        <div class="about-steps-media__slide" data-slide="1">
+                            <img th:src="@{/images/nosotros/paso-2-paga.jpg}"
+                                 alt="Procesamiento seguro de pedidos"
+                                 class="about-steps-media__img"
+                                 width="800" height="600"
+                                 loading="lazy" decoding="async">
+                        </div>
+                        <div class="about-steps-media__slide" data-slide="2">
+                            <img th:src="@{/images/nosotros/paso-3-recibe.jpg}"
+                                 alt="Logística de entrega de cosechas frescas"
+                                 class="about-steps-media__img"
+                                 width="800" height="600"
+                                 loading="lazy" decoding="async">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══ 4. PARA QUIÉN ES CULTIVUS (3 AUDIENCIAS) ═══ -->
+        <section class="about-audiences" id="para-quien" aria-labelledby="audiences-title">
+            <div class="about-audiences__header">
+                <span class="ui-chip ui-chip--green">Nuestra Comunidad</span>
+                <h2 id="audiences-title" class="ui-title-1">¿Para quién es Cultivus?</h2>
+                <p class="ui-subtitle">Un ecosistema diseñado para aportar valor a cada actor del campo y la ciudad.</p>
+            </div>
+
+            <div class="about-audiences__grid">
+                <!-- Compradores -->
+                <article class="audience-card js-reveal">
+                    <div class="audience-card__media">
+                        <img th:src="@{/images/nosotros/audiencia-comprador.jpg}"
+                             alt="Alimentos frescos en la mesa del hogar"
+                             class="audience-card__img"
+                             width="720" height="900"
+                             loading="lazy" decoding="async">
+                        <span class="audience-card__badge">Hogares y Negocios</span>
+                    </div>
+                    <div class="audience-card__body">
+                        <h3 class="audience-card__title">Para Compradores</h3>
+                        <p class="audience-card__desc">
+                            Accede a frutas, verduras y productos del agro recién cosechados. Conoce la historia de cada productor y apoya directamente la economía campesina regional.
+                        </p>
+                        <a th:href="@{/ofertas}" class="audience-card__cta audience-card__cta--green">
+                            <span>Comprar en Cultivus</span>
+                            <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                </article>
+
+                <!-- Productores -->
+                <article class="audience-card js-reveal">
+                    <div class="audience-card__media">
+                        <img th:src="@{/images/nosotros/audiencia-productor.jpg}"
+                             alt="Campesino en cultivo agrícola"
+                             class="audience-card__img"
+                             width="720" height="900"
+                             loading="lazy" decoding="async">
+                        <span class="audience-card__badge">Agricultores Rurales</span>
+                    </div>
+                    <div class="audience-card__body">
+                        <h3 class="audience-card__title">Para Productores</h3>
+                        <p class="audience-card__desc">
+                            Vende tus cosechas con total autonomía y precios justos sin intermediarios. Gestiona tus ofertas, recibe pagos en tu cuenta bancaria y haz crecer tu producción.
+                        </p>
+                        <a th:href="@{/vendedor/registro}" class="audience-card__cta audience-card__cta--outlined">
+                            <span>Vender mis cosechas</span>
+                            <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                </article>
+
+                <!-- Transportistas -->
+                <article class="audience-card js-reveal">
+                    <div class="audience-card__media">
+                        <img th:src="@{/images/nosotros/audiencia-transportista.jpg}"
+                             alt="Vehículo de transporte de carga agrícola"
+                             class="audience-card__img"
+                             width="720" height="900"
+                             loading="lazy" decoding="async">
+                        <span class="audience-card__badge">Red Logística</span>
+                    </div>
+                    <div class="audience-card__body">
+                        <h3 class="audience-card__title">Para Transportistas</h3>
+                        <p class="audience-card__desc">
+                            Genera ingresos transportando cosechas desde fincas rurales hasta los compradores. Rutas calculadas por proximidad con tarifas transparentes y pagos seguros.
+                        </p>
+                        <a th:href="@{/transportista/registro}" class="audience-card__cta audience-card__cta--outlined">
+                            <span>Unirme a la red logística</span>
+                            <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <!-- ═══ 5. NUESTROS COMPROMISOS (4 TARJETAS) ═══ -->
+        <section class="about-commitments" id="compromisos" aria-labelledby="commitments-title">
+            <div class="about-commitments__header">
+                <span class="ui-chip ui-chip--green">Valores Fundamentales</span>
+                <h2 id="commitments-title" class="ui-title-1">Nuestros Compromisos</h2>
+                <p class="ui-subtitle">Principios inquebrantables que guían cada interacción en Cultivus.</p>
+            </div>
+
+            <div class="commitments-grid">
+                <!-- Cosechas Frescas -->
+                <article class="commitment-card js-reveal">
+                    <div class="commitment-card__icon" aria-hidden="true">
+                        <i class="fas fa-leaf"></i>
+                    </div>
+                    <h3 class="commitment-card__title">Cosechas Frescas</h3>
+                    <p class="commitment-card__desc">
+                        Alimentos recolectados en su punto óptimo directamente de las fincas, sin semanas en bodegas ni químicos innecesarios.
+                    </p>
+                </article>
+
+                <!-- Apoyo al Productor -->
+                <article class="commitment-card js-reveal">
+                    <div class="commitment-card__icon" aria-hidden="true">
+                        <i class="fas fa-hand-holding-dollar"></i>
+                    </div>
+                    <h3 class="commitment-card__title">Apoyo al Productor</h3>
+                    <p class="commitment-card__desc">
+                        Precios justos y transparentes donde el valor real del trabajo agrícola queda directamente en las manos de las familias campesinas.
+                    </p>
+                </article>
+
+                <!-- Compra Segura -->
+                <article class="commitment-card js-reveal">
+                    <div class="commitment-card__icon" aria-hidden="true">
+                        <i class="fas fa-shield-halved"></i>
+                    </div>
+                    <h3 class="commitment-card__title">Compra Segura</h3>
+                    <p class="commitment-card__desc">
+                        Tus transacciones se procesan bajo los estándares bancarios de Wompi, con protección integral hasta confirmar tu entrega.
+                    </p>
+                </article>
+
+                <!-- Cobertura en Bolívar -->
+                <article class="commitment-card js-reveal">
+                    <div class="commitment-card__icon" aria-hidden="true">
+                        <i class="fas fa-location-dot"></i>
+                    </div>
+                    <h3 class="commitment-card__title">Cobertura en Bolívar</h3>
+                    <p class="commitment-card__desc">
+                        Operación regional enfocada y optimizada en el departamento de Bolívar, garantizando rutas eficientes y frescura insuperable.
+                    </p>
+                </article>
+            </div>
+        </section>
+
+        <!-- ═══ 6. CIFRAS HONESTAS CON CONTADOR ANIMADO ═══ -->
+        <section class="about-stats-section" id="cifras" aria-label="Estadísticas de la plataforma">
+            <div class="about-stats-grid">
+                <div class="stat-box js-reveal">
+                    <div class="stat-box__number js-count" th:attr="data-count=${totalItems}" th:text="${totalItems}">0</div>
+                    <div class="stat-box__label">Productores Registrados</div>
+                    <p class="stat-box__hint">Familias vinculadas activas</p>
+                </div>
+
+                <div class="stat-box js-reveal">
+                    <div class="stat-box__number js-count" data-count="1">1</div>
+                    <div class="stat-box__label">Departamento</div>
+                    <p class="stat-box__hint">Cobertura regional en Bolívar</p>
+                </div>
+
+                <div class="stat-box js-reveal">
+                    <div class="stat-box__number js-count" data-count="4">4</div>
+                    <div class="stat-box__label">Métodos de Pago</div>
+                    <p class="stat-box__hint">PSE, Tarjetas, Nequi y Bancolombia</p>
+                </div>
+
+                <div class="stat-box js-reveal">
+                    <div class="stat-box__number js-count" data-count="0">0</div>
+                    <div class="stat-box__label">Intermediarios</div>
+                    <p class="stat-box__hint">Trato directo con el campesino</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══ 7. DIRECTORIO DE PRODUCTORES DINÁMICO ═══ -->
+        <section id="productores" class="about-producers" aria-labelledby="producers-title">
+            <div class="about-producers__header">
+                <div>
+                    <span class="ui-chip ui-chip--green">Directorio Local</span>
+                    <h2 id="producers-title" class="about-producers__title">Nuestros Productores</h2>
+                    <p class="about-producers__subtitle">
+                        Conoce a los campesinos y huertos que hacen posible la frescura de Cultivus.
+                    </p>
+                </div>
+
+                <div th:if="${totalItems != null and totalItems > 0}" style="font-size: 0.88rem; color: var(--c-earth); font-weight: 600;">
+                    <span th:text="${totalItems} + (${totalItems == 1} ? ' productor registrado' : ' productores registrados')">0 productores</span>
+                </div>
+            </div>
+
+            <!-- Listado de tarjetas de productores -->
+            <div class="producers-grid" th:if="${productores != null and !productores.isEmpty()}">
+                <article class="producer-card js-reveal" th:each="p : ${productores}">
+                    <div class="producer-card__top">
+                        <div class="producer-card__avatar" aria-hidden="true">
+                            <span th:text="${#strings.substring(p.nombre != null and !p.nombre.isEmpty() ? p.nombre : 'P', 0, 1).toUpperCase()}">P</span>
+                        </div>
+                        <div>
+                            <h3 class="producer-card__name">
+                                <span th:text="${p.nombre}">Nombre Productor</span>
+                                <i class="fas fa-check-circle producer-card__verified" title="Productor Verificado" th:if="${p.verificado}" aria-label="Verificado"></i>
+                            </h3>
+                            <span class="producer-card__chip">Productor Local</span>
+                        </div>
+                    </div>
+
+                    <p class="producer-card__desc"
+                       th:text="${p.descripcion != null and !p.descripcion.isBlank()} ? ${p.descripcion} : 'Productor local de Cultivus comprometido con cosechas sostenibles, agroecológicas y de alta calidad.'">
+                        Descripción del productor local.
+                    </p>
+
+                    <div class="producer-card__footer">
+                        <span class="producer-card__count">
+                            <i class="fas fa-boxes-stacked" aria-hidden="true"></i>
+                            <span th:text="${p.totalOfertas} + (${p.totalOfertas == 1} ? ' producto' : ' productos')">0 productos</span>
+                        </span>
+                        <a th:href="@{/ofertas}" class="producer-card__link">
+                            <span>Ver cosechas</span>
+                            <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                </article>
+            </div>
+
+            <!-- Estado Vacío -->
+            <div class="ui-empty js-reveal" th:if="${#lists.isEmpty(productores)}">
+                <div class="ui-empty__icon"><i class="fas fa-seedling" aria-hidden="true"></i></div>
+                <h3 class="ui-empty__title">Pronto conocerás a nuevos productores</h3>
+                <p class="ui-empty__desc">Estamos vinculando y verificando nuevas familias agrícolas en Bolívar.</p>
+            </div>
+
+            <!-- Paginación Segura -->
+            <div class="ui-pagination" th:if="${totalPages != null and totalPages > 1}">
+                <a class="ui-btn ui-btn--secondary ui-btn--sm"
+                   th:classappend="${page <= 0 ? 'ui-btn--disabled' : ''}"
+                   th:href="@{/nosotros(page=${page - 1}, size=${size})} + '#productores'"
+                   aria-label="Página anterior">
+                    <i class="fas fa-chevron-left" aria-hidden="true"></i> Anterior
+                </a>
+
+                <span style="font-size: 0.9rem; font-weight: 600; color: var(--c-earth); padding: 0 8px;">
+                    Página <strong th:text="${page + 1}">1</strong> de <strong th:text="${totalPages}">1</strong>
+                </span>
+
+                <a class="ui-btn ui-btn--secondary ui-btn--sm"
+                   th:classappend="${page + 1 >= totalPages ? 'ui-btn--disabled' : ''}"
+                   th:href="@{/nosotros(page=${page + 1}, size=${size})} + '#productores'"
+                   aria-label="Página siguiente">
+                    Siguiente <i class="fas fa-chevron-right" aria-hidden="true"></i>
+                </a>
+            </div>
+        </section>
+
+        <!-- ═══ 8. CIERRE EDITORIAL: "HAZ PARTE DE CULTIVUS" ═══ -->
+        <section class="about-cta-section js-reveal" id="unete" aria-labelledby="cta-title">
+            <picture class="about-cta-section__bg">
+                <img th:src="@{/images/nosotros/cierre-campo.jpg}"
+                     alt="Tierras agrícolas fértiles del departamento de Bolívar"
+                     class="about-cta-section__img"
+                     width="1440" height="810"
+                     loading="lazy" decoding="async">
+            </picture>
+            <div class="about-cta-section__overlay" aria-hidden="true"></div>
+
+            <div class="about-cta-section__content">
+                <h2 id="cta-title" class="about-cta-section__title">Haz parte de Cultivus</h2>
+                <p class="about-cta-section__subtitle">
+                    Tanto si quieres disfrutar de alimentos frescos y de calidad en tu mesa, como si cultivas la tierra o transportas cosechas, Cultivus es tu punto de encuentro.
+                </p>
+                <div class="about-cta-section__actions">
+                    <a th:href="@{/ofertas}" class="about-hero__btn-primary">
+                        <i class="fas fa-shopping-basket" aria-hidden="true"></i>
+                        <span>Quiero comprar</span>
+                    </a>
+                    <a th:href="@{/vendedor/registro}" class="about-hero__btn-secondary">
+                        <i class="fas fa-tractor" aria-hidden="true"></i>
+                        <span>Quiero vender</span>
+                    </a>
+                </div>
+            </div>
+        </section>
     </main>
 
-    <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
+    <!-- FOOTER INSTITUCIONAL (Fragmento intacto) -->
+    <th:block th:replace="~{fragments/footer :: siteFooter}"></th:block>
 
-    <script>
-        (function () {
-            var select = document.getElementById('seccionSelect');
-
-            function irA(id, actualizarHash) {
-                var destino = document.getElementById(id);
-                if (!destino) return;
-                destino.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                select.value = id;
-                if (actualizarHash) history.replaceState(null, '', '#' + id);
-            }
-
-            select.addEventListener('change', function () { irA(select.value, true); });
-
-            var inicial = window.location.hash.replace('#', '');
-            if (inicial === 'productores' || inicial === 'sobre-nosotros') {
-                select.value = inicial;
-            }
-            window.addEventListener('hashchange', function () {
-                var h = window.location.hash.replace('#', '');
-                if (h === 'productores' || h === 'sobre-nosotros') select.value = h;
-            });
-
-            if ('IntersectionObserver' in window) {
-                var obs = new IntersectionObserver(function (entries) {
-                    entries.forEach(function (e) {
-                        if (e.isIntersecting) select.value = e.target.id;
-                    });
-                }, { rootMargin: '-40% 0px -50% 0px' });
-                document.querySelectorAll('.pub-section').forEach(function (s) { obs.observe(s); });
-            }
-        })();
-    </script>
 </body>
 
 </html>

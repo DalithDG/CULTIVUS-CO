@@ -213,12 +213,19 @@
                         <a class="btn-detalle" th:href="@{/producto/{id}(id=${producto.id})}">
                             <i class="fa-solid fa-eye"></i> Ver detalle
                         </a>
-                        <form th:action="@{/carrito/agregar}" method="post" style="flex: 1;">
+                        <form th:if="${session.usuarioLogueado == null or session.usuarioLogueado.puedeComprar()}"
+                              th:action="@{/carrito/agregar}" method="post" style="flex: 1;">
                             <input type="hidden" name="productoId" th:value="${producto.id}">
                             <button type="submit" class="btn-agregar">
                                 <i class="fa-solid fa-cart-plus"></i> Agregar
                             </button>
                         </form>
+                        <button th:if="${session.usuarioLogueado != null and !session.usuarioLogueado.puedeComprar()}"
+                                type="button" class="btn-agregar" disabled
+                                style="flex: 1; background-color: #EDE8DC; color: #795548; border: 1px solid #DDD3BA; cursor: not-allowed; box-shadow: none;"
+                                title="Con una cuenta de vendedor no puedes realizar compras">
+                            Cuenta de vendedor
+                        </button>
                     </div>
                 </div>
             </div>

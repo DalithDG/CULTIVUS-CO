@@ -6,203 +6,146 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Ofertas disponibles de productores locales en Cultivus.">
-    <title>Ofertas - Cultivus</title>
+    <title>Ofertas del Campo | Cultivus</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    <link rel="stylesheet" th:href="@{/header.css}">
-    <link rel="stylesheet" th:href="@{/paginas-publicas.css}">
-    <link rel="stylesheet" th:href="@{/carulla-exito.css}">
+    <link rel="stylesheet" th:href="@{/checkout-tokens.css}">
+    <link rel="stylesheet" th:href="@{/cultivus-ui.css}">
+    <link rel="stylesheet" th:href="@{/catalog-apple.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
 </head>
 
-<body>
-    <header th:replace="~{fragments/header :: siteHeader}"></header>
+<body class="catalog-page">
 
-    <main class="pub-page">
-        <!-- Hero de Ofertas -->
-        <section class="pub-hero ofertas-hero">
-            <h1>Ofertas del Campo</h1>
-            <p>Lo más fresco de nuestros productores directos a tu mesa con los mejores precios.</p>
-        </section>
+    <!-- HEADER INSTITUCIONAL -->
+    <th:block th:replace="~{fragments/header :: siteHeader}"></th:block>
 
-        <div class="pub-container ofertas-container">
+    <main class="ui-container" id="lista-ofertas">
+        <!-- BREADCRUMB & CABECERA -->
+        <header class="catalog-header">
+            <nav class="ui-breadcrumb" aria-label="Migas de pan">
+                <a th:href="@{/}"><i class="fas fa-home"></i> Inicio</a>
+                <span class="sep">/</span>
+                <span class="current">Ofertas del Campo</span>
+            </nav>
 
-            <section class="exito-grid-section" id="lista-ofertas" style="margin-top: 0;">
-                <div class="exito-section-header">
-                    <div>
-                        <h2 class="exito-section-title">
-                            <i class="fas fa-tag" style="color: #f26822;"></i>
-                            Todas las ofertas (<span th:text="${totalItems != null ? totalItems : 0}">0</span>)
-                        </h2>
-                        <p class="exito-section-subtitle">
-                            Compra directo sin intermediarios y ahorra con la calidad que tu familia merece.
-                        </p>
+            <h1 class="ui-title-1">Ofertas del Campo</h1>
+            <p class="ui-subtitle">Lo más fresco de nuestros productores directos a tu mesa con los mejores precios.</p>
+        </header>
+
+        <!-- TOOLBAR DE CONTEO -->
+        <div class="catalog-toolbar">
+            <div class="catalog-toolbar__count">
+                <i class="fas fa-tag" style="color: var(--c-green);"></i>
+                <span>
+                    <strong th:text="${totalItems != null ? totalItems : 0}">0</strong>
+                    ofertas activas disponibles
+                </span>
+            </div>
+            <div>
+                <a th:href="@{/category}" class="ui-btn ui-btn--secondary ui-btn--sm">
+                    <i class="fas fa-border-all"></i> Ver catálogo general
+                </a>
+            </div>
+        </div>
+
+        <!-- GRID DE OFERTAS UNIFICADAS -->
+        <div class="product-grid" th:if="${ofertas != null and !ofertas.isEmpty()}">
+            <article class="product-card" th:each="o : ${ofertas}">
+                <a th:href="@{/oferta/{id}(id=${o.id})}" class="product-card__img-wrap">
+                    <img th:src="${o.imagenUrl != null and !o.imagenUrl.isBlank()} ? ${o.imagenUrl} : '/images/frutas.webp'"
+                         th:alt="${o.nombreProducto}"
+                         class="product-card__img"
+                         loading="lazy"
+                         onerror="this.onerror=null;this.src='/images/frutas.webp'">
+                    <span class="ui-chip ui-chip--gold product-card__badge">
+                        <i class="fas fa-bolt"></i> Oferta
+                    </span>
+                </a>
+
+                <div class="product-card__body">
+                    <span class="product-card__producer">
+                        Vendido por:
+                        <strong th:text="${o.vendedor != null and o.vendedor.nombre != null ? o.vendedor.nombre : 'Productor Local'}">Vendedor</strong>
+                        <i th:if="${o.vendedor != null and o.vendedor.verificado}" class="fas fa-check-circle" style="color: var(--c-green);" title="Verificado"></i>
+                    </span>
+
+                    <a th:href="@{/oferta/{id}(id=${o.id})}" style="text-decoration:none; color:inherit;">
+                        <h3 class="product-card__title" th:text="${o.nombreProducto}">Nombre del producto</h3>
+                    </a>
+
+                    <div class="product-card__price-row">
+                        <span class="product-card__price"
+                              th:text="'$' + ${#numbers.formatDecimal(o.precio, 0, 'COMMA', 0, 'POINT')}">
+                            $0
+                        </span>
+                        <span class="product-card__unit">/ lote</span>
                     </div>
-                </div>
 
-                <!-- Grid de Tarjetas Estilo Éxito (Image 3) -->
-                <div class="exito-products-grid" th:if="${ofertas != null and !ofertas.isEmpty()}">
-
-                    <article class="exito-card" th:each="o : ${ofertas}">
-
-                        <!-- Barra superior: Badge promocional + Favorito -->
-                        <div class="exito-card__top">
-                            <span class="exito-promo-badge">
-                                <i class="fas fa-bolt"></i> OFERTA
-                            </span>
-                            <button type="button" class="exito-fav-btn" onclick="toggleFavorito(this)"
-                                    title="Añadir a favoritos" aria-label="Añadir a favoritos">
-                                <i class="far fa-heart"></i>
-                            </button>
-                        </div>
-
-                        <!-- Imagen del producto (Enlace al detalle) -->
-                        <a th:href="@{/oferta/{id}(id=${o.id})}" class="exito-card__image-wrap"
-                           style="text-decoration:none;">
-                            <img th:src="${o.imagenUrl != null and !o.imagenUrl.isBlank()} ? ${o.imagenUrl} : '/images/frutas.webp'"
-                                 th:alt="${o.nombreProducto}"
-                                 class="exito-card__img"
-                                 loading="lazy"
-                                 decoding="async"
-                                 onerror="this.onerror=null;this.src='/images/frutas.webp'">
-                        </a>
-
-                        <!-- Nombre del Producto -->
-                        <a th:href="@{/oferta/{id}(id=${o.id})}" style="text-decoration:none;">
-                            <h3 class="exito-card__title" th:text="${o.nombreProducto}">
-                                Nombre del producto
-                            </h3>
-                        </a>
-
-                        <!-- Precio por unidad -->
-                        <div class="exito-card__unit-price" th:if="${o.precio != null}">
-                            <span>Precio especial directo</span>
-                        </div>
-
-                        <!-- Fila de Descuento (Image 3) -->
-                        <div class="exito-card__discount-row">
-                            <span class="exito-discount-pill">-15%</span>
-                            <span class="exito-card__crossed-price"
-                                  th:text="'$' + ${#numbers.formatDecimal(o.precio * 1.18, 0, 'COMMA', 0, 'POINT')}">
-                                $0
-                            </span>
-                        </div>
-
-                        <!-- Precio Principal Naranja Grande -->
-                        <div class="exito-card__price-row">
-                            <span class="exito-card__main-price"
-                                  th:text="'$' + ${#numbers.formatDecimal(o.precio, 0, 'COMMA', 0, 'POINT')}">
-                                $0
-                            </span>
-                        </div>
-
-                        <!-- Precio Otros -->
-                        <div class="exito-card__other-price"
-                             th:text="'$' + ${#numbers.formatDecimal(o.precio * 1.05, 0, 'COMMA', 0, 'POINT')} + ' Otros'">
-                            $0 Otros
-                        </div>
-
-                        <!-- Vendido por: (Finca / Vendedor) -->
-                        <div class="exito-card__seller">
-                            Vendido por:
-                            <strong>
-                                <span th:text="${o.vendedor != null and o.vendedor.nombre != null ? o.vendedor.nombre : 'Productor Local'}">Vendedor</span>
-                            </strong>
-                            <span th:if="${o.vendedor != null and o.vendedor.verificado}" style="color:#27ae60;"
-                                  title="Verificado">✓</span>
-                        </div>
-
-                        <!-- Botón Naranja Vibrante "Agregar 🛒" (Exacto Image 3) -->
-                        <form th:action="@{/carrito/agregar}" method="post">
+                    <div class="product-card__actions">
+                        <!-- Si puede comprar -->
+                        <form th:if="${session.usuarioLogueado == null or session.usuarioLogueado.puedeComprar()}"
+                              th:action="@{/carrito/agregar}" method="post">
                             <input type="hidden" name="ofertaId" th:value="${o.id}">
-                            <input type="hidden" name="cantidad"
-                                   th:value="${o.compraMinima != null ? o.compraMinima : 1}">
-                            <button type="submit" class="exito-btn-add">
-                                Agregar <i class="fas fa-shopping-cart"></i>
+                            <input type="hidden" name="cantidad" th:value="${o.compraMinima != null ? o.compraMinima : 1}">
+                            <button type="submit" class="ui-btn ui-btn--primary ui-btn--full ui-btn--sm">
+                                <i class="fas fa-shopping-cart"></i> Agregar
                             </button>
                         </form>
-
-                    </article>
-
-                </div>
-
-                <!-- Paginación -->
-                <nav class="pub-pagination" th:if="${totalPages != null and totalPages > 1}"
-                     aria-label="Paginación de ofertas">
-                    <a class="pub-page-btn"
-                       th:classappend="${page <= 0 ? 'is-disabled' : ''}"
-                       th:href="@{/ofertas(page=${page - 1}, size=${size})} + '#lista-ofertas'"
-                       th:attr="aria-disabled=${page <= 0 ? 'true' : null}"
-                       rel="prev">
-                        <i class="fas fa-chevron-left"></i> Anterior
-                    </a>
-
-                    <div class="pub-page-numbers">
-                        <a th:if="${startPage > 0}" class="pub-page-num"
-                           th:href="@{/ofertas(page=0, size=${size})} + '#lista-ofertas'"
-                           th:text="1">1</a>
-                        <span th:if="${startPage > 1}" class="pub-page-ellipsis" aria-hidden="true">…</span>
-
-                        <a th:each="p : ${#numbers.sequence(startPage, endPage)}"
-                           class="pub-page-num"
-                           th:classappend="${p == page ? 'is-active' : ''}"
-                           th:href="@{/ofertas(page=${p}, size=${size})} + '#lista-ofertas'"
-                           th:attr="aria-current=${p == page ? 'page' : null}"
-                           th:text="${p + 1}">1</a>
-
-                        <span th:if="${endPage < totalPages - 2}" class="pub-page-ellipsis"
-                              aria-hidden="true">…</span>
-                        <a th:if="${endPage < totalPages - 1}" class="pub-page-num"
-                           th:href="@{/ofertas(page=${totalPages - 1}, size=${size})} + '#lista-ofertas'"
-                           th:text="${totalPages}">1</a>
+                        <!-- Si es vendedor (no puede comprar) -->
+                        <button th:if="${session.usuarioLogueado != null and !session.usuarioLogueado.puedeComprar()}"
+                                type="button" class="ui-btn ui-btn--vendor-blocked ui-btn--full ui-btn--sm" disabled
+                                title="Con cuenta de vendedor no puedes realizar compras">
+                            <i class="fas fa-store-slash"></i> Cuenta Vendedor
+                        </button>
                     </div>
-
-                    <a class="pub-page-btn"
-                       th:classappend="${page + 1 >= totalPages ? 'is-disabled' : ''}"
-                       th:href="@{/ofertas(page=${page + 1}, size=${size})} + '#lista-ofertas'"
-                       th:attr="aria-disabled=${page + 1 >= totalPages ? 'true' : null}"
-                       rel="next">
-                        Siguiente <i class="fas fa-chevron-right"></i>
-                    </a>
-
-                    <p class="pub-pagination__summary">
-                        Mostrando <strong th:text="${mostrandoDesde}">1</strong>–<strong
-                            th:text="${mostrandoHasta}">12</strong> de <strong th:text="${totalItems}">0</strong>
-                        ofertas
-                    </p>
-                </nav>
-
-                <!-- Estado Vacío -->
-                <div th:if="${#lists.isEmpty(ofertas)}" class="ofertas-empty">
-                    <i class="fas fa-tag"></i>
-                    <h3>Aún no hay ofertas disponibles</h3>
-                    <p>
-                        Los agricultores están preparando sus próximas cosechas. ¡Vuelve pronto para aprovechar los
-                        mejores precios!
-                    </p>
-                    <a th:href="@{/category}" class="carulla-btn-primary">
-                        Explorar catálogo
-                    </a>
                 </div>
+            </article>
+        </div>
 
-            </section>
+        <!-- ESTADO VACÍO -->
+        <div class="ui-empty" th:if="${#lists.isEmpty(ofertas)}">
+            <div class="ui-empty__icon"><i class="fas fa-tag"></i></div>
+            <h3 class="ui-empty__title">Aún no hay ofertas disponibles</h3>
+            <p class="ui-empty__desc">
+                Los agricultores están cosechando nuevos lotes. ¡Vuelve pronto o revisa los productos disponibles en nuestro catálogo!
+            </p>
+            <a th:href="@{/category}" class="ui-btn ui-btn--secondary" style="margin-top: 12px;">
+                Explorar catálogo
+            </a>
+        </div>
+
+        <!-- PAGINACIÓN -->
+        <div class="ui-pagination" th:if="${totalPages != null and totalPages > 1}">
+            <a class="ui-btn ui-btn--secondary ui-btn--sm"
+               th:classappend="${page <= 0 ? 'ui-btn--disabled' : ''}"
+               th:href="@{/ofertas(page=${page - 1}, size=${size})} + '#lista-ofertas'">
+                <i class="fas fa-chevron-left"></i> Anterior
+            </a>
+
+            <div style="display: flex; gap: 4px;">
+                <a th:each="p : ${#numbers.sequence(startPage, endPage)}"
+                   th:href="@{/ofertas(page=${p}, size=${size})} + '#lista-ofertas'"
+                   class="ui-btn ui-btn--sm"
+                   th:classappend="${p == page ? 'ui-btn--primary' : 'ui-btn--secondary'}"
+                   th:text="${p + 1}">1</a>
+            </div>
+
+            <a class="ui-btn ui-btn--secondary ui-btn--sm"
+               th:classappend="${page + 1 >= totalPages ? 'ui-btn--disabled' : ''}"
+               th:href="@{/ofertas(page=${page + 1}, size=${size})} + '#lista-ofertas'">
+                Siguiente <i class="fas fa-chevron-right"></i>
+            </a>
         </div>
     </main>
 
-    <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
+    <!-- FOOTER INSTITUCIONAL -->
+    <th:block th:replace="~{fragments/footer :: siteFooter}"></th:block>
 
-    <script>
-        function toggleFavorito(btn) {
-            btn.classList.toggle('favorited');
-            var icon = btn.querySelector('i');
-            icon.className = btn.classList.contains('favorited') ? 'fas fa-heart' : 'far fa-heart';
-            btn.setAttribute('aria-label',
-                btn.classList.contains('favorited') ? 'Quitar de favoritos' : 'Añadir a favoritos');
-        }
-    </script>
 </body>
 
 </html>

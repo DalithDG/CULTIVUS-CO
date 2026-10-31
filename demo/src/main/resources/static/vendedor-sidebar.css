@@ -10,36 +10,36 @@
 
 /* ── Variables de Diseño ───────────────────────────────────── */
 :root {
-    --vs-green:        #1f7a3a;
-    --vs-green-dark:   #14552a;
-    --vs-green-deep:   #0a351a;
-    --vs-green-light:  #e9f6ed;
-    --vs-green-soft:   #f4fbf6;
-    --vs-lime:         #b8e986;
-    --vs-ink:          #111e15;
-    --vs-ink-soft:     #243529;
-    --vs-muted:        #5e7264;
-    --vs-line:         #e2ece4;
-    --vs-line-strong:  #cfe0d3;
-    --vs-bg:           #f5f9f6;
+    --vs-green:        #367A45;
+    --vs-green-dark:   #2B6337;
+    --vs-green-deep:   #30372D;
+    --vs-green-light:  #EBF3ED;
+    --vs-green-soft:   #FAF6EB;
+    --vs-lime:         #EABF45;
+    --vs-ink:          #30372D;
+    --vs-ink-soft:     #4A5546;
+    --vs-muted:        #795548;
+    --vs-line:         #E9E2D0;
+    --vs-line-strong:  #DDD3BA;
+    --vs-bg:           #FAF6EB;
     --vs-card:         #ffffff;
-    --vs-amber:        #b45309;
-    --vs-amber-bg:     #fef3c7;
-    --vs-amber-line:   #fde68a;
-    --vs-red:          #b91c1c;
-    --vs-red-bg:       #fee2e2;
-    --vs-red-line:     #fecaca;
-    --vs-blue:         #1d4ed8;
-    --vs-blue-bg:      #eff6ff;
-    --vs-blue-line:    #bfdbfe;
+    --vs-amber:        #614805;
+    --vs-amber-bg:     #FDF6E2;
+    --vs-amber-line:   #EABF45;
+    --vs-red:          #A5382B;
+    --vs-red-bg:       #FBEDEA;
+    --vs-red-line:     #F0CFC9;
+    --vs-blue:         #367A45;
+    --vs-blue-bg:      #EBF3ED;
+    --vs-blue-line:    #DDD3BA;
     --vs-sidebar-w:    252px;
     --vs-topbar-h:     64px;
     --vs-radius-sm:    12px;
     --vs-radius:       18px;
     --vs-radius-lg:    22px;
-    --vs-shadow-sm:    0 1px 3px rgba(15, 52, 27, 0.05);
-    --vs-shadow-card:  0 4px 18px -4px rgba(15, 52, 27, 0.06), 0 1px 3px rgba(15, 52, 27, 0.04);
-    --vs-shadow-md:    0 18px 42px -22px rgba(15, 52, 27, 0.20);
+    --vs-shadow-sm:    0 1px 3px rgba(48, 55, 45, 0.05);
+    --vs-shadow-card:  0 4px 18px -4px rgba(48, 55, 45, 0.06), 0 1px 3px rgba(48, 55, 45, 0.04);
+    --vs-shadow-md:    0 14px 34px -16px rgba(48, 55, 45, 0.12);
     --vs-transition:   180ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -50,12 +50,9 @@
 }
 
 body.vs-layout {
-    font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
-    background:
-        radial-gradient(circle at 8% -10%, rgba(184, 233, 134, 0.20), transparent 36rem),
-        radial-gradient(circle at 100% 10%, rgba(31, 122, 58, 0.08), transparent 32rem),
-        var(--vs-bg);
+    background: var(--vs-bg);
     color: var(--vs-ink);
     min-height: 100vh;
     overflow-x: hidden;
@@ -1197,8 +1194,8 @@ body.vs-layout > .site-footer {
 .field select,
 .field textarea {
     width: 100%;
-    min-height: 46px;
-    padding: 11px 14px;
+    min-height: 48px;
+    padding: 12px 14px;
     border: 1px solid var(--vs-line-strong);
     border-radius: 12px;
     font-size: 0.95rem;

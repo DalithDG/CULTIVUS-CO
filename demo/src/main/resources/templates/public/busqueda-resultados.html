@@ -6,123 +6,163 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Resultados de Búsqueda | Cultivus</title>
-    <link rel="stylesheet" th:href="@{/style.css}">
-    <link rel="stylesheet" th:href="@{/busqueda.css}">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <link rel="stylesheet" th:href="@{/header.css}">
+
+    <link rel="stylesheet" th:href="@{/checkout-tokens.css}">
+    <link rel="stylesheet" th:href="@{/cultivus-ui.css}">
+    <link rel="stylesheet" th:href="@{/catalog-apple.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
 </head>
 
-<body>
-    <!-- Header -->
-    <header th:replace="~{fragments/header :: siteHeader}"></header>
+<body class="catalog-page">
 
-    <div class="busqueda-container">
-        <!-- Banner de Resultados -->
-        <div class="busqueda-header">
-            <h1>Resultados de Búsqueda</h1>
-            <p th:if="${query}" class="query-text">
-                <i class="fas fa-search"></i> Explorando: "<span th:text="${query}"></span>"
+    <!-- HEADER INSTITUCIONAL -->
+    <th:block th:replace="~{fragments/header :: siteHeader}"></th:block>
+
+    <main class="ui-container">
+        <!-- BREADCRUMB & CABECERA -->
+        <header class="catalog-header">
+            <nav class="ui-breadcrumb" aria-label="Migas de pan">
+                <a th:href="@{/}"><i class="fas fa-home"></i> Inicio</a>
+                <span class="sep">/</span>
+                <span class="current">Búsqueda</span>
+            </nav>
+
+            <h1 class="ui-title-1">Resultados de Búsqueda</h1>
+            <p class="ui-subtitle" th:if="${query}">
+                Explorando cosechas para: <strong>"<span th:text="${query}"></span>"</strong>
             </p>
-            <div class="total-resultados">
-                <span th:text="${totalResultados}">0</span> 
-                <span th:text="${totalResultados == 1 ? 'producto encontrado' : 'productos encontrados'}">productos encontrados</span>
-            </div>
-        </div>
+        </header>
 
-        <div class="busqueda-content">
-            <!-- Sidebar de Filtros -->
-            <aside class="filtros">
-                <h3><i class="fas fa-sliders-h"></i> Refinar Búsqueda</h3>
+        <!-- LAYOUT DE BÚSQUEDA (SIDEBAR + RESULTADOS) -->
+        <div class="catalog-layout">
 
+            <!-- SIDEBAR DE FILTROS -->
+            <aside class="catalog-sidebar" aria-label="Filtros de búsqueda">
                 <form th:action="@{/buscar}" method="get" id="filterForm">
                     <input type="hidden" name="q" th:value="${query}">
 
-                    <div class="filtro-grupo">
-                        <label><i class="fas fa-tag"></i> Categoría</label>
-                        <select name="categoria" onchange="this.form.submit()">
-                            <option value="">Todas las categorías</option>
-                            <option th:each="cat : ${categorias}" th:value="${cat.id}" th:text="${cat.nombre}"
-                                th:selected="${cat.id == categoriaSeleccionada}">
-                            </option>
-                        </select>
+                    <div class="sidebar-header">
+                        <h2 class="sidebar-header__title">
+                            <i class="fas fa-sliders"></i> Refinar Búsqueda
+                        </h2>
+                        <a th:href="@{/buscar(q=${query})}" class="sidebar-header__clear">
+                            Limpiar
+                        </a>
                     </div>
 
-                    <div class="filtro-grupo">
-                        <label><i class="fas fa-dollar-sign"></i> Rango de Precio</label>
-                        <div style="display: flex; gap: 10px; align-items: center;">
-                            <input type="number" name="precioMin" th:value="${precioMin}" placeholder="Mín" min="0">
-                            <span>-</span>
-                            <input type="number" name="precioMax" th:value="${precioMax}" placeholder="Máx" min="0">
+                    <div class="filter-group">
+                        <h3 class="filter-group__title">Categoría</h3>
+                        <div class="ui-field-wrap">
+                            <select name="categoria" class="ui-select" onchange="this.form.submit()">
+                                <option value="">Todas las categorías</option>
+                                <option th:each="cat : ${categorias}" th:value="${cat.id}" th:text="${cat.nombre}"
+                                        th:selected="${cat.id == categoriaSeleccionada}">
+                                </option>
+                            </select>
                         </div>
                     </div>
 
-                    <div class="filtro-grupo">
-                        <label><i class="fas fa-sort-amount-down"></i> Ordenar</label>
-                        <select name="orden" onchange="this.form.submit()">
-                            <option value="recientes" th:selected="${orden == 'recientes'}">Más recientes</option>
-                            <option value="precio-asc" th:selected="${orden == 'precio-asc'}">Precio: Menor a Mayor</option>
-                            <option value="precio-desc" th:selected="${orden == 'precio-desc'}">Precio: Mayor a Menor</option>
-                            <option value="nombre" th:selected="${orden == 'nombre'}">Nombre A-Z</option>
-                        </select>
+                    <div class="filter-group">
+                        <h3 class="filter-group__title">Rango de Precio ($)</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                            <input type="number" name="precioMin" th:value="${precioMin}" placeholder="Mín" min="0" class="ui-input">
+                            <input type="number" name="precioMax" th:value="${precioMax}" placeholder="Máx" min="0" class="ui-input">
+                        </div>
                     </div>
 
-                    <button type="submit" class="btn-filtrar">
+                    <div class="filter-group">
+                        <h3 class="filter-group__title">Ordenar por</h3>
+                        <div class="ui-field-wrap">
+                            <select name="orden" class="ui-select" onchange="this.form.submit()">
+                                <option value="recientes" th:selected="${orden == 'recientes'}">Más recientes</option>
+                                <option value="precio-asc" th:selected="${orden == 'precio-asc'}">Precio: Menor a Mayor</option>
+                                <option value="precio-desc" th:selected="${orden == 'precio-desc'}">Precio: Mayor a Menor</option>
+                                <option value="nombre" th:selected="${orden == 'nombre'}">Nombre A-Z</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="ui-btn ui-btn--primary ui-btn--full">
                         <i class="fas fa-filter"></i> Aplicar Filtros
                     </button>
-                    
-                    <a th:href="@{/buscar(q=${query})}" class="btn-limpiar" style="display: block; text-align: center; margin-top: 15px; color: var(--text-secondary); text-decoration: none; font-size: 14px;">
-                        Limpiar filtros
-                    </a>
                 </form>
             </aside>
 
-            <!-- Grid de Resultados -->
-            <div class="resultados">
-                <div th:if="${productos.empty}" class="no-resultados">
-                    <i class="fas fa-search-minus"></i>
-                    <p>No encontramos coincidencias para tu búsqueda.</p>
-                    <a th:href="@{/category}" class="btn-view-all" style="margin-top: 20px;">Ver todo el catálogo</a>
-                </div>
-
-                <div class="productos-grid">
-                    <div th:each="producto : ${productos}" class="producto-card">
-                        <div class="card-img-wrapper" style="position: relative; overflow: hidden; height: 240px;">
-                            <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}" 
-                                 onerror="this.src='/images/placeholder.jpg'"
-                                 style="width: 100%; height: 100%; object-fit: cover; transition: var(--transition);">
-                            <span class="product-badge" th:if="${producto.totalVendedores > 0}" th:text="${producto.totalVendedores + ' Oferta(s)'}"></span>
-                        </div>
-                        
-                        <div class="card-body" style="padding: 24px;">
-                            <h3 th:text="${producto.nombre}">Nombre</h3>
-                            
-                            <div class="precio-container" style="margin-bottom: 15px;">
-                                <p class="precio" th:if="${producto.precioMinimo != null}" 
-                                   th:text="'$' + ${#numbers.formatDecimal(producto.precioMinimo, 0, 'COMMA', 0, 'POINT')}">
-                                </p>
-                                <p class="precio" th:if="${producto.precioMinimo == null}" style="color: var(--gray-400); font-size: 18px;">
-                                    Próximamente
-                                </p>
-                            </div>
-                            
-                            <p class="stock" th:if="${producto.stockTotal != null}">
-                                <i class="fas fa-boxes"></i> 
-                                <span th:text="${producto.stockTotal + ' ' + (producto.unidadMedida ?: 'unid') + ' disponibles'}"></span>
-                            </p>
-                        </div>
-
-                        <a th:href="@{/producto/{id}(id=${producto.id})}" class="btn-ver">
-                            <i class="fas fa-eye"></i> Ver Detalles
-                        </a>
+            <!-- RESULTADOS -->
+            <section class="catalog-results" aria-label="Resultados encontrados">
+                <div class="catalog-toolbar">
+                    <div class="catalog-toolbar__count">
+                        <i class="fas fa-search"></i>
+                        <span>
+                            <strong th:text="${totalResultados != null ? totalResultados : 0}">0</strong>
+                            <span th:text="${totalResultados == 1 ? 'producto encontrado' : 'productos encontrados'}">productos encontrados</span>
+                        </span>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Footer -->
-    <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
+                <!-- Estado Vacío -->
+                <div class="ui-empty" th:if="${productos == null or productos.isEmpty()}">
+                    <div class="ui-empty__icon"><i class="fas fa-search-minus"></i></div>
+                    <h3 class="ui-empty__title">No encontramos coincidencias</h3>
+                    <p class="ui-empty__desc">Intenta buscando con otros términos o explora todas nuestras categorías.</p>
+                    <a th:href="@{/category}" class="ui-btn ui-btn--secondary" style="margin-top: 12px;">
+                        Ver todo el catálogo
+                    </a>
+                </div>
+
+                <!-- Grid de Productos Encontrados -->
+                <div class="product-grid" th:if="${productos != null and !productos.isEmpty()}">
+                    <article class="product-card" th:each="producto : ${productos}">
+                        <a th:href="@{/producto/{id}(id=${producto.id})}" class="product-card__img-wrap">
+                            <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}" 
+                                 class="product-card__img" loading="lazy"
+                                 onerror="this.src='/images/placeholder.jpg'">
+                            <span class="ui-chip ui-chip--gold product-card__badge" th:if="${producto.totalVendedores > 0}"
+                                  th:text="${producto.totalVendedores + ' Oferta(s)'}"></span>
+                        </a>
+
+                        <div class="product-card__body">
+                            <a th:href="@{/producto/{id}(id=${producto.id})}" style="text-decoration:none; color:inherit;">
+                                <h3 class="product-card__title" th:text="${producto.nombre}">Nombre</h3>
+                            </a>
+
+                            <div class="product-card__price-row">
+                                <span class="product-card__price" th:if="${producto.precioMinimo != null}" 
+                                      th:text="'$' + ${#numbers.formatDecimal(producto.precioMinimo, 0, 'COMMA', 0, 'POINT')}">
+                                    $0
+                                </span>
+                                <span class="product-card__price" th:if="${producto.precioMinimo == null}"
+                                      style="font-size: 1rem; color: var(--c-earth); font-weight: 500;">
+                                    Próximamente
+                                </span>
+                            </div>
+
+                            <p style="font-size: 0.8rem; color: var(--c-earth); margin-bottom: 8px;" th:if="${producto.stockTotal != null}">
+                                <i class="fas fa-boxes-stacked"></i> 
+                                <span th:text="${producto.stockTotal + ' ' + (producto.unidadMedida ?: 'unid') + ' disponibles'}"></span>
+                            </p>
+
+                            <div class="product-card__actions">
+                                <a th:href="@{/producto/{id}(id=${producto.id})}" class="ui-btn ui-btn--primary ui-btn--full ui-btn--sm">
+                                    <i class="fas fa-eye"></i> Ver Detalles
+                                </a>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- FOOTER INSTITUCIONAL -->
+    <th:block th:replace="~{fragments/footer :: siteFooter}"></th:block>
+
 </body>
 
 </html>

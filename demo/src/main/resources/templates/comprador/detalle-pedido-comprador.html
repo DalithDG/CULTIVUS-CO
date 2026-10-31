@@ -5,233 +5,145 @@
     <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cultivus - Factura de Compra</title>
+    <title>Cultivus - Comprobante de Compra</title>
 
-    <link rel="stylesheet" th:href="@{/style.css}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
-        integrity="sha512-RXf+QSDCUQs6Q0p2U2uD2OeR5xw8n5T6vCJ7/3zvK3YyEdSpYohhjFExz04szsP1CZq0w0C+YyXWZP8y+e2xUg=="
-        crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <style>
-        .detalle-container {
-            max-width: 1000px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
-
-        .pedido-card {
-            background: white;
-            border-radius: 10px;
-            padding: 30px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-        }
-
-        .pedido-header {
-            border-bottom: 2px solid #e0e0e0;
-            padding-bottom: 20px;
-            margin-bottom: 20px;
-        }
-
-        .pedido-id {
-            font-size: 24px;
-            font-weight: bold;
-            color: #27ae60;
-            margin-bottom: 10px;
-        }
-
-        .pedido-info {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 15px;
-        }
-
-        .info-item {
-            color: #666;
-        }
-
-        .info-item strong {
-            color: #333;
-        }
-
-        .estado-badge {
-            display: inline-block;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        .estado-pendiente {
-            background: #fff3cd;
-            color: #856404;
-        }
-
-        .estado-proceso {
-            background: #d1ecf1;
-            color: #0c5460;
-        }
-
-        .estado-completado {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .estado-confirmado {
-            background: #dcfce7;
-            color: #15803d;
-        }
-
-        .estado-revision {
-            background: #fef3c7;
-            color: #b45309;
-        }
-
-        .estado-cancelado {
-            background: #fee2e2;
-            color: #b91c1c;
-        }
-
-        .estado-enviado {
-            background: #e0f2fe;
-            color: #0369a1;
-        }
-
-        .productos-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        .productos-table th,
-        .productos-table td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #e0e0e0;
-        }
-
-        .productos-table th {
-            background: #f8f9fa;
-            font-weight: 600;
-            color: #333;
-        }
-
-        .productos-table tr:hover {
-            background: #f8f9fa;
-        }
-
-        .total-section {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 2px solid #27ae60;
-            text-align: right;
-        }
-
-        .total-amount {
-            font-size: 24px;
-            font-weight: bold;
-            color: #27ae60;
-        }
-
-        .btn-volver {
-            background: #6c757d;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
-            margin-bottom: 20px;
-            transition: background 0.3s;
-        }
-
-        .btn-volver:hover {
-            background: #5a6268;
-        }
-    </style>
-    <link rel="stylesheet" th:href="@{/header.css}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <link rel="stylesheet" th:href="@{/checkout-tokens.css}">
+    <link rel="stylesheet" th:href="@{/cultivus-ui.css}">
+    <link rel="stylesheet" th:href="@{/buyer-apple.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
 </head>
 
-<body>
+<body class="order-detail-page">
+
+    <!-- HEADER INSTITUCIONAL -->
     <header th:replace="~{fragments/header :: siteHeader}"></header>
 
-    <div class="detalle-container">
-        <a th:href="@{/usuario/pedidos}" class="btn-volver">
-            <i class="fa-solid fa-arrow-left"></i> Volver a Mis Compras
-        </a>
+    <main class="ui-container">
+        <div class="order-detail-wrap">
 
-        <div class="pedido-card">
-            <div class="pedido-header">
-                <div class="pedido-id" th:text="${pedido.numeroFactura}">Factura #CLT-XXXXXX</div>
-                <div class="pedido-info">
-                    <div class="info-item">
-                        <strong><i class="fa-solid fa-calendar"></i> Fecha del Pedido:</strong>
-                        <span th:text="${#temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm')}"></span>
+            <!-- BOTÓN VOLVER -->
+            <div style="margin-bottom: 20px;">
+                <a th:href="@{/usuario/pedidos}" class="ui-btn ui-btn--tertiary ui-btn--sm" style="padding-left: 0;">
+                    <i class="fas fa-arrow-left"></i> Volver a Mis Compras
+                </a>
+            </div>
+
+            <!-- ALERTAS FLASH -->
+            <div th:if="${mensaje}" class="ui-alert ui-alert--success">
+                <i class="fas fa-check-circle"></i>
+                <span th:text="${mensaje}"></span>
+            </div>
+            <div th:if="${error}" class="ui-alert ui-alert--danger">
+                <i class="fas fa-exclamation-circle"></i>
+                <span th:text="${error}"></span>
+            </div>
+
+            <!-- COMPROBANTE PRINCIPAL -->
+            <article class="ui-card">
+                <!-- Cabecera del comprobante -->
+                <div class="voucher-header">
+                    <div>
+                        <span class="ui-chip ui-chip--wheat" style="margin-bottom: 8px;">Comprobante de Pedido</span>
+                        <h1 class="voucher-code" th:text="${pedido.numeroFactura}">Factura #CLT-XXXXXX</h1>
+                        <p style="font-size: 0.88rem; color: var(--c-earth); margin: 0;">
+                            Emitido por la plataforma Cultivus en conexión directa con el productor.
+                        </p>
                     </div>
-                    <div class="info-item">
-                        <strong><i class="fa-solid fa-store"></i> Establecimiento:</strong>
-                        <span th:text="${pedido.vendedor != null ? pedido.vendedor.nombreNegocio : 'Productor Local'}"></span>
-                    </div>
-                    <div class="info-item">
-                        <strong><i class="fa-solid fa-user"></i> Vendedor:</strong>
-                        <span th:text="${pedido.vendedor != null ? pedido.vendedor.nombreVendedor : 'Usuario Cultivus'}"></span>
-                    </div>
-                    <div class="info-item">
-                        <strong><i class="fa-solid fa-truck"></i> Estado del Envío:</strong>
-                        <span class="estado-badge" 
-                              th:classappend="'estado-' + ${pedido.estadoCss}"
-                              th:text="${pedido.estadoEtiqueta}">
-                        </span>
-                    </div>
-                    <div class="info-item">
-                        <strong><i class="fa-solid fa-box"></i> Modalidad:</strong>
-                        <span style="color: #16a34a; font-weight: 600;">
-                            <i class="fa-solid fa-truck"></i> Envío a Domicilio
+
+                    <div>
+                        <!-- Chip de estado dinámico -->
+                        <span class="ui-chip"
+                              th:classappend="${pedido.estadoCss == 'completado' or pedido.estadoCss == 'confirmado' ? 'ui-chip--green' :
+                                               pedido.estadoCss == 'cancelado' ? 'ui-chip--danger' : 'ui-chip--gold'}"
+                              th:text="${pedido.estadoEtiqueta}" style="font-size: 0.85rem; padding: 6px 14px;">
+                            Confirmado
                         </span>
                     </div>
                 </div>
-            </div>
 
-            <h3 style="margin-top: 30px; color: #27ae60;">Productos en este paquete</h3>
-            <table class="productos-table">
-                <thead>
-                    <tr>
-                        <th>Producto</th>
-                        <th>Cantidad</th>
-                        <th>Precio Unitario</th>
-                        <th>Subtotal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr th:each="detalle : ${detalles}">
-                        <td>
-                            <strong th:text="${detalle.nombreSnapshot}"></strong>
-                        </td>
-                        <td th:text="${detalle.cantidad}"></td>
-                        <td th:text="${#numbers.formatDecimal(detalle.precioUnitario, 0, 'COMMA', 2, 'POINT')}">$0.00</td>
-                        <td th:text="${#numbers.formatDecimal(detalle.subtotal, 0, 'COMMA', 2, 'POINT')}">$0.00</td>
-                    </tr>
-                </tbody>
-            </table>
+                <!-- Metadatos del Pedido -->
+                <div class="voucher-meta-row">
+                    <div class="voucher-meta-box">
+                        <label><i class="fas fa-calendar"></i> Fecha del Pedido</label>
+                        <p th:text="${#temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm')}">01/01/2026 12:00</p>
+                    </div>
 
-            <div class="total-section">
-                <div class="total-amount">
-                    Subtotal del Paquete: $<span th:text="${#numbers.formatDecimal(pedido.total, 0, 'COMMA', 2, 'POINT')}">0.00</span>
+                    <div class="voucher-meta-box">
+                        <label><i class="fas fa-store"></i> Finca / Productor</label>
+                        <p th:text="${pedido.vendedor != null ? pedido.vendedor.nombreNegocio : 'Productor Local'}">Finca Local</p>
+                    </div>
+
+                    <div class="voucher-meta-box">
+                        <label><i class="fas fa-user"></i> Agricultor</label>
+                        <p th:text="${pedido.vendedor != null ? pedido.vendedor.nombreVendedor : 'Usuario Cultivus'}">Campesino Aliado</p>
+                    </div>
+
+                    <div class="voucher-meta-box">
+                        <label><i class="fas fa-truck"></i> Modalidad</label>
+                        <p style="color: var(--c-green); font-weight: 700;">
+                            <i class="fas fa-truck-fast"></i> Envío a Domicilio
+                        </p>
+                    </div>
                 </div>
-            </div>
+
+                <!-- Lista de Productos -->
+                <h2 style="font-size: 1.15rem; font-weight: 700; color: var(--c-ink); margin: 28px 0 12px;">
+                    <i class="fas fa-boxes-stacked" style="color: var(--c-green);"></i> Productos en este paquete
+                </h2>
+
+                <table class="voucher-table">
+                    <thead>
+                        <tr>
+                            <th>Cosecha / Alimento</th>
+                            <th style="text-align: center;">Cantidad</th>
+                            <th style="text-align: right;">Precio Unitario</th>
+                            <th style="text-align: right;">Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="detalle : ${detalles}">
+                            <td>
+                                <strong th:text="${detalle.nombreSnapshot}">Nombre de Producto</strong>
+                            </td>
+                            <td style="text-align: center;" th:text="${detalle.cantidad}">1</td>
+                            <td style="text-align: right;" th:text="'$' + ${#numbers.formatDecimal(detalle.precioUnitario, 0, 'POINT', 0, 'COMMA')}">$0</td>
+                            <td style="text-align: right;" th:text="'$' + ${#numbers.formatDecimal(detalle.subtotal, 0, 'POINT', 0, 'COMMA')}">$0</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Resumen de Totales -->
+                <div class="voucher-total-card">
+                    <div class="voucher-total-box">
+                        <div class="total-label">Total del Paquete</div>
+                        <div class="total-value">
+                            $<span th:text="${#numbers.formatDecimal(pedido.total, 0, 'POINT', 0, 'COMMA')}">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tira de Confianza del Comprobante -->
+                <div style="margin-top: 36px; padding-top: 20px; border-top: 1px solid var(--c-line); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+                    <span style="font-size: 0.85rem; color: var(--c-earth);">
+                        <i class="fas fa-shield-halved" style="color: var(--c-green);"></i> Pago protegido por la plataforma Cultivus
+                    </span>
+                    <a th:href="@{/category}" class="ui-btn ui-btn--primary ui-btn--sm">
+                        <i class="fas fa-basket-shopping"></i> Seguir Comprando
+                    </a>
+                </div>
+            </article>
+
         </div>
-    </div>
+    </main>
 
-    <!-- Mensajes Flash -->
-    <div th:if="${mensaje}" style="position: fixed; top: 100px; right: 20px; background: #d4edda; color: #155724; padding: 15px; border-radius: 5px; z-index: 1000;">
-        <span th:text="${mensaje}"></span>
-    </div>
-    <div th:if="${error}" style="position: fixed; top: 100px; right: 20px; background: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px; z-index: 1000;">
-        <span th:text="${error}"></span>
-    </div>
-
+    <!-- FOOTER INSTITUCIONAL -->
     <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
+
 </body>
+
 </html>

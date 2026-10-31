@@ -6,308 +6,268 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Inicio de comprador - Cultivus">
-    <title>Inicio - Cultivus</title>
+    <title>Inicio | Cultivus</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" th:href="@{/comprador.css}">
-    <link rel="stylesheet" th:href="@{/header.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <link rel="stylesheet" th:href="@{/checkout-tokens.css}">
+    <link rel="stylesheet" th:href="@{/cultivus-ui.css}">
+    <link rel="stylesheet" th:href="@{/catalog-apple.css}">
+    <link rel="stylesheet" th:href="@{/buyer-apple.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
 </head>
 
-<body>
+<body class="home-page">
 
-    <!-- Header Comprador (fragment) -->
+    <!-- HEADER DEL COMPRADOR -->
     <header th:replace="~{fragments/header-comprador :: siteHeader}"></header>
 
     <main>
+        <!-- 1. HERO COMPACTO Y PERSONALIZADO -->
+        <section class="home-hero" aria-label="Bienvenida personalizada">
+            <div class="home-hero__inner">
+                <div class="home-hero__content">
+                    <span class="home-hero__badge">
+                        <i class="fas fa-leaf"></i> Mercado Campesino Cultivus
+                    </span>
 
-        <!-- ================= HERO ================= -->
-        <section class="hero">
-            <div class="container hero-inner">
-                <div class="hero-text">
-                    <div class="hero-title-row">
-                        <i class="fas fa-leaf hero-leaf"></i>
-                        <h1>¡Bienvenido de nuevo!</h1>
+                    <h1 class="home-hero__title">
+                        <th:block th:if="${session.usuarioLogueado != null and session.usuarioLogueado.nombre != null}">
+                            ¡Hola, <span th:text="${session.usuarioLogueado.nombre}">Comprador</span>!
+                        </th:block>
+                        <th:block th:if="${session.usuarioLogueado == null or session.usuarioLogueado.nombre == null}">
+                            ¡Bienvenido de nuevo!
+                        </th:block>
+                    </h1>
+
+                    <p class="home-hero__subtitle">
+                        Descubre cosechas frescas directamente de productores locales de Bolívar y toda Colombia.
+                        Alimentos sanos, precios justos y entrega garantizada.
+                    </p>
+
+                    <div class="home-hero__actions">
+                        <a th:href="@{/category}" class="ui-btn ui-btn--primary ui-btn--lg">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span>Explorar Catálogo</span>
+                        </a>
+                        <a th:href="@{/usuario/pedidos}" class="ui-btn ui-btn--secondary ui-btn--lg">
+                            <i class="fas fa-receipt"></i>
+                            <span>Mis Pedidos</span>
+                        </a>
                     </div>
-                    <p>Descubre productos frescos y de calidad directamente de productores locales.</p>
-                    <a th:href="@{/category}" class="btn-hero">
-                        <i class="fas fa-shopping-cart"></i>
-                        Comprar ahora
-                        <i class="fas fa-arrow-right"></i>
-                    </a>
                 </div>
 
-                <div class="hero-badges">
-                    <div class="hero-badge">
-                        <i class="fas fa-leaf"></i>
-                        <div>
-                            <strong>Productos frescos</strong>
-                            <span>Del campo a tu mesa</span>
-                        </div>
+                <div class="home-hero__visual" aria-hidden="true">
+                    <div class="home-hero__image-card">
+                        <img th:src="@{/images/ImagenIndex4.jpg}" alt="Cosechas colombianas"
+                             onerror="this.src='/images/hero-background.jpg'">
                     </div>
-                    <div class="hero-badge">
-                        <i class="fas fa-shield-alt"></i>
-                        <div>
-                            <strong>Compra segura</strong>
-                            <span>Tus datos protegidos</span>
+                    <div class="home-hero__float-card">
+                        <div class="home-hero__float-icon">
+                            <i class="fas fa-shield-halved"></i>
                         </div>
-                    </div>
-                    <div class="hero-badge">
-                        <i class="fas fa-user-tie"></i>
-                        <div>
-                            <strong>Productores locales</strong>
-                            <span>Apoyas la economía rural</span>
+                        <div class="home-hero__float-text">
+                            <strong>Compra 100% Protegida</strong>
+                            <span>Seguimiento y garantía total</span>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- ================= PRODUCTOS DESTACADOS ================= -->
-        <section class="section">
-            <div class="container">
-                <div class="section-header">
-                    <div class="section-title">
-                        <i class="fas fa-leaf section-icon"></i>
-                        <div>
-                            <h2>Productos destacados</h2>
-                            <p>Los más frescos y populares de nuestra tienda</p>
-                        </div>
+        <!-- 2. BARRA DE BENEFICIOS -->
+        <section class="trust-bar" aria-label="Beneficios">
+            <div class="trust-bar__card">
+                <div class="trust-item">
+                    <div class="trust-item__icon"><i class="fas fa-leaf"></i></div>
+                    <div class="trust-item__text">
+                        <strong>Cosechas Frescas</strong>
+                        <span>Del campo a tu hogar</span>
                     </div>
-                    <a th:href="@{/category}" class="view-all">
-                        Ver todos los productos
-                        <i class="fas fa-arrow-right"></i>
-                    </a>
                 </div>
+                <div class="trust-item">
+                    <div class="trust-item__icon"><i class="fas fa-truck-fast"></i></div>
+                    <div class="trust-item__text">
+                        <strong>Envíos Confiables</strong>
+                        <span>Directo desde las fincas</span>
+                    </div>
+                </div>
+                <div class="trust-item">
+                    <div class="trust-item__icon"><i class="fas fa-shield-halved"></i></div>
+                    <div class="trust-item__text">
+                        <strong>Compra Segura</strong>
+                        <span>Pagos protegidos con Wompi</span>
+                    </div>
+                </div>
+                <div class="trust-item">
+                    <div class="trust-item__icon"><i class="fas fa-hat-cowboy"></i></div>
+                    <div class="trust-item__text">
+                        <strong>Comercio Justo</strong>
+                        <span>Apoyas directamente al campesino</span>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-                <!-- Si hay productos -->
-                <div th:if="${productos != null and !productos.isEmpty()}" class="products-grid">
-                    <article th:each="producto, iterStat : ${productos}" th:if="${iterStat.index < 4}"
-                        class="product-card">
-                        <div class="product-image">
-                            <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}"
-                                onerror="this.onerror=null;this.src='/images/placeholder.jpg'">
-                            <span class="product-badge"><i class="fas fa-leaf"></i> Fresco</span>
-                            <button type="button" class="btn-fav" aria-label="Agregar a favoritos">
-                                <i class="far fa-heart"></i>
-                            </button>
+        <!-- 3. PRODUCTOS DESTACADOS -->
+        <section class="ui-container" id="productos-destacados" aria-label="Productos destacados">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-header__title">Productos Destacados</h2>
+                    <p class="section-header__subtitle">Los alimentos más frescos y populares de la semana.</p>
+                </div>
+                <a th:href="@{/category}" class="section-header__link">
+                    Ver todos los productos <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div th:if="${productos != null and !productos.isEmpty()}" class="product-grid">
+                <article th:each="producto, iterStat : ${productos}" th:if="${iterStat.index < 4}" class="product-card">
+                    <a th:href="@{/producto/{id}(id=${producto.id})}" class="product-card__img-wrap">
+                        <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}"
+                             class="product-card__img" loading="lazy"
+                             onerror="this.onerror=null;this.src='/images/placeholder.jpg'">
+                        <span class="ui-chip ui-chip--green product-card__badge">
+                            <i class="fas fa-leaf"></i> Fresco
+                        </span>
+                    </a>
+
+                    <div class="product-card__body">
+                        <span class="product-card__producer">Productor local</span>
+
+                        <a th:href="@{/producto/{id}(id=${producto.id})}" style="text-decoration:none; color:inherit;">
+                            <h3 class="product-card__title" th:text="${producto.nombre}">Nombre del producto</h3>
+                        </a>
+
+                        <div class="product-card__price-row">
+                            <span class="product-card__price" th:if="${producto.precioMinimo != null}"
+                                  th:text="'Desde $' + ${#numbers.formatDecimal(producto.precioMinimo, 0, 'POINT', 0, 'COMMA')}">$0</span>
+                            <span class="product-card__price" th:unless="${producto.precioMinimo != null}"
+                                  style="font-size: 1rem; color: var(--c-earth); font-weight: 500;">Próximamente</span>
                         </div>
 
-                        <div class="product-info">
-                            <h3 th:text="${producto.nombre}">Nombre del producto</h3>
-
-                            <div class="product-meta">
-                                <span class="producer-avatar"><i class="fas fa-user"></i></span>
-                                <span>Productor local</span>
-                            </div>
-
-                            <div class="product-price">
-                                <span th:if="${producto.precioMinimo != null}"
-                                    th:text="'$' + ${#numbers.formatDecimal(producto.precioMinimo, 0, 'POINT', 0, 'COMMA')}">$0</span>
-                                <small th:if="${producto.precioMinimo != null}">desde</small>
-                                <span th:unless="${producto.precioMinimo != null}"
-                                    class="price-soon">Próximamente</span>
-                            </div>
-
-                            <a th:href="@{/producto/{id}(id=${producto.id})}" class="btn-add-cart">
-                                <i class="fas fa-shopping-cart"></i>
-                                Ver opciones
+                        <div class="product-card__actions">
+                            <a th:href="@{/producto/{id}(id=${producto.id})}" class="ui-btn ui-btn--primary ui-btn--full ui-btn--sm">
+                                <i class="fas fa-eye"></i> Ver opciones
                             </a>
                         </div>
-                    </article>
-                </div>
+                    </div>
+                </article>
+            </div>
 
-                <!-- Si NO hay productos -->
-                <div th:if="${productos == null or productos.isEmpty()}" class="empty-state">
-                    <div class="empty-icon"><i class="fas fa-box-open"></i></div>
-                    <h3>No hay productos disponibles</h3>
-                    <p>Estamos trabajando para traerte los mejores productos frescos muy pronto.</p>
-                    <a th:href="@{/category}" class="btn-explore">
-                        <i class="fas fa-search"></i>
-                        Explorar categorías
-                    </a>
-                </div>
+            <!-- Estado Vacío -->
+            <div th:if="${productos == null or productos.isEmpty()}" class="ui-empty">
+                <div class="ui-empty__icon"><i class="fas fa-box-open"></i></div>
+                <h3 class="ui-empty__title">No hay productos disponibles</h3>
+                <p class="ui-empty__desc">Pronto nuestros productores aliados tendrán nuevas cosechas.</p>
+                <a th:href="@{/category}" class="ui-btn ui-btn--secondary">Explorar categorías</a>
             </div>
         </section>
 
-        <!-- ================= OFERTAS DESTACADAS ================= -->
-        <section class="section">
-            <div class="container">
-                <div class="section-header">
-                    <div class="section-title">
-                        <i class="fas fa-tag section-icon"></i>
-                        <div>
-                            <h2>Ofertas del campo</h2>
-                            <p>Precios directos de nuestros productores locales</p>
-                        </div>
-                    </div>
-                    <a th:href="@{/ofertas}" class="view-all">
-                        Ver todas las ofertas
-                        <i class="fas fa-arrow-right"></i>
-                    </a>
+        <!-- 4. OFERTAS DEL CAMPO -->
+        <section class="ui-container" id="ofertas-campo" aria-label="Ofertas directas">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-header__title">Ofertas del Campo</h2>
+                    <p class="section-header__subtitle">Precios directos de cosechas recién recolectadas.</p>
                 </div>
+                <a th:href="@{/ofertas}" class="section-header__link">
+                    Ver todas las ofertas <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
 
-                <!-- Si hay ofertas -->
-                <div th:if="${ofertas != null and !ofertas.isEmpty()}" class="products-grid">
-                    <article th:each="oferta, iterStat : ${ofertas}" th:if="${iterStat.index < 4}"
-                        class="product-card">
-                        <div class="product-image">
-                            <img th:src="${oferta.imagenUrl != null and !oferta.imagenUrl.isBlank()} ? ${oferta.imagenUrl} : '/images/frutas.webp'"
-                                th:alt="${oferta.nombreProducto}"
-                                onerror="this.onerror=null;this.src='/images/frutas.webp'">
-                            <span class="product-badge"><i class="fas fa-tag"></i> Oferta</span>
+            <div th:if="${ofertas != null and !ofertas.isEmpty()}" class="product-grid">
+                <article th:each="oferta, iterStat : ${ofertas}" th:if="${iterStat.index < 4}" class="product-card">
+                    <a th:href="@{/oferta/{id}(id=${oferta.id})}" class="product-card__img-wrap">
+                        <img th:src="${oferta.imagenUrl != null and !oferta.imagenUrl.isBlank()} ? ${oferta.imagenUrl} : '/images/frutas.webp'"
+                             th:alt="${oferta.nombreProducto}"
+                             class="product-card__img" loading="lazy"
+                             onerror="this.onerror=null;this.src='/images/frutas.webp'">
+                        <span class="ui-chip ui-chip--gold product-card__badge">
+                            <i class="fas fa-bolt"></i> Oferta
+                        </span>
+                    </a>
+
+                    <div class="product-card__body">
+                        <span class="product-card__producer"
+                              th:text="${oferta.vendedor != null and oferta.vendedor.nombre != null ? oferta.vendedor.nombre : 'Productor local'}">
+                            Productor local
+                        </span>
+
+                        <a th:href="@{/oferta/{id}(id=${oferta.id})}" style="text-decoration:none; color:inherit;">
+                            <h3 class="product-card__title" th:text="${oferta.nombreProducto}">Producto</h3>
+                        </a>
+
+                        <div class="product-card__price-row">
+                            <span class="product-card__price"
+                                  th:text="'$' + ${#numbers.formatDecimal(oferta.precio, 0, 'COMMA', 0, 'POINT')}">$0</span>
+                            <span class="product-card__unit" th:if="${oferta.stock != null}"
+                                  th:text="'Stock: ' + ${#numbers.formatDecimal(oferta.stock, 0, 0)}">Stock</span>
                         </div>
 
-                        <div class="product-info">
-                            <h3 th:text="${oferta.nombreProducto}">Producto</h3>
-
-                            <div class="product-meta">
-                                <span class="producer-avatar"><i class="fas fa-store"></i></span>
-                                <span
-                                    th:text="${oferta.vendedor != null and oferta.vendedor.nombre != null ? oferta.vendedor.nombre : 'Productor local'}">Productor local</span>
-                            </div>
-
-                            <div class="product-price">
-                                <span
-                                    th:text="'$' + ${#numbers.formatDecimal(oferta.precio, 0, 'COMMA', 0, 'POINT')}">$0</span>
-                                <small th:if="${oferta.stock != null}"
-                                    th:text="'Stock: ' + ${#numbers.formatDecimal(oferta.stock, 0, 0)}">Stock</small>
-                            </div>
-
-                            <a th:href="@{/oferta/{id}(id=${oferta.id})}" class="btn-add-cart">
-                                <i class="fas fa-eye"></i>
-                                Ver oferta
+                        <div class="product-card__actions">
+                            <a th:href="@{/oferta/{id}(id=${oferta.id})}" class="ui-btn ui-btn--primary ui-btn--full ui-btn--sm">
+                                <i class="fas fa-eye"></i> Ver oferta
                             </a>
                         </div>
-                    </article>
-                </div>
+                    </div>
+                </article>
+            </div>
 
-                <!-- Si NO hay ofertas -->
-                <div th:if="${ofertas == null or ofertas.isEmpty()}" class="empty-state">
-                    <div class="empty-icon"><i class="fas fa-tag"></i></div>
-                    <h3>Aún no hay ofertas disponibles</h3>
-                    <p>Estamos trabajando para traerte las mejores ofertas del campo muy pronto.</p>
-                    <a th:href="@{/ofertas}" class="btn-explore">
-                        <i class="fas fa-tag"></i>
-                        Explorar ofertas
-                    </a>
-                </div>
+            <!-- Estado Vacío -->
+            <div th:if="${ofertas == null or ofertas.isEmpty()}" class="ui-empty">
+                <div class="ui-empty__icon"><i class="fas fa-tag"></i></div>
+                <h3 class="ui-empty__title">Aún no hay ofertas disponibles</h3>
+                <p class="ui-empty__desc">Estamos preparando nuevas cosechas para ti.</p>
+                <a th:href="@{/ofertas}" class="ui-btn ui-btn--secondary">Explorar ofertas</a>
             </div>
         </section>
 
-        <!-- ================= CATEGORÍAS ================= -->
-        <section class="section">
-            <div class="container">
-                <div class="section-header">
-                    <div class="section-title">
-                        <i class="fas fa-th-large section-icon"></i>
-                        <h2>Explora por categoría</h2>
+        <!-- 5. EXPLORAR POR CATEGORÍA -->
+        <section class="ui-container" id="categorias" aria-label="Categorías">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-header__title">Explora por Categoría</h2>
+                    <p class="section-header__subtitle">Selecciona el tipo de alimento que buscas hoy.</p>
+                </div>
+                <a th:href="@{/category}" class="section-header__link">
+                    Ver todas las categorías <i class="fas fa-arrow-right"></i>
+                </a>
+            </div>
+
+            <div class="cats-grid">
+                <a th:each="cat, iterStat : ${categorias}" th:if="${iterStat.index < 6}"
+                   th:with="n=${#strings.toLowerCase(cat.nombre)}" th:href="@{/category(categoria=${cat.id})}"
+                   class="cat-tile">
+                    <div class="cat-tile__img-wrap">
+                        <img th:src="${n.contains('fruta') ? '/images/frutas.webp' :
+                                      n.contains('verdura') ? '/images/Verduras.jpg' :
+                                      (n.contains('lácteo') or n.contains('lacteo')) ? '/images/lacteos.jpg' :
+                                      n.contains('carne') ? '/images/carnes y aves.png' :
+                                      n.contains('grano') ? '/images/granos y cereales.png' :
+                                      n.contains('bebida') ? '/images/bebidas.webp' :
+                                      n.contains('condimento') ? '/images/condimentos.png' :
+                                      n.contains('pan') ? '/images/panaderia.png' :
+                                      '/images/hero-background.jpg'}"
+                             th:alt="${cat.nombre}"
+                             onerror="this.onerror=null;this.src='/images/hero-background.jpg'">
                     </div>
-                    <a th:href="@{/category}" class="view-all">
-                        Ver todas las categorías
-                        <i class="fas fa-arrow-right"></i>
-                    </a>
-                </div>
-
-                <div class="categories-grid">
-                    <a th:each="cat, iterStat : ${categorias}" th:if="${iterStat.index < 6}"
-                        th:with="n=${#strings.toLowerCase(cat.nombre)}" th:href="@{/category(categoria=${cat.id})}"
-                        class="category-card">
-
-                        <div class="category-photo">
-                            <!-- Misma cartografía de imágenes que la página de inicio pública -->
-                            <img th:src="${n.contains('fruta') ? '/images/frutas.webp' :
-                                          n.contains('verdura') ? '/images/Verduras.jpg' :
-                                          (n.contains('lácteo') or n.contains('lacteo')) ? '/images/lacteos.jpg' :
-                                          n.contains('carne') ? '/images/carnes y aves.png' :
-                                          n.contains('grano') ? '/images/granos y cereales.png' :
-                                          n.contains('bebida') ? '/images/bebidas.webp' :
-                                          n.contains('condimento') ? '/images/condimentos.png' :
-                                          n.contains('pan') ? '/images/panaderia.png' :
-                                          '/images/hero-background.jpg'}" th:alt="${cat.nombre}"
-                                onerror="this.onerror=null;this.src='/images/hero-background.jpg'">
-                        </div>
-
-                        <div class="category-footer">
-                            <span class="category-icon">
-                                <i th:class="${n.contains('fruta') ? 'fas fa-apple-alt' :
-                                              n.contains('verdura') ? 'fas fa-leaf' :
-                                              n.contains('lácteo') or n.contains('lacteo') ? 'fas fa-cheese' :
-                                              n.contains('carne') ? 'fas fa-drumstick-bite' :
-                                              n.contains('café') or n.contains('cafe') ? 'fas fa-mug-hot' :
-                                              n.contains('grano') ? 'fas fa-seedling' :
-                                              n.contains('bebida') ? 'fas fa-wine-bottle' :
-                                              n.contains('miel') ? 'fas fa-jar' :
-                                              'fas fa-leaf'}"></i>
-                            </span>
-                            <h3 th:text="${cat.nombre}">Categoría</h3>
-                            <i class="fas fa-chevron-right category-arrow"></i>
-                        </div>
-                    </a>
-                </div>
+                    <div class="cat-tile__info">
+                        <h3 class="cat-tile__title" th:text="${cat.nombre}">Categoría</h3>
+                        <span class="cat-tile__desc">Cosechas locales</span>
+                    </div>
+                    <i class="fas fa-chevron-right cat-tile__arrow"></i>
+                </a>
             </div>
         </section>
-
-        <!-- ================= FRANJA DE CONFIANZA ================= -->
-        <section class="trust-strip-wrap">
-            <div class="container">
-                <div class="trust-strip">
-                    <i class="fas fa-leaf trust-deco trust-deco-left"></i>
-
-                    <div class="trust-item">
-                        <i class="fas fa-leaf"></i>
-                        <div>
-                            <strong>Del campo a tu mesa</strong>
-                            <span>Productos frescos, naturales y de calidad</span>
-                        </div>
-                    </div>
-                    <div class="trust-item">
-                        <i class="fas fa-truck"></i>
-                        <div>
-                            <strong>Envíos confiables</strong>
-                            <span>Llevamos tu pedido a donde estés</span>
-                        </div>
-                    </div>
-                    <div class="trust-item">
-                        <i class="fas fa-shield-alt"></i>
-                        <div>
-                            <strong>Compra segura</strong>
-                            <span>Tus datos y pagos protegidos</span>
-                        </div>
-                    </div>
-                    <div class="trust-item">
-                        <i class="fas fa-user-tie"></i>
-                        <div>
-                            <strong>Apoya al productor</strong>
-                            <span>Impulsas el desarrollo del campo</span>
-                        </div>
-                    </div>
-
-                    <i class="fas fa-leaf trust-deco trust-deco-right"></i>
-                </div>
-            </div>
-        </section>
-
     </main>
 
-    <!-- Footer (fragment) -->
+    <!-- FOOTER INSTITUCIONAL -->
     <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
 
-    <script>
-        // Corazón de favoritos (visual; conéctalo a tu backend cuando lo tengas)
-        document.querySelectorAll('.btn-fav').forEach(function (btn) {
-            btn.addEventListener('click', function (e) {
-                e.preventDefault();
-                var icon = btn.querySelector('i');
-                var activo = btn.classList.toggle('active');
-                icon.classList.toggle('fas', activo);
-                icon.classList.toggle('far', !activo);
-            });
-        });
-    </script>
 </body>
 
 </html>

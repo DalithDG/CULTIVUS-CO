@@ -4,8 +4,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/header-tokens.css}">
     <link rel="stylesheet" th:href="@{/accesibilidad-vendedor.css}">
     <link rel="stylesheet" th:href="@{/vendedor-sidebar.css}">
+    <link rel="stylesheet" th:href="@{/header-vendedor-apple.css}">
 
     <!-- ═══════════════════════════════════════════════
          TOPBAR FIJA SUPERIOR
@@ -63,7 +65,10 @@
 
             <!-- Avatar / Perfil del vendedor -->
             <a th:href="@{/vendedor/perfil}" class="vs-topbar__avatar" title="Mi perfil de vendedor">
-                <i class="fas fa-user" aria-hidden="true"></i>
+                <span th:if="${session.usuarioLogueado != null and session.usuarioLogueado.nombre != null and #strings.length(session.usuarioLogueado.nombre) > 0}"
+                      th:text="${#strings.substring(session.usuarioLogueado.nombre, 0, 1).toUpperCase()}">V</span>
+                <i th:unless="${session.usuarioLogueado != null and session.usuarioLogueado.nombre != null and #strings.length(session.usuarioLogueado.nombre) > 0}"
+                   class="fas fa-user" aria-hidden="true"></i>
             </a>
         </div>
     </div>

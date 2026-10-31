@@ -5,10 +5,14 @@ import com.example.demo.Model.OfertaVendedor;
 import com.example.demo.Model.Pedido;
 import com.example.demo.Model.Usuario;
 import com.example.demo.Model.embebidos.PerfilVendedor;
+import com.example.demo.repository.EnvioRepository;
 import com.example.demo.repository.PedidoRepository;
 import com.example.demo.repository.UsuarioRepository;
+import com.example.demo.security.CustomUserDetailsService;
 import com.example.demo.services.BilleteraService;
 import com.example.demo.services.OfertaService;
+import com.example.demo.services.RetiroService;
+import com.example.demo.services.UbicacionService;
 import com.example.demo.services.VendedorService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,13 +44,16 @@ public class VendedorController {
     private BilleteraService billeteraService;
 
     @Autowired(required = false)
-    private com.example.demo.repository.EnvioRepository envioRepository;
+    private EnvioRepository envioRepository;
 
     @Autowired(required = false)
-    private com.example.demo.services.UbicacionService ubicacionService;
+    private UbicacionService ubicacionService;
 
     @Autowired(required = false)
-    private com.example.demo.services.RetiroService retiroService;
+    private RetiroService retiroService;
+
+    @Autowired(required = false)
+    private CustomUserDetailsService customUserDetailsService;
 
     /**
      * US-22 / US-24: saldos por estado, retiros y movimientos de la billetera del vendedor.
@@ -199,18 +206,13 @@ public class VendedorController {
             RedirectAttributes redirectAttributes) {
 
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
-        if (usuario == null) {
-            redirectAttributes.addFlashAttribute("error", "Debe iniciar sesión primero");
-            return "redirect:/usuario/login";
-        }
-
         // Verificar si ya es vendedor
-        if (vendedorService.esVendedor(usuario.getId())) {
+        if (usuario != null && vendedorService.esVendedor(usuario.getId())) {
             redirectAttributes.addFlashAttribute("info", "Ya tienes un perfil de vendedor");
             return "redirect:/vendedor/perfil";
         }
 
-        model.addAttribute("usuario", usuario);
+        model.addAttribute("usuario", usuario != null ? usuario : new Usuario());
         return "vendedor/registro-vendedor";
     }
 
@@ -219,6 +221,9 @@ public class VendedorController {
      */
     @PostMapping("/guardar")
     public String guardarPerfilVendedor(
+            @RequestParam(value = "nombre", required = false) String nombre,
+            @RequestParam(value = "email", required = false) String email,
+            @RequestParam(value = "contrasena", required = false) String contrasena,
             @RequestParam("razonSocial") String razonSocial,
             @RequestParam("telefonoContacto") String telefonoContacto,
             @RequestParam("direccionNegocio") String direccionNegocio,
@@ -230,19 +235,15 @@ public class VendedorController {
             RedirectAttributes redirectAttributes) {
         try {
             Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
-            if (usuario == null) {
-                redirectAttributes.addFlashAttribute("error", "Debe iniciar sesión primero");
-                return "redirect:/usuario/login";
-            }
 
             // Validaciones
             if (razonSocial == null || razonSocial.trim().isEmpty()) {
                 redirectAttributes.addFlashAttribute("error", "La razón social es obligatoria");
                 return "redirect:/vendedor/registro";
             }
-            if (!telefonoContacto.matches("\\d{8,}")) {
+            if (telefonoContacto == null || !telefonoContacto.matches("\\d{7,}")) {
                 redirectAttributes.addFlashAttribute("error",
-                        "El teléfono debe tener al menos 8 dígitos y solo números");
+                        "El teléfono debe tener al menos 7 dígitos y solo números");
                 return "redirect:/vendedor/registro";
             }
             if (direccionNegocio == null || direccionNegocio.trim().isEmpty()) {
@@ -250,23 +251,58 @@ public class VendedorController {
                 return "redirect:/vendedor/registro";
             }
 
-            // US-24: La cuenta bancaria no se pide ni valida en el registro (los parámetros opcionales se ignoran)
-            Usuario usuarioActualizado = vendedorService.crearPerfilVendedor(
-                    usuario.getId(),
-                    razonSocial,
-                    telefonoContacto,
-                    direccionNegocio,
-                    descripcionNegocio,
-                    null,
-                    null,
-                    tipoProductos);
+            Usuario usuarioActualizado;
+            if (usuario != null) {
+                // Usuario existente en sesión que solicita rol vendedor
+                usuarioActualizado = vendedorService.crearPerfilVendedor(
+                        usuario.getId(),
+                        razonSocial,
+                        telefonoContacto,
+                        direccionNegocio,
+                        descripcionNegocio,
+                        tipoProductos);
+            } else {
+                // Registro de nuevo usuario directamente como vendedor
+                if (nombre == null || nombre.trim().isEmpty()) {
+                    redirectAttributes.addFlashAttribute("error", "El nombre completo es obligatorio");
+                    return "redirect:/vendedor/registro";
+                }
+                if (email == null || email.trim().isEmpty()) {
+                    redirectAttributes.addFlashAttribute("error", "El correo electrónico es obligatorio");
+                    return "redirect:/vendedor/registro";
+                }
+                if (contrasena == null || contrasena.trim().length() < 6) {
+                    redirectAttributes.addFlashAttribute("error", "La contraseña debe tener al menos 6 caracteres");
+                    return "redirect:/vendedor/registro";
+                }
+
+                usuarioActualizado = vendedorService.registrarNuevoVendedor(
+                        nombre,
+                        email,
+                        contrasena,
+                        razonSocial,
+                        telefonoContacto,
+                        direccionNegocio,
+                        descripcionNegocio,
+                        tipoProductos);
+            }
 
             // Actualizar sesión con usuario que ya tiene el perfil embebido
             session.setAttribute("usuarioLogueado", usuarioActualizado);
 
-            // Persistir la Authentication actualizada (con rol VENDEDOR) en la sesión
-            session.setAttribute("SPRING_SECURITY_CONTEXT",
-                    org.springframework.security.core.context.SecurityContextHolder.getContext());
+            // Iniciar o refrescar la Authentication en Spring Security
+            if (customUserDetailsService != null) {
+                try {
+                    org.springframework.security.core.userdetails.UserDetails userDetails =
+                            customUserDetailsService.loadUserByUsername(usuarioActualizado.getEmail());
+                    org.springframework.security.authentication.UsernamePasswordAuthenticationToken auth =
+                            new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
+                                    userDetails, null, userDetails.getAuthorities());
+                    org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(auth);
+                    session.setAttribute("SPRING_SECURITY_CONTEXT",
+                            org.springframework.security.core.context.SecurityContextHolder.getContext());
+                } catch (Exception ignored) {}
+            }
 
             redirectAttributes.addFlashAttribute("mensaje",
                     "Tu solicitud ha sido enviada. Tu perfil de vendedor está ahora en proceso de validación por un administrador.");
@@ -276,7 +312,7 @@ public class VendedorController {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/vendedor/registro";
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error al crear el perfil de vendedor");
+            redirectAttributes.addFlashAttribute("error", "Error al crear el perfil de vendedor: " + e.getMessage());
             return "redirect:/vendedor/registro";
         }
     }

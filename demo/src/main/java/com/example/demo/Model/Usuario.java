@@ -131,6 +131,12 @@ public class Usuario {
         this.roles.add(role);
     }
 
+    public static final String MENSAJE_VENDEDOR_NO_PUEDE_COMPRAR = "Con una cuenta de vendedor no puedes realizar compras. Usa una cuenta de comprador.";
+
+    public boolean puedeComprar() {
+        return !hasRole(Role.VENDEDOR);
+    }
+
     public boolean hasRole(Role role) {
         return this.roles != null && this.roles.contains(role);
     }

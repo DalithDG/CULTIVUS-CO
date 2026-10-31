@@ -1,0 +1,94 @@
+/* ==========================================================================
+   CULTIVUS - DESIGN TOKENS COMPARTIDOS (Apple Human Interface Guidelines)
+   Consumido por todos los headers (público, comprador, vendedor, admin,
+   transportista) y por el footer.
+   ========================================================================== */
+
+:root {
+  /* ── 1. Paleta de Identidad Cultivus ── */
+  --c-green: #367A45;                 /* Acciones principales, acentos y éxito */
+  --c-green-dark: #2B6337;            /* Hover y estados activos */
+  --c-green-soft: rgba(54, 122, 69, 0.08);   /* Tintes suaves para píldoras y contenedores */
+  --c-green-active: rgba(54, 122, 69, 0.12); /* Estado activo en navegación */
+  --c-green-ring: rgba(54, 122, 69, 0.22);   /* Anillos de foco accesible */
+
+  --c-gold: #EABF45;                  /* Amarillo cosecha para acentos y estados intermedios */
+  --c-gold-soft: rgba(234, 191, 69, 0.16);   /* Tinte dorado para badges */
+
+  --c-earth: #795548;                 /* Café tierra para texto secundario e iconos */
+  --c-earth-soft: rgba(121, 85, 72, 0.08);
+
+  --c-wheat: #F1E8D3;                 /* Beige trigo para fondos suaves y chips */
+  --c-wheat-soft: #FAF6EB;
+
+  --c-ink: #30372D;                   /* Oliva oscuro: texto principal (contraste AA 11.6:1) */
+  --c-ink-muted: rgba(48, 55, 45, 0.75); /* Texto secundario legible */
+  --c-line: rgba(48, 55, 45, 0.08);   /* Separadores y bordes sutiles */
+  --c-surface: #FFFFFF;               /* Superficies limpias */
+
+  --c-danger: #A5382B;                /* Rojo desaturado para acciones destructivas */
+  --c-danger-soft: #FBEDEA;           /* Fondo suave para peligro */
+  --c-danger-line: #F0CFC9;
+
+  --field-border: #DDD3BA;            /* Borde fino beige/gris cálido para campos y chips */
+
+  /* ── 2. Tipografía del Sistema Apple ── */
+  --font-system: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", "Segoe UI", Roboto, sans-serif;
+
+  /* ── 3. Geometría y Radios ── */
+  --radius-full: 999px;               /* Píldoras de navegación, badges y chips */
+  --radius-xl: 24px;                  /* Tarjetas y hojas laterales */
+  --radius-lg: 18px;                  /* Popovers y paneles de menú */
+  --radius-md: 14px;                  /* Botones y cajas medianas */
+  --radius-sm: 10px;                  /* Iconos y elementos internos */
+
+  /* ── 4. Elevaciones y Sombras Sutiles ── */
+  --shadow-subtle: 0 1px 2px rgba(48, 55, 45, 0.03);
+  --shadow-popover: 0 12px 40px rgba(0, 0, 0, 0.12);
+  --shadow-sheet: 0 20px 60px rgba(0, 0, 0, 0.18);
+
+  /* ── 5. Material Liquid Glass ── */
+  --glass-bg: rgba(255, 255, 255, 0.78);
+  --glass-bg-scrolled: rgba(255, 255, 255, 0.92);
+  --glass-blur: saturate(180%) blur(20px);
+
+  /* ── 6. Tiempos y Curvas de Transición ── */
+  --ease-apple: cubic-bezier(0.4, 0, 0.2, 1);
+  --t-duration: 180ms;
+
+  /* ── Aliases de compatibilidad con header-comprador.css ── */
+  --hb-green: var(--c-green);
+  --hb-green-dark: var(--c-green-dark);
+  --hb-green-soft: var(--c-green-soft);
+  --hb-green-active: var(--c-green-active);
+  --hb-green-ring: var(--c-green-ring);
+  --hb-gold: var(--c-gold);
+  --hb-gold-soft: var(--c-gold-soft);
+  --hb-earth: var(--c-earth);
+  --hb-earth-soft: var(--c-earth-soft);
+  --hb-wheat: var(--c-wheat);
+  --hb-ink: var(--c-ink);
+  --hb-ink-muted: var(--c-ink-muted);
+  --hb-line: var(--c-line);
+  --hb-surface: var(--c-surface);
+  --hb-danger: var(--c-danger);
+  --hb-danger-soft: var(--c-danger-soft);
+  --hb-font: var(--font-system);
+  --hb-radius-full: var(--radius-full);
+  --hb-radius-lg: var(--radius-lg);
+  --hb-radius-md: var(--radius-md);
+  --hb-radius-sm: var(--radius-sm);
+  --hb-ease: var(--ease-apple);
+  --hb-duration: var(--t-duration);
+}
+
+/* ── 7. Accesibilidad: Reducción de Movimiento ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+

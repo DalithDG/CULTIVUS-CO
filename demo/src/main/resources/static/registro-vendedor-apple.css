@@ -1,0 +1,187 @@
+/* ==========================================================================
+   CULTIVUS - REGISTRO DE VENDEDOR (Apple Design)
+   Acotado estrictamente a: .vp-reg-page
+   ========================================================================== */
+
+@import url('/checkout-tokens.css');
+@import url('/cultivus-ui.css');
+
+.vp-reg-page {
+  background-color: var(--c-wheat-soft);
+  color: var(--c-ink);
+  font-family: var(--font-system, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.vp-reg-page main {
+  padding: 40px 24px 80px;
+}
+
+.vp-reg-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1.25fr;
+  gap: 48px;
+  align-items: start;
+}
+
+.vp-info-panel {
+  position: sticky;
+  top: 96px;
+  padding: 8px 0;
+}
+
+.vp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: var(--c-green-soft);
+  color: var(--c-green-dark);
+  border: 1px solid rgba(54, 122, 69, 0.22);
+  border-radius: var(--radius-full);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 20px;
+}
+
+.vp-info-title {
+  font-size: clamp(2rem, 3.2vw, 2.75rem);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  color: var(--c-ink);
+  margin: 0 0 16px;
+}
+
+.vp-info-title span {
+  color: var(--c-green);
+}
+
+.vp-info-subtitle {
+  font-size: 1.05rem;
+  color: var(--c-earth);
+  line-height: 1.55;
+  margin: 0 0 36px;
+}
+
+.vp-benefits-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 36px;
+}
+
+.vp-benefit-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.vp-benefit-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--c-green-soft);
+  color: var(--c-green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+  flex-shrink: 0;
+  border: 1px solid rgba(54, 122, 69, 0.18);
+}
+
+.vp-benefit-body h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--c-ink);
+  margin: 0 0 4px;
+}
+
+.vp-benefit-body p {
+  font-size: 0.88rem;
+  color: var(--c-earth);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.vp-login-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-md);
+  margin-top: 24px;
+}
+
+.vp-login-box p {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--c-earth);
+}
+
+.vp-login-box a {
+  color: var(--c-green);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.vp-login-box a:hover {
+  text-decoration: underline;
+}
+
+.vp-form-card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-lg);
+  padding: 36px;
+  box-shadow: var(--shadow-md);
+}
+
+.vp-form-header {
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--c-line);
+}
+
+.vp-form-header h2 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--c-ink);
+  margin: 0 0 6px;
+}
+
+.vp-form-header p {
+  font-size: 0.92rem;
+  color: var(--c-earth);
+  margin: 0;
+}
+
+@media (max-width: 1024px) {
+  .vp-reg-container {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+  .vp-info-panel {
+    position: static;
+  }
+}
+
+@media (max-width: 640px) {
+  .vp-form-card {
+    padding: 20px;
+    border-radius: 18px;
+  }
+  .vp-reg-page main {
+    padding: 20px 14px 60px;
+  }
+}
+

@@ -1,0 +1,278 @@
+/* ==========================================================================
+   Cultivus - Formulario y Resumen de Cuenta Bancaria (Apple Design)
+   Reutilizado en Transportista y Vendedor para retiros de saldo
+   ========================================================================== */
+
+.cb-wrapper {
+  max-width: 720px;
+  margin: 0 auto;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: #30372D;
+  -webkit-font-smoothing: antialiased;
+}
+
+.cb-card {
+  background: #FFFFFF;
+  border: 1px solid #E9E2D0;
+  border-radius: 24px;
+  box-shadow: 0 4px 20px -4px rgba(48, 55, 45, 0.06), 0 1px 3px rgba(48, 55, 45, 0.04);
+  padding: 36px 32px;
+}
+
+.cb-header {
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #E9E2D0;
+}
+
+.cb-header__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #367A45;
+  background: #EBF3ED;
+  border: 1px solid rgba(54, 122, 69, 0.2);
+  padding: 5px 12px;
+  border-radius: 999px;
+  margin-bottom: 12px;
+}
+
+.cb-header h1 {
+  margin: 0 0 8px;
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #30372D;
+}
+
+.cb-header p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #795548;
+  line-height: 1.5;
+}
+
+/* Cuenta actual destacada */
+.cb-card .cb-current,
+.cb-current {
+  background: #FAF6EB;
+  border: 1.5px solid #DDD3BA;
+  color: #30372D;
+  border-radius: 18px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  box-shadow: 0 4px 14px -6px rgba(48, 55, 45, 0.08);
+}
+
+.cb-card .cb-current__label,
+.cb-current__label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #367A45;
+  margin-bottom: 4px;
+  font-weight: 800;
+}
+
+.cb-card .cb-current__bank,
+.cb-current__bank {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #30372D;
+}
+
+.cb-card .cb-current__meta,
+.cb-current__meta {
+  font-size: 0.88rem;
+  color: #795548;
+  margin-top: 4px;
+  font-weight: 500;
+}
+
+.cb-card .cb-current__number,
+.cb-current__number {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 1.05rem;
+  font-weight: 800;
+  background: #FFFFFF;
+  border: 1px solid #DDD3BA;
+  padding: 8px 16px;
+  border-radius: 12px;
+  letter-spacing: 0.08em;
+  color: #367A45;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 1px 4px rgba(48, 55, 45, 0.06);
+}
+
+.cb-empty-banner {
+  background: #FAF6EB;
+  border: 1px dashed #DDD3BA;
+  border-radius: 16px;
+  padding: 18px 22px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #30372D;
+  font-size: 0.92rem;
+}
+
+.cb-empty-banner__icon--info {
+  color: #367A45;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.cb-empty-banner__icon--muted {
+  color: #795548;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.cb-alert {
+  padding: 14px 18px;
+  border-radius: 14px;
+  margin-bottom: 22px;
+  font-size: 0.92rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cb-alert--error {
+  background: #FBEDEA;
+  border: 1px solid #F0CFC9;
+  color: #A5382B;
+}
+
+.cb-alert--ok {
+  background: #EBF3ED;
+  border: 1px solid #D1E5D6;
+  color: #367A45;
+}
+
+.cb-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.cb-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.cb-field--full {
+  grid-column: 1 / -1;
+}
+
+.cb-field label {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #30372D;
+}
+
+.cb-field input,
+.cb-field select {
+  width: 100%;
+  min-height: 48px;
+  box-sizing: border-box;
+  padding: 12px 16px;
+  border: 1px solid #DDD3BA;
+  border-radius: 12px;
+  font-size: 0.98rem;
+  color: #30372D;
+  background: #FFFFFF;
+  font-family: inherit;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.cb-field input:focus,
+.cb-field select:focus {
+  outline: none;
+  border-color: #367A45;
+  box-shadow: 0 0 0 4px rgba(54, 122, 69, 0.16);
+}
+
+.cb-hint {
+  font-size: 0.8rem;
+  color: #795548;
+  line-height: 1.4;
+}
+
+.cb-actions {
+  margin-top: 30px;
+  padding-top: 22px;
+  border-top: 1px solid #E9E2D0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.cb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  border: 1px solid transparent;
+  transition: background 180ms ease, border-color 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+}
+
+.cb-btn:focus-visible {
+  outline: 2px solid #367A45;
+  outline-offset: 2px;
+}
+
+.cb-btn--primary {
+  background: #367A45;
+  color: #FFFFFF;
+  box-shadow: 0 4px 14px -3px rgba(54, 122, 69, 0.4);
+}
+
+.cb-btn--primary:hover {
+  background: #2D673A;
+  transform: translateY(-1px);
+}
+
+.cb-btn--ghost {
+  background: #FFFFFF;
+  color: #30372D;
+  border-color: #DDD3BA;
+}
+
+.cb-btn--ghost:hover {
+  background: #FAF6EB;
+  border-color: #C9BC9B;
+}
+
+@media (max-width: 600px) {
+  .cb-grid { grid-template-columns: 1fr; }
+  .cb-card { padding: 24px 18px; border-radius: 20px; }
+  .cb-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+  .cb-btn {
+    width: 100%;
+  }
+}
+

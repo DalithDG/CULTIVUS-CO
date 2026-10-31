@@ -9,33 +9,33 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-    --vp-green: #1f7a3a;
-    --vp-green-dark: #14552a;
-    --vp-green-deep: #0a351a;
-    --vp-green-light: #e9f6ed;
-    --vp-green-soft: #f4fbf6;
-    --vp-lime: #b8e986;
-    --vp-ink: #111e15;
-    --vp-ink-soft: #243529;
-    --vp-muted: #5e7264;
-    --vp-line: #e2ece4;
-    --vp-line-strong: #cfe0d3;
-    --vp-bg: #f5f9f6;
+    --vp-green: #367A45;
+    --vp-green-dark: #2B6337;
+    --vp-green-deep: #30372D;
+    --vp-green-light: #EBF3ED;
+    --vp-green-soft: #FAF6EB;
+    --vp-lime: #EABF45;
+    --vp-ink: #30372D;
+    --vp-ink-soft: #4A5546;
+    --vp-muted: #795548;
+    --vp-line: #E9E2D0;
+    --vp-line-strong: #DDD3BA;
+    --vp-bg: #FAF6EB;
     --vp-card: #ffffff;
-    --vp-amber: #b45309;
-    --vp-amber-bg: #fef3c7;
-    --vp-amber-line: #fde68a;
-    --vp-red: #b91c1c;
-    --vp-red-bg: #fee2e2;
-    --vp-red-line: #fecaca;
-    --vp-blue: #1d4ed8;
-    --vp-blue-bg: #eff6ff;
-    --vp-blue-line: #bfdbfe;
+    --vp-amber: #614805;
+    --vp-amber-bg: #FDF6E2;
+    --vp-amber-line: #EABF45;
+    --vp-red: #A5382B;
+    --vp-red-bg: #FBEDEA;
+    --vp-red-line: #F0CFC9;
+    --vp-blue: #367A45;
+    --vp-blue-bg: #EBF3ED;
+    --vp-blue-line: #DDD3BA;
     --vp-radius-sm: 12px;
     --vp-radius: 20px;
-    --vp-radius-lg: 22px;
-    --vp-shadow: 0 4px 18px -4px rgba(15, 52, 27, 0.06), 0 1px 3px rgba(15, 52, 27, 0.04);
-    --vp-shadow-md: 0 18px 42px -22px rgba(15, 52, 27, 0.20);
+    --vp-radius-lg: 24px;
+    --vp-shadow: 0 4px 18px -4px rgba(48, 55, 45, 0.06), 0 1px 3px rgba(48, 55, 45, 0.04);
+    --vp-shadow-md: 0 14px 34px -16px rgba(48, 55, 45, 0.12);
 }
 
 * { box-sizing: border-box; }
@@ -43,12 +43,9 @@
 body.vp-page {
     margin: 0;
     min-height: 100vh;
-    background:
-        radial-gradient(circle at 8% -10%, rgba(184, 233, 134, 0.20), transparent 36rem),
-        radial-gradient(circle at 100% 10%, rgba(31, 122, 58, 0.08), transparent 32rem),
-        var(--vp-bg);
+    background: var(--vp-bg);
     color: var(--vp-ink);
-    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
 }
 
@@ -64,12 +61,12 @@ body.vp-page {
     position: relative;
     overflow: hidden;
     padding: 36px 38px;
-    border-radius: 26px;
+    border-radius: 24px;
     color: #fff;
     background:
-        radial-gradient(circle at 85% 20%, rgba(184, 233, 134, 0.28), transparent 22rem),
+        radial-gradient(circle at 85% 20%, rgba(234, 191, 69, 0.18), transparent 22rem),
         linear-gradient(135deg, var(--vp-green-deep) 0%, var(--vp-green-dark) 56%, var(--vp-green) 100%);
-    box-shadow: 0 24px 60px -34px rgba(10, 53, 26, 0.65);
+    box-shadow: 0 20px 48px -24px rgba(48, 55, 45, 0.35);
 }
 
 .vp-hero::after {
@@ -133,14 +130,14 @@ body.vp-page {
     align-items: center;
     justify-content: center;
     gap: 9px;
-    min-height: 44px;
-    padding: 11px 18px;
+    min-height: 48px;
+    padding: 12px 20px;
     border: 1px solid transparent;
     border-radius: 12px;
     background: var(--vp-green);
     color: #fff;
     font: inherit;
-    font-size: 0.9rem;
+    font-size: 0.92rem;
     font-weight: 700;
     line-height: 1;
     text-decoration: none;
@@ -430,13 +427,13 @@ body.vp-page {
     border: 1px solid transparent;
 }
 
-.vp-badge--pendiente { background: var(--vp-amber-bg); color: var(--vp-amber); border-color: var(--vp-amber-line); }
-.vp-badge--confirmado { background: var(--vp-green-light); color: var(--vp-green-dark); border-color: rgba(31, 122, 58, 0.20); }
-.vp-badge--proceso { background: var(--vp-blue-bg); color: var(--vp-blue); border-color: var(--vp-blue-line); }
-.vp-badge--enviado { background: #ede9fe; color: #5b21b6; border-color: #ddd6fe; }
-.vp-badge--completado { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
+.vp-badge--pendiente { background: var(--vp-amber-bg); color: #614805; border-color: var(--vp-amber-line); }
+.vp-badge--confirmado { background: var(--vp-green-light); color: var(--vp-green-dark); border-color: rgba(54, 122, 69, 0.25); }
+.vp-badge--proceso { background: #FAF6EB; color: var(--vp-ink); border-color: var(--vp-line-strong); }
+.vp-badge--enviado { background: var(--vp-green-light); color: var(--vp-green); border-color: rgba(54, 122, 69, 0.25); }
+.vp-badge--completado { background: var(--vp-green-light); color: var(--vp-green-dark); border-color: rgba(54, 122, 69, 0.30); }
 .vp-badge--cancelado { background: var(--vp-red-bg); color: var(--vp-red); border-color: var(--vp-red-line); }
-.vp-badge--revision { background: var(--vp-amber-bg); color: var(--vp-amber); border-color: var(--vp-amber-line); }
+.vp-badge--revision { background: var(--vp-amber-bg); color: #614805; border-color: var(--vp-amber-line); }
 
 /* ── Filtros (Control segmentado Apple HIG) ───────────────── */
 

@@ -1,37 +1,32 @@
-/* ============================================================
-   FOOTER CULTIVUS
-   Paleta: verde agrícola, verde oscuro, naranja cosecha,
-   amarillo dorado y marrón tierra.
-   ============================================================ */
+/* ==========================================================================
+   CULTIVUS - FOOTER (Apple Design System)
+   Superficie blanca limpia, tipografía de sistema, bordes finos,
+   chips de pago pulidos y contraste AA garantizado.
+   ========================================================================== */
+
+@import url('/header-tokens.css');
 
 .site-footer {
-  --f-green: #4e882b;
-  --f-green-dark: #1d5e36;
-  --f-orange: #ee9420;
-  --f-yellow: #f4b725;
-  --f-brown: #574424;
-  --f-cream: #fbf7ee;
-  --f-white: #ffffff;
-  --f-line: rgba(87, 68, 36, 0.14);
-  --f-radius: 14px;
-
   position: relative;
-  margin-top: 60px;
-  background: var(--f-cream);
-  color: var(--f-brown);
-  font-size: 15px;
+  margin-top: 64px;
+  background: var(--c-surface);
+  border-top: 1px solid var(--c-line);
+  color: var(--c-ink-muted);
+  font-family: var(--font-system);
+  font-size: 14px;
   line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Franja de acento superior (estática) */
-.site-footer::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--f-green-dark), var(--f-green), var(--f-yellow), var(--f-orange));
+.site-footer * {
+  box-sizing: border-box;
+}
+
+.site-footer a {
+  color: inherit;
+  text-decoration: none;
+  transition: color var(--t-duration) var(--ease-apple),
+              transform var(--t-duration) var(--ease-apple);
 }
 
 .site-footer ul {
@@ -40,405 +35,396 @@
   padding: 0;
 }
 
-.site-footer a {
-  color: inherit;
-  text-decoration: none;
-}
-
-.site-footer a:focus-visible {
-  outline: 3px solid var(--f-orange);
-  outline-offset: 3px;
-  border-radius: 4px;
-}
-
-/* ---------- 1. BENEFICIOS ---------- */
-.footer-benefits {
-  background: var(--f-white);
-  border-bottom: 1px solid var(--f-line);
-  padding-top: 4px;
-  /* compensa la franja de acento */
-}
-
-.footer-benefits__list {
-  max-width: 1280px;
+.site-footer .footer-container {
+  max-width: 1320px;
   margin: 0 auto;
-  padding: 26px 40px;
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 24px;
+  padding: 0 24px;
 }
 
-.footer-benefit {
+/* ── 1. Franja de Beneficios Minimalista ────────────────────────────────────── */
+.footer-benefits {
+  padding: 28px 0;
+  border-bottom: 1px solid var(--c-line);
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.footer-benefit-item {
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.footer-benefit__icon {
-  flex: 0 0 42px;
+.footer-benefit-icon {
+  flex-shrink: 0;
   width: 42px;
   height: 42px;
-  display: grid;
-  place-items: center;
   border-radius: 50%;
-  background: rgba(78, 136, 43, 0.12);
-  color: var(--f-green-dark);
-  font-size: 18px;
-}
-
-.footer-benefit__text {
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.35;
-  color: var(--f-green-dark);
-}
-
-/* ---------- 2. CUERPO ---------- */
-.footer-main {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 56px 40px 40px;
-}
-
-.footer-main__grid {
-  display: grid;
-  grid-template-columns: 1.6fr 1fr 1fr 1.2fr;
-  gap: 48px;
-}
-
-.footer-title {
-  margin: 0 0 18px;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--f-green-dark);
-}
-
-/* Marca */
-.footer-brand__logo {
+  background: var(--c-green-soft);
+  color: var(--c-green);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 12px 16px;
-  margin-bottom: 18px;
-  background: var(--f-green-dark);
-  /* fondo oscuro: el isotipo estaba pensado para fondo negro */
-  border-radius: var(--f-radius);
-  transition: transform 0.25s ease;
+  font-size: 17px;
+  transition: transform var(--t-duration) var(--ease-apple),
+              background var(--t-duration) var(--ease-apple);
 }
 
-.footer-brand__logo:hover {
+.footer-benefit-item:hover .footer-benefit-icon {
+  transform: scale(1.06);
+  background: var(--c-green-active);
+}
+
+.footer-benefit-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.footer-benefit-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--c-ink);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.footer-benefit-sub {
+  font-size: 12px;
+  color: var(--c-earth);
+  line-height: 1.3;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── 2. Cuerpo Principal (Grilla de 4 Columnas) ─────────────────────────────── */
+.footer-main-grid {
+  padding: 44px 0 36px;
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1.2fr;
+  gap: 40px;
+}
+
+.footer-col-title {
+  margin: 0 0 16px;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--c-ink);
+}
+
+/* Columna 1: Marca */
+.footer-brand-link {
+  display: inline-block;
+  margin-bottom: 14px;
+  opacity: 1;
+  transition: opacity var(--t-duration) var(--ease-apple);
+}
+
+.footer-brand-link:hover {
+  opacity: 0.85;
+}
+
+.footer-brand-logo {
+  height: 36px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+}
+
+.footer-brand-desc {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--c-earth);
+  margin: 0 0 18px;
+  max-width: 380px;
+}
+
+.footer-social-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.footer-social-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-ink-muted);
+}
+
+.footer-social-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer-social-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(48, 55, 45, 0.05);
+  border: 1px solid var(--c-line);
+  color: var(--c-ink-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all var(--t-duration) var(--ease-apple);
+}
+
+.footer-social-btn:hover {
+  background: var(--c-green-soft);
+  border-color: rgba(54, 122, 69, 0.22);
+  color: var(--c-green);
   transform: translateY(-2px);
 }
 
-.footer-brand__logo img {
-  display: block;
-  height: 52px;
-  width: auto;
-}
-
-.footer-brand__text {
-  max-width: 380px;
-  margin: 0 0 22px;
-  color: var(--f-brown);
-}
-
-/* Redes */
-.footer-social {
+/* Columnas 2 y 3: Enlaces de Navegación */
+.footer-links-list {
   display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer-links-list a {
+  font-size: 13.5px;
+  color: var(--c-earth);
+  display: inline-block;
+  transition: all var(--t-duration) var(--ease-apple);
+}
+
+.footer-links-list a:hover {
+  color: var(--c-green);
+  transform: translateX(3px);
+}
+
+/* Columna 4: Contacto */
+.footer-contact-dept {
+  font-size: 12px;
+  color: var(--c-earth);
+  margin: -8px 0 14px;
+}
+
+.footer-contact-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.footer-contact-item {
+  display: flex;
+  align-items: center;
   gap: 12px;
 }
 
-.footer-social a {
-  width: 42px;
-  height: 42px;
-  display: grid;
-  place-items: center;
+.footer-contact-icon {
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
-  background: var(--f-white);
-  border: 1px solid var(--f-line);
-  color: var(--f-green-dark);
-  font-size: 18px;
-  transition: background 0.25s ease, color 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
-}
-
-.footer-social a:hover {
-  background: var(--f-green-dark);
-  border-color: var(--f-green-dark);
-  color: var(--f-white);
-  transform: translateY(-3px);
-}
-
-/* Enlaces */
-.footer-links {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.footer-links a {
-  display: inline-block;
-  padding: 6px 0;
-  font-weight: 500;
-  background-image: linear-gradient(var(--f-orange), var(--f-orange));
-  background-repeat: no-repeat;
-  background-position: 0 100%;
-  background-size: 0 2px;
-  transition: color 0.25s ease, background-size 0.25s ease;
-}
-
-.footer-links a:hover {
-  color: var(--f-green-dark);
-  background-size: 100% 2px;
-}
-
-/* Contacto */
-.footer-contact__label {
-  margin: 0 0 12px;
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--f-green-dark);
-}
-
-.footer-contact {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.footer-contact li {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.footer-contact i {
-  width: 18px;
-  text-align: center;
-  color: var(--f-green);
-}
-
-.footer-contact a {
-  padding: 4px 0;
-  font-weight: 500;
-  transition: color 0.25s ease;
-}
-
-.footer-contact a:hover {
-  color: var(--f-green-dark);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-/* ---------- Sello de pagos ---------- */
-.footer-payments {
-  margin-top: 44px;
-  padding: 20px 28px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 20px;
-  background: var(--f-white);
-  border: 1px solid var(--f-line);
-  border-radius: var(--f-radius);
-}
-
-.footer-payments__intro {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
-.footer-payments__title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--f-green-dark);
-}
-
-.footer-payments__wompi {
-  display: block;
-  height: 26px;
-  width: auto;
-}
-
-.footer-payments__methods {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-}
-
-.pay-chip {
-  min-width: 78px;
-  height: 40px;
-  padding: 0 14px;
+  background: var(--c-green-soft);
+  color: var(--c-green);
+  border: 1px solid rgba(54, 122, 69, 0.22);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--f-cream);
-  border: 1px solid var(--f-line);
-  border-radius: 10px;
-}
-
-.pay-chip img {
-  display: block;
-  max-height: 20px;
-  max-width: 76px;
-  width: auto;
-  height: auto;
-}
-
-.pay-chip--text {
   font-size: 14px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  color: var(--f-green-dark);
+  flex-shrink: 0;
 }
 
-.pay-chip--icon {
-  min-width: 56px;
-  font-size: 26px;
-  color: var(--f-brown);
+.footer-contact-info {
+  display: flex;
+  flex-direction: column;
 }
 
-/* ---------- 3. BARRA LEGAL ---------- */
-.footer-bottom {
-  background: var(--f-green-dark);
-  color: rgba(255, 255, 255, 0.9);
+.footer-contact-tag {
+  font-size: 11px;
+  color: var(--c-earth);
+  font-weight: 500;
+  line-height: 1.2;
 }
 
-.footer-bottom__inner {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 16px 40px;
+.footer-contact-link {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--c-ink);
+}
+
+.footer-contact-link:hover {
+  color: var(--c-green);
+}
+
+/* ── 3. Barra de Pagos Seguros (Wompi y Chips) ──────────────────────────────── */
+.footer-payments-bar {
+  padding: 16px 20px;
+  margin: 0 0 24px;
+  background: rgba(48, 55, 45, 0.02);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 16px;
 }
 
-.footer-bottom p {
-  margin: 0;
-  font-size: 13px;
-}
-
-.footer-top {
+.footer-payments-intro {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
+  gap: 10px;
   font-size: 13px;
+  font-weight: 500;
+  color: var(--c-earth);
+}
+
+.footer-payments-intro i {
+  color: var(--c-green);
+  font-size: 15px;
+}
+
+.footer-wompi-logo {
+  height: 22px;
+  width: auto;
+  object-fit: contain;
+  vertical-align: middle;
+}
+
+.footer-payment-chips {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pay-chip {
+  height: 32px;
+  padding: 0 12px;
+  background: var(--c-surface);
+  border: 1px solid var(--field-border);
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
   font-weight: 600;
-  color: var(--f-white);
-  border: 1px solid rgba(255, 255, 255, 0.35);
-  border-radius: 999px;
-  transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+  color: var(--c-ink);
+  box-shadow: 0 1px 2px rgba(48, 55, 45, 0.03);
 }
 
-.footer-top:hover {
-  background: var(--f-yellow);
-  border-color: var(--f-yellow);
-  color: var(--f-green-dark);
+.pay-chip img {
+  height: 18px;
+  width: auto;
+  object-fit: contain;
 }
 
-.footer-bottom a:focus-visible {
-  outline-color: var(--f-yellow);
+.pay-chip--card {
+  font-size: 20px;
+  color: var(--c-earth);
+  padding: 0 10px;
 }
 
-/* ---------- Aparición suave (respeta preferencias del usuario) ---------- */
-@media (prefers-reduced-motion: no-preference) {
-  html {
-    scroll-behavior: smooth;
-  }
-
-  .footer-col {
-    animation: footerFadeUp 0.5s ease-out both;
-  }
-
-  .footer-col:nth-child(2) {
-    animation-delay: 0.08s;
-  }
-
-  .footer-col:nth-child(3) {
-    animation-delay: 0.16s;
-  }
-
-  .footer-col:nth-child(4) {
-    animation-delay: 0.24s;
-  }
+.pay-chip--text {
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #0b2545;
 }
 
-@keyframes footerFadeUp {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* ── 4. Barra Legal y Volver Arriba ─────────────────────────────────────────── */
+.footer-legal-bar {
+  padding: 20px 0 28px;
+  border-top: 1px solid var(--c-line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12.5px;
+  color: var(--c-earth);
 }
 
-/* ---------- RESPONSIVE ---------- */
-@media (max-width: 1100px) {
-  .footer-benefits__list {
+.footer-copyright {
+  margin: 0;
+}
+
+.footer-back-to-top {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--c-earth);
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  transition: all var(--t-duration) var(--ease-apple);
+}
+
+.footer-back-to-top i {
+  font-size: 11px;
+  transition: transform var(--t-duration) var(--ease-apple);
+}
+
+.footer-back-to-top:hover {
+  background: var(--c-green-soft);
+  color: var(--c-green);
+}
+
+.footer-back-to-top:hover i {
+  transform: translateY(-2px);
+}
+
+/* ── 5. Responsive Breakpoints ──────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .footer-benefits {
     grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
   }
 
-  .footer-main__grid {
+  .footer-main-grid {
     grid-template-columns: 1fr 1fr;
-    gap: 40px;
-  }
-
-  .footer-brand {
-    grid-column: 1 / -1;
+    gap: 32px;
   }
 }
 
-@media (max-width: 768px) {
-  .footer-benefits__list {
+@media (max-width: 720px) {
+  .footer-benefits {
     grid-template-columns: repeat(2, 1fr);
-    padding: 22px 20px;
-    gap: 18px;
   }
 
-  .footer-main {
-    padding: 40px 20px 32px;
-  }
-
-  .footer-payments {
-    padding: 18px 20px;
+  .footer-payments-bar {
     flex-direction: column;
     align-items: flex-start;
-  }
-
-  .footer-bottom__inner {
-    padding: 16px 20px;
   }
 }
 
 @media (max-width: 520px) {
-  .footer-benefits__list {
+  .footer-benefits {
     grid-template-columns: 1fr;
+    gap: 14px;
   }
 
-  .footer-main__grid {
+  .footer-main-grid {
     grid-template-columns: 1fr;
-    gap: 32px;
+    gap: 28px;
   }
 
-  .footer-links a,
-  .footer-contact a {
-    padding: 10px 0;
-    /* área táctil cómoda */
-  }
-
-  .footer-bottom__inner {
+  .footer-legal-bar {
     flex-direction: column;
-    text-align: center;
+    align-items: flex-start;
+    gap: 12px;
   }
+
+  .footer-links-list a {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+}
+
+/* ── 6. Focus Visible Accesible ─────────────────────────────────────────────── */
+.site-footer a:focus-visible,
+.site-footer button:focus-visible {
+  outline: 2px solid var(--c-green) !important;
+  outline-offset: 2px !important;
 }

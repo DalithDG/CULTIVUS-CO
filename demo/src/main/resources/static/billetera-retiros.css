@@ -1,0 +1,322 @@
+/* ==========================================================================
+   CULTIVUS - ESTILOS COMPARTIDOS BILLETERA Y RETIROS (Apple Design)
+   Extraído de fragments/billetera-retiros.html
+   ========================================================================== */
+
+.bw-card {
+    border-radius: 18px;
+    border: 1px solid #E9E2D0;
+    padding: 20px 22px;
+    background: #FFFFFF;
+    box-shadow: 0 1px 3px rgba(48, 55, 45, 0.05), 0 4px 14px rgba(48, 55, 45, 0.04);
+}
+.bw-card__value {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+}
+.bw-card.bw-card--disponible,
+.bw-card--disponible {
+    background: linear-gradient(135deg, #2B6337 0%, #367A45 100%) !important;
+    border-color: #2B6337 !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 12px 28px -12px rgba(43, 99, 55, 0.45);
+}
+.bw-card.bw-card--disponible .bw-card__label,
+.bw-card--disponible .bw-card__label {
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+.bw-card.bw-card--disponible .bw-card__value,
+.bw-card--disponible .bw-card__value {
+    color: #FFFFFF !important;
+    font-size: 1.95rem;
+}
+.bw-card.bw-card--disponible .bw-card__hint,
+.bw-card--disponible .bw-card__hint {
+    color: rgba(255, 255, 255, 0.82) !important;
+}
+.bw-card.bw-card--retencion {
+    background: #FAF6EB;
+    border-color: #DDD3BA;
+}
+.bw-card.bw-card--retencion .bw-card__value {
+    color: #30372D;
+}
+.bw-card.bw-card--proceso {
+    background: #FBF1D0;
+    border-color: rgba(234, 191, 69, 0.4);
+}
+.bw-card.bw-card--proceso .bw-card__value {
+    color: #8C6A12;
+}
+.bw-card.bw-card--retirado .bw-card__value {
+    color: #30372D;
+}
+.bw-badge--LIBERACION { background: #E6F0E8; color: #367A45; }
+.bw-badge--RETIRO_RESERVADO { background: #FBF1D0; color: #8C6A12; }
+.bw-badge--RETIRO_PAGADO { background: #E6F0E8; color: #2B6337; }
+.bw-badge--RETIRO_REVERTIDO { background: #FAF6EB; color: #795548; }
+.bw-badge--REVERSO { background: #FBEDEA; color: #A5382B; }
+
+.bw-alert {
+    padding: 15px 18px;
+    border-radius: 14px;
+    margin-bottom: 20px;
+    font-size: 0.92rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.bw-alert--error {
+    background: #FBEDEA;
+    border: 1px solid #F0CFC9;
+    color: #A5382B;
+}
+.bw-alert--ok {
+    background: #E6F0E8;
+    border: 1px solid rgba(54, 122, 69, 0.24);
+    color: #2B6337;
+}
+
+.bw-panels {
+    display: grid;
+    grid-template-columns: 1fr 1.35fr;
+    gap: 20px;
+    margin-bottom: 32px;
+}
+@media (max-width: 860px) {
+    .bw-panels { grid-template-columns: 1fr; }
+}
+.bw-panel {
+    background: #FFFFFF;
+    border: 1px solid #E9E2D0;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 1px 3px rgba(48, 55, 45, 0.05), 0 4px 14px rgba(48, 55, 45, 0.04);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 16px;
+}
+.bw-panel__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+.bw-panel__title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: #30372D;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.bw-panel__title i {
+    color: #367A45;
+}
+.bw-min-pill {
+    font-size: 0.78rem;
+    color: #795548;
+    font-weight: 700;
+    background: #FAF6EB;
+    border: 1px solid #DDD3BA;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-variant-numeric: tabular-nums;
+}
+.bw-bank-box {
+    background: #FAF6EB;
+    border: 1px solid #E9E2D0;
+    border-radius: 14px;
+    padding: 15px 16px;
+}
+.bw-bank-box__entity {
+    font-weight: 700;
+    color: #30372D;
+    font-size: 0.98rem;
+}
+.bw-bank-box__entity--empty {
+    color: #795548;
+}
+.bw-bank-box__meta {
+    color: #795548;
+    font-size: 0.85rem;
+    margin-top: 4px;
+}
+.bw-bank-box__mask {
+    display: inline-block;
+    margin-top: 8px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.88rem;
+    font-weight: 700;
+    background: #E6F0E8;
+    color: #2B6337;
+    border: 1px solid rgba(54, 122, 69, 0.24);
+    padding: 4px 10px;
+    border-radius: 8px;
+    letter-spacing: 0.05em;
+    font-variant-numeric: tabular-nums;
+}
+.bw-dest-line {
+    font-size: 0.86rem;
+    color: #795548;
+    margin-bottom: 12px;
+}
+.bw-dest-line strong {
+    color: #30372D;
+}
+.bw-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-decoration: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background 180ms cubic-bezier(0.4, 0, 0.2, 1), border-color 180ms cubic-bezier(0.4, 0, 0.2, 1), transform 180ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 180ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.bw-btn--block {
+    width: 100%;
+    box-sizing: border-box;
+}
+.bw-btn--sm {
+    min-height: 38px;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    border-radius: 10px;
+}
+.bw-btn--primary {
+    background: #367A45;
+    color: #FFFFFF;
+    box-shadow: 0 4px 14px rgba(54, 122, 69, 0.3);
+}
+.bw-btn--primary:hover:not(:disabled) {
+    background: #2B6337;
+    transform: translateY(-1px);
+}
+.bw-btn--outline {
+    background: #FFFFFF;
+    color: #367A45;
+    border-color: #DDD3BA;
+}
+.bw-btn--outline:hover:not(:disabled) {
+    background: #FAF6EB;
+    border-color: #367A45;
+}
+.bw-btn:disabled {
+    background: #E8EDE9;
+    color: #795548;
+    border-color: #DDD3BA;
+    box-shadow: none;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+.bw-retiro-form-row {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+.bw-retiro-input-wrap {
+    flex: 1 1 200px;
+    min-width: 180px;
+    position: relative;
+}
+.bw-retiro-input-wrap span.bw-currency {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #795548;
+    font-weight: 700;
+}
+.bw-retiro-input {
+    width: 100%;
+    min-height: 46px;
+    box-sizing: border-box;
+    padding: 10px 14px 10px 30px;
+    border: 1px solid #DDD3BA;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #30372D;
+    font-variant-numeric: tabular-nums;
+    background: #FFFFFF;
+}
+.bw-retiro-input:focus {
+    outline: none;
+    border-color: #367A45;
+    box-shadow: 0 0 0 4px rgba(54, 122, 69, 0.18);
+}
+.bw-retiro-input:disabled {
+    background: #FAF6EB;
+    color: #795548;
+    cursor: not-allowed;
+}
+.bw-retiro-notice {
+    background: #FBF1D0;
+    border: 1px solid rgba(234, 191, 69, 0.4);
+    color: #8C6A12;
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+.bw-retiro-notice i {
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+.bw-ret-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 11px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+.bw-ret-status--PENDIENTE { background: #FBF1D0; color: #8C6A12; border: 1px solid rgba(234, 191, 69, 0.4); }
+.bw-ret-status--APROBADO { background: #E6F0E8; color: #2B6337; border: 1px solid rgba(54, 122, 69, 0.24); }
+.bw-ret-status--RECHAZADO { background: #FBEDEA; color: #A5382B; border: 1px solid #F0CFC9; }
+
+.bw-detail-rejected { color: #A5382B; font-size: 0.84rem; font-weight: 500; }
+.bw-detail-approved { color: #30372D; font-size: 0.84rem; font-variant-numeric: tabular-nums; }
+.bw-detail-pending { color: #795548; font-size: 0.84rem; }
+.bw-dash-muted { color: #795548; }
+.bw-section-block { margin-bottom: 32px; }
+.bw-section-heading {
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #30372D;
+    margin: 0 0 12px;
+}
+.bw-th-right, .bw-td-right { text-align: right; }
+.bw-td-amount { text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
+.bw-empty__icon { font-size: 1.8rem; color: #DDD3BA; margin-bottom: 8px; display: block; }
+.bw-empty__text { margin: 6px 0 0; }
+
+@media (max-width: 768px) {
+    .bw-retiro-form-row {
+        flex-direction: column;
+    }
+    .bw-retiro-form-row .bw-btn {
+        width: 100%;
+    }
+}
+

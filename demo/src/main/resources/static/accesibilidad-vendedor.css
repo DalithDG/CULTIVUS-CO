@@ -8,11 +8,11 @@
     align-items: center;
     gap: 8px;
     min-height: 42px;
-    padding: 0 13px;
-    border: 1px solid #dbe8dd;
+    padding: 0 14px;
+    border: 1px solid #DDD3BA;
     border-radius: 999px;
-    background: #f4faf5;
-    color: #14552a;
+    background: #FAF6EB;
+    color: #367A45;
     font: inherit;
     font-size: 0.78rem;
     font-weight: 800;
@@ -21,14 +21,14 @@
 }
 
 .btn-accesibilidad:hover {
-    border-color: #b9d8c0;
-    background: #e9f6ed;
+    border-color: #367A45;
+    background: #EBF3ED;
     transform: translateY(-1px);
 }
 
 .btn-accesibilidad[aria-pressed="true"] {
-    border-color: #1f7a3a;
-    background: #1f7a3a;
+    border-color: #367A45;
+    background: #367A45;
     color: #fff;
 }
 
@@ -98,7 +98,7 @@ html.texto-grande .vp-link {
 .vp-quick-link:focus-visible,
 .vp-mode-btn:focus-visible,
 .header-nav .nav-link:focus-visible {
-    outline: 3px solid #f0b429;
+    outline: 3px solid #EABF45;
     outline-offset: 3px;
 }
 

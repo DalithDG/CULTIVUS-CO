@@ -37,6 +37,19 @@ public class CarritoController {
     @Autowired
     private com.example.demo.services.CalculoEnvioService calculoEnvioService;
 
+    @Autowired(required = false)
+    private com.example.demo.repository.UsuarioRepository usuarioRepository;
+
+    private Usuario obtenerUsuarioActual(HttpSession session) {
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuario != null && usuario.getId() != null && usuarioRepository != null) {
+            Usuario fresco = usuarioRepository.findById(usuario.getId()).orElse(usuario);
+            session.setAttribute("usuarioLogueado", fresco);
+            return fresco;
+        }
+        return usuario;
+    }
+
     /**
      * Muestra el carrito del usuario
      */
@@ -44,11 +57,15 @@ public class CarritoController {
     public String mostrarCarrito(HttpSession session, Model model,
             RedirectAttributes redirectAttributes) {
 
-        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        Usuario usuario = obtenerUsuarioActual(session);
         if (usuario == null) {
             redirectAttributes.addFlashAttribute("error",
                     "Debe iniciar sesión para ver su carrito");
             return "redirect:/usuario/login";
+        }
+        if (!usuario.puedeComprar()) {
+            redirectAttributes.addFlashAttribute("error", Usuario.MENSAJE_VENDEDOR_NO_PUEDE_COMPRAR);
+            return "redirect:/vendedor/dashboard";
         }
 
         // Obtener o crear carrito del usuario
@@ -115,15 +132,26 @@ public class CarritoController {
             HttpSession session,
             RedirectAttributes redirectAttributes) {
         try {
-            Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+            Usuario usuario = obtenerUsuarioActual(session);
             if (usuario == null) {
                 redirectAttributes.addFlashAttribute("error",
                         "Debe iniciar sesión para agregar productos al carrito");
                 return "redirect:/usuario/login";
             }
+            if (!usuario.puedeComprar()) {
+                redirectAttributes.addFlashAttribute("error", Usuario.MENSAJE_VENDEDOR_NO_PUEDE_COMPRAR);
+                return "redirect:/vendedor/dashboard";
+            }
 
             OfertaVendedor oferta = ofertaRepository.findById(ofertaId)
                     .orElseThrow(() -> new IllegalArgumentException("Oferta no encontrada"));
+
+            // Rechazar si la oferta pertenece al propio usuario
+            if (oferta.getVendedor() != null && usuario.getId() != null
+                    && usuario.getId().equals(oferta.getVendedor().getId())) {
+                redirectAttributes.addFlashAttribute("error", "No puedes comprar tus propios productos.");
+                return "redirect:/producto/" + oferta.getProductoCatalogoId();
+            }
 
             // Verificar stock
             if (oferta.getStock() < cantidad) {
@@ -207,16 +235,29 @@ public class CarritoController {
         Map<String, Object> response = new HashMap<>();
 
         try {
-            Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+            Usuario usuario = obtenerUsuarioActual(session);
             if (usuario == null) {
                 response.put("success", false);
                 response.put("error", "Debes iniciar sesión para agregar productos al carrito");
                 response.put("redirectLogin", true);
                 return ResponseEntity.ok(response);
             }
+            if (!usuario.puedeComprar()) {
+                response.put("success", false);
+                response.put("error", Usuario.MENSAJE_VENDEDOR_NO_PUEDE_COMPRAR);
+                return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body(response);
+            }
 
             OfertaVendedor oferta = ofertaRepository.findById(ofertaId)
                     .orElseThrow(() -> new IllegalArgumentException("Oferta no encontrada"));
+
+            // Rechazar si la oferta pertenece al propio usuario
+            if (oferta.getVendedor() != null && usuario.getId() != null
+                    && usuario.getId().equals(oferta.getVendedor().getId())) {
+                response.put("success", false);
+                response.put("error", "No puedes comprar tus propios productos.");
+                return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body(response);
+            }
 
             if (oferta.getStock() < cantidad) {
                 response.put("success", false);
@@ -292,9 +333,13 @@ public class CarritoController {
             HttpSession session,
             RedirectAttributes redirectAttributes) {
         try {
-            Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+            Usuario usuario = obtenerUsuarioActual(session);
             if (usuario == null) {
                 return "redirect:/usuario/login";
+            }
+            if (!usuario.puedeComprar()) {
+                redirectAttributes.addFlashAttribute("error", Usuario.MENSAJE_VENDEDOR_NO_PUEDE_COMPRAR);
+                return "redirect:/vendedor/dashboard";
             }
 
             Carrito carrito = carritoRepository.findByUsuarioId(usuario.getId())
@@ -345,9 +390,13 @@ public class CarritoController {
             HttpSession session,
             RedirectAttributes redirectAttributes) {
         try {
-            Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+            Usuario usuario = obtenerUsuarioActual(session);
             if (usuario == null) {
                 return "redirect:/usuario/login";
+            }
+            if (!usuario.puedeComprar()) {
+                redirectAttributes.addFlashAttribute("error", Usuario.MENSAJE_VENDEDOR_NO_PUEDE_COMPRAR);
+                return "redirect:/vendedor/dashboard";
             }
 
             Carrito carrito = carritoRepository.findByUsuarioId(usuario.getId())
