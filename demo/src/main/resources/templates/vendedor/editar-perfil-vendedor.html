@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -11,6 +11,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" th:href="@{/header.css}">
+    <link rel="stylesheet" th:href="@{/header-tokens.css}">
+    <link rel="stylesheet" th:href="@{/vendedor-sidebar.css}">
+    <link rel="stylesheet" th:href="@{/header-vendedor-apple.css}">
     <link rel="stylesheet" th:href="@{/vendedor-panel.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
 </head>
@@ -39,36 +42,36 @@
                         <!-- Razón Social -->
                         <div class="field full-width">
                             <label for="razonSocial">Razón Social o Nombre del Negocio *</label>
-                            <input type="text" id="razonSocial" name="razonSocial" th:value="${perfilVendedor.razonSocial}" required>
+                            <input type="text" id="razonSocial" name="razonSocial" th:value="${perfilVendedor != null ? perfilVendedor.razonSocial : ''}" required>
                         </div>
 
                         <!-- Teléfono -->
                         <div class="field">
                             <label for="telefonoContacto">Teléfono de Contacto *</label>
-                            <input type="tel" id="telefonoContacto" name="telefonoContacto" th:value="${perfilVendedor.telefonoContacto}" required>
+                            <input type="tel" id="telefonoContacto" name="telefonoContacto" th:value="${perfilVendedor != null ? perfilVendedor.telefonoContacto : ''}" required>
                         </div>
 
                         <!-- Dirección -->
                         <div class="field">
                             <label for="direccionNegocio">Dirección del Negocio *</label>
-                            <input type="text" id="direccionNegocio" name="direccionNegocio" th:value="${perfilVendedor.direccionNegocio}" required>
+                            <input type="text" id="direccionNegocio" name="direccionNegocio" th:value="${perfilVendedor != null ? perfilVendedor.direccionNegocio : ''}" required>
                         </div>
 
                         <!-- Tipo de Productos -->
                         <div class="field full-width">
                             <label for="tipoProductos">¿Qué tipo de productos vendes? *</label>
-                            <input type="text" id="tipoProductos" name="tipoProductos" th:value="${perfilVendedor.tipoProductos}" required>
+                            <input type="text" id="tipoProductos" name="tipoProductos" th:value="${perfilVendedor != null ? perfilVendedor.tipoProductos : ''}" required>
                         </div>
 
                         <!-- Descripción -->
                         <div class="field full-width">
                             <label for="descripcionNegocio">Descripción de tu Negocio</label>
-                            <textarea id="descripcionNegocio" name="descripcionNegocio" rows="4" th:text="${perfilVendedor.descripcionNegocio}"></textarea>
+                            <textarea id="descripcionNegocio" name="descripcionNegocio" rows="4" th:text="${perfilVendedor != null ? perfilVendedor.descripcionNegocio : ''}"></textarea>
                         </div>
 
                         <!-- Campos legados preservados para compatibilidad -->
-                        <input type="hidden" id="banco" name="banco" th:value="${perfilVendedor.banco}">
-                        <input type="hidden" id="cuentaBancaria" name="cuentaBancaria" th:value="${perfilVendedor.cuentaBancaria}">
+                        <input type="hidden" id="banco" name="banco" th:value="${perfilVendedor != null ? perfilVendedor.banco : ''}">
+                        <input type="hidden" id="cuentaBancaria" name="cuentaBancaria" th:value="${perfilVendedor != null ? perfilVendedor.cuentaBancaria : ''}">
 
                         <div class="form-section-title full-width">
                             <i class="fas fa-university" aria-hidden="true"></i>
@@ -78,20 +81,20 @@
                         <div class="vs-bank-summary-box full-width">
                             <div>
                                 <div class="vs-bank-summary-box__title"
-                                     th:if="${perfilVendedor.tieneCuentaRetiroCompleta()}"
-                                     th:text="${perfilVendedor.cuentaRetiro.resumenEnmascarado}">Bancolombia · Cuenta de ahorros (****1234)</div>
+                                     th:if="${perfilVendedor != null and perfilVendedor.cuentaRetiroCompleta}"
+                                     th:text="${perfilVendedor.resumenCuentaBancaria}">Bancolombia · Cuenta de ahorros (****1234)</div>
                                 <div class="vs-bank-summary-box__title"
-                                     th:if="${!perfilVendedor.tieneCuentaRetiroCompleta() and perfilVendedor.banco != null and !perfilVendedor.banco.isBlank()}"
+                                     th:if="${perfilVendedor != null and !perfilVendedor.cuentaRetiroCompleta and perfilVendedor.banco != null and !#strings.isEmpty(#strings.trim(perfilVendedor.banco))}"
                                      th:text="${perfilVendedor.banco + ' (' + (perfilVendedor.cuentaBancariaEnmascarada != null ? perfilVendedor.cuentaBancariaEnmascarada : 'Sin número') + ') — Requiere completar datos'}">Banco</div>
                                 <div class="vs-bank-summary-box__title vs-bank-summary-box__title--muted"
-                                     th:if="${!perfilVendedor.tieneCuentaRetiroCompleta() and (perfilVendedor.banco == null or perfilVendedor.banco.isBlank())}">
+                                     th:if="${perfilVendedor == null or (!perfilVendedor.cuentaRetiroCompleta and (perfilVendedor.banco == null or #strings.isEmpty(#strings.trim(perfilVendedor.banco))))}">
                                     Aún no has configurado una cuenta bancaria para retiros.
                                 </div>
                                 <span class="vs-bank-summary-box__sub">Gestiona de forma segura tu cuenta de destino desde tu billetera.</span>
                             </div>
                             <a th:href="@{/vendedor/cuenta-bancaria}" class="vs-btn vs-btn--primary">
                                 <i class="fas fa-university" aria-hidden="true"></i>
-                                <span th:text="${perfilVendedor.tieneCuentaRetiroCompleta() ? 'Cambiar cuenta bancaria' : 'Configurar cuenta bancaria'}">Configurar cuenta bancaria</span>
+                                <span th:text="${perfilVendedor != null and perfilVendedor.cuentaRetiroCompleta ? 'Cambiar cuenta bancaria' : 'Configurar cuenta bancaria'}">Configurar cuenta bancaria</span>
                             </a>
                         </div>
                     </div>
@@ -104,7 +107,7 @@
                         <button type="submit" class="btn-submit">
                             <i class="fas fa-save" aria-hidden="true"></i>
                             <span>Guardar Cambios</span>
-                        </button>
+                        </a>
                     </div>
                 </form>
             </div>

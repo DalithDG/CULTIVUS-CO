@@ -40,35 +40,31 @@
         <div class="vs-topbar__actions">
             <!-- Accesibilidad: texto más grande -->
             <button type="button" class="vs-topbar__accessibility" id="btnTextoGrande" onclick="toggleTextoGrande()"
-                    aria-pressed="false" title="Cambiar tamaño de letra">
+                aria-pressed="false" title="Cambiar tamaño de letra">
                 <i class="fas fa-text-height" aria-hidden="true"></i>
                 <span id="lblTextoGrande">Letra grande</span>
             </button>
 
-            <!-- Ir al mercado como comprador -->
-            <a th:href="@{/productos}" class="vs-topbar__btn" title="Ver mercado como comprador">
-                <i class="fas fa-store" aria-hidden="true"></i>
-            </a>
-
             <!-- Notificaciones -->
             <a th:href="@{/usuario/notificaciones}" class="vs-topbar__btn" title="Notificaciones">
                 <i class="fas fa-bell" aria-hidden="true"></i>
-                <span class="vs-topbar__badge"
-                      th:if="${notificacionesCount != null and notificacionesCount > 0}"
-                      th:text="${notificacionesCount}">0</span>
-            </a>
-
-            <!-- Cerrar sesión -->
-            <a th:href="@{/usuario/logout}" class="vs-topbar__btn" title="Cerrar sesión">
-                <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+                <span class="vs-topbar__badge" th:if="${notificacionesCount != null and notificacionesCount > 0}"
+                    th:text="${notificacionesCount}">0</span>
             </a>
 
             <!-- Avatar / Perfil del vendedor -->
             <a th:href="@{/vendedor/perfil}" class="vs-topbar__avatar" title="Mi perfil de vendedor">
-                <span th:if="${session.usuarioLogueado != null and session.usuarioLogueado.nombre != null and #strings.length(session.usuarioLogueado.nombre) > 0}"
-                      th:text="${#strings.substring(session.usuarioLogueado.nombre, 0, 1).toUpperCase()}">V</span>
+                <span
+                    th:if="${session.usuarioLogueado != null and session.usuarioLogueado.nombre != null and #strings.length(session.usuarioLogueado.nombre) > 0}"
+                    th:text="${#strings.substring(session.usuarioLogueado.nombre, 0, 1).toUpperCase()}">V</span>
                 <i th:unless="${session.usuarioLogueado != null and session.usuarioLogueado.nombre != null and #strings.length(session.usuarioLogueado.nombre) > 0}"
-                   class="fas fa-user" aria-hidden="true"></i>
+                    class="fas fa-user" aria-hidden="true"></i>
+            </a>
+
+            <!-- Cerrar sesión -->
+            <a th:href="@{/usuario/logout}" class="vs-topbar__btn vs-topbar__btn--logout" title="Cerrar sesión"
+                aria-label="Cerrar sesión">
+                <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
             </a>
         </div>
     </div>
@@ -88,7 +84,7 @@
             </div>
             <div class="vs-sidebar__vendor-info">
                 <div class="vs-sidebar__vendor-name"
-                     th:text="${usuario != null ? usuario.nombre : (session.usuarioLogueado != null ? session.usuarioLogueado.nombre : 'Mi Tienda')}">
+                    th:text="${usuario != null ? usuario.nombre : (session.usuarioLogueado != null ? session.usuarioLogueado.nombre : 'Mi Tienda')}">
                     Mi Tienda
                 </div>
                 <div class="vs-sidebar__vendor-role">Vendedor · Cultivus</div>
@@ -100,12 +96,19 @@
             <div class="vs-nav-group__label">Principal</div>
 
             <a th:href="@{/vendedor/ventas}" class="vs-nav-item" data-vs-nav="ventas"
-               th:classappend="${currentPath != null and currentPath.contains('/ventas') ? ' is-active' : ''}">
+                th:classappend="${currentPath != null and currentPath.contains('/ventas') ? ' is-active' : ''}">
                 <span class="vs-nav-item__icon"><i class="fas fa-receipt" aria-hidden="true"></i></span>
                 <span>Ventas</span>
-                <span class="vs-nav-item__badge"
-                      th:if="${tareasPendientes != null and tareasPendientes > 0}"
-                      th:text="${tareasPendientes}">0</span>
+                <span class="vs-nav-item__badge" th:if="${tareasPendientes != null and tareasPendientes > 0}"
+                    th:text="${tareasPendientes}">0</span>
+            </a>
+
+            <a th:href="@{/usuario/notificaciones}" class="vs-nav-item" data-vs-nav="notificaciones"
+                th:classappend="${currentPath != null and currentPath.contains('/notificaciones') ? ' is-active' : ''}">
+                <span class="vs-nav-item__icon"><i class="fas fa-bell" aria-hidden="true"></i></span>
+                <span>Notificaciones</span>
+                <span class="vs-nav-item__badge" th:if="${notificacionesCount != null and notificacionesCount > 0}"
+                    th:text="${notificacionesCount}">0</span>
             </a>
         </nav>
 
@@ -116,13 +119,13 @@
             <div class="vs-nav-group__label">Catálogo</div>
 
             <a th:href="@{/vendedor/mis-productos}" class="vs-nav-item" data-vs-nav="mis-productos"
-               th:classappend="${currentPath != null and currentPath.contains('/mis-productos') ? ' is-active' : ''}">
+                th:classappend="${currentPath != null and currentPath.contains('/mis-productos') ? ' is-active' : ''}">
                 <span class="vs-nav-item__icon"><i class="fas fa-box" aria-hidden="true"></i></span>
                 <span>Mis Productos</span>
             </a>
 
             <a th:href="@{/vendedor/productos/nuevo}" class="vs-nav-item" data-vs-nav="nuevo-producto"
-               th:classappend="${currentPath != null and currentPath.contains('/productos/nuevo') ? ' is-active' : ''}">
+                th:classappend="${currentPath != null and currentPath.contains('/productos/nuevo') ? ' is-active' : ''}">
                 <span class="vs-nav-item__icon"><i class="fas fa-plus-circle" aria-hidden="true"></i></span>
                 <span>Agregar Producto</span>
             </a>
@@ -135,13 +138,13 @@
             <div class="vs-nav-group__label">Finanzas</div>
 
             <a th:href="@{/vendedor/billetera}" class="vs-nav-item" data-vs-nav="billetera"
-               th:classappend="${currentPath != null and currentPath.contains('/billetera') ? ' is-active' : ''}">
+                th:classappend="${currentPath != null and currentPath.contains('/billetera') ? ' is-active' : ''}">
                 <span class="vs-nav-item__icon"><i class="fas fa-wallet" aria-hidden="true"></i></span>
                 <span>Mi Billetera</span>
             </a>
 
             <a th:href="@{/vendedor/cuenta-bancaria}" class="vs-nav-item" data-vs-nav="cuenta-bancaria"
-               th:classappend="${currentPath != null and currentPath.contains('/cuenta-bancaria') ? ' is-active' : ''}">
+                th:classappend="${currentPath != null and currentPath.contains('/cuenta-bancaria') ? ' is-active' : ''}">
                 <span class="vs-nav-item__icon"><i class="fas fa-building-columns" aria-hidden="true"></i></span>
                 <span>Cuenta Bancaria</span>
             </a>
@@ -154,13 +157,13 @@
             <div class="vs-nav-group__label">Configuración</div>
 
             <a th:href="@{/vendedor/perfil}" class="vs-nav-item" data-vs-nav="perfil"
-               th:classappend="${currentPath != null and currentPath.contains('/vendedor/perfil') ? ' is-active' : ''}">
+                th:classappend="${currentPath != null and currentPath.contains('/vendedor/perfil') ? ' is-active' : ''}">
                 <span class="vs-nav-item__icon"><i class="fas fa-id-card" aria-hidden="true"></i></span>
                 <span>Mi Perfil</span>
             </a>
 
             <a th:href="@{/vendedor/editar}" class="vs-nav-item" data-vs-nav="editar"
-               th:classappend="${currentPath != null and currentPath.contains('/vendedor/editar') ? ' is-active' : ''}">
+                th:classappend="${currentPath != null and currentPath.contains('/vendedor/editar') ? ' is-active' : ''}">
                 <span class="vs-nav-item__icon"><i class="fas fa-store" aria-hidden="true"></i></span>
                 <span>Editar mi Tienda</span>
             </a>
@@ -169,7 +172,8 @@
         <!-- Pie de Sidebar: Cerrar Sesión -->
         <div class="vs-sidebar__bottom">
             <a th:href="@{/usuario/logout}" class="vs-nav-item vs-nav-item--logout">
-                <span class="vs-nav-item__icon"><i class="fas fa-arrow-right-from-bracket" aria-hidden="true"></i></span>
+                <span class="vs-nav-item__icon"><i class="fas fa-arrow-right-from-bracket"
+                        aria-hidden="true"></i></span>
                 <span>Cerrar Sesión</span>
             </a>
         </div>
@@ -186,6 +190,7 @@
             var bc = document.getElementById('vsBreadcrumbCurrent');
 
             var routeMap = [
+                { match: '/usuario/notificaciones', key: 'notificaciones', label: 'Notificaciones' },
                 { match: '/vendedor/productos/nuevo', key: 'nuevo-producto', label: 'Publicar Producto' },
                 { match: '/vendedor/productos/editar', key: 'mis-productos', label: 'Editar Oferta' },
                 { match: '/vendedor/mis-productos', key: 'mis-productos', label: 'Mi Catálogo' },
@@ -230,7 +235,10 @@
                 if (sidebar) sidebar.classList.remove('is-open');
                 if (overlay) overlay.classList.remove('is-visible');
                 document.body.style.overflow = '';
-                if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
+                if (toggleBtn) {
+                    toggleBtn.classList.remove('is-active');
+                    toggleBtn.setAttribute('aria-expanded', 'false');
+                }
             }
 
             if (toggleBtn && sidebar && overlay) {
@@ -238,9 +246,24 @@
                     var isOpen = sidebar.classList.toggle('is-open');
                     overlay.classList.toggle('is-visible', isOpen);
                     document.body.style.overflow = isOpen ? 'hidden' : '';
+                    toggleBtn.classList.toggle('is-active', isOpen);
                     toggleBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
                 });
                 overlay.addEventListener('click', closeMobileMenu);
+
+                document.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape' && sidebar.classList.contains('is-open')) {
+                        closeMobileMenu();
+                    }
+                });
+
+                sidebar.querySelectorAll('.vs-nav-item').forEach(function (link) {
+                    link.addEventListener('click', function () {
+                        if (window.innerWidth <= 900) {
+                            closeMobileMenu();
+                        }
+                    });
+                });
             }
 
             // 3. Accesibilidad: texto grande (compatible con 'cultivus-texto-grande')
@@ -260,13 +283,13 @@
                 var activo = !document.documentElement.classList.contains('texto-grande');
                 try {
                     localStorage.setItem(CLAVE, activo ? '1' : '0');
-                } catch (e) {}
+                } catch (e) { }
                 aplicarTextoGrande(activo);
             };
 
             try {
                 aplicarTextoGrande(localStorage.getItem(CLAVE) === '1');
-            } catch (e) {}
+            } catch (e) { }
         })();
     </script>
 </header>

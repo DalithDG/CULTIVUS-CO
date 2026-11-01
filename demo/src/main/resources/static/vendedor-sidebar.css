@@ -1452,11 +1452,11 @@ body.vs-layout > .site-footer {
     font-variant-numeric: tabular-nums;
 }
 
-.vs-info-tile__value--ok {
+.vs-info-tile__value.is-ok {
     color: var(--vs-green-dark);
 }
 
-.vs-info-tile__value--warn {
+.vs-info-tile__value.is-warn {
     color: var(--vs-amber);
 }
 

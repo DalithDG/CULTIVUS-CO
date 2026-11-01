@@ -14,6 +14,7 @@
   border-bottom: 1px solid var(--c-line) !important;
   box-shadow: var(--shadow-subtle) !important;
   font-family: var(--font-system) !important;
+  z-index: 510 !important;
 }
 
 @supports not (backdrop-filter: blur(20px)) {
@@ -104,7 +105,8 @@
   color: var(--c-green) !important;
 }
 
-.vs-topbar__btn[title="Cerrar sesión"]:hover {
+.vs-topbar__btn[title="Cerrar sesión"]:hover,
+.vs-topbar__btn--logout:hover {
   background: var(--c-danger-soft) !important;
   border-color: var(--c-danger-line) !important;
   color: var(--c-danger) !important;
@@ -253,13 +255,26 @@
   font-weight: 700 !important;
 }
 
-/* Cerrar Sesión */
+/* Cerrar Sesión Fijo al Pie de Sidebar */
+.vs-sidebar__bottom {
+  position: sticky !important;
+  bottom: 0 !important;
+  margin-top: auto !important;
+  padding: 10px 0 calc(10px + env(safe-area-inset-bottom, 0px)) !important;
+  border-top: 1px solid var(--c-line) !important;
+  background: var(--c-surface) !important;
+  z-index: 2 !important;
+}
+
 .vs-nav-item--logout {
   color: var(--c-danger) !important;
+  font-weight: 600 !important;
 }
 
 .vs-nav-item--logout .vs-nav-item__icon {
   color: var(--c-danger) !important;
+  background: var(--c-danger-soft) !important;
+  opacity: 1 !important;
 }
 
 .vs-nav-item--logout:hover {
@@ -269,7 +284,7 @@
 
 .vs-nav-item--logout:hover .vs-nav-item__icon {
   color: var(--c-danger) !important;
-  background: rgba(165, 56, 43, 0.1) !important;
+  background: rgba(165, 56, 43, 0.14) !important;
 }
 
 /* ── 3. Modo Letra Grande Accesible ─────────────────────────────────────────── */
@@ -286,16 +301,87 @@ html.texto-grande .vs-topbar__accessibility {
   min-height: 44px !important;
 }
 
-/* ── 4. Overlay y Móvil ─────────────────────────────────────────────────────── */
+/* ── 4. Overlay y Experiencia Móvil (Apple HIG) ─────────────────────────────── */
 .vs-overlay {
+  top: var(--vs-topbar-h) !important;
+  z-index: 450 !important;
   -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
-  background: rgba(48, 55, 45, 0.4) !important;
+  background: rgba(48, 55, 45, 0.35) !important;
 }
 
-@media (max-width: 768px) {
+/* Animación de botón hamburguesa a X */
+.vs-menu-toggle.is-active span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.vs-menu-toggle.is-active span:nth-child(2) {
+  opacity: 0;
+}
+
+.vs-menu-toggle.is-active span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+@media (max-width: 900px) {
+  .vs-topbar__divider,
+  .vs-topbar__breadcrumb {
+    display: none !important;
+  }
+
   .vs-sidebar {
+    top: var(--vs-topbar-h) !important;
+    height: calc(100vh - var(--vs-topbar-h)) !important;
+    height: calc(100dvh - var(--vs-topbar-h)) !important;
+    width: min(84vw, 280px) !important;
+    z-index: 500 !important;
     box-shadow: var(--shadow-sheet) !important;
+    border-top-right-radius: 20px !important;
+    border-bottom-right-radius: 20px !important;
+  }
+
+  .vs-nav-group {
+    padding: 10px 6px 2px !important;
+  }
+
+  .vs-nav-item {
+    min-height: 42px !important;
+    padding: 7px 12px !important;
   }
 }
 
+@media (max-width: 600px) {
+  .vs-topbar {
+    padding: 0 12px !important;
+    gap: 8px !important;
+  }
+
+  .vs-topbar__logo img,
+  .vs-topbar__logo-img {
+    height: 30px !important;
+  }
+
+  .vs-topbar__actions {
+    gap: 6px !important;
+  }
+
+  .vs-topbar__btn,
+  .vs-topbar__avatar,
+  .vs-menu-toggle {
+    width: 38px !important;
+    height: 38px !important;
+  }
+
+  .vs-topbar__accessibility {
+    min-height: 38px !important;
+    width: 38px !important;
+    padding: 0 !important;
+    justify-content: center !important;
+  }
+}
+
+@media (max-width: 440px) {
+  .vs-topbar__badge-vendedor {
+    display: none !important;
+  }
+}

@@ -1,4 +1,4 @@
-ï»¿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -50,7 +50,7 @@
             <!-- Empty state -->
             <div th:if="${pedidos == null || pedidos.isEmpty()}" class="mp-empty">
                 <div class="mp-empty-icon" aria-hidden="true"><i class="fa-solid fa-box-open"></i></div>
-                <h3>No tienes pedidos aÃºn</h3>
+                <h3>No tienes pedidos aún</h3>
                 <p>Explora la tienda y comienza a comprar los mejores productos frescos.</p>
                 <a th:href="@{/}" class="mp-btn mp-btn--primary">
                     <i class="fa-solid fa-store" aria-hidden="true"></i> Ir a la tienda
@@ -115,25 +115,25 @@
                                          <span style="font-weight: 700;">Transportista asignado</span><span th:if="${t != null and t.nombreMostrar != null}">:</span>
                                          <strong th:if="${t != null and t.nombreMostrar != null}" th:text="${t.nombreMostrar}">Carlos Mendoza</strong>
                                          <span th:if="${t != null and t.telefonoLimpio != null}">
-                                             Â· <i class="fa-solid fa-phone" style="font-size: .75rem;" aria-hidden="true"></i>
+                                             · <i class="fa-solid fa-phone" style="font-size: .75rem;" aria-hidden="true"></i>
                                              <a th:href="'tel:' + ${t.telefonoLimpio}" style="font-weight: 600; color: inherit; text-decoration: underline;" th:text="${t.telefonoLimpio}">3101234567</a>
                                          </span>
                                          <span th:if="${t != null and t.vehiculoMostrar != null}">
-                                             Â· <i class="fa-solid fa-motorcycle" style="font-size: .75rem;" aria-hidden="true"></i>
+                                             · <i class="fa-solid fa-motorcycle" style="font-size: .75rem;" aria-hidden="true"></i>
                                              <span th:text="${t.vehiculoMostrar}">Moto TRA-789</span>
                                          </span>
                                      </div>
 
                                     <!-- Caso 2: Entregado -->
                                     <div th:if="${compra.envioLogistica != null and compra.envioLogistica.estado == 'ENTREGADO'}">
-                                        <strong style="color: var(--c-green);"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> Â¡EnvÃ­o entregado!</strong>
-                                        <span>Todos los productos de tu compra han llegado a tu direcciÃ³n.</span>
+                                        <strong style="color: var(--c-green);"><i class="fa-solid fa-circle-check" aria-hidden="true"></i> ¡Envío entregado!</strong>
+                                        <span>Todos los productos de tu compra han llegado a tu dirección.</span>
                                     </div>
 
                                     <!-- Caso 3: Sin transportista (Expirado) -->
                                     <div th:if="${compra.envioLogistica != null and compra.envioLogistica.estado == 'SIN_TRANSPORTISTA'}">
                                         <strong style="color: var(--c-danger);"><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Sin transportista asignado:</strong>
-                                        <span>El envÃ­o no pudo coordinarse a tiempo. El equipo de soporte gestionarÃ¡ tu reembolso manual.</span>
+                                        <span>El envío no pudo coordinarse a tiempo. El equipo de soporte gestionará tu reembolso manual.</span>
                                     </div>
 
                                     <!-- Caso 4: Buscando o esperando transportista -->
@@ -142,13 +142,13 @@
                                             <strong><i class="fa-solid fa-clock" aria-hidden="true"></i> Esperando transportista:</strong> El agricultor ya tiene tu pedido listo en finca para recogida.
                                         </span>
                                         <span th:unless="${compra.tieneSubPedidoListoParaRecoger}">
-                                            <strong><i class="fa-solid fa-route" aria-hidden="true"></i> Buscando transportista:</strong> Asignando conductor Ã³ptimo para recoger tus productos.
+                                            <strong><i class="fa-solid fa-route" aria-hidden="true"></i> Buscando transportista:</strong> Asignando conductor óptimo para recoger tus productos.
                                         </span>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Badge de estado logÃ­stico a la derecha -->
+                            <!-- Badge de estado logístico a la derecha -->
                             <div style="margin-left: auto; flex-shrink: 0;">
                                 <span class="mp-badge"
                                       th:classappend="${compra.envioLogistica != null ? 'mp-badge--' + compra.envioLogistica.estadoCss : 'mp-badge--pendiente'}"
@@ -191,7 +191,7 @@
                                                     <span class="mp-subpedido-factura" th:text="'(' + ${sub.numeroFactura} + ')'">(CLT-000)</span>
                                                 </div>
                                                 <div class="mp-subpedido-meta">
-                                                    <span th:text="${sub.items != null ? sub.items.size() : 0}">0</span> artÃ­culo(s) Â· Subtotal: <strong>$<span th:text="${#numbers.formatDecimal(sub.total, 0, 'COMMA', 0, 'POINT')}">0</span></strong>
+                                                    <span th:text="${sub.items != null ? sub.items.size() : 0}">0</span> artículo(s) · Subtotal: <strong>$<span th:text="${#numbers.formatDecimal(sub.total, 0, 'COMMA', 0, 'POINT')}">0</span></strong>
                                                 </div>
                                             </div>
                                         </div>
@@ -209,21 +209,28 @@
                                         </div>
                                     </div>
 
-                                    <!-- Banner de CancelaciÃ³n (1.6) -->
+                                    <!-- Continuar pago si está pendiente -->
+                                 <div th:if="${sub.pago == null or (sub.pago.estado != null and (sub.pago.estado == 'PENDIENTE' or sub.pago.estado == 'PENDIENTE_PAGO'))}" style="margin-top: 12px; text-align: center;">
+                                     <a th:href="@{/pago/confirmacion/{id}(id=${sub.id})}" class="mp-btn mp-btn--primary">
+                                         <i class="fa-solid fa-credit-card" aria-hidden="true"></i> Continuar pago
+                                     </a>
+                                 </div>
+
+                                 <!-- Banner de Cancelación (1.6) -->
                                     <div th:if="${sub.cancelado}" class="mp-banner mp-banner--cancelled">
                                         <i class="fa-solid fa-ban" style="font-size: 1.2rem;" aria-hidden="true"></i>
                                         <div>
                                             <strong>Pedido cancelado</strong>
-                                            <div style="font-size: 0.85rem;" th:if="${sub.motivoCancelacion != null}" th:text="'Motivo: ' + ${sub.motivoCancelacion}">Motivo de cancelaciÃ³n</div>
+                                            <div style="font-size: 0.85rem;" th:if="${sub.motivoCancelacion != null}" th:text="'Motivo: ' + ${sub.motivoCancelacion}">Motivo de cancelación</div>
                                         </div>
                                     </div>
 
-                                    <!-- Banner de RevisiÃ³n (1.6) -->
+                                    <!-- Banner de Revisión (1.6) -->
                                     <div th:if="${sub.enRevision}" class="mp-banner mp-banner--revision">
                                         <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.2rem;" aria-hidden="true"></i>
                                         <div>
-                                            <strong>Pedido en revisiÃ³n</strong>
-                                            <div style="font-size: 0.85rem;" th:text="${sub.motivoRevision != null ? sub.motivoRevision : 'El pago fue recibido pero se estÃ¡ validando el stock para gestiÃ³n de reembolso.'}">En revisiÃ³n</div>
+                                            <strong>Pedido en revisión</strong>
+                                            <div style="font-size: 0.85rem;" th:text="${sub.motivoRevision != null ? sub.motivoRevision : 'El pago fue recibido pero se está validando el stock para gestión de reembolso.'}">En revisión</div>
                                         </div>
                                     </div>
 
@@ -231,7 +238,7 @@
                                     <div class="mp-timeline" th:if="${sub.mostrarStepper}">
                                         <div class="mp-timeline__title">
                                             <i class="fa-solid fa-timeline" aria-hidden="true"></i>
-                                            <span>Seguimiento de preparaciÃ³n y entrega</span>
+                                            <span>Seguimiento de preparación y entrega</span>
                                         </div>
                                         <!-- Stepper Domicilio (6 pasos) -->
                                         <div class="mp-stepper">
@@ -268,11 +275,11 @@
                                         </div>
                                     </div>
 
-                                     <!-- Desglose de envÃ­o de este vendedor -->
+                                     <!-- Desglose de envío de este vendedor -->
                                      <div th:if="${sub.envioCentavos != null and sub.envioCentavos > 0}" class="mp-envio-vendedor">
                                          <span>
                                              <i class="fa-solid fa-route" style="color: var(--c-green); margin-right: 4px;" aria-hidden="true"></i>
-                                             EnvÃ­o:
+                                             Envío:
                                              <strong th:text="${sub.zonaOrigenEnvio != null ? 'Zona ' + sub.zonaOrigenEnvio : (sub.ciudadOrigenEnvio != null ? sub.ciudadOrigenEnvio : 'Recogida')}">Zona 1</strong>
                                              <i class="fa-solid fa-arrow-right" style="font-size: .7rem; margin: 0 4px;" aria-hidden="true"></i>
                                              <strong th:text="${sub.zonaDestinoEnvio != null ? 'Zona ' + sub.zonaDestinoEnvio : (sub.ciudadDestinoEnvio != null ? sub.ciudadDestinoEnvio : 'Entrega')}">Zona 2</strong>
@@ -284,13 +291,13 @@
                             </div>
                              <div th:if="${compra.envioCentavos != null and compra.envioCentavos > 0}" class="mp-compra-totales-pie">
                                  <span>Productos: <strong>$<span th:text="${#numbers.formatDecimal(compra.subtotal, 0, 'COMMA', 0, 'POINT')}">0</span></strong></span>
-                                 <span><i class="fa-solid fa-truck-fast" style="color: var(--c-green); margin-right: 4px;" aria-hidden="true"></i> EnvÃ­o total: <strong>$<span th:text="${#numbers.formatDecimal(compra.envio, 0, 'COMMA', 0, 'POINT')}">0</span></strong></span>
+                                 <span><i class="fa-solid fa-truck-fast" style="color: var(--c-green); margin-right: 4px;" aria-hidden="true"></i> Envío total: <strong>$<span th:text="${#numbers.formatDecimal(compra.envio, 0, 'COMMA', 0, 'POINT')}">0</span></strong></span>
                              </div>
                         </div>
                     </div>
                 </th:block>
 
-                <!-- Pedidos individuales / legacy (si no hay compras o pedidos huÃ©rfanos) -->
+                <!-- Pedidos individuales / legacy (si no hay compras o pedidos huérfanos) -->
                 <th:block th:if="${compras == null || compras.isEmpty() || (pedidosSinCompra != null and !pedidosSinCompra.isEmpty())}">
                     <div th:each="pedido : ${(compras == null || compras.isEmpty()) ? pedidos : pedidosSinCompra}"
                          class="mp-card"
@@ -372,15 +379,15 @@
 
                             <!-- Items count -->
                             <div class="mp-card__info">
-                                <div class="mp-card__info-label"><i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i> ArtÃ­culos</div>
+                                <div class="mp-card__info-label"><i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i> Artículos</div>
                                 <div class="mp-card__info-value">
-                                    <span th:text="${pedido.items != null ? pedido.items.size() : 0}">0</span> Ã­tems
+                                    <span th:text="${pedido.items != null ? pedido.items.size() : 0}">0</span> ítems
                                 </div>
                             </div>
 
                             <!-- Shipping address -->
                             <div class="mp-card__info">
-                                <div class="mp-card__info-label"><i class="fa-solid fa-location-dot" aria-hidden="true"></i> DirecciÃ³n</div>
+                                <div class="mp-card__info-label"><i class="fa-solid fa-location-dot" aria-hidden="true"></i> Dirección</div>
                                 <div class="mp-card__info-value"
                                      th:text="${pedido.direccionEntrega != null ? ((pedido.direccionEntrega.direccion != null ? pedido.direccionEntrega.direccion : '') + (pedido.direccionEntrega.ciudad != null ? ', ' + pedido.direccionEntrega.ciudad : '')) : 'No especificada'}">
                                 </div>
@@ -450,13 +457,13 @@
                                     <!-- 1. Fecha -->
                                     <div class="omc">
                                         <div class="omc__label"><i class="fa-regular fa-calendar" aria-hidden="true"></i> Fecha</div>
-                                        <div class="omc__value" th:text="${#temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm')}">â€“</div>
+                                        <div class="omc__value" th:text="${#temporals.format(pedido.fechaPedido, 'dd/MM/yyyy HH:mm')}">–</div>
                                     </div>
                                     <!-- 2. Tienda -->
                                     <div class="omc">
                                         <div class="omc__label"><i class="fa-solid fa-store" aria-hidden="true"></i> Tienda</div>
                                         <div class="omc__value"
-                                             th:text="${pedido.vendedor != null and pedido.vendedor.razonSocial != null ? pedido.vendedor.razonSocial : (pedido.vendedor != null and pedido.vendedor.nombre != null ? pedido.vendedor.nombre : 'Productor Local')}">â€“</div>
+                                             th:text="${pedido.vendedor != null and pedido.vendedor.razonSocial != null ? pedido.vendedor.razonSocial : (pedido.vendedor != null and pedido.vendedor.nombre != null ? pedido.vendedor.nombre : 'Productor Local')}">–</div>
                                     </div>
                                     <!-- 3. Estado del pedido -->
                                     <div class="omc">
@@ -472,13 +479,13 @@
                                     <div class="omc">
                                         <div class="omc__label"><i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i> Productos</div>
                                         <div class="omc__value"
-                                             th:text="${(pedido.items != null ? pedido.items.size() : 0) + ' Ã­tems'}">0 Ã­tems</div>
+                                             th:text="${(pedido.items != null ? pedido.items.size() : 0) + ' ítems'}">0 ítems</div>
                                     </div>
-                                    <!-- 5. MÃ©todo de pago -->
+                                    <!-- 5. Método de pago -->
                                     <div class="omc">
-                                        <div class="omc__label"><i class="fa-solid fa-credit-card" aria-hidden="true"></i> MÃ©todo de pago</div>
+                                        <div class="omc__label"><i class="fa-solid fa-credit-card" aria-hidden="true"></i> Método de pago</div>
                                         <div class="omc__value"
-                                             th:text="${pedido.pago != null and pedido.pago.metodo != null ? pedido.pago.metodo : 'No especificado'}">â€“</div>
+                                             th:text="${pedido.pago != null and pedido.pago.metodo != null ? pedido.pago.metodo : 'No especificado'}">–</div>
                                     </div>
                                     <!-- 6. Estado del pago -->
                                     <div class="omc">
@@ -495,31 +502,38 @@
                                     <div class="omc">
                                         <div class="omc__label"><i class="fa-solid fa-user" aria-hidden="true"></i> Vendedor</div>
                                         <div class="omc__value"
-                                             th:text="${pedido.vendedor != null and pedido.vendedor.nombre != null ? pedido.vendedor.nombre : 'Usuario Cultivus'}">â€“</div>
+                                             th:text="${pedido.vendedor != null and pedido.vendedor.nombre != null ? pedido.vendedor.nombre : 'Usuario Cultivus'}">–</div>
                                     </div>
-                                    <!-- Extra: DirecciÃ³n de entrega -->
+                                    <!-- Extra: Dirección de entrega -->
                                     <div class="omc">
                                         <div class="omc__label"><i class="fa-solid fa-location-dot" aria-hidden="true"></i> Entrega</div>
                                         <div class="omc__value"
-                                             th:text="${pedido.direccionEntrega != null ? ((pedido.direccionEntrega.direccion != null ? pedido.direccionEntrega.direccion : '') + (pedido.direccionEntrega.ciudad != null ? ', ' + pedido.direccionEntrega.ciudad : '') + (pedido.direccionEntrega.departamento != null ? ' - ' + pedido.direccionEntrega.departamento : '')) : 'No especificada'}">â€“</div>
+                                             th:text="${pedido.direccionEntrega != null ? ((pedido.direccionEntrega.direccion != null ? pedido.direccionEntrega.direccion : '') + (pedido.direccionEntrega.ciudad != null ? ', ' + pedido.direccionEntrega.ciudad : '') + (pedido.direccionEntrega.departamento != null ? ' - ' + pedido.direccionEntrega.departamento : '')) : 'No especificada'}">–</div>
                                     </div>
                                 </div>
 
-                                <!-- Banner de CancelaciÃ³n (1.6) -->
+                                <!-- Continuar pago si está pendiente -->
+                                 <div th:if="${pedido.pago == null or (pedido.pago.estado != null and (pedido.pago.estado == 'PENDIENTE' or pedido.pago.estado == 'PENDIENTE_PAGO'))}" style="margin-top: 12px; text-align: center;">
+                                     <a th:href="@{/pago/confirmacion/{id}(id=${pedido.id})}" class="mp-btn mp-btn--primary">
+                                         <i class="fa-solid fa-credit-card" aria-hidden="true"></i> Continuar pago
+                                     </a>
+                                 </div>
+
+                                 <!-- Banner de Cancelación (1.6) -->
                                 <div th:if="${pedido.cancelado}" class="mp-banner mp-banner--cancelled" style="margin-bottom: 20px;">
                                     <i class="fa-solid fa-ban" style="font-size: 1.2rem;" aria-hidden="true"></i>
                                     <div>
                                         <strong>Pedido cancelado</strong>
-                                        <div style="font-size: 0.85rem;" th:if="${pedido.motivoCancelacion != null}" th:text="'Motivo: ' + ${pedido.motivoCancelacion}">Motivo de cancelaciÃ³n</div>
+                                        <div style="font-size: 0.85rem;" th:if="${pedido.motivoCancelacion != null}" th:text="'Motivo: ' + ${pedido.motivoCancelacion}">Motivo de cancelación</div>
                                     </div>
                                 </div>
 
-                                <!-- Banner de RevisiÃ³n (1.6) -->
+                                <!-- Banner de Revisión (1.6) -->
                                 <div th:if="${pedido.enRevision}" class="mp-banner mp-banner--revision" style="margin-bottom: 20px;">
                                     <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.2rem;" aria-hidden="true"></i>
                                     <div>
-                                        <strong>Pedido en revisiÃ³n</strong>
-                                        <div style="font-size: 0.85rem;" th:text="${pedido.motivoRevision != null ? pedido.motivoRevision : 'El pago fue recibido pero se estÃ¡ validando el stock para gestiÃ³n de reembolso.'}">En revisiÃ³n</div>
+                                        <strong>Pedido en revisión</strong>
+                                        <div style="font-size: 0.85rem;" th:text="${pedido.motivoRevision != null ? pedido.motivoRevision : 'El pago fue recibido pero se está validando el stock para gestión de reembolso.'}">En revisión</div>
                                     </div>
                                 </div>
 

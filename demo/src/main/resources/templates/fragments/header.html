@@ -1,28 +1,29 @@
-<!-- Header dinámico: se elige según la ruta/contexto real, no solo el rol.
-     admin -> /admin/**, vendedor -> /vendedor/**, el resto -> comprador (logueado) o público. -->
+<!-- Header dinámico: se elige según la ruta/contexto real y el rol activo.
+     admin -> /admin/**, vendedor -> /vendedor/** o /usuario/notificaciones (si es vendedor),
+     transportista -> /transportista/**, el resto -> comprador (logueado) o público. -->
 <th:block th:fragment="siteHeader">
     <!-- Sin sesión: header público -->
     <th:block th:if="${session.usuarioLogueado == null}">
         <th:block th:replace="~{fragments/header-publico :: siteHeader}"></th:block>
     </th:block>
 
-    <!-- Usuario logueado: header según la ruta actual -->
+    <!-- Usuario logueado: header según la ruta actual y rol -->
     <th:block th:if="${session.usuarioLogueado != null}">
-        <th:block th:if="${currentPath != null and #strings.startsWith(currentPath, '/admin') and session.usuarioLogueado != null and session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).ADMIN)}">
+        <th:block th:if="${currentPath != null and #strings.startsWith(currentPath, '/admin') and session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).ADMIN)}">
             <th:block th:replace="~{fragments/header-admin :: siteHeader}"></th:block>
         </th:block>
 
-        <th:block th:if="${currentPath != null and #strings.startsWith(currentPath, '/vendedor') and session.usuarioLogueado != null and session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).VENDEDOR)}">
+        <th:block th:if="${currentPath != null and (#strings.startsWith(currentPath, '/vendedor') or #strings.startsWith(currentPath, '/usuario/notificaciones')) and session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).VENDEDOR)}">
             <th:block th:replace="~{fragments/header-vendedor :: siteHeader}"></th:block>
         </th:block>
 
-        <th:block th:if="${currentPath != null and #strings.startsWith(currentPath, '/transportista') and session.usuarioLogueado != null and session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).TRANSPORTISTA)}">
+        <th:block th:if="${currentPath != null and #strings.startsWith(currentPath, '/transportista') and session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).TRANSPORTISTA)}">
             <th:block th:replace="~{fragments/header-transportista :: siteHeader}"></th:block>
         </th:block>
 
-        <th:block th:if="${!((currentPath != null and #strings.startsWith(currentPath, '/admin') and session.usuarioLogueado != null and session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).ADMIN))
-                or (currentPath != null and #strings.startsWith(currentPath, '/vendedor') and session.usuarioLogueado != null and session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).VENDEDOR))
-                or (currentPath != null and #strings.startsWith(currentPath, '/transportista') and session.usuarioLogueado != null and session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).TRANSPORTISTA)))}">
+        <th:block th:if="${!((currentPath != null and #strings.startsWith(currentPath, '/admin') and session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).ADMIN))
+                or (currentPath != null and (#strings.startsWith(currentPath, '/vendedor') or #strings.startsWith(currentPath, '/usuario/notificaciones')) and session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).VENDEDOR))
+                or (currentPath != null and #strings.startsWith(currentPath, '/transportista') and session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).TRANSPORTISTA)))}">
             <th:block th:replace="~{fragments/header-comprador :: siteHeader}"></th:block>
         </th:block>
     </th:block>

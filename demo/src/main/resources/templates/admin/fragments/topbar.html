@@ -29,11 +29,6 @@
 
                 <!-- Derecha: Accesos rápidos + Notificaciones + Mensajes + Perfil Admin -->
                 <div class="adm-topbar__right admin-topbar__actions">
-                    <a th:href="@{/}" class="adm-topbar__Action" title="Ir a la Vista Pública (Tienda)">
-                        <i class="fas fa-store" aria-hidden="true"></i>
-                        <span>Vista Pública</span>
-                    </a>
-
                     <a th:href="@{/admin/notificaciones}" class="adm-icon-btn admin-topbar__btn" title="Notificaciones">
                         <i class="fas fa-bell" aria-hidden="true"></i>
                         <span class="adm-topbar__alert-badge admin-topbar__badge"
@@ -78,10 +73,6 @@
                                 <i class="fas fa-sliders-h" aria-hidden="true"></i>
                                 <span>Configuración del Sistema</span>
                             </a>
-                            <a th:href="@{/}" class="adm-user__item" role="menuitem">
-                                <i class="fas fa-external-link-alt" aria-hidden="true"></i>
-                                <span>Vista de Comprador</span>
-                            </a>
                             <div class="adm-user__divider"></div>
                             <a th:href="@{/usuario/logout}" class="adm-user__item adm-user__item--danger"
                                 role="menuitem">
@@ -91,9 +82,6 @@
                         </div>
                     </div>
 
-                    <a th:href="@{/usuario/logout}" class="adm-icon-btn admin-topbar__btn" title="Cerrar sesión">
-                        <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
-                    </a>
                 </div>
             </div>
         </header>

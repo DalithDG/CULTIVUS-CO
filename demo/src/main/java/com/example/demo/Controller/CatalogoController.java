@@ -3,6 +3,7 @@ package com.example.demo.Controller;
 import com.example.demo.Model.OfertaVendedor;
 import com.example.demo.Model.ProductoCatalogo;
 import com.example.demo.Model.Resena;
+import com.example.demo.Model.Role;
 import com.example.demo.Model.Usuario;
 import com.example.demo.repository.CategoriaRepository;
 import com.example.demo.services.BusquedaService;
@@ -18,10 +19,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Controller
 public class CatalogoController {
@@ -32,6 +30,7 @@ public class CatalogoController {
     @Autowired
     private ResenaService resenaService;
 
+    @SuppressWarnings("unused")
     @Autowired
     private BusquedaService busquedaService;
 
@@ -51,15 +50,19 @@ public class CatalogoController {
             @RequestParam(value = "size", defaultValue = "12") int size,
             Model model, HttpSession session) {
 
+        // El administrador no navega el catálogo público: se redirige a su panel
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuario != null && usuario.hasRole(Role.ADMIN)) {
+            return "redirect:/admin/dashboard";
+        }
+
         // Validar parámetros de paginación
         if (size < 1) size = 1;
         if (size > 48) size = 48;
         if (page < 0) page = 0;
 
-        org.springframework.data.domain.Page<ProductoCatalogo> pagina =
+        Page<ProductoCatalogo> pagina =
                 catalogoService.listarCatalogo(page, size, categoriaIds, orden, precioMax);
-
-        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
 
         model.addAttribute("catalogo", pagina.getContent());
         model.addAttribute("currentPage", pagina.getNumber());
@@ -87,6 +90,10 @@ public class CatalogoController {
             Model model,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuario != null && usuario.hasRole(Role.ADMIN)) {
+            return "redirect:/admin/dashboard";
+        }
         try {
             ProductoCatalogo producto = catalogoService.obtenerPorId(id);
             if (producto == null) {
@@ -115,8 +122,6 @@ public class CatalogoController {
             // Navegación producto anterior y siguiente
             ProductoCatalogo productoAnterior = catalogoService.obtenerProductoAnterior(producto);
             ProductoCatalogo productoSiguiente = catalogoService.obtenerProductoSiguiente(producto);
-
-            Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
 
             // Obtener reseñas del producto del catálogo
             List<Resena> resenas = resenaService.obtenerResenasPorProducto(id);
@@ -158,6 +163,10 @@ public class CatalogoController {
                                    Model model,
                                    HttpSession session,
                                    RedirectAttributes redirectAttributes) {
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuario != null && usuario.hasRole(Role.ADMIN)) {
+            return "redirect:/admin/dashboard";
+        }
         try {
             OfertaVendedor oferta = catalogoService.obtenerOfertaPorId(id);
             if (oferta == null) {
@@ -167,7 +176,6 @@ public class CatalogoController {
             // También necesitamos el producto del catálogo relacionado
             ProductoCatalogo producto = catalogoService.obtenerPorId(oferta.getProductoCatalogoId());
 
-            Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
             List<Resena> resenas = resenaService.obtenerResenasPorProducto(oferta.getProductoCatalogoId());
 
             model.addAttribute("oferta", oferta);

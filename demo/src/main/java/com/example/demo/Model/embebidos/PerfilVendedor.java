@@ -60,6 +60,10 @@ public class PerfilVendedor {
         return cuentaRetiro != null && cuentaRetiro.esCompleta();
     }
 
+    public boolean isCuentaRetiroCompleta() {
+        return tieneCuentaRetiroCompleta();
+    }
+
     public String getCuentaBancariaEnmascarada() {
         if (cuentaRetiro != null && cuentaRetiro.getNumero() != null && !cuentaRetiro.getNumero().isBlank()) {
             return cuentaRetiro.getNumeroEnmascarado();
@@ -68,6 +72,17 @@ public class PerfilVendedor {
             return CuentaBancaria.enmascarar(cuentaBancaria);
         }
         return null;
+    }
+
+    public String getResumenCuentaBancaria() {
+        if (tieneCuentaRetiroCompleta()) {
+            return cuentaRetiro.getResumenEnmascarado();
+        }
+        if (banco != null && !banco.isBlank()) {
+            String enmascarada = getCuentaBancariaEnmascarada();
+            return banco + " · " + (enmascarada != null ? enmascarada : "Incompleta");
+        }
+        return "No registrada";
     }
 
     public String getTipoProductos() { return tipoProductos; }

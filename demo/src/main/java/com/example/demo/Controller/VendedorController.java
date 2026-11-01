@@ -3,6 +3,7 @@ package com.example.demo.Controller;
 import com.example.demo.Model.Billetera;
 import com.example.demo.Model.OfertaVendedor;
 import com.example.demo.Model.Pedido;
+import com.example.demo.Model.Role;
 import com.example.demo.Model.Usuario;
 import com.example.demo.Model.embebidos.PerfilVendedor;
 import com.example.demo.repository.EnvioRepository;
@@ -23,6 +24,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 
 import java.util.List;
+import java.util.Objects;
 
 @Controller
 @RequestMapping("/vendedor")
@@ -206,8 +208,12 @@ public class VendedorController {
             RedirectAttributes redirectAttributes) {
 
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
-        // Verificar si ya es vendedor
-        if (usuario != null && vendedorService.esVendedor(usuario.getId())) {
+        if (usuario != null && usuarioRepository != null && usuario.getId() != null) {
+            usuario = usuarioRepository.findById(usuario.getId()).orElse(usuario);
+            session.setAttribute("usuarioLogueado", usuario);
+        }
+        // Verificar si ya es vendedor y cuenta con su perfil embebido
+        if (usuario != null && vendedorService.esVendedor(usuario.getId()) && usuario.getPerfilVendedor() != null) {
             redirectAttributes.addFlashAttribute("info", "Ya tienes un perfil de vendedor");
             return "redirect:/vendedor/perfil";
         }
@@ -428,13 +434,29 @@ public class VendedorController {
 
         PerfilVendedor perfil = usuario.getPerfilVendedor();
         if (perfil == null) {
-            redirectAttributes.addFlashAttribute("error", "No tienes un perfil de vendedor");
-            return "redirect:/vendedor/registro";
+            if (usuario.hasRole(Role.VENDEDOR) || vendedorService.esVendedor(usuario.getId())) {
+                perfil = inicializarPerfilPorDefecto(usuario);
+                session.setAttribute("usuarioLogueado", usuario);
+            } else {
+                redirectAttributes.addFlashAttribute("error", "No tienes un perfil de vendedor");
+                return "redirect:/vendedor/registro";
+            }
+        }
+
+        List<?> departamentos = java.util.List.of();
+        if (ubicacionService != null) {
+            try {
+                List<?> obtenidos = ubicacionService.obtenerTodos();
+                if (obtenidos != null) {
+                    departamentos = obtenidos.stream().filter(Objects::nonNull).toList();
+                }
+            } catch (Exception ignored) {
+            }
         }
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("perfilVendedor", perfil);
-        model.addAttribute("departamentos", ubicacionService != null ? ubicacionService.obtenerTodos() : java.util.List.of());
+        model.addAttribute("departamentos", departamentos);
         return "vendedor/perfil-vendedor";
     }
 
@@ -451,15 +473,43 @@ public class VendedorController {
             return "redirect:/usuario/login";
         }
 
+        if (usuarioRepository != null && usuario.getId() != null) {
+            usuario = usuarioRepository.findById(usuario.getId()).orElse(usuario);
+            session.setAttribute("usuarioLogueado", usuario);
+        }
+
         PerfilVendedor perfil = usuario.getPerfilVendedor();
         if (perfil == null) {
-            redirectAttributes.addFlashAttribute("error", "No tienes un perfil de vendedor");
-            return "redirect:/vendedor/registro";
+            if (usuario.hasRole(Role.VENDEDOR) || vendedorService.esVendedor(usuario.getId())) {
+                perfil = inicializarPerfilPorDefecto(usuario);
+                session.setAttribute("usuarioLogueado", usuario);
+            } else {
+                redirectAttributes.addFlashAttribute("error", "No tienes un perfil de vendedor");
+                return "redirect:/vendedor/registro";
+            }
         }
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("perfilVendedor", perfil);
         return "vendedor/editar-perfil-vendedor";
+    }
+
+    private PerfilVendedor inicializarPerfilPorDefecto(Usuario usuario) {
+        PerfilVendedor perfil = new PerfilVendedor();
+        perfil.setRazonSocial(usuario.getNombre() != null && !usuario.getNombre().isBlank() ? usuario.getNombre() : "Mi Tienda");
+        perfil.setTelefonoContacto("");
+        perfil.setDireccionNegocio("");
+        perfil.setDescripcionNegocio("");
+        perfil.setTipoProductos("Productos agrícolas");
+        perfil.setVerificado(false);
+        usuario.setPerfilVendedor(perfil);
+        if (usuarioRepository != null && usuario.getId() != null) {
+            try {
+                usuarioRepository.save(usuario);
+            } catch (Exception ignored) {
+            }
+        }
+        return perfil;
     }
 
     /**

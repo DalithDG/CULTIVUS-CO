@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -18,33 +18,51 @@
     <link rel="stylesheet" th:href="@{/footer.css}">
 </head>
 
-<body class="notif-page">
+<body class="notif-page"
+      th:classappend="${session.usuarioLogueado != null and session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).VENDEDOR)} ? ' vs-layout' : ''">
 
-    <!-- HEADER GENERAL -->
+    <!-- HEADER DINÁMICO (Vendedor ve header-vendedor con sidebar; Comprador ve header-comprador) -->
     <header th:replace="~{fragments/header :: siteHeader}"></header>
 
     <main class="ui-container">
         <div class="notif-wrap">
 
-            <!-- CABECERA -->
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; padding-bottom: 16px; border-bottom: 1px solid var(--c-line);">
-                <div>
-                    <h1 class="ui-title-1" style="margin-bottom: 2px;">
-                        <i class="fas fa-bell" style="color: var(--c-green); font-size: 1.8rem; margin-right: 8px;"></i> Notificaciones
+            <!-- CABECERA COMPACTA -->
+            <div class="notif-header">
+                <div class="notif-header__info">
+                    <h1 class="notif-header__title">
+                        <span class="notif-header__icon"><i class="fas fa-bell" aria-hidden="true"></i></span>
+                        <span>Notificaciones</span>
                     </h1>
-                    <p class="ui-subtitle" style="margin-bottom: 0;">Novedades sobre tus compras, cosechas y envíos.</p>
+                    <p class="notif-header__subtitle"
+                       th:text="${session.usuarioLogueado != null and session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).VENDEDOR)} ? 'Novedades sobre tu tienda, ventas y despachos.' : 'Novedades sobre tus compras, cosechas y envíos.'">
+                        Novedades sobre tus compras, cosechas y envíos.
+                    </p>
                 </div>
-                <a th:href="@{/}" class="ui-btn ui-btn--tertiary ui-btn--sm">
-                    <i class="fas fa-home"></i> Inicio
-                </a>
+
+                <div class="notif-header__actions">
+                    <a th:if="${session.usuarioLogueado != null and session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).VENDEDOR)}"
+                       th:href="@{/vendedor/ventas}" class="ui-btn ui-btn--secondary ui-btn--sm">
+                        <i class="fas fa-arrow-left" aria-hidden="true"></i> Volver a Ventas
+                    </a>
+                    <a th:unless="${session.usuarioLogueado != null and session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).VENDEDOR)}"
+                       th:href="@{/usuario/inicio}" class="ui-btn ui-btn--tertiary ui-btn--sm">
+                        <i class="fas fa-home" aria-hidden="true"></i> Inicio
+                    </a>
+                </div>
             </div>
 
             <!-- ESTADO VACÍO -->
             <div th:if="${#lists.isEmpty(notificaciones)}" class="ui-empty">
                 <div class="ui-empty__icon"><i class="fas fa-bell-slash"></i></div>
                 <h3 class="ui-empty__title">Sin notificaciones pendientes</h3>
-                <p class="ui-empty__desc">Aquí recibirás actualizaciones sobre el estado de tus pedidos y cosechas de interés.</p>
-                <a th:href="@{/category}" class="ui-btn ui-btn--secondary" style="margin-top: 12px;">
+                <p class="ui-empty__desc">Aquí recibirás actualizaciones importantes en tiempo real.</p>
+                <a th:if="${session.usuarioLogueado != null and session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).VENDEDOR)}"
+                   th:href="@{/vendedor/ventas}" class="ui-btn ui-btn--secondary" style="margin-top: 12px;">
+                    Ir a mis ventas
+                </a>
+                <a th:unless="${session.usuarioLogueado != null and session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).VENDEDOR)}"
+                   th:href="@{/category}" class="ui-btn ui-btn--secondary" style="margin-top: 12px;">
                     Explorar cosechas
                 </a>
             </div>
@@ -85,8 +103,10 @@
         </div>
     </main>
 
-    <!-- FOOTER INSTITUCIONAL -->
-    <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
+    <!-- FOOTER INSTITUCIONAL (solo vista comprador/público) -->
+    <th:block th:unless="${session.usuarioLogueado != null and session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).VENDEDOR)}">
+        <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
+    </th:block>
 
 </body>
 

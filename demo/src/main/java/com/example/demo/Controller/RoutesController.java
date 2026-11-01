@@ -26,14 +26,17 @@ public class RoutesController {
     @GetMapping("/")
     public String index(HttpSession session, Model model) {
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
-        if (usuario != null && !usuario.hasRole(Role.ADMIN)) {
+        if (usuario != null) {
+            if (usuario.hasRole(Role.ADMIN)) {
+                return "redirect:/admin/dashboard";
+            }
             if (usuario.hasRole(Role.VENDEDOR)) {
                 return "redirect:/vendedor/dashboard";
             }
             if (usuario.hasRole(Role.TRANSPORTISTA)) {
                 return "redirect:/transportista/inicio";
             }
-            return "redirect:/usuario/inicio";
+            return "redirect:/comprador/inicio";
         }
 
         // Obtener los primeros 8 productos aprobados del catálogo

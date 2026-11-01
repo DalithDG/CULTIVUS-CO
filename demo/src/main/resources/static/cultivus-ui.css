@@ -959,3 +959,32 @@ main img,
 .tp-bottom-bar {
   padding-bottom: max(16px, env(safe-area-inset-bottom)) !important;
 }
+
+
+/* ── 16. Mobile Viewport & Grid Refinements ─────────────────────────────────── */
+html,
+body {
+  overflow-x: clip;
+  max-width: 100%;
+}
+
+@media (max-width: 640px) {
+  .ui-container {
+    padding: 24px 16px 44px;
+  }
+
+  .product-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+
+  .product-card {
+    padding: 10px;
+  }
+}
+
+@media (max-width: 360px) {
+  .product-grid {
+    grid-template-columns: 1fr;
+  }
+}

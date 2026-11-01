@@ -69,7 +69,7 @@
                 <form th:action="@{/buscar}" method="get" role="search">
                     <i class="fas fa-search header-search__icon"></i>
                     <input type="search" name="q" placeholder="Buscar productos o productores"
-                        autocomplete="off" aria-label="Buscar productos">
+                        autocomplete="off" aria-label="Buscar productos" class="header-search__input">
                     <button type="submit" aria-label="Buscar" class="header-search__btn">
                         <i class="fas fa-search"></i>
                     </button>
@@ -156,8 +156,9 @@
                             <span class="account-panel__text">Panel de Vendedor</span>
                         </a>
 
-                        <!-- Opción 2: Billetera -->
-                        <a th:href="@{/usuario/billetera}" class="account-panel__link" role="menuitem">
+                        <!-- Opción 2: Billetera (solo para vendedores o transportistas) -->
+                        <a th:if="${session.usuarioLogueado != null and (session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).VENDEDOR) or session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).TRANSPORTISTA))}"
+                           th:href="@{/usuario/billetera}" class="account-panel__link" role="menuitem">
                             <span class="account-panel__icon-box"><i class="fas fa-wallet"></i></span>
                             <span class="account-panel__text">Billetera</span>
                         </a>
@@ -213,22 +214,68 @@
                 <i class="fas fa-times"></i>
             </button>
         </div>
-        <nav class="mobile-nav">
-            <!-- Tarjeta de usuario en móvil -->
-            <div class="mobile-user-card" th:if="${session.usuarioLogueado != null}">
-                <div class="mobile-user-avatar">
-                    <span th:if="${session.usuarioLogueado != null and session.usuarioLogueado.nombre != null and #strings.length(session.usuarioLogueado.nombre) > 0}"
-                          th:text="${#strings.substring(session.usuarioLogueado.nombre, 0, 1).toUpperCase()}">U</span>
-                    <i th:unless="${session.usuarioLogueado != null and session.usuarioLogueado.nombre != null and #strings.length(session.usuarioLogueado.nombre) > 0}"
-                       class="fas fa-user"></i>
-                </div>
-                <div class="mobile-user-info">
-                    <span class="mobile-user-name" th:text="${session.usuarioLogueado.nombre}">Usuario</span>
-                    <span class="mobile-user-email" th:if="${session.usuarioLogueado.email != null}"
-                        th:text="${session.usuarioLogueado.email}">email@ejemplo.com</span>
-                </div>
+
+        <!-- Tarjeta de usuario en móvil (interactiva hacia Mi perfil) -->
+        <a th:href="@{/usuario/perfil}" class="mobile-user-card" th:if="${session.usuarioLogueado != null}">
+            <div class="mobile-user-avatar">
+                <span th:if="${session.usuarioLogueado != null and session.usuarioLogueado.nombre != null and #strings.length(session.usuarioLogueado.nombre) > 0}"
+                      th:text="${#strings.substring(session.usuarioLogueado.nombre, 0, 1).toUpperCase()}">U</span>
+                <i th:unless="${session.usuarioLogueado != null and session.usuarioLogueado.nombre != null and #strings.length(session.usuarioLogueado.nombre) > 0}"
+                   class="fas fa-user"></i>
+            </div>
+            <div class="mobile-user-info">
+                <span class="mobile-user-name" th:text="${session.usuarioLogueado.nombre}">Usuario</span>
+                <span class="mobile-user-email" th:if="${session.usuarioLogueado.email != null}"
+                    th:text="${session.usuarioLogueado.email}">email@ejemplo.com</span>
+            </div>
+            <i class="fas fa-chevron-right mobile-user-chevron" aria-hidden="true"></i>
+        </a>
+
+        <!-- Buscador integrado en móvil -->
+        <div class="header-search header-search--mobile">
+            <form th:action="@{/buscar}" method="get" role="search">
+                <input type="search" name="q" placeholder="Buscar productos o fincas..."
+                    autocomplete="off" aria-label="Buscar productos" class="header-search__input">
+                <button type="submit" aria-label="Buscar" class="header-search__btn">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
+        </div>
+
+        <nav class="mobile-nav" aria-label="Navegación móvil">
+            <!-- Accesos rápidos de cuenta en cuadrícula 2x2 -->
+            <div class="mobile-quick-grid">
+                <a th:if="${session.usuarioLogueado == null or session.usuarioLogueado.puedeComprar()}"
+                   th:href="@{/usuario/pedidos}"
+                   class="mobile-quick-card"
+                   th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/usuario/pedidos')} ? ' active' : ''">
+                    <i class="fas fa-box"></i>
+                    <span>Mis pedidos</span>
+                </a>
+                <a th:href="@{/usuario/perfil}"
+                   class="mobile-quick-card"
+                   th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/usuario/perfil')} ? ' active' : ''">
+                    <i class="fas fa-user"></i>
+                    <span>Mi perfil</span>
+                </a>
+                <a th:if="${session.usuarioLogueado == null or session.usuarioLogueado.puedeComprar()}"
+                   th:href="@{/carrito}"
+                   class="mobile-quick-card"
+                   th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/carrito')} ? ' active' : ''">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Carrito</span>
+                    <em class="mobile-quick-badge" th:if="${carritoCount != null and carritoCount > 0}" th:text="${carritoCount}">0</em>
+                </a>
+                <a th:href="@{/usuario/notificaciones}"
+                   class="mobile-quick-card"
+                   th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/usuario/notificaciones')} ? ' active' : ''">
+                    <i class="fas fa-bell"></i>
+                    <span>Alertas</span>
+                    <em class="mobile-quick-badge" th:if="${notificacionesCount != null and notificacionesCount > 0}" th:text="${notificacionesCount}">0</em>
+                </a>
             </div>
 
+            <span class="mobile-section-label">Explorar mercado</span>
             <a th:href="@{/usuario/inicio}"
                th:classappend="${currentPath != null and (currentPath == '/usuario/inicio' or currentPath == '/' or currentPath == '/inicio')} ? ' active' : ''"><i class="fas fa-home"></i> Inicio</a>
             <a th:href="@{/category}"
@@ -237,12 +284,10 @@
                th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/ofertas')} ? ' active' : ''"><i class="fas fa-tag"></i> Ofertas</a>
             <a th:href="@{/productores#productores}"
                th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/productores')} ? ' active' : ''"><i class="fas fa-seedling"></i> Productores</a>
-            <div class="mobile-divider"></div>
 
-            <a th:href="@{/usuario/perfil}"
-               th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/usuario/perfil')} ? ' active' : ''"><i class="fas fa-user"></i> Mi perfil</a>
-            <a th:href="@{/usuario/billetera}"
-               th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/usuario/billetera')} ? ' active' : ''"><i class="fas fa-wallet"></i> Billetera</a>
+            <div class="mobile-divider"></div>
+            <span class="mobile-section-label">Únete a Cultivus</span>
+
             <a th:if="${session.usuarioLogueado != null and session.usuarioLogueado.hasRole(T(com.example.demo.Model.Role).VENDEDOR)}"
                th:href="@{/vendedor/dashboard}" class="mobile-highlight">
                 <i class="fas fa-store"></i> Panel Vendedor
@@ -251,25 +296,17 @@
                th:href="@{/vendedor/registro}" class="mobile-highlight">
                 <i class="fas fa-store"></i> Vender en Cultivus
             </a>
-            <a th:if="${session.usuarioLogueado == null or session.usuarioLogueado.puedeComprar()}"
-               th:href="@{/usuario/pedidos}"
-               th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/usuario/pedidos')} ? ' active' : ''"><i class="fas fa-box"></i> Mis pedidos</a>
 
             <th:block th:if="${session.usuarioLogueado != null and session.usuarioLogueado.rol != null}">
                 <a th:if="${session.usuarioLogueado.rol.name() == 'COMPRADOR'}" th:href="@{/transportista/registro}"
                     class="mobile-highlight"><i class="fas fa-truck-fast"></i> Conviértete en transportista</a>
             </th:block>
-
-            <a th:href="@{/usuario/notificaciones}"
-               th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/usuario/notificaciones')} ? ' active' : ''"><i class="fas fa-bell"></i> Notificaciones</a>
-            <a th:if="${session.usuarioLogueado == null or session.usuarioLogueado.puedeComprar()}"
-               th:href="@{/carrito}"
-               th:classappend="${currentPath != null and #strings.startsWith(currentPath, '/carrito')} ? ' active' : ''"><i class="fas fa-shopping-cart"></i> Carrito</a>
-
-            <div class="mobile-divider"></div>
-
-            <a th:href="@{/usuario/logout}" class="mobile-logout"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
         </nav>
+
+        <!-- Pie fijo con Cerrar sesión siempre visible -->
+        <div class="mobile-menu-footer">
+            <a th:href="@{/usuario/logout}" class="mobile-logout"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
+        </div>
     </div>
 
     <!-- Script de interactividad y accesibilidad del header -->

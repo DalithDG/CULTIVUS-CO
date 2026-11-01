@@ -206,7 +206,11 @@ public class VendedorService {
 
         PerfilVendedor perfil = usuario.getPerfilVendedor();
         if (perfil == null) {
-            throw new IllegalArgumentException("Este usuario no tiene perfil de vendedor");
+            if (usuario.hasRole(Role.VENDEDOR)) {
+                perfil = new PerfilVendedor();
+            } else {
+                throw new IllegalArgumentException("Este usuario no tiene perfil de vendedor");
+            }
         }
 
         if (razonSocial != null)
@@ -263,7 +267,13 @@ public class VendedorService {
 
         PerfilVendedor perfil = usuario.getPerfilVendedor();
         if (perfil == null) {
-            throw new IllegalArgumentException("Este usuario no tiene perfil de vendedor");
+            if (usuario.hasRole(Role.VENDEDOR)) {
+                perfil = new PerfilVendedor();
+                perfil.setRazonSocial(usuario.getNombre() != null ? usuario.getNombre() : "Mi Tienda");
+                perfil.setTipoProductos("Productos agrícolas");
+            } else {
+                throw new IllegalArgumentException("Este usuario no tiene perfil de vendedor");
+            }
         }
 
         perfil.setCuentaRetiro(cuenta);

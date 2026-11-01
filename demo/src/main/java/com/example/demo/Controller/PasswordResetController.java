@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
  * que el token no quede en la barra de direcciones después de usarlo.
  */
 @Controller
-@RequestMapping("/usuario")
+@RequestMapping({"/usuario", "/comprador"})
 public class PasswordResetController {
 
     private static final Logger log = LoggerFactory.getLogger(PasswordResetController.class);

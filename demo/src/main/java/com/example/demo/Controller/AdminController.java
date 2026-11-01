@@ -299,7 +299,7 @@ public class AdminController {
         return "admin/transportistas";
     }
 
-    @PostMapping("/transportistas/verificar/{usuarioId}")
+    @PostMapping("/transportistas/{usuarioId}/verificar")
     public String verificarTransportista(
             @PathVariable String usuarioId,
             @RequestParam(value = "verificado", defaultValue = "true") boolean verificado,

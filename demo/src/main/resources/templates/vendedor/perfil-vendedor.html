@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -9,6 +9,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" th:href="@{/header.css}">
+    <link rel="stylesheet" th:href="@{/header-tokens.css}">
+    <link rel="stylesheet" th:href="@{/vendedor-sidebar.css}">
+    <link rel="stylesheet" th:href="@{/header-vendedor-apple.css}">
     <link rel="stylesheet" th:href="@{/vendedor-panel.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
 </head>
@@ -26,7 +29,7 @@
                             <i class="fa-solid fa-store" aria-hidden="true"></i>
                         </div>
                         <div>
-                            <h1 class="vs-profile-title" th:text="${perfilVendedor != null and perfilVendedor.razonSocial != null ? perfilVendedor.razonSocial : usuario.nombre}">Mi Tienda</h1>
+                            <h1 class="vs-profile-title" th:text="${perfilVendedor != null and perfilVendedor.razonSocial != null and !#strings.isEmpty(#strings.trim(perfilVendedor.razonSocial)) ? perfilVendedor.razonSocial : (usuario != null and usuario.nombre != null ? usuario.nombre : 'Mi Tienda')}">Mi Tienda</h1>
                             <p class="vs-profile-sub">Perfil de Vendedor y Productor · Cultivus</p>
                         </div>
                     </div>
@@ -57,42 +60,38 @@
                     <div class="vs-info-grid">
                         <div class="vs-info-tile">
                             <span class="vs-info-tile__label"><i class="fa-solid fa-store" aria-hidden="true"></i> Razón Social / Finca</span>
-                            <p class="vs-info-tile__value" th:text="${perfilVendedor.razonSocial}">Mi Negocio</p>
+                            <p class="vs-info-tile__value" th:text="${perfilVendedor.razonSocial != null and !#strings.isEmpty(#strings.trim(perfilVendedor.razonSocial)) ? perfilVendedor.razonSocial : 'Por definir'}">Mi Negocio</p>
                         </div>
                         <div class="vs-info-tile">
                             <span class="vs-info-tile__label"><i class="fa-solid fa-shield-check" aria-hidden="true"></i> Estado de Verificación</span>
                             <p class="vs-info-tile__value"
-                               th:classappend="${perfilVendedor.verificado ? 'vs-info-tile__value--ok' : 'vs-info-tile__value--warn'}"
+                               th:classappend="${perfilVendedor.verificado ? 'is-ok' : 'is-warn'}"
                                th:text="${perfilVendedor.verificado ? 'Tienda Verificada' : 'En Validación por Administración'}">
                                 Verificada
                             </p>
                         </div>
                         <div class="vs-info-tile">
                             <span class="vs-info-tile__label"><i class="fa-solid fa-phone" aria-hidden="true"></i> Teléfono de Contacto</span>
-                            <p class="vs-info-tile__value" th:text="${perfilVendedor.telefonoContacto}">-</p>
+                            <p class="vs-info-tile__value" th:text="${perfilVendedor.telefonoContacto != null and !#strings.isEmpty(#strings.trim(perfilVendedor.telefonoContacto)) ? perfilVendedor.telefonoContacto : 'No registrado'}">-</p>
                         </div>
                         <div class="vs-info-tile">
                             <span class="vs-info-tile__label"><i class="fa-solid fa-location-dot" aria-hidden="true"></i> Dirección del Negocio</span>
-                            <p class="vs-info-tile__value" th:text="${perfilVendedor.direccionNegocio}">-</p>
+                            <p class="vs-info-tile__value" th:text="${perfilVendedor.direccionNegocio != null and !#strings.isEmpty(#strings.trim(perfilVendedor.direccionNegocio)) ? perfilVendedor.direccionNegocio : 'No registrada'}">-</p>
                         </div>
                         <div class="vs-info-tile">
                             <span class="vs-info-tile__label"><i class="fa-solid fa-leaf" aria-hidden="true"></i> Tipo de Productos</span>
-                            <p class="vs-info-tile__value" th:text="${perfilVendedor.tipoProductos != null ? perfilVendedor.tipoProductos : 'Productos agrícolas'}">-</p>
+                            <p class="vs-info-tile__value" th:text="${perfilVendedor.tipoProductos != null and !#strings.isEmpty(#strings.trim(perfilVendedor.tipoProductos)) ? perfilVendedor.tipoProductos : 'Productos agrícolas'}">-</p>
                         </div>
                         <div class="vs-info-tile">
                             <span class="vs-info-tile__label"><i class="fa-solid fa-building-columns" aria-hidden="true"></i> Cuenta Bancaria</span>
                             <p class="vs-info-tile__value"
-                               th:if="${perfilVendedor.tieneCuentaRetiroCompleta()}"
-                               th:text="${perfilVendedor.cuentaRetiro.resumenEnmascarado}">Bancolombia (****1234)</p>
-                            <p class="vs-info-tile__value"
-                               th:if="${!perfilVendedor.tieneCuentaRetiroCompleta()}"
-                               th:text="${perfilVendedor.banco != null and !perfilVendedor.banco.isBlank() ? (perfilVendedor.banco + ' · ' + (perfilVendedor.cuentaBancariaEnmascarada != null ? perfilVendedor.cuentaBancariaEnmascarada : 'Incompleta')) : 'No registrada'}">-</p>
+                               th:text="${perfilVendedor.resumenCuentaBancaria != null ? perfilVendedor.resumenCuentaBancaria : 'No registrada'}">No registrada</p>
                             <a th:href="@{/vendedor/cuenta-bancaria}" class="vs-inline-link">
                                 <i class="fa-solid fa-gear" aria-hidden="true"></i>
                                 <span>Gestionar cuenta bancaria</span>
                             </a>
                         </div>
-                        <div class="vs-info-tile vs-info-tile--full" th:if="${perfilVendedor.descripcionNegocio != null and !perfilVendedor.descripcionNegocio.isBlank()}">
+                        <div class="vs-info-tile vs-info-tile--full" th:if="${perfilVendedor.descripcionNegocio != null and !#strings.isEmpty(#strings.trim(perfilVendedor.descripcionNegocio))}">
                             <span class="vs-info-tile__label"><i class="fa-solid fa-align-left" aria-hidden="true"></i> Descripción pública de la tienda</span>
                             <p class="vs-info-tile__value" th:text="${perfilVendedor.descripcionNegocio}"></p>
                         </div>
@@ -112,7 +111,7 @@
                                     <i class="fa-solid fa-user" aria-hidden="true"></i> Nombre del Titular *
                                 </label>
                                 <input type="text" id="nombre" name="nombre"
-                                       th:value="${usuario.nombre}" required
+                                       th:value="${usuario != null ? usuario.nombre : ''}" required
                                        placeholder="Ingrese su nombre completo">
                             </div>
 
@@ -121,7 +120,7 @@
                                     <i class="fa-solid fa-envelope" aria-hidden="true"></i> Correo Electrónico *
                                 </label>
                                 <input type="email" id="email" name="email"
-                                       th:value="${usuario.email}" required
+                                       th:value="${usuario != null ? usuario.email : ''}" required
                                        placeholder="correo@ejemplo.com">
                             </div>
 
@@ -132,9 +131,10 @@
                                 <select id="departamento" name="departamento">
                                     <option value="">Seleccione un departamento</option>
                                     <option th:each="dept : ${departamentos}"
+                                            th:if="${dept != null and dept.nombre != null}"
                                             th:value="${dept.nombre}"
                                             th:text="${dept.nombre}"
-                                            th:selected="${usuario.ubicacion != null and usuario.ubicacion.departamento == dept.nombre}">
+                                            th:selected="${usuario != null and usuario.ubicacion != null and usuario.ubicacion.departamento == dept.nombre}">
                                     </option>
                                 </select>
                             </div>
@@ -144,7 +144,7 @@
                                     <i class="fa-solid fa-city" aria-hidden="true"></i> Ciudad / Municipio
                                 </label>
                                 <input type="text" id="ciudad" name="ciudad"
-                                       th:value="${usuario.ubicacion != null ? usuario.ubicacion.ciudad : ''}"
+                                       th:value="${usuario != null and usuario.ubicacion != null ? usuario.ubicacion.ciudad : ''}"
                                        placeholder="Ingrese su ciudad">
                             </div>
 

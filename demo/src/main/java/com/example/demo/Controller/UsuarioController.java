@@ -33,7 +33,7 @@ import java.util.Comparator;
 import java.util.stream.Collectors;
 
 @Controller
-@RequestMapping("/usuario")
+@RequestMapping({"/usuario", "/comprador"})
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
@@ -53,6 +53,9 @@ public class UsuarioController {
 
     @org.springframework.beans.factory.annotation.Autowired(required = false)
     private com.example.demo.repository.EnvioRepository envioRepository;
+
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private com.example.demo.security.SecurityContextRefreshService securityContextRefreshService;
 
     @org.springframework.beans.factory.annotation.Autowired
     public UsuarioController(UsuarioService usuarioService,
@@ -210,14 +213,26 @@ public class UsuarioController {
             session.setAttribute("usuarioLogueado", usuario);
         }
 
-        // Redirigir según rol propio (sin modos dinámicos)
+        // Redirigir según rol propio (sin modos dinámicos). El administrador va siempre a su panel.
+        if (usuario.hasRole(Role.ADMIN)) {
+            return "redirect:/admin/dashboard";
+        }
         if (usuario.hasRole(Role.VENDEDOR)) {
+            if (securityContextRefreshService != null && usuario.getEmail() != null) {
+                securityContextRefreshService.refrescarAutenticacion(usuario.getEmail());
+            }
             return "redirect:/vendedor/inicio";
         }
         if (usuario.hasRole(Role.TRANSPORTISTA)) {
+            if (securityContextRefreshService != null && usuario.getEmail() != null) {
+                securityContextRefreshService.refrescarAutenticacion(usuario.getEmail());
+            }
             return "redirect:/transportista/inicio";
         }
         if (usuario.hasRole(Role.ADMIN)) {
+            if (securityContextRefreshService != null && usuario.getEmail() != null) {
+                securityContextRefreshService.refrescarAutenticacion(usuario.getEmail());
+            }
             return "redirect:/admin/dashboard";
         }
 
@@ -267,12 +282,21 @@ public class UsuarioController {
         model.addAttribute("usuario", usuario);
         model.addAttribute("departamentos", ubicacionService.obtenerTodos());
         if (usuario.hasRole(com.example.demo.Model.Role.ADMIN)) {
+            if (securityContextRefreshService != null && usuario.getEmail() != null) {
+                securityContextRefreshService.refrescarAutenticacion(usuario.getEmail());
+            }
             return "redirect:/admin/perfil";
         }
         if (usuario.hasRole(com.example.demo.Model.Role.VENDEDOR)) {
+            if (securityContextRefreshService != null && usuario.getEmail() != null) {
+                securityContextRefreshService.refrescarAutenticacion(usuario.getEmail());
+            }
             return "redirect:/vendedor/perfil";
         }
         if (usuario.hasRole(com.example.demo.Model.Role.TRANSPORTISTA)) {
+            if (securityContextRefreshService != null && usuario.getEmail() != null) {
+                securityContextRefreshService.refrescarAutenticacion(usuario.getEmail());
+            }
             return "redirect:/transportista/perfil";
         }
         return "comprador/perfil";
