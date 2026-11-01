@@ -10,6 +10,7 @@ import com.example.demo.services.PasswordPolicy;
 import com.example.demo.services.ProductoService;
 import com.example.demo.services.UbicacionService;
 import com.example.demo.services.UsuarioService;
+import com.example.demo.services.RegistroMailService;
 import com.example.demo.services.VendedorService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -37,6 +38,7 @@ import java.util.stream.Collectors;
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
+    private final RegistroMailService registroMailService;
     private final UbicacionService ubicacionService;
     private final VendedorService vendedorService;
     @SuppressWarnings("unused")
@@ -67,7 +69,8 @@ public class UsuarioController {
             NotificacionRepository notificacionRepository,
             CatalogoService catalogoService,
             CategoriaRepository categoriaRepository,
-            OfertaRepository ofertaRepository) {
+            OfertaRepository ofertaRepository,
+            RegistroMailService registroMailService) {
         this.usuarioService = usuarioService;
         this.ubicacionService = ubicacionService;
         this.vendedorService = vendedorService;
@@ -78,6 +81,7 @@ public class UsuarioController {
         this.catalogoService = catalogoService;
         this.categoriaRepository = categoriaRepository;
         this.ofertaRepository = ofertaRepository;
+        this.registroMailService = registroMailService;
     }
 
     @GetMapping("/registro")
@@ -182,13 +186,45 @@ public class UsuarioController {
 
             usuarioService.save(usuario);
 
-            redirectAttributes.addFlashAttribute("mensaje", "¡Registro exitoso! Inicie sesión.");
-            return "redirect:/usuario/login";
+            // Notificación por correo para cualquier rol (aquí comprador)
+            registroMailService.enviarBienvenida(usuario.getEmail(), usuario.getNombre(), "COMPRADOR");
+
+            // Código de verificación para compradores
+            String codigo = String.format("%06d", new java.util.Random().nextInt(999999));
+            usuario.setCodigoVerificacion(codigo);
+            usuario.setEmailVerificado(false);
+            usuarioService.save(usuario);
+            registroMailService.enviarCodigoVerificacion(usuario.getEmail(), usuario.getNombre(), codigo);
+
+            redirectAttributes.addFlashAttribute("mensaje", "¡Registro exitoso! Revisa tu correo para verificar tu cuenta.");
+            return "redirect:/usuario/verificar?email=" + java.net.URLEncoder.encode(usuario.getEmail(), java.nio.charset.StandardCharsets.UTF_8);
 
         } catch (Exception e) {
             model.addAttribute("error", "Error al registrar: " + e.getMessage());
             return "auth/registro";
         }
+    }
+
+    @GetMapping("/verificar")
+    public String mostrarVerificar(@RequestParam("email") String email, Model model) {
+        model.addAttribute("email", email);
+        return "auth/verificar";
+    }
+
+    @PostMapping("/verificar")
+    public String verificarCodigo(@RequestParam("email") String email,
+            @RequestParam("codigo") String codigo,
+            RedirectAttributes redirectAttributes) {
+        Usuario u = usuarioService.findByEmail(email);
+        if (u != null && codigo.equals(u.getCodigoVerificacion())) {
+            u.setEmailVerificado(true);
+            u.setCodigoVerificacion(null);
+            usuarioService.save(u);
+            redirectAttributes.addFlashAttribute("mensaje", "Correo verificado. Inicie sesión.");
+            return "redirect:/usuario/login";
+        }
+        redirectAttributes.addFlashAttribute("error", "Código inválido.");
+        return "redirect:/usuario/verificar?email=" + email;
     }
 
     @GetMapping("/login")

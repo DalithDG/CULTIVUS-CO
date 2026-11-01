@@ -40,6 +40,9 @@ public class TransportistaController {
     @Autowired(required = false)
     private com.example.demo.services.RetiroService retiroService;
 
+    @Autowired(required = false)
+    private com.example.demo.services.RegistroMailService registroMailService;
+
     /**
      * Pantalla de Login dedicada para transportistas.
      */
@@ -192,6 +195,9 @@ public class TransportistaController {
                         null,
                         null
                 );
+                if (registroMailService != null) {
+                    registroMailService.enviarBienvenida(email, nombre, "TRANSPORTISTA");
+                }
 
                 redirectAttributes.addFlashAttribute("mensaje", "Registro exitoso. Inicia sesión con tus credenciales.");
                 return "redirect:/transportista/login";

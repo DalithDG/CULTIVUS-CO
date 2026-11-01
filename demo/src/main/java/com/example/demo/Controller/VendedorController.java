@@ -57,6 +57,9 @@ public class VendedorController {
     @Autowired(required = false)
     private CustomUserDetailsService customUserDetailsService;
 
+    @Autowired(required = false)
+    private com.example.demo.services.RegistroMailService registroMailService;
+
     /**
      * US-22 / US-24: saldos por estado, retiros y movimientos de la billetera del vendedor.
      * Solo lectura: no hay endpoints para editar ni borrar movimientos.
@@ -291,6 +294,9 @@ public class VendedorController {
                         direccionNegocio,
                         descripcionNegocio,
                         tipoProductos);
+                if (registroMailService != null) {
+                    registroMailService.enviarBienvenida(email, nombre, "VENDEDOR");
+                }
             }
 
             // Actualizar sesión con usuario que ya tiene el perfil embebido

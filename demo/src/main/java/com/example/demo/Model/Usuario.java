@@ -55,6 +55,12 @@ public class Usuario {
     @Field("ultima_conexion")
     private LocalDateTime ultimaConexion;
 
+    @Field("codigo_verificacion")
+    private String codigoVerificacion;
+
+    @Field("email_verificado")
+    private boolean emailVerificado;
+
     // Constructores
     public Usuario() {
         this.createdAt = LocalDateTime.now();
@@ -180,6 +186,12 @@ public class Usuario {
     public void setUltimaConexion(LocalDateTime ultimaConexion) {
         this.ultimaConexion = ultimaConexion;
     }
+
+    public String getCodigoVerificacion() { return codigoVerificacion; }
+    public void setCodigoVerificacion(String codigoVerificacion) { this.codigoVerificacion = codigoVerificacion; }
+
+    public boolean isEmailVerificado() { return emailVerificado; }
+    public void setEmailVerificado(boolean emailVerificado) { this.emailVerificado = emailVerificado; }
 
     public PerfilTransportista getPerfilTransportista() {
         return perfilTransportista;
