@@ -239,7 +239,7 @@ public class ProductoCatalogo {
     public void setUnidadPorDefecto(UnidadMedida unidadPorDefecto) { this.unidadPorDefecto = unidadPorDefecto; }
 
     public List<UnidadMedida> getUnidadesPermitidas() {
-        return unidadesPermitidas != null ? unidadesPermitidas : new ArrayList<>();
+        if (unidadesPermitidas == null) { unidadesPermitidas = new ArrayList<>(); } return unidadesPermitidas;
     }
     public void setUnidadesPermitidas(List<UnidadMedida> unidadesPermitidas) { this.unidadesPermitidas = unidadesPermitidas; }
 

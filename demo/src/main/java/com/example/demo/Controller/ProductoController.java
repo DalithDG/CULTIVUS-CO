@@ -1,4 +1,4 @@
-﻿package com.example.demo.Controller;
+package com.example.demo.Controller;
 
 import com.example.demo.Model.Categoria;
 import com.example.demo.Model.EstadoPublicacion;

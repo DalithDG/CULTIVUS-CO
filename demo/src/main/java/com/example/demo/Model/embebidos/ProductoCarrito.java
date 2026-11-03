@@ -1,4 +1,4 @@
-﻿package com.example.demo.Model.embebidos;
+package com.example.demo.Model.embebidos;
 
 public class ProductoCarrito implements java.io.Serializable {
     private static final long serialVersionUID = 1L;

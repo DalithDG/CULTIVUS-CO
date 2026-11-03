@@ -1,4 +1,4 @@
-﻿package com.example.demo.Model.embebidos;
+package com.example.demo.Model.embebidos;
 
 import java.text.Normalizer;
 import java.util.Arrays;
@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Unidad de venta de una oferta (copia embebida, sin colecci\u00f3n propia).
+ * Unidad de venta de una oferta (copia embebida, sin colección propia).
  *
  * <p>Tipos: {@code Peso} y {@code Volumen} admiten decimales; {@code Unidad} solo enteros;
  * {@code Fraccionable} es el tipo de una unidad personalizada ("Otra") que el vendedor
- * marc\u00f3 como fraccionable. {@link #permiteDecimales()} se deriva siempre del tipo.</p>
+ * marcó como fraccionable. {@link #permiteDecimales()} se deriva siempre del tipo.</p>
  */
 public class UnidadMedida implements java.io.Serializable {
     private static final long serialVersionUID = 1L;
@@ -24,7 +24,7 @@ public class UnidadMedida implements java.io.Serializable {
     /** Abreviatura reservada para unidades personalizadas elegidas con "Otra". */
     public static final String ABREVIATURA_OTRA = "otra";
 
-    /** Lista fija de unidades de medida (antes viv\u00eda en ProductoController). */
+    /** Lista fija de unidades de medida (antes vivía en ProductoController). */
     public static final List<UnidadMedida> UNIDADES = Collections.unmodifiableList(Arrays.asList(
             new UnidadMedida("Kilogramos", "kg", TIPO_PESO),
             new UnidadMedida("Gramos", "g", TIPO_PESO),
@@ -36,6 +36,16 @@ public class UnidadMedida implements java.io.Serializable {
             new UnidadMedida("Manojo", "manojo", TIPO_UNIDAD),
             new UnidadMedida("Bandeja", "bandeja", TIPO_UNIDAD)
     ));
+
+    public static final UnidadMedida KG = UNIDADES.get(0);
+    public static final UnidadMedida G = UNIDADES.get(1);
+    public static final UnidadMedida LB = UNIDADES.get(2);
+    public static final UnidadMedida L = UNIDADES.get(3);
+    public static final UnidadMedida ML = UNIDADES.get(4);
+    public static final UnidadMedida UN = UNIDADES.get(5);
+    public static final UnidadMedida DOC = UNIDADES.get(6);
+    public static final UnidadMedida MANOJO = UNIDADES.get(7);
+    public static final UnidadMedida BANDEJA = UNIDADES.get(8);
 
     private String nombre;
     private String abreviatura;
@@ -72,13 +82,13 @@ public class UnidadMedida implements java.io.Serializable {
         return permiteDecimales() ? "0.01" : "1";
     }
 
-    /** Unidad "un" por defecto (si no hay ninguna otra informaci\u00f3n). */
+    /** Unidad "un" por defecto (si no hay ninguna otra información). */
     public static UnidadMedida porDefecto() {
         return deAbreviatura("un");
     }
 
     /**
-     * Busca en la lista fija por abreviatura (sin distinguir may\u00fasculas) o por nombre/alias.
+     * Busca en la lista fija por abreviatura (sin distinguir mayúsculas) o por nombre/alias.
      * Devuelve {@code null} si no hay mapeo.
      */
     public static UnidadMedida buscarEnLista(String texto) {

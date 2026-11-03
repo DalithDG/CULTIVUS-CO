@@ -1,4 +1,4 @@
-﻿/**
+/**
  * carrito-ajax.js
  * Intercepta todos los formularios con action "/carrito/agregar"
  * y los convierte en llamadas AJAX para evitar el refresco de página.

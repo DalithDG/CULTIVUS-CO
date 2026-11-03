@@ -1,4 +1,4 @@
-﻿package com.example.demo.Model;
+package com.example.demo.Model;
 
 import com.example.demo.Model.embebidos.ProductoCarrito;
 import org.springframework.data.annotation.Id;

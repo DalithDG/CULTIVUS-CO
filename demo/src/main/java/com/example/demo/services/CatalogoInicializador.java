@@ -178,7 +178,7 @@ public class CatalogoInicializador {
     public int purgarProductosSinteticos() {
         int eliminados = 0;
         Pattern patronSintetico = Pattern.compile(
-                "(?i)(\\b(Familiar|Gourmet|Tradicional|Fresco|Especial|Extra|Artesanal|Premium|Ecológico|de Temporada)\\s+\\d+$|\\s+\\d+$)"
+                "(?i)(\\b(Familiar|Gourmet|Tradicional|Fresco|Especial|Extra|Artesanal|Premium|Ecol[oó]gico|de Temporada)\\s+\\d+$|\\s+\\d+$)"
         );
         for (ProductoCatalogo p : catalogoRepository.findAll()) {
             if (p.getNombre() != null && patronSintetico.matcher(p.getNombre()).find()) {
@@ -201,7 +201,6 @@ public class CatalogoInicializador {
         for (String nombre : CATEGORIAS_BASE) {
             if (categoriaRepository.findByNombreIgnoreCase(nombre).isEmpty()) {
                 Categoria cat = new Categoria(nombre, "Productos frescos de " + nombre.toLowerCase());
-                cat.setActivo(true);
                 categoriaRepository.save(cat);
                 creadas++;
             }
@@ -249,7 +248,7 @@ public class CatalogoInicializador {
                 ProductoCatalogo existente = catalogoRepository.findByNombreNormalizado(normalizado).orElse(null);
                 if (existente != null) {
                     // No se duplica; solo se completan las unidades si aún no las tiene
-                    if (existente.getUnidadPorDefecto() == null || existente.getUnidadesPermitidas().isEmpty()) {
+                    if (existente.getUnidadPorDefecto() == null || existente.getUnidadesPermitidas() == null || existente.getUnidadesPermitidas().isEmpty()) {
                         existente.definirUnidades(porDefecto, permitidas);
                         existente.setUpdatedAt(LocalDateTime.now());
                         catalogoRepository.save(existente);
@@ -282,7 +281,7 @@ public class CatalogoInicializador {
     public int migrarProductosExistentes() {
         int migrados = 0;
         for (ProductoCatalogo p : catalogoRepository.findAll()) {
-            if (p.getUnidadPorDefecto() != null && !p.getUnidadesPermitidas().isEmpty()) {
+            if (p.getUnidadPorDefecto() != null && p.getUnidadesPermitidas() != null && !p.getUnidadesPermitidas().isEmpty()) {
                 continue;
             }
             String legado = p.getUnidadMedida(); // e.g. "kg", "un"
@@ -328,10 +327,12 @@ public class CatalogoInicializador {
             ofertaRepository.save(oferta);
 
             // Mantener coherencia: la unidad de la oferta debe poder elegirse en el producto (máx. 3)
-            if (producto != null && producto.buscarUnidadPermitida(unidad.getAbreviatura()) == null
-                    && producto.getUnidadesPermitidas().size() < 3) {
-                producto.getUnidadesPermitidas().add(unidad.copia());
-                catalogoRepository.save(producto);
+            if (producto != null) {
+                if (producto.buscarUnidadPermitida(unidad.getAbreviatura()) == null
+                        && producto.getUnidadesPermitidas().size() < 3) {
+                    producto.getUnidadesPermitidas().add(unidad.copia());
+                    catalogoRepository.save(producto);
+                }
             }
             migradas++;
         }
