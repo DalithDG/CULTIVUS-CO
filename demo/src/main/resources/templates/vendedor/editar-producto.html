@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" th:href="@{/header.css}">
     <link rel="stylesheet" th:href="@{/vendedor-panel.css}">
+    <link rel="stylesheet" th:href="@{/vendedor-formulario.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
 </head>
 
@@ -16,117 +17,356 @@
     <header th:replace="~{fragments/header-vendedor :: siteHeader}"></header>
     <main class="vs-main">
 
-        <div class="edit-product-wrapper">
-            <div class="page-header">
-                <div class="icon-circle">
-                    <i class="fas fa-edit" aria-hidden="true"></i>
+        <div class="vf-wrapper">
+            <!-- Header Apple Style -->
+            <div class="vf-header">
+                <div class="vf-header__main">
+                    <div class="vf-header__icon" aria-hidden="true">
+                        <i class="fas fa-pen-to-square"></i>
+                    </div>
+                    <div>
+                        <h1 class="vf-header__title">Editar Oferta</h1>
+                        <p class="vf-header__subtitle">Actualiza el precio, stock o detalles de tu producto en el mercado.</p>
+                    </div>
                 </div>
-                <div>
-                    <h1>Editar Oferta</h1>
-                    <p>Actualiza el precio, stock o detalles de tu producto</p>
+                <div class="vf-steps-badge">
+                    <i class="fas fa-boxes-stacked" aria-hidden="true"></i>
+                    <span>Gestión de Inventario</span>
                 </div>
             </div>
 
-            <div th:if="${mensaje}" class="alert alert-success">
+            <!-- Alertas -->
+            <div th:if="${mensaje}" class="vf-alert vf-alert--success" role="alert">
                 <i class="fas fa-check-circle" aria-hidden="true"></i>
                 <span th:text="${mensaje}"></span>
             </div>
-            <div th:if="${error}" class="alert alert-error">
+            <div th:if="${error}" class="vf-alert vf-alert--error" role="alert">
                 <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
                 <span th:text="${error}"></span>
             </div>
 
-            <div class="form-card">
-                <!-- Producto del Catálogo Info -->
-                <div class="product-summary">
-                    <img th:src="${oferta.imagenUrl}" th:alt="${oferta.nombreProducto}" onerror="this.src='/images/placeholder.svg'">
-                    <div class="product-summary-text">
-                        <h3 th:text="${oferta.nombreProducto}">Producto</h3>
-                        <p th:text="${'Vendido por ' + (productoCatalogo != null ? productoCatalogo.unidadMedida : 'unidad')}">Unidad</p>
-                    </div>
+            <!-- Si fue rechazada por el administrador -->
+            <div th:if="${oferta.estadoPublicacion != null and oferta.estadoPublicacion.name() == 'RECHAZADO'}"
+                 class="vf-alert vf-alert--error" style="display:flex; flex-direction:column; align-items:flex-start; gap:8px;">
+                <div style="display:flex; align-items:center; gap:8px; font-weight:700;">
+                    <i class="fas fa-ban" aria-hidden="true"></i>
+                    <span>Tu sugerencia fue rechazada por el administrador</span>
                 </div>
+                <p style="margin:0; font-size:0.92rem;">
+                    <strong>Motivo:</strong>
+                    <span th:text="${oferta.motivoRechazo != null ? oferta.motivoRechazo : 'Sin motivo especificado'}">Motivo</span>
+                </p>
+                <span style="font-size:0.82rem; opacity:0.9;">Puedes corregir el nombre y la unidad del producto abajo y reenviarlo a revisión.</span>
+            </div>
 
-                <form th:action="@{/vendedor/productos/actualizar/{id}(id=${oferta.id})}" method="post">
-                    <!-- Precios y Stock -->
-                    <div class="form-section">
-                        <div class="section-title">
-                            <i class="fas fa-tag" aria-hidden="true"></i> Precio y Disponibilidad
+            <!-- Resumen del Producto -->
+            <div class="vf-card vf-card--elevated">
+                <div class="vf-card__body">
+                    <div class="vf-product-preview" style="margin-top:0; margin-bottom:24px;">
+                        <img th:src="${oferta.imagenUrl}" th:alt="${oferta.nombreProducto}"
+                             class="vf-product-preview__thumb" onerror="this.src='/images/placeholder.svg'">
+                        <div class="vf-product-preview__info">
+                            <h4 th:text="${oferta.nombreProducto}">Producto</h4>
+                            <p>
+                                Unidad actual: <strong th:text="${unidad.nombre + ' (' + unidad.abreviatura + ')'}">Kilogramos (kg)</strong>
+                                <span th:if="${unidad.permiteDecimales()}" class="badge-premium badge-active" style="margin-left:6px; font-size:0.75rem;">Admite decimales</span>
+                                <span th:unless="${unidad.permiteDecimales()}" class="badge-premium badge-inactive" style="margin-left:6px; font-size:0.75rem;">Solo enteros</span>
+                            </p>
+                            <p th:if="${oferta.estadoPublicacion != null and oferta.estadoPublicacion.name() == 'PENDIENTE'}"
+                               style="color:#795548; font-weight:600; margin-top:4px;">
+                                ⏳ En revisión por el administrador (no visible al público aún)
+                            </p>
                         </div>
-                        <div class="grid-3">
-                            <div class="field">
-                                <label for="precio">Precio por <span th:text="${productoCatalogo != null ? productoCatalogo.unidadMedida : 'unidad'}"></span> (COP) *</label>
-                                <div class="currency-input">
-                                    <span>$</span>
-                                    <input type="number" id="precio" name="precio" required min="500" step="0.01" th:value="${oferta.precio}">
+                    </div>
+
+                    <!-- CASO 1: OFERTA RECHAZADA (Formulario de Reenvío) -->
+                    <form th:if="${oferta.estadoPublicacion != null and oferta.estadoPublicacion.name() == 'RECHAZADO'}"
+                          th:action="@{/vendedor/productos/reenviar/{id}(id=${oferta.id})}" method="post">
+
+                        <div class="vf-section">
+                            <div class="vf-section__header">
+                                <span class="vf-section__badge">1</span>
+                                <div>
+                                    <h2 class="vf-section__title">
+                                        <i class="fas fa-wrench" aria-hidden="true"></i> Corregir Sugerencia
+                                    </h2>
+                                    <p class="vf-section__subtitle">Ajusta los datos del producto para que el administrador pueda aprobarlo.</p>
                                 </div>
                             </div>
-                            <div class="field">
-                                <label for="stock">Stock Disponible (<span th:text="${productoCatalogo != null ? productoCatalogo.unidadMedida : 'unidad'}"></span>) *</label>
-                                <input type="number" id="stock" name="stock" required min="0" max="10000" th:value="${oferta.stock}">
-                            </div>
-                            <div class="field">
-                                <label for="compraMinima">Compra Mínima *</label>
-                                <input type="number" id="compraMinima" name="compraMinima" required min="0.01" step="any" th:value="${oferta.compraMinima}">
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Detalles Dinámicos -->
-                    <div class="form-section">
-                        <div class="section-title">
-                            <i class="fas fa-info-circle" aria-hidden="true"></i> Detalles Específicos
-                        </div>
-                        <div class="grid-2">
-                            <div class="field" th:if="${productoCatalogo != null and productoCatalogo.tipoVenta == 'PESO'}">
-                                <label for="pesoPromedioUnidad">Peso promedio por unidad (kg/lb)</label>
-                                <input type="number" id="pesoPromedioUnidad" name="pesoPromedioUnidad" min="0.01" step="0.01" th:value="${oferta.pesoPromedioUnidad}">
+                            <div class="vf-grid-2">
+                                <div class="vf-field">
+                                    <label class="vf-label" for="reenviarNombre">
+                                        <span>Nombre corregido del producto <span class="req">*</span></span>
+                                    </label>
+                                    <input type="text" id="reenviarNombre" name="nombre" required maxlength="100"
+                                           class="vf-input" th:value="${oferta.nombreProducto}">
+                                </div>
+                                <div class="vf-field">
+                                    <label class="vf-label" for="reenviarUnidad">
+                                        <span>Unidad de venta <span class="req">*</span></span>
+                                    </label>
+                                    <select id="reenviarUnidad" name="unidadSugerida" class="vf-select" required>
+                                        <option th:each="u : ${unidadesMedida}"
+                                                th:value="${u.abreviatura}"
+                                                th:selected="${unidad.abreviatura == u.abreviatura}"
+                                                th:text="${u.nombre + ' (' + u.abreviatura + ')'}">Kilogramos (kg)</option>
+                                        <option value="otra">➕ Otra (personalizada)...</option>
+                                    </select>
+                                </div>
                             </div>
-                            <div class="field" th:if="${productoCatalogo != null and productoCatalogo.tipoVenta == 'UNIDAD'}">
-                                <label for="descripcionPaquete">Descripción del paquete</label>
-                                <input type="text" id="descripcionPaquete" name="descripcionPaquete" th:value="${oferta.descripcionPaquete}" placeholder="Ej: Manojo de 12 unidades">
-                            </div>
-                            <div class="field full-width">
-                                <label for="descripcionVendedor">Descripción de tu oferta</label>
-                                <textarea id="descripcionVendedor" name="descripcionVendedor" rows="3" th:text="${oferta.descripcionVendedor}"></textarea>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Imagen -->
-                    <div class="form-section">
-                        <div class="section-title">
-                            <i class="fas fa-image" aria-hidden="true"></i> Imagen de la Oferta
+                            <div class="vf-field" id="campoReenviarOtra" style="display:none; margin-top:14px; background:#FFFDF5; border:1px dashed var(--vf-amber-border); padding:16px; border-radius:12px;">
+                                <label class="vf-label" for="reenviarOtraNombre">
+                                    <span>Nombre de la unidad personalizada <span class="req">*</span></span>
+                                </label>
+                                <input type="text" id="reenviarOtraNombre" name="unidadOtraNombre" maxlength="20"
+                                       class="vf-input" placeholder="Ej: Canastilla">
+                                <label class="vf-checkbox-wrap">
+                                    <input type="checkbox" name="unidadOtraFraccionable" value="true">
+                                    <span>Admite cantidades decimales</span>
+                                </label>
+                            </div>
                         </div>
-                        <div class="field">
-                            <label for="imagenUrl">URL de la Imagen (opcional)</label>
-                            <input type="url" id="imagenUrl" name="imagenUrl" th:value="${oferta.imagenUrl}">
-                            <img id="imagePreview" class="image-preview visible" alt="Vista previa" th:src="${oferta.imagenUrl}">
-                        </div>
-                    </div>
 
-                    <div class="form-footer">
-                        <a th:href="@{/vendedor/mis-productos}" class="btn-back">
-                            <i class="fas fa-arrow-left" aria-hidden="true"></i> Volver
-                        </a>
-                        <button type="submit" class="btn-submit">
-                            <i class="fas fa-save" aria-hidden="true"></i> Guardar Cambios
-                        </button>
-                    </div>
-                </form>
+                        <div class="vf-actions">
+                            <a th:href="@{/vendedor/mis-productos}" class="vf-btn vf-btn--secondary">
+                                <i class="fas fa-arrow-left" aria-hidden="true"></i> Volver a Mis Productos
+                            </a>
+                            <button type="submit" class="vf-btn vf-btn--primary" style="background: linear-gradient(135deg, #B8860B 0%, #8B6508 100%);">
+                                <i class="fas fa-paper-plane" aria-hidden="true"></i> Reenviar a Revisión
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- CASO 2: OFERTA NORMAL (Edición estándar) -->
+                    <form th:unless="${oferta.estadoPublicacion != null and oferta.estadoPublicacion.name() == 'RECHAZADO'}"
+                          th:action="@{/vendedor/productos/actualizar/{id}(id=${oferta.id})}" method="post">
+
+                        <!-- Sección: Unidad de venta -->
+                        <div class="vf-section">
+                            <div class="vf-section__header">
+                                <span class="vf-section__badge">1</span>
+                                <div>
+                                    <h2 class="vf-section__title">
+                                        <i class="fas fa-scale-balanced" aria-hidden="true"></i> Unidad de Venta
+                                    </h2>
+                                    <p class="vf-section__subtitle">Verifica o ajusta la unidad autorizada para esta oferta.</p>
+                                </div>
+                            </div>
+
+                            <div class="vf-field">
+                                <!-- Si está bloqueada por pedidos o carritos -->
+                                <div th:if="${unidadBloqueada}">
+                                    <div class="vf-unit-locked">
+                                        <i class="fas fa-lock" aria-hidden="true"></i>
+                                        <span th:text="${'Unidad fijada: ' + unidad.nombre + ' (' + unidad.abreviatura + ')'}">kg</span>
+                                    </div>
+                                    <span class="vf-hint" style="display:block; margin-top:6px;">
+                                        La unidad está protegida y no se puede modificar porque ya existen pedidos o carritos asociados a esta oferta.
+                                    </span>
+                                    <input type="hidden" name="unidadAbreviatura" th:value="${unidad.abreviatura}">
+                                </div>
+
+                                <!-- Si NO está bloqueada -->
+                                <div th:unless="${unidadBloqueada}">
+                                    <div th:if="${unidadesElegibles != null and unidadesElegibles.size() > 1}">
+                                        <label class="vf-label" for="editUnidadSelect">
+                                            <span>Unidad de venta autorizada</span>
+                                        </label>
+                                        <select id="editUnidadSelect" name="unidadAbreviatura" class="vf-select">
+                                            <option th:each="ue : ${unidadesElegibles}"
+                                                    th:value="${ue.abreviatura}"
+                                                    th:selected="${ue.abreviatura == unidad.abreviatura}"
+                                                    th:data-decimales="${ue.permiteDecimales()}"
+                                                    th:text="${ue.nombre + ' (' + ue.abreviatura + ')'}">kg</option>
+                                        </select>
+                                    </div>
+                                    <div th:if="${unidadesElegibles == null or unidadesElegibles.size() <= 1}">
+                                        <div class="vf-unit-locked">
+                                            <span th:text="${unidad.nombre + ' (' + unidad.abreviatura + ')'}">kg</span>
+                                        </div>
+                                        <input type="hidden" name="unidadAbreviatura" th:value="${unidad.abreviatura}">
+                                        <span class="vf-hint" style="display:block; margin-top:6px;">Este producto solo tiene una unidad autorizada en el catálogo.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sección: Precios y Stock -->
+                        <div class="vf-section">
+                            <div class="vf-section__header">
+                                <span class="vf-section__badge">2</span>
+                                <div>
+                                    <h2 class="vf-section__title">
+                                        <i class="fas fa-tag" aria-hidden="true"></i> Precio y Stock
+                                    </h2>
+                                    <p class="vf-section__subtitle">Ajusta tu precio y disponibilidad.</p>
+                                </div>
+                            </div>
+
+                            <div class="vf-grid-3">
+                                <div class="vf-field">
+                                    <label class="vf-label" for="precio" id="labelEditPrecio">
+                                        <span th:text="${'Precio por ' + unidad.abreviatura + ' (COP) *'}">Precio *</span>
+                                    </label>
+                                    <div class="vf-input-wrap vf-input-currency">
+                                        <span class="vf-currency-symbol">$</span>
+                                        <input type="number" id="precio" name="precio" required min="100" step="1"
+                                               class="vf-input" th:value="${oferta.precio}">
+                                    </div>
+                                </div>
+                                <div class="vf-field">
+                                    <label class="vf-label" for="stock" id="labelEditStock">
+                                        <span th:text="${'Stock en ' + unidad.abreviatura + ' *'}">Stock *</span>
+                                    </label>
+                                    <input type="number" id="stock" name="stock" required
+                                           class="vf-input"
+                                           th:min="${unidad.permiteDecimales() ? '0.01' : '1'}"
+                                           th:step="${unidad.permiteDecimales() ? '0.01' : '1'}"
+                                           th:value="${oferta.stock}">
+                                </div>
+                                <div class="vf-field">
+                                    <label class="vf-label" for="compraMinima" id="labelEditMinima">
+                                        <span th:text="${'Compra Mínima (' + unidad.abreviatura + ') *'}">Compra Mínima *</span>
+                                    </label>
+                                    <input type="number" id="compraMinima" name="compraMinima" required
+                                           class="vf-input"
+                                           th:min="${unidad.permiteDecimales() ? '0.01' : '1'}"
+                                           th:step="${unidad.permiteDecimales() ? '0.01' : '1'}"
+                                           th:value="${oferta.compraMinima}">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sección: Detalles Específicos -->
+                        <div class="vf-section">
+                            <div class="vf-section__header">
+                                <span class="vf-section__badge">3</span>
+                                <div>
+                                    <h2 class="vf-section__title">
+                                        <i class="fas fa-circle-info" aria-hidden="true"></i> Detalles Específicos
+                                    </h2>
+                                    <p class="vf-section__subtitle">Ajusta notas de cosecha y peso para los compradores.</p>
+                                </div>
+                            </div>
+
+                            <div class="vf-grid-2">
+                                <div class="vf-field" id="campoEditPesoPromedio" th:style="${unidad.permiteDecimales() ? 'display:none;' : 'display:flex;'}">
+                                    <label class="vf-label" for="pesoPromedioUnidad">
+                                        <span>Peso aproximado por unidad (kg)</span>
+                                    </label>
+                                    <input type="number" id="pesoPromedioUnidad" name="pesoPromedioUnidad" min="0.01" step="0.01"
+                                           class="vf-input" th:value="${oferta.pesoPromedioUnidad}">
+                                    <span class="vf-hint">Opcional para cálculo logístico.</span>
+                                </div>
+                                <div class="vf-field" id="campoEditDescripcionPaquete" th:style="${unidad.permiteDecimales() ? 'display:none;' : 'display:flex;'}">
+                                    <label class="vf-label" for="descripcionPaquete">
+                                        <span>Descripción del paquete / presentación</span>
+                                    </label>
+                                    <input type="text" id="descripcionPaquete" name="descripcionPaquete"
+                                           class="vf-input" th:value="${oferta.descripcionPaquete}" placeholder="Ej: Manojo de 12 unidades">
+                                </div>
+                                <div class="vf-field vf-field--full">
+                                    <label class="vf-label" for="descripcionVendedor">
+                                        <span>Descripción de tu oferta</span>
+                                    </label>
+                                    <textarea id="descripcionVendedor" name="descripcionVendedor" rows="3"
+                                              class="vf-textarea" th:text="${oferta.descripcionVendedor}"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sección: Imagen -->
+                        <div class="vf-section">
+                            <div class="vf-field">
+                                <label class="vf-label" for="imagenUrl">
+                                    <span>URL de la Imagen de tu Oferta</span>
+                                </label>
+                                <input type="url" id="imagenUrl" name="imagenUrl" class="vf-input" th:value="${oferta.imagenUrl}">
+                            </div>
+                            <div id="imagePreviewBox" class="vf-image-preview-box has-image">
+                                <img id="imagePreview" class="vf-image-preview" alt="Vista previa" th:src="${oferta.imagenUrl}">
+                                <span class="vf-hint">Fotografía actual de la oferta.</span>
+                            </div>
+                        </div>
+
+                        <!-- Botones de Acción -->
+                        <div class="vf-actions">
+                            <a th:href="@{/vendedor/mis-productos}" class="vf-btn vf-btn--secondary">
+                                <i class="fas fa-arrow-left" aria-hidden="true"></i> Volver a Mis Productos
+                            </a>
+                            <button type="submit" class="vf-btn vf-btn--primary">
+                                <i class="fas fa-save" aria-hidden="true"></i> Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+
+                </div>
             </div>
         </div>
 
         <script>
+            // Image preview
             const imagenInput = document.getElementById('imagenUrl');
             const preview = document.getElementById('imagePreview');
-            if (imagenInput) {
+            const previewBox = document.getElementById('imagePreviewBox');
+            if (imagenInput && preview) {
                 imagenInput.addEventListener('input', function() {
                     if (this.value) {
                         preview.src = this.value;
-                        preview.classList.add('visible');
+                        if (previewBox) previewBox.classList.add('has-image');
                     } else {
-                        preview.classList.remove('visible');
+                        if (previewBox) previewBox.classList.remove('has-image');
                     }
+                });
+            }
+
+            // Si está en pantalla de rechazo y selecciona "Otra" unidad
+            const reenvSelect = document.getElementById('reenviarUnidad');
+            const reenvOtra = document.getElementById('campoReenviarOtra');
+            const reenvOtraNombre = document.getElementById('reenviarOtraNombre');
+            if (reenvSelect && reenvOtra) {
+                reenvSelect.addEventListener('change', function () {
+                    if (this.value === 'otra') {
+                        reenvOtra.style.display = 'block';
+                        if (reenvOtraNombre) reenvOtraNombre.required = true;
+                    } else {
+                        reenvOtra.style.display = 'none';
+                        if (reenvOtraNombre) reenvOtraNombre.required = false;
+                    }
+                });
+            }
+
+            // Si la unidad no está bloqueada y cambia en edición
+            const editUnidadSelect = document.getElementById('editUnidadSelect');
+            const labelEditPrecio = document.getElementById('labelEditPrecio');
+            const labelEditStock = document.getElementById('labelEditStock');
+            const labelEditMinima = document.getElementById('labelEditMinima');
+            const inputStock = document.getElementById('stock');
+            const inputMinima = document.getElementById('compraMinima');
+            const campoPeso = document.getElementById('campoEditPesoPromedio');
+            const campoPaq = document.getElementById('campoEditDescripcionPaquete');
+
+            if (editUnidadSelect) {
+                editUnidadSelect.addEventListener('change', function () {
+                    const opt = this.options[this.selectedIndex];
+                    const decimales = opt.getAttribute('data-decimales') === 'true';
+                    const ab = this.value;
+                    if (labelEditPrecio) labelEditPrecio.querySelector('span').textContent = `Precio por ${ab} (COP) *`;
+                    if (labelEditStock) labelEditStock.querySelector('span').textContent = `Stock en ${ab} *`;
+                    if (labelEditMinima) labelEditMinima.querySelector('span').textContent = `Compra Mínima (${ab}) *`;
+
+                    if (inputStock) {
+                        inputStock.step = decimales ? '0.01' : '1';
+                        inputStock.min = decimales ? '0.01' : '1';
+                    }
+                    if (inputMinima) {
+                        inputMinima.step = decimales ? '0.01' : '1';
+                        inputMinima.min = decimales ? '0.01' : '1';
+                    }
+                    if (campoPeso) campoPeso.style.display = decimales ? 'none' : 'flex';
+                    if (campoPaq) campoPaq.style.display = decimales ? 'none' : 'flex';
                 });
             }
         </script>
@@ -136,9 +376,10 @@
                 <span>Cultivus Colombia · Editar Oferta</span>
             </div>
             <div class="vs-footer__links">
-                <span>&copy; 2025 Cultivus. Todos los derechos reservados.</span>
+                <span>&copy; 2026 Cultivus. Todos los derechos reservados.</span>
             </div>
         </footer>
     </main>
 </body>
+
 </html>

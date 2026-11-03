@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" th:href="@{/header.css}">
     <link rel="stylesheet" th:href="@{/vendedor-panel.css}">
+    <link rel="stylesheet" th:href="@{/vendedor-formulario.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
 </head>
 
@@ -17,208 +18,702 @@
     <header th:replace="~{fragments/header-vendedor :: siteHeader}"></header>
     <main class="vs-main">
 
-        <div class="add-product-wrapper">
-            <!-- Page Header -->
-            <div class="page-header">
-                <div class="icon-circle">
-                    <i class="fas fa-plus" aria-hidden="true"></i>
+        <div class="vf-wrapper">
+            <!-- Header Apple Style -->
+            <div class="vf-header">
+                <div class="vf-header__main">
+                    <div class="vf-header__icon" aria-hidden="true">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                    <div>
+                        <h1 class="vf-header__title">Nueva Oferta</h1>
+                        <p class="vf-header__subtitle">Selecciona el producto del catálogo y publica con su unidad de venta autorizada.</p>
+                    </div>
                 </div>
-                <div>
-                    <h1>Nueva Oferta</h1>
-                    <p>Selecciona un producto del catálogo y define tu precio y stock</p>
+                <div class="vf-steps-badge">
+                    <i class="fas fa-shield-halved" aria-hidden="true"></i>
+                    <span>Catálogo Verificado</span>
                 </div>
             </div>
 
-            <!-- Alerts -->
-            <div th:if="${mensaje}" class="alert alert-success">
+            <!-- Alertas de Éxito / Error -->
+            <div th:if="${mensaje}" class="vf-alert vf-alert--success" role="alert">
                 <i class="fas fa-check-circle" aria-hidden="true"></i>
                 <span th:text="${mensaje}"></span>
             </div>
-            <div th:if="${error}" class="alert alert-error">
+            <div th:if="${error}" class="vf-alert vf-alert--error" role="alert">
                 <i class="fas fa-exclamation-circle" aria-hidden="true"></i>
                 <span th:text="${error}"></span>
             </div>
 
-            <!-- ═══ FORMULARIO CREAR OFERTA ═══ -->
-            <div class="form-card">
-                <div id="crear-oferta" class="tab-content active">
-                    <form th:action="@{/vendedor/productos/guardar}" method="post">
+            <!-- Tarjeta Principal del Formulario -->
+            <div class="vf-card vf-card--elevated">
+                <div class="vf-card__body">
 
-                        <!-- Selección de producto del catálogo -->
-                        <div class="form-section">
-                            <div class="section-title">
-                                <i class="fas fa-search" aria-hidden="true"></i> Seleccionar Producto del Catálogo
+                    <!-- SELECCIÓN EN DOS PASOS: Categoría y Producto -->
+                    <div class="vf-section">
+                        <div class="vf-section__header">
+                            <span class="vf-section__badge">1</span>
+                            <div>
+                                <h2 class="vf-section__title">
+                                    <i class="fas fa-search" aria-hidden="true"></i> Elige tu Producto
+                                </h2>
+                                <p class="vf-section__subtitle">Elige la categoría para ver los productos autorizados disponibles.</p>
                             </div>
-                            <div class="field">
-                                <label for="productoCatalogoId">Producto *</label>
-                                <select id="productoCatalogoId" name="productoCatalogoId" required>
-                                    <option value="">Selecciona un producto del catálogo</option>
-                                    <option th:each="prod : ${catalogoProductos}"
-                                            th:value="${prod.id}"
-                                            th:data-tipo-venta="${prod.tipoVenta}"
-                                            th:data-unidad="${prod.unidadMedida}"
-                                            th:text="${prod.nombre + ' (' + (prod.categoria != null ? prod.categoria.nombre : 'Sin categoría') + ')'}">
-                                    </option>
+                        </div>
+
+                        <div class="vf-grid-2">
+                            <!-- Paso 1: Categoría -->
+                            <div class="vf-field">
+                                <label class="vf-label" for="categoriaSelect">
+                                    <span>Categoría <span class="req">*</span></span>
+                                </label>
+                                <select id="categoriaSelect" class="vf-select" required>
+                                    <option value="">-- Elige una categoría --</option>
+                                    <option th:each="cat : ${categoriasConProductos}"
+                                            th:value="${cat.id}"
+                                            th:text="${cat.nombre}">Verduras</option>
                                 </select>
+                                <span class="vf-hint">Solo categorías con productos aprobados en el mercado.</span>
+                            </div>
+
+                            <!-- Paso 2: Producto (AJAX) -->
+                            <div class="vf-field">
+                                <label class="vf-label" for="productoCatalogoId">
+                                    <span>Producto del Catálogo <span class="req">*</span></span>
+                                </label>
+                                <select id="productoCatalogoId" class="vf-select" disabled required>
+                                    <option value="">Primero elige una categoría</option>
+                                </select>
+                                <span class="vf-hint" id="prodSelectHint">¿No encuentras el tuyo? Al final del listado puedes sugerirlo.</span>
                             </div>
                         </div>
 
-                        <!-- Tu oferta -->
-                        <div class="form-section">
-                            <div class="section-title">
-                                <i class="fas fa-tag" aria-hidden="true"></i> Tu Oferta
+                        <!-- Mini Preview del Producto Seleccionado -->
+                        <div id="productPreviewCard" class="vf-product-preview" style="display:none;">
+                            <img id="previewThumb" class="vf-product-preview__thumb" src="/images/placeholder.svg" alt="Producto">
+                            <div class="vf-product-preview__info">
+                                <h4 id="previewName">Nombre del Producto</h4>
+                                <p id="previewCatUnit">Categoría · Unidad por defecto: <strong>kg</strong></p>
                             </div>
-                            <div class="grid-3">
-                                <div class="field">
-                                    <label for="precio">Precio (COP) *</label>
-                                    <div class="currency-input">
-                                        <span>$</span>
-                                        <input type="number" id="precio" name="precio" required min="500" step="0.01"
-                                            placeholder="0.00">
+                        </div>
+                    </div>
+
+                    <!-- ═══ FORMA A: OFERTA DE PRODUCTO DE LA LISTA ═══ -->
+                    <form id="formOfertaCatalogo" th:action="@{/vendedor/productos/guardar}" method="post" style="display:none;">
+                        <input type="hidden" name="productoCatalogoId" id="hiddenProductoId">
+
+                        <!-- Sección 2: Unidad de Venta -->
+                        <div class="vf-section">
+                            <div class="vf-section__header">
+                                <span class="vf-section__badge">2</span>
+                                <div>
+                                    <h2 class="vf-section__title">
+                                        <i class="fas fa-scale-balanced" aria-hidden="true"></i> Unidad de Venta
+                                    </h2>
+                                    <p class="vf-section__subtitle">Define cómo se mide y se vende tu producto.</p>
+                                </div>
+                            </div>
+
+                            <div class="vf-field">
+                                <label class="vf-label" for="unidadAbreviaturaSelect" id="labelUnidadVenta">
+                                    <span>Unidad autorizada <span class="req">*</span></span>
+                                </label>
+
+                                <!-- Selector cuando hay múltiples unidades permitidas -->
+                                <div id="unidadSelectContainer" style="display:none;">
+                                    <select id="unidadAbreviaturaSelect" name="unidadAbreviatura" class="vf-select">
+                                    </select>
+                                    <span class="vf-hint">Elige una de las unidades permitidas para este producto en el catálogo.</span>
+                                </div>
+
+                                <!-- Badge cuando solo hay una unidad permitida -->
+                                <div id="unidadBloqueadaBadge" style="display:none;">
+                                    <div class="vf-unit-locked">
+                                        <i class="fas fa-lock" aria-hidden="true"></i>
+                                        <span id="unidadBloqueadaTexto">Kilogramos (kg)</span>
                                     </div>
-                                </div>
-                                <div class="field">
-                                    <label for="stock">Stock Disponible *</label>
-                                    <input type="number" id="stock" name="stock" required min="1" max="10000"
-                                        placeholder="0">
-                                </div>
-                                <div class="field">
-                                    <label for="compraMinima">Compra Mínima *</label>
-                                    <input type="number" id="compraMinima" name="compraMinima" required min="0.01" step="any"
-                                        value="1" placeholder="Ej: 2">
-                                    <small>Cantidad mínima por compra</small>
+                                    <input type="hidden" id="hiddenUnidadUnica" name="unidadAbreviatura">
+                                    <span class="vf-hint" style="display:block; margin-top:6px;">Este producto tiene una única unidad de venta autorizada.</span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Detalles Dinámicos según Tipo de Venta -->
-                        <div class="form-section">
-                            <div class="section-title">
-                                <i class="fas fa-weight-hanging" aria-hidden="true"></i> Detalles
+                        <!-- Sección 3: Precio, Stock y Mínimo -->
+                        <div class="vf-section">
+                            <div class="vf-section__header">
+                                <span class="vf-section__badge">3</span>
+                                <div>
+                                    <h2 class="vf-section__title">
+                                        <i class="fas fa-tag" aria-hidden="true"></i> Precio y Stock
+                                    </h2>
+                                    <p class="vf-section__subtitle">Establece tu precio por unidad y la disponibilidad para los compradores.</p>
+                                </div>
                             </div>
-                            <div class="grid-2">
-                                <!-- Campos para PESO -->
-                                <div class="field" id="campoPesoPromedio" style="display:none;">
-                                    <label for="pesoPromedioUnidad">Peso promedio por unidad (kg/lb)</label>
+
+                            <div class="vf-grid-3">
+                                <!-- Precio -->
+                                <div class="vf-field">
+                                    <label class="vf-label" for="precio" id="labelPrecio">
+                                        <span>Precio (COP) <span class="req">*</span></span>
+                                    </label>
+                                    <div class="vf-input-wrap vf-input-currency">
+                                        <span class="vf-currency-symbol">$</span>
+                                        <input type="number" id="precio" name="precio" required min="100" step="1"
+                                               class="vf-input" placeholder="Ej: 3500">
+                                    </div>
+                                    <span class="vf-hint" id="hintPrecio">Precio de venta por unidad</span>
+                                </div>
+
+                                <!-- Stock -->
+                                <div class="vf-field">
+                                    <label class="vf-label" for="stock" id="labelStock">
+                                        <span>Stock Disponible <span class="req">*</span></span>
+                                    </label>
+                                    <input type="number" id="stock" name="stock" required min="0.01" step="0.01"
+                                           class="vf-input" placeholder="Ej: 50">
+                                    <span class="vf-hint" id="hintStock">Cantidad total disponible</span>
+                                </div>
+
+                                <!-- Compra Mínima -->
+                                <div class="vf-field">
+                                    <label class="vf-label" for="compraMinima" id="labelMinima">
+                                        <span>Compra Mínima <span class="req">*</span></span>
+                                    </label>
+                                    <input type="number" id="compraMinima" name="compraMinima" required min="0.01" step="0.01"
+                                           value="1" class="vf-input" placeholder="Ej: 1">
+                                    <span class="vf-hint" id="hintMinima">Pedido mínimo por comprador</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sección 4: Detalles Opcionales -->
+                        <div class="vf-section">
+                            <div class="vf-section__header">
+                                <span class="vf-section__badge">4</span>
+                                <div>
+                                    <h2 class="vf-section__title">
+                                        <i class="fas fa-circle-info" aria-hidden="true"></i> Detalles y Presentación
+                                    </h2>
+                                    <p class="vf-section__subtitle">Información adicional para facilitar el despacho y dar confianza al comprador.</p>
+                                </div>
+                            </div>
+
+                            <div class="vf-grid-2">
+                                <!-- Peso aproximado (solo si es tipo Unidad) -->
+                                <div class="vf-field" id="campoPesoPromedio" style="display:none;">
+                                    <label class="vf-label" for="pesoPromedioUnidad">
+                                        <span>Peso aproximado por unidad (kg)</span>
+                                    </label>
                                     <input type="number" id="pesoPromedioUnidad" name="pesoPromedioUnidad" min="0.01" step="0.01"
-                                        placeholder="Ej: 0.5">
-                                    <small>Opcional para dar una estimación al cliente</small>
+                                           class="vf-input" placeholder="Ej: 0.45">
+                                    <span class="vf-hint">Ayuda a calcular el peso para la tarifa de transporte.</span>
                                 </div>
 
-                                <!-- Campos para UNIDAD -->
-                                <div class="field" id="campoDescripcionPaquete" style="display:none;">
-                                    <label for="descripcionPaquete">Descripción del paquete</label>
+                                <!-- Descripción paquete (solo si es tipo Unidad) -->
+                                <div class="vf-field" id="campoDescripcionPaquete" style="display:none;">
+                                    <label class="vf-label" for="descripcionPaquete">
+                                        <span>Descripción del paquete / presentación</span>
+                                    </label>
                                     <input type="text" id="descripcionPaquete" name="descripcionPaquete" maxlength="100"
-                                        placeholder="Ej: Manojo de ~100g, Bandeja de 12 uds">
+                                           class="vf-input" placeholder="Ej: Manojo fresco de 100g, Bandeja x 30">
+                                    <span class="vf-hint">Aclara el formato al comprador.</span>
                                 </div>
 
-                                <div class="field full-width">
-                                    <label for="descripcionVendedor">Descripción de tu oferta</label>
+                                <div class="vf-field vf-field--full">
+                                    <label class="vf-label" for="descripcionVendedor">
+                                        <span>Descripción de tu oferta (opcional)</span>
+                                    </label>
                                     <textarea id="descripcionVendedor" name="descripcionVendedor" maxlength="255" rows="3"
-                                        placeholder="Ej: Cultivada orgánicamente en Boyacá, cosecha reciente..."></textarea>
+                                              class="vf-textarea"
+                                              placeholder="Ej: Cosecha fresca de hoy en Carmen de Bolívar, sin pesticidas químicos..."></textarea>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Imagen -->
-                        <div class="form-section">
-                            <div class="section-title">
-                                <i class="fas fa-image" aria-hidden="true"></i> Imagen (opcional)
+                        <!-- Sección 5: Imagen Personalizada -->
+                        <div class="vf-section">
+                            <div class="vf-section__header">
+                                <span class="vf-section__badge">5</span>
+                                <div>
+                                    <h2 class="vf-section__title">
+                                        <i class="fas fa-image" aria-hidden="true"></i> Imagen de tu Oferta (opcional)
+                                    </h2>
+                                    <p class="vf-section__subtitle">Si no agregas una foto propia, se usará la imagen oficial del catálogo.</p>
+                                </div>
                             </div>
-                            <div class="field">
-                                <label for="imagenUrl">URL de la Imagen</label>
-                                <input type="url" id="imagenUrl" name="imagenUrl"
-                                    placeholder="https://ejemplo.com/imagen.jpg (se usa la del catálogo si se deja vacío)">
+
+                            <div class="vf-field">
+                                <label class="vf-label" for="imagenUrl">
+                                    <span>URL de la Imagen</span>
+                                </label>
+                                <input type="url" id="imagenUrl" name="imagenUrl" class="vf-input"
+                                       placeholder="https://ejemplo.com/foto-cosecha.jpg">
+                                <span class="vf-hint">Introduce un enlace directo a la fotografía.</span>
                             </div>
-                            <div class="image-preview-container">
-                                <img id="imagePreview" class="image-preview" alt="Vista previa">
+
+                            <div id="imagePreviewBox" class="vf-image-preview-box">
+                                <img id="imagePreview" class="vf-image-preview" src="" alt="Vista previa">
+                                <span class="vf-hint">Vista previa de la fotografía que verán los compradores.</span>
                             </div>
                         </div>
 
-                        <!-- Footer Actions -->
-                        <div class="form-footer">
-                            <a th:href="@{/vendedor/mis-productos}" class="btn-back">
-                                <i class="fas fa-arrow-left" aria-hidden="true"></i> Volver
+                        <!-- Botones de Acción -->
+                        <div class="vf-actions">
+                            <a th:href="@{/vendedor/mis-productos}" class="vf-btn vf-btn--secondary">
+                                <i class="fas fa-arrow-left" aria-hidden="true"></i> Volver a Mis Productos
                             </a>
-                            <button type="submit" class="btn-publish">
-                                <i class="fas fa-rocket" aria-hidden="true"></i> Enviar Oferta
+                            <button type="submit" class="vf-btn vf-btn--primary">
+                                <i class="fas fa-check" aria-hidden="true"></i> Publicar Oferta
                             </button>
                         </div>
                     </form>
-                </div>
 
+                    <!-- ═══ FORMA B: "NO ENCUENTRO MI PRODUCTO" (SUGERENCIA) ═══ -->
+                    <form id="formSugerirProducto" th:action="@{/vendedor/productos/sugerir}" method="post" style="display:none;">
+                        <div class="vf-suggestion-box">
+                            <h3 class="vf-suggestion-box__title">
+                                <i class="fas fa-lightbulb" aria-hidden="true"></i> Sugerir un Nuevo Producto al Catálogo
+                            </h3>
+                            <p class="vf-suggestion-box__desc">
+                                Tu producto pasará por revisión rápida de nuestro equipo. Tu oferta quedará registrada como
+                                <strong>EN REVISIÓN</strong> y se publicará automáticamente en cuanto sea aprobada.
+                            </p>
+
+                            <!-- Datos del Producto Sugerido -->
+                            <div class="vf-grid-2">
+                                <div class="vf-field">
+                                    <label class="vf-label" for="sugCategoria">
+                                        <span>Categoría del Producto <span class="req">*</span></span>
+                                    </label>
+                                    <select id="sugCategoria" name="categoriaId" class="vf-select" required>
+                                        <option value="">-- Elige categoría --</option>
+                                        <option th:each="cat : ${categorias}"
+                                                th:value="${cat.id}"
+                                                th:text="${cat.nombre}">Frutas</option>
+                                    </select>
+                                </div>
+
+                                <div class="vf-field">
+                                    <label class="vf-label" for="sugNombre">
+                                        <span>Nombre del Producto <span class="req">*</span></span>
+                                    </label>
+                                    <input type="text" id="sugNombre" name="nombre" class="vf-input" required maxlength="80"
+                                           placeholder="Ej: Corozo costeño, Mamoncillo">
+
+                                    <!-- Alerta en vivo si ya existe un nombre parecido -->
+                                    <div id="similaresAviso" class="vf-similar-alert">
+                                        <strong><i class="fas fa-triangle-exclamation" aria-hidden="true"></i> Ya existen productos similares en el catálogo:</strong>
+                                        <ul id="similaresLista" style="margin:4px 0 0; padding-left:18px;"></ul>
+                                        <span style="display:block; margin-top:4px; font-size:0.8rem;">Te sugerimos elegirlo arriba para publicar de inmediato sin esperar moderación.</span>
+                                    </div>
+                                </div>
+
+                                <div class="vf-field vf-field--full">
+                                    <label class="vf-label" for="sugUnidad">
+                                        <span>Unidad de Venta Propuesta <span class="req">*</span></span>
+                                    </label>
+                                    <select id="sugUnidad" name="unidadSugerida" class="vf-select" required>
+                                        <option value="">-- Elige una unidad --</option>
+                                        <option th:each="u : ${unidadesMedida}"
+                                                th:value="${u.abreviatura}"
+                                                th:data-tipo="${u.tipo}"
+                                                th:data-decimales="${u.permiteDecimales()}"
+                                                th:text="${u.nombre + ' (' + u.abreviatura + ') · ' + u.tipo}">Kilogramos (kg)</option>
+                                        <option value="otra">➕ Otra unidad personalizada...</option>
+                                    </select>
+                                </div>
+
+                                <!-- Opciones si elige "Otra" -->
+                                <div class="vf-field vf-field--full" id="campoOtraUnidad" style="display:none; background:#FFFDF5; border:1px dashed var(--vf-amber-border); padding:16px; border-radius:12px;">
+                                    <label class="vf-label" for="unidadOtraNombre">
+                                        <span>Nombre de la unidad personalizada <span class="req">*</span></span>
+                                    </label>
+                                    <input type="text" id="unidadOtraNombre" name="unidadOtraNombre" maxlength="20"
+                                           class="vf-input" placeholder="Ej: Canastilla, Racimo">
+                                    <label class="vf-checkbox-wrap">
+                                        <input type="checkbox" id="unidadOtraFraccionable" name="unidadOtraFraccionable" value="true">
+                                        <span>Admite cantidades fraccionadas con decimales (por defecto solo números enteros)</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Oferta inicial para el producto sugerido -->
+                        <div class="vf-section" style="margin-top:24px;">
+                            <div class="vf-section__header">
+                                <span class="vf-section__badge">2</span>
+                                <div>
+                                    <h2 class="vf-section__title">
+                                        <i class="fas fa-tag" aria-hidden="true"></i> Tu Oferta de Venta
+                                    </h2>
+                                    <p class="vf-section__subtitle">Define precio y stock inicial para tu producto propuesto.</p>
+                                </div>
+                            </div>
+
+                            <div class="vf-grid-3">
+                                <div class="vf-field">
+                                    <label class="vf-label" for="sugPrecio" id="sugLabelPrecio">
+                                        <span>Precio (COP) <span class="req">*</span></span>
+                                    </label>
+                                    <div class="vf-input-wrap vf-input-currency">
+                                        <span class="vf-currency-symbol">$</span>
+                                        <input type="number" id="sugPrecio" name="precio" required min="100" step="1"
+                                               class="vf-input" placeholder="Ej: 4000">
+                                    </div>
+                                </div>
+                                <div class="vf-field">
+                                    <label class="vf-label" for="sugStock" id="sugLabelStock">
+                                        <span>Stock Disponible <span class="req">*</span></span>
+                                    </label>
+                                    <input type="number" id="sugStock" name="stock" required min="0.01" step="any"
+                                           class="vf-input" placeholder="Ej: 20">
+                                </div>
+                                <div class="vf-field">
+                                    <label class="vf-label" for="sugCompraMinima" id="sugLabelMinima">
+                                        <span>Compra Mínima <span class="req">*</span></span>
+                                    </label>
+                                    <input type="number" id="sugCompraMinima" name="compraMinima" required min="0.01" step="any"
+                                           value="1" class="vf-input" placeholder="Ej: 1">
+                                </div>
+                            </div>
+
+                            <div class="vf-grid-2" style="margin-top:16px;">
+                                <div class="vf-field" id="sugCampoPesoPromedio" style="display:none;">
+                                    <label class="vf-label" for="sugPesoPromedioUnidad">
+                                        <span>Peso aproximado por unidad (kg)</span>
+                                    </label>
+                                    <input type="number" id="sugPesoPromedioUnidad" name="pesoPromedioUnidad" min="0.01" step="0.01"
+                                           class="vf-input" placeholder="Ej: 0.5">
+                                </div>
+                                <div class="vf-field" id="sugCampoDescripcionPaquete" style="display:none;">
+                                    <label class="vf-label" for="sugDescripcionPaquete">
+                                        <span>Descripción del paquete</span>
+                                    </label>
+                                    <input type="text" id="sugDescripcionPaquete" name="descripcionPaquete" maxlength="100"
+                                           class="vf-input" placeholder="Ej: Racimo de 15 unidades">
+                                </div>
+                                <div class="vf-field vf-field--full">
+                                    <label class="vf-label" for="sugDescripcionVendedor">
+                                        <span>Descripción de tu oferta</span>
+                                    </label>
+                                    <textarea id="sugDescripcionVendedor" name="descripcionVendedor" maxlength="255" rows="3"
+                                              class="vf-textarea"
+                                              placeholder="Cuenta los detalles de frescura y cultivo..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Imagen opcional sugerencia -->
+                        <div class="vf-section">
+                            <div class="vf-field">
+                                <label class="vf-label" for="sugImagenUrl">
+                                    <span>URL de Imagen del Producto Propuesto (opcional)</span>
+                                </label>
+                                <input type="url" id="sugImagenUrl" name="imagenUrl" class="vf-input"
+                                       placeholder="https://ejemplo.com/foto-producto.jpg">
+                            </div>
+                        </div>
+
+                        <div class="vf-actions">
+                            <button type="button" class="vf-btn vf-btn--secondary" id="btnCancelarSugerir">
+                                <i class="fas fa-times" aria-hidden="true"></i> Cancelar Sugerencia
+                            </button>
+                            <button type="submit" class="vf-btn vf-btn--primary" style="background: linear-gradient(135deg, #B8860B 0%, #8B6508 100%);">
+                                <i class="fas fa-paper-plane" aria-hidden="true"></i> Enviar Sugerencia a Moderación
+                            </button>
+                        </div>
+                    </form>
+
+                </div>
             </div>
         </div>
 
         <script>
-            // Image Preview
-            const imagenInput = document.getElementById('imagenUrl');
-            const preview = document.getElementById('imagePreview');
+            // ── Estado en memoria de productos de la categoría seleccionada ──
+            let productosActuales = [];
+            let productoSeleccionado = null;
+            let unidadSeleccionada = null;
 
-            if (imagenInput) {
-                imagenInput.addEventListener('input', function () {
-                    const url = this.value;
-                    if (url) {
-                        preview.src = url;
-                        preview.classList.add('visible');
-                        preview.onerror = () => preview.classList.remove('visible');
-                    } else {
-                        preview.classList.remove('visible');
-                    }
-                });
+            const catSelect = document.getElementById('categoriaSelect');
+            const prodSelect = document.getElementById('productoCatalogoId');
+            const formCatalogo = document.getElementById('formOfertaCatalogo');
+            const formSugerir = document.getElementById('formSugerirProducto');
+            const hiddenProdId = document.getElementById('hiddenProductoId');
 
-                // Show preview on load if value exists
-                if (imagenInput.value) {
-                    preview.src = imagenInput.value;
-                    preview.classList.add('visible');
-                }
-            }
+            const previewCard = document.getElementById('productPreviewCard');
+            const previewThumb = document.getElementById('previewThumb');
+            const previewName = document.getElementById('previewName');
+            const previewCatUnit = document.getElementById('previewCatUnit');
 
-            // Logic for dynamic fields based on sale type
-            const selectProducto = document.getElementById('productoCatalogoId');
-            const labelPrecio = document.querySelector('label[for="precio"]');
-            const labelStock = document.querySelector('label[for="stock"]');
+            const unidadSelectContainer = document.getElementById('unidadSelectContainer');
+            const unidadAbrevSelect = document.getElementById('unidadAbreviaturaSelect');
+            const unidadBloqueadaBadge = document.getElementById('unidadBloqueadaBadge');
+            const unidadBloqueadaTexto = document.getElementById('unidadBloqueadaTexto');
+            const hiddenUnidadUnica = document.getElementById('hiddenUnidadUnica');
+
+            const labelPrecio = document.getElementById('labelPrecio');
+            const labelStock = document.getElementById('labelStock');
+            const labelMinima = document.getElementById('labelMinima');
+            const inputStock = document.getElementById('stock');
+            const inputMinima = document.getElementById('compraMinima');
             const campoPesoPromedio = document.getElementById('campoPesoPromedio');
             const campoDescripcionPaquete = document.getElementById('campoDescripcionPaquete');
 
-            if (selectProducto) {
-                selectProducto.addEventListener('change', function() {
-                    const selectedOption = this.options[this.selectedIndex];
-                    const tipoVenta = selectedOption.getAttribute('data-tipo-venta');
-                    const unidad = selectedOption.getAttribute('data-unidad');
+            // 1. Al cambiar categoría, cargar productos vía AJAX
+            catSelect.addEventListener('change', function () {
+                const catId = this.value;
+                prodSelect.innerHTML = '<option value="">Cargando productos...</option>';
+                prodSelect.disabled = true;
+                formCatalogo.style.display = 'none';
+                formSugerir.style.display = 'none';
+                previewCard.style.display = 'none';
+                productosActuales = [];
+                productoSeleccionado = null;
 
-                    if (!tipoVenta) {
-                        labelPrecio.textContent = 'Precio (COP) *';
-                        labelStock.textContent = 'Stock Disponible *';
-                        campoPesoPromedio.style.display = 'none';
-                        campoDescripcionPaquete.style.display = 'none';
-                        return;
+                if (!catId) {
+                    prodSelect.innerHTML = '<option value="">Primero elige una categoría</option>';
+                    return;
+                }
+
+                fetch('/vendedor/productos/catalogo?categoriaId=' + encodeURIComponent(catId))
+                    .then(res => {
+                        if (!res.ok) throw new Error('Error al cargar productos');
+                        return res.json();
+                    })
+                    .then(data => {
+                        productosActuales = data;
+                        let html = '<option value="">-- Elige un producto --</option>';
+                        data.forEach((p, idx) => {
+                            html += `<option value="${p.id}" data-idx="${idx}">${p.nombre}</option>`;
+                        });
+                        html += '<option value="__OTRO__">➕ No encuentro mi producto (sugerir nuevo)...</option>';
+                        prodSelect.innerHTML = html;
+                        prodSelect.disabled = false;
+                    })
+                    .catch(err => {
+                        prodSelect.innerHTML = '<option value="">Error cargando catálogo</option>';
+                        console.error(err);
+                    });
+            });
+
+            // 2. Al elegir producto
+            prodSelect.addEventListener('change', function () {
+                const val = this.value;
+                if (!val) {
+                    formCatalogo.style.display = 'none';
+                    formSugerir.style.display = 'none';
+                    previewCard.style.display = 'none';
+                    return;
+                }
+
+                // Opción especial: "No encuentro mi producto"
+                if (val === '__OTRO__') {
+                    formCatalogo.style.display = 'none';
+                    previewCard.style.display = 'none';
+                    formSugerir.style.display = 'block';
+                    if (catSelect.value) {
+                        document.getElementById('sugCategoria').value = catSelect.value;
                     }
+                    return;
+                }
 
-                    labelPrecio.textContent = `Precio por ${unidad} (COP) *`;
-                    labelStock.textContent = `Stock Disponible (${unidad}) *`;
+                formSugerir.style.display = 'none';
+                formCatalogo.style.display = 'block';
+                hiddenProdId.value = val;
 
-                    if (tipoVenta === 'PESO') {
-                        campoPesoPromedio.style.display = 'flex';
-                        campoDescripcionPaquete.style.display = 'none';
-                    } else if (tipoVenta === 'UNIDAD') {
-                        campoPesoPromedio.style.display = 'none';
-                        campoDescripcionPaquete.style.display = 'flex';
+                const selectedOption = this.options[this.selectedIndex];
+                const idx = parseInt(selectedOption.getAttribute('data-idx'), 10);
+                productoSeleccionado = productosActuales[idx];
+
+                // Mostrar Preview Card
+                if (productoSeleccionado) {
+                    previewThumb.src = productoSeleccionado.imagenUrl || '/images/placeholder.svg';
+                    previewName.textContent = productoSeleccionado.nombre;
+                    const catNombre = catSelect.options[catSelect.selectedIndex].text;
+                    const defU = productoSeleccionado.unidadPorDefecto ? productoSeleccionado.unidadPorDefecto.nombre : '';
+                    previewCatUnit.innerHTML = `${catNombre} · Unidad por defecto: <strong>${defU}</strong>`;
+                    previewCard.style.display = 'flex';
+                }
+
+                configurarUnidadesOferta(productoSeleccionado);
+            });
+
+            // 3. Configuración de unidades permitidas
+            function configurarUnidadesOferta(prod) {
+                if (!prod || !prod.unidadesPermitidas || prod.unidadesPermitidas.length === 0) return;
+
+                const permitidas = prod.unidadesPermitidas;
+                if (permitidas.length === 1) {
+                    // Unidad bloqueada (única permitida)
+                    unidadSelectContainer.style.display = 'none';
+                    unidadBloqueadaBadge.style.display = 'block';
+                    const u = permitidas[0];
+                    unidadBloqueadaTexto.textContent = `${u.nombre} (${u.abreviatura})`;
+                    hiddenUnidadUnica.value = u.abreviatura;
+                    unidadAbrevSelect.disabled = true;
+                    hiddenUnidadUnica.disabled = false;
+                    aplicarReglasUnidad(u);
+                } else {
+                    // Múltiples permitidas
+                    unidadBloqueadaBadge.style.display = 'none';
+                    unidadSelectContainer.style.display = 'block';
+                    unidadAbrevSelect.disabled = false;
+                    hiddenUnidadUnica.disabled = true;
+
+                    let html = '';
+                    permitidas.forEach(u => {
+                        const def = (prod.unidadPorDefecto && prod.unidadPorDefecto.abreviatura === u.abreviatura) ? ' · Recomendada' : '';
+                        html += `<option value="${u.abreviatura}">${u.nombre} (${u.abreviatura})${def}</option>`;
+                    });
+                    unidadAbrevSelect.innerHTML = html;
+                    if (prod.unidadPorDefecto) {
+                        unidadAbrevSelect.value = prod.unidadPorDefecto.abreviatura;
                     }
-                });
-                // Trigger change on load if something is already selected
-                if(selectProducto.value) {
-                    selectProducto.dispatchEvent(new Event('change'));
+                    const inicial = permitidas.find(u => u.abreviatura === unidadAbrevSelect.value) || permitidas[0];
+                    aplicarReglasUnidad(inicial);
                 }
             }
+
+            unidadAbrevSelect.addEventListener('change', function () {
+                if (!productoSeleccionado) return;
+                const elegida = productoSeleccionado.unidadesPermitidas.find(u => u.abreviatura === this.value);
+                if (elegida) aplicarReglasUnidad(elegida);
+            });
+
+            // 4. Ajustar etiquetas, steps y campos dinámicos
+            function aplicarReglasUnidad(u) {
+                unidadSeleccionada = u;
+                const ab = u.abreviatura;
+                labelPrecio.querySelector('span').innerHTML = `Precio por ${ab} (COP) <span class="req">*</span>`;
+                labelStock.querySelector('span').innerHTML = `Stock en ${ab} <span class="req">*</span>`;
+                labelMinima.querySelector('span').innerHTML = `Compra Mínima (${ab}) <span class="req">*</span>`;
+
+                if (u.permiteDecimales) {
+                    inputStock.step = '0.01';
+                    inputStock.min = '0.01';
+                    inputMinima.step = '0.01';
+                    inputMinima.min = '0.01';
+
+                    campoPesoPromedio.style.display = 'none';
+                    campoDescripcionPaquete.style.display = 'none';
+                } else {
+                    inputStock.step = '1';
+                    inputStock.min = '1';
+                    inputMinima.step = '1';
+                    inputMinima.min = '1';
+
+                    if (inputStock.value && inputStock.value.includes('.')) {
+                        inputStock.value = Math.floor(parseFloat(inputStock.value));
+                    }
+                    if (inputMinima.value && inputMinima.value.includes('.')) {
+                        inputMinima.value = Math.max(1, Math.floor(parseFloat(inputMinima.value)));
+                    }
+
+                    campoPesoPromedio.style.display = 'flex';
+                    campoDescripcionPaquete.style.display = 'flex';
+                }
+            }
+
+            // 5. Botón cancelar sugerencia
+            document.getElementById('btnCancelarSugerir').addEventListener('click', function () {
+                formSugerir.style.display = 'none';
+                prodSelect.value = '';
+            });
+
+            // 6. Al escribir nombre de sugerencia: búsqueda de parecidos (debounce)
+            const sugNombre = document.getElementById('sugNombre');
+            const avisoSimilares = document.getElementById('similaresAviso');
+            const listaSimilares = document.getElementById('similaresLista');
+            let debounceTimer = null;
+
+            sugNombre.addEventListener('input', function () {
+                clearTimeout(debounceTimer);
+                const nombre = this.value.trim();
+                if (nombre.length < 3) {
+                    avisoSimilares.classList.remove('visible');
+                    return;
+                }
+                debounceTimer = setTimeout(() => {
+                    fetch('/vendedor/productos/similares?nombre=' + encodeURIComponent(nombre))
+                        .then(r => r.json())
+                        .then(items => {
+                            if (!items || items.length === 0) {
+                                avisoSimilares.classList.remove('visible');
+                                return;
+                            }
+                            let html = '';
+                            items.forEach(it => {
+                                html += `<li><strong>${it.nombre}</strong> (${it.categoria || 'Sin categoría'})${it.aprobado ? ' · Disponible en catálogo' : ' · En revisión'}</li>`;
+                            });
+                            listaSimilares.innerHTML = html;
+                            avisoSimilares.classList.add('visible');
+                        })
+                        .catch(() => {
+                            avisoSimilares.classList.remove('visible');
+                        });
+                }, 300);
+            });
+
+            // 7. Manejo de unidad en formulario sugerir
+            const sugUnidad = document.getElementById('sugUnidad');
+            const campoOtra = document.getElementById('campoOtraUnidad');
+            const sugOtraNombre = document.getElementById('unidadOtraNombre');
+            const sugOtraFracc = document.getElementById('unidadOtraFraccionable');
+            const sugStock = document.getElementById('sugStock');
+            const sugMinima = document.getElementById('sugCompraMinima');
+            const sugCampoPeso = document.getElementById('sugCampoPesoPromedio');
+            const sugCampoPaq = document.getElementById('sugCampoDescripcionPaquete');
+
+            function actualizarReglasSugerir() {
+                const val = sugUnidad.value;
+                if (val === 'otra') {
+                    campoOtra.style.display = 'block';
+                    sugOtraNombre.required = true;
+                    const fracc = sugOtraFracc.checked;
+                    sugStock.step = fracc ? '0.01' : '1';
+                    sugMinima.step = fracc ? '0.01' : '1';
+                    sugCampoPeso.style.display = fracc ? 'none' : 'flex';
+                    sugCampoPaq.style.display = fracc ? 'none' : 'flex';
+                } else {
+                    campoOtra.style.display = 'none';
+                    sugOtraNombre.required = false;
+                    const opt = sugUnidad.options[sugUnidad.selectedIndex];
+                    const decimales = opt ? opt.getAttribute('data-decimales') === 'true' : false;
+                    sugStock.step = decimales ? '0.01' : '1';
+                    sugMinima.step = decimales ? '0.01' : '1';
+                    sugCampoPeso.style.display = decimales ? 'none' : 'flex';
+                    sugCampoPaq.style.display = decimales ? 'none' : 'flex';
+                }
+            }
+
+            sugUnidad.addEventListener('change', actualizarReglasSugerir);
+            sugOtraFracc.addEventListener('change', actualizarReglasSugerir);
+
+            // 8. Image preview para oferta de catálogo
+            const imgInput = document.getElementById('imagenUrl');
+            const previewBox = document.getElementById('imagePreviewBox');
+            const previewImg = document.getElementById('imagePreview');
+            if (imgInput && previewBox && previewImg) {
+                imgInput.addEventListener('input', function () {
+                    if (this.value && this.value.startsWith('http')) {
+                        previewImg.src = this.value;
+                        previewBox.classList.add('has-image');
+                        previewImg.onerror = () => previewBox.classList.remove('has-image');
+                    } else {
+                        previewBox.classList.remove('has-image');
+                    }
+                });
+            }
         </script>
+
         <footer class="vs-footer">
             <div class="vs-footer__brand">
                 <i class="fas fa-seedling"></i>
                 <span>Cultivus Colombia · Publicar Nueva Oferta</span>
             </div>
             <div class="vs-footer__links">
-                <span>&copy; 2025 Cultivus. Todos los derechos reservados.</span>
+                <span>&copy; 2026 Cultivus. Todos los derechos reservados.</span>
             </div>
         </footer>
     </main>

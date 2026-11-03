@@ -36,10 +36,11 @@ public interface OfertaRepository extends MongoRepository<OfertaVendedor, String
     boolean existsByProductoCatalogoIdAndVendedor_Id(
             String productoCatalogoId, String vendedorId);
 
-
-
     /** Eliminar todas las ofertas de un vendedor */
     void deleteByVendedor_Id(String vendedorId);
+
+    /** Contar todas las ofertas de un producto */
+    long countByProductoCatalogoId(String productoCatalogoId);
 
     /** Contar ofertas aprobadas y disponibles para un producto */
     long countByProductoCatalogoIdAndDisponibleTrue(

@@ -1,7 +1,9 @@
 package com.example.demo.services;
 
+import com.example.demo.Model.EstadoPublicacion;
 import com.example.demo.Model.OfertaVendedor;
 import com.example.demo.Model.ProductoCatalogo;
+import com.example.demo.Model.embebidos.UnidadMedida;
 import com.example.demo.repository.OfertaRepository;
 import com.example.demo.repository.ProductoCatalogoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +14,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -228,6 +231,12 @@ public class CatalogoService {
      * Sugiere un nuevo producto al catálogo (creado por vendedor, pendiente de aprobación).
      */
     public ProductoCatalogo sugerirProducto(ProductoCatalogo producto, String vendedorId) {
+        if (producto.getNombre() == null || producto.getNombre().isBlank()) {
+            throw new IllegalArgumentException("Escribe el nombre del producto.");
+        }
+        if (producto.getUnidadPorDefecto() == null) {
+            throw new IllegalArgumentException("Elige la unidad de venta del producto.");
+        }
         // Verificar que no exista ya
         String nombreNorm = ProductoCatalogo.normalizarNombre(producto.getNombre());
         if (catalogoRepository.existsByNombreNormalizado(nombreNorm)) {
@@ -274,19 +283,48 @@ public class CatalogoService {
 
     /**
      * Aprueba un producto pendiente en el catálogo (acción del admin).
+     * El producto entra a la lista por defecto y las ofertas PENDIENTES ligadas a él se publican.
+     * Se notifica al vendedor.
      */
     public ProductoCatalogo aprobarProducto(String productoId) {
         ProductoCatalogo producto = catalogoRepository.findById(productoId)
                 .orElseThrow(() -> new IllegalArgumentException("Producto del catálogo no encontrado"));
 
+        if (producto.getUnidadPorDefecto() == null) {
+            // Sugerencia anterior a US-06: se completa desde la unidad legacy
+            UnidadMedida legado = UnidadMedida.deAbreviatura(producto.getUnidadMedida());
+            producto.definirUnidades(legado, List.of(legado));
+        }
         producto.setAprobado(true);
         producto.setActivo(true);
         producto.setUpdatedAt(LocalDateTime.now());
 
         ProductoCatalogo guardado = catalogoRepository.save(producto);
 
-        // Notificar al vendedor que sugirió el producto (si aplica)
-        if (guardado.getSugeridoPor() != null) {
+        java.util.Set<String> notificados = new java.util.HashSet<>();
+        for (OfertaVendedor oferta : ofertaRepository.findByProductoCatalogoId(productoId)) {
+            if (oferta.getEstadoPublicacion() != EstadoPublicacion.PENDIENTE) {
+                continue;
+            }
+            oferta.setEstadoPublicacion(EstadoPublicacion.PUBLICADO);
+            oferta.setMotivoRechazo(null);
+            oferta.setDisponible(true);
+            oferta.setUpdatedAt(LocalDateTime.now());
+            ofertaRepository.save(oferta);
+
+            if (oferta.getVendedor() != null && oferta.getVendedor().getId() != null
+                    && notificados.add(oferta.getVendedor().getId())) {
+                notificacionService.enviar(
+                        oferta.getVendedor().getId(),
+                        "Sugerencia Aprobada",
+                        "¡Buenas noticias! '" + guardado.getNombre() + "' fue aprobado y tu oferta ya está publicada.",
+                        "SUCCESS");
+            }
+        }
+        actualizarEstadisticas(productoId);
+
+        // Sugerencia sin oferta asociada (flujo anterior): se avisa a quien la envió
+        if (guardado.getSugeridoPor() != null && !notificados.contains(guardado.getSugeridoPor())) {
             notificacionService.enviar(
                     guardado.getSugeridoPor(),
                     "Sugerencia Aprobada",
@@ -299,16 +337,189 @@ public class CatalogoService {
     }
 
     /**
-     * Rechaza un producto pendiente en el catálogo (acción del admin).
+     * Rechaza una sugerencia con motivo (acción del admin). Las ofertas PENDIENTES pasan a RECHAZADO
+     * con el motivo y el vendedor puede corregir y reenviar.
      */
-    public void rechazarProducto(String productoId) {
+    public void rechazarProducto(String productoId, String motivo) {
+        if (motivo == null || motivo.isBlank()) {
+            throw new IllegalArgumentException("Debes indicar el motivo del rechazo.");
+        }
+        String motivoLimpio = motivo.trim();
+        if (motivoLimpio.length() > 300) {
+            throw new IllegalArgumentException("El motivo no puede superar los 300 caracteres.");
+        }
         ProductoCatalogo producto = catalogoRepository.findById(productoId)
                 .orElseThrow(() -> new IllegalArgumentException("Producto del catálogo no encontrado"));
 
         producto.setActivo(false);
         producto.setUpdatedAt(LocalDateTime.now());
-
         catalogoRepository.save(producto);
+
+        java.util.Set<String> notificados = new java.util.HashSet<>();
+        for (OfertaVendedor oferta : ofertaRepository.findByProductoCatalogoId(productoId)) {
+            if (oferta.getEstadoPublicacion() != EstadoPublicacion.PENDIENTE) {
+                continue;
+            }
+            oferta.setEstadoPublicacion(EstadoPublicacion.RECHAZADO);
+            oferta.setMotivoRechazo(motivoLimpio);
+            oferta.setDisponible(false);
+            oferta.setUpdatedAt(LocalDateTime.now());
+            ofertaRepository.save(oferta);
+            if (oferta.getVendedor() != null && oferta.getVendedor().getId() != null
+                    && notificados.add(oferta.getVendedor().getId())) {
+                notificacionService.enviar(
+                        oferta.getVendedor().getId(),
+                        "Sugerencia Rechazada",
+                        "Tu sugerencia '" + producto.getNombre() + "' fue rechazada. Motivo: " + motivoLimpio
+                                + ". Puedes corregirla y reenviarla desde Mis productos.",
+                        "WARNING");
+            }
+        }
+        if (producto.getSugeridoPor() != null && !notificados.contains(producto.getSugeridoPor())) {
+            notificacionService.enviar(
+                    producto.getSugeridoPor(),
+                    "Sugerencia Rechazada",
+                    "Tu sugerencia '" + producto.getNombre() + "' fue rechazada. Motivo: " + motivoLimpio,
+                    "WARNING");
+        }
+    }
+
+    /**
+     * "Ya existe": el admin elige el producto existente. Las ofertas pendientes de la sugerencia
+     * toman su nombre y unidad, se publican de inmediato y la sugerencia se descarta.
+     */
+    public ProductoCatalogo marcarYaExiste(String sugeridoId, String existenteId) {
+        if (existenteId == null || existenteId.isBlank()) {
+            throw new IllegalArgumentException("Elige el producto existente.");
+        }
+        if (existenteId.equals(sugeridoId)) {
+            throw new IllegalArgumentException("Elige un producto distinto a la sugerencia.");
+        }
+        ProductoCatalogo sugerido = catalogoRepository.findById(sugeridoId)
+                .orElseThrow(() -> new IllegalArgumentException("Sugerencia no encontrada"));
+        if (sugerido.isAprobado()) {
+            throw new IllegalArgumentException("Esta sugerencia ya fue aprobada.");
+        }
+        ProductoCatalogo existente = catalogoRepository.findById(existenteId)
+                .orElseThrow(() -> new IllegalArgumentException("El producto existente no fue encontrado"));
+        if (!existente.isAprobado() || !existente.isActivo()) {
+            throw new IllegalArgumentException("El producto elegido no está aprobado y activo en la lista.");
+        }
+        UnidadMedida unidad = existente.getUnidadPorDefecto() != null
+                ? existente.getUnidadPorDefecto().copia()
+                : UnidadMedida.deAbreviatura(existente.getUnidadMedida());
+
+        // 1) Verificar todo antes de modificar nada
+        List<OfertaVendedor> pendientes = new ArrayList<>();
+        for (OfertaVendedor oferta : ofertaRepository.findByProductoCatalogoId(sugeridoId)) {
+            if (oferta.getEstadoPublicacion() != EstadoPublicacion.PENDIENTE) {
+                continue;
+            }
+            String vendedorId = oferta.getVendedor() != null ? oferta.getVendedor().getId() : null;
+            if (vendedorId != null && ofertaRepository.existsByProductoCatalogoIdAndVendedor_Id(existenteId, vendedorId)) {
+                throw new IllegalArgumentException("El vendedor ya tiene una oferta para '" + existente.getNombre()
+                        + "'. Rechaza la sugerencia indicando que edite esa oferta.");
+            }
+            String errStock = ValidacionCantidad.validarCoherenciaUnidad(unidad, oferta.getStock(), "El stock");
+            String errMin = ValidacionCantidad.validarCoherenciaUnidad(unidad, oferta.getCompraMinima(), "La compra mínima");
+            if (errStock != null || errMin != null) {
+                throw new IllegalArgumentException("La oferta del vendedor no es compatible con la unidad '"
+                        + unidad.getAbreviatura() + "' de '" + existente.getNombre() + "': "
+                        + (errStock != null ? errStock : errMin)
+                        + " Rechaza la sugerencia con ese motivo para que la corrija.");
+            }
+            pendientes.add(oferta);
+        }
+
+        // 2) Aplicar
+        java.util.Set<String> notificados = new java.util.HashSet<>();
+        for (OfertaVendedor oferta : pendientes) {
+            oferta.setProductoCatalogoId(existente.getId());
+            oferta.setNombreProducto(existente.getNombre());
+            oferta.setUnidadMedida(unidad.copia());
+            oferta.setEstadoPublicacion(EstadoPublicacion.PUBLICADO);
+            oferta.setMotivoRechazo(null);
+            oferta.setDisponible(true);
+            oferta.setUpdatedAt(LocalDateTime.now());
+            ofertaRepository.save(oferta);
+            if (oferta.getVendedor() != null && oferta.getVendedor().getId() != null
+                    && notificados.add(oferta.getVendedor().getId())) {
+                notificacionService.enviar(
+                        oferta.getVendedor().getId(),
+                        "Producto ya existente",
+                        "'" + sugerido.getNombre() + "' ya existe en la lista como '" + existente.getNombre()
+                                + "'. Tu oferta quedó publicada con esa unidad (" + unidad.getAbreviatura() + ").",
+                        "INFO");
+            }
+        }
+        if (sugerido.getSugeridoPor() != null && !notificados.contains(sugerido.getSugeridoPor())) {
+            notificacionService.enviar(
+                    sugerido.getSugeridoPor(),
+                    "Producto ya existente",
+                    "'" + sugerido.getNombre() + "' ya existe en la lista como '" + existente.getNombre() + "'.",
+                    "INFO");
+        }
+        catalogoRepository.delete(sugerido); // la sugerencia se descarta
+        actualizarEstadisticas(existente.getId());
+        return existente;
+    }
+
+    /**
+     * Productos del catálogo con nombre parecido (para avisar antes de enviar una sugerencia):
+     * coincidencia exacta, uno contenido en el otro, o a lo sumo 1-2 letras de diferencia.
+     * La comparación usa nombreNormalizado (sin tildes ni mayúsculas).
+     */
+    public List<ProductoCatalogo> buscarSimilares(String nombre) {
+        String n = ProductoCatalogo.normalizarNombre(nombre);
+        if (n == null || n.length() < 3) {
+            return new ArrayList<>();
+        }
+        List<ProductoCatalogo> resultado = new ArrayList<>();
+        for (ProductoCatalogo p : catalogoRepository.findAll()) {
+            if (!p.isActivo() && p.isAprobado()) continue;
+            String pn = p.getNombreNormalizado() != null ? p.getNombreNormalizado()
+                    : ProductoCatalogo.normalizarNombre(p.getNombre());
+            if (pn == null || pn.isEmpty()) continue;
+            int tolerancia = Math.max(pn.length(), n.length()) >= 8 ? 2 : 1;
+            if (pn.equals(n) || pn.contains(n) || n.contains(pn) || distancia(pn, n) <= tolerancia) {
+                resultado.add(p);
+            }
+        }
+        resultado.sort(Comparator.comparing(ProductoCatalogo::getNombre, String.CASE_INSENSITIVE_ORDER));
+        return resultado.size() > 8 ? new ArrayList<>(resultado.subList(0, 8)) : resultado;
+    }
+
+    private static int distancia(String a, String b) {
+        int[] prev = new int[b.length() + 1];
+        int[] cur = new int[b.length() + 1];
+        for (int j = 0; j <= b.length(); j++) prev[j] = j;
+        for (int i = 1; i <= a.length(); i++) {
+            cur[0] = i;
+            for (int j = 1; j <= b.length(); j++) {
+                int costo = a.charAt(i - 1) == b.charAt(j - 1) ? 0 : 1;
+                cur[j] = Math.min(Math.min(cur[j - 1] + 1, prev[j] + 1), prev[j - 1] + costo);
+            }
+            int[] t = prev; prev = cur; cur = t;
+        }
+        return prev[b.length()];
+    }
+
+    /** Ofertas PENDIENTES ligadas a una sugerencia (para el panel de moderación). */
+    public List<OfertaVendedor> listarOfertasPendientes(String productoId) {
+        return ofertaRepository.findByProductoCatalogoId(productoId).stream()
+                .filter(o -> o.getEstadoPublicacion() == EstadoPublicacion.PENDIENTE)
+                .collect(Collectors.toList());
+    }
+
+    /** Categorías (id → nombre) que tienen al menos un producto aprobado y activo. */
+    public java.util.Map<String, String> categoriasConProductosActivos() {
+        java.util.Map<String, String> mapa = new java.util.LinkedHashMap<>();
+        listarAprobados().stream()
+                .filter(p -> p.getCategoria() != null && p.getCategoria().getId() != null)
+                .sorted(Comparator.comparing(p -> p.getCategoria().getNombre() != null ? p.getCategoria().getNombre() : "",
+                        String.CASE_INSENSITIVE_ORDER))
+                .forEach(p -> mapa.putIfAbsent(p.getCategoria().getId(), p.getCategoria().getNombre()));
+        return mapa;
     }
 
     /**

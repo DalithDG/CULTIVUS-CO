@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -425,7 +425,7 @@
                                                 Consultar
                                             </span>
                                             <span class="cat-card__price-unit"
-                                                th:text="'/ ' + ${producto.unidadMedida != null ? producto.unidadMedida : 'kg'}">
+                                                th:text="'/ ' + ${producto.abreviaturaUnidad}">
                                                 / kg
                                             </span>
                                         </div>
@@ -434,7 +434,7 @@
                                         <div class="cat-card__qty-pill">
                                             <button type="button" class="cat-qty-btn" onclick="decrementarCantidad(this)">-</button>
                                             <span class="cat-qty-value"
-                                                th:text="'1 ' + ${producto.unidadMedida != null ? producto.unidadMedida : 'kg'}">
+                                                th:text="'1 ' + ${producto.abreviaturaUnidad}">
                                                 1 kg
                                             </span>
                                             <button type="button" class="cat-qty-btn" onclick="incrementarCantidad(this)">+</button>

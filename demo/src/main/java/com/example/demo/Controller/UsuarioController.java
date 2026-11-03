@@ -1,4 +1,4 @@
-package com.example.demo.Controller;
+﻿package com.example.demo.Controller;
 
 import com.example.demo.Model.OfertaVendedor;
 import com.example.demo.Model.ProductoCatalogo;
@@ -98,6 +98,7 @@ public class UsuarioController {
             @RequestParam(value = "contrasena", required = false) String contrasena,
             @RequestParam(value = "departamento", required = false) String nombreDepartamento,
             @RequestParam(value = "ciudad", required = false) String nombreCiudad,
+            @RequestParam(value = "redirect", required = false) String redirect,
             Model model,
             RedirectAttributes redirectAttributes) {
         try {
@@ -197,7 +198,9 @@ public class UsuarioController {
             registroMailService.enviarCodigoVerificacion(usuario.getEmail(), usuario.getNombre(), codigo);
 
             redirectAttributes.addFlashAttribute("mensaje", "¡Registro exitoso! Revisa tu correo para verificar tu cuenta.");
-            return "redirect:/usuario/verificar?email=" + java.net.URLEncoder.encode(usuario.getEmail(), java.nio.charset.StandardCharsets.UTF_8);
+            String redirectParam = (redirect != null && !redirect.isBlank())
+                    ? "&redirect=" + java.net.URLEncoder.encode(redirect, java.nio.charset.StandardCharsets.UTF_8) : "";
+            return "redirect:/usuario/verificar?email=" + java.net.URLEncoder.encode(usuario.getEmail(), java.nio.charset.StandardCharsets.UTF_8) + redirectParam;
 
         } catch (Exception e) {
             model.addAttribute("error", "Error al registrar: " + e.getMessage());
@@ -206,25 +209,33 @@ public class UsuarioController {
     }
 
     @GetMapping("/verificar")
-    public String mostrarVerificar(@RequestParam("email") String email, Model model) {
+    public String mostrarVerificar(@RequestParam("email") String email,
+                                   @RequestParam(value = "redirect", required = false) String redirect,
+                                   Model model) {
         model.addAttribute("email", email);
+        model.addAttribute("redirect", redirect);
         return "auth/verificar";
     }
 
     @PostMapping("/verificar")
     public String verificarCodigo(@RequestParam("email") String email,
             @RequestParam("codigo") String codigo,
+            @RequestParam(value = "redirect", required = false) String redirect,
             RedirectAttributes redirectAttributes) {
         Usuario u = usuarioService.findByEmail(email);
         if (u != null && codigo.equals(u.getCodigoVerificacion())) {
             u.setEmailVerificado(true);
             u.setCodigoVerificacion(null);
             usuarioService.save(u);
-            redirectAttributes.addFlashAttribute("mensaje", "Correo verificado. Inicie sesión.");
-            return "redirect:/usuario/login";
+            redirectAttributes.addFlashAttribute("mensaje", "Correo verificado. Inicia sesión para continuar.");
+            String redirectQuery = (redirect != null && !redirect.isBlank())
+                    ? "?redirect=" + java.net.URLEncoder.encode(redirect, java.nio.charset.StandardCharsets.UTF_8) : "";
+            return "redirect:/usuario/login" + redirectQuery;
         }
         redirectAttributes.addFlashAttribute("error", "Código inválido.");
-        return "redirect:/usuario/verificar?email=" + email;
+        String redirectQuery = (redirect != null && !redirect.isBlank())
+                ? "&redirect=" + java.net.URLEncoder.encode(redirect, java.nio.charset.StandardCharsets.UTF_8) : "";
+        return "redirect:/usuario/verificar?email=" + email + redirectQuery;
     }
 
     @GetMapping("/login")

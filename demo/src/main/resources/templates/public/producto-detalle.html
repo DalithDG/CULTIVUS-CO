@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -88,7 +88,7 @@
                             Desde $0
                         </span>
                         <span class="price-card__unit" th:if="${producto.precioMinimo != null}"
-                              th:text="'/ ' + (${producto.unidadMedida != null} ? producto.unidadMedida : 'unid')">
+                              th:text="'/ ' + ${producto.abreviaturaUnidad}">
                             / kg
                         </span>
                         <span class="price-card__main" th:if="${producto.precioMinimo == null}" style="font-size: 1.3rem; color: var(--c-earth);">
@@ -185,7 +185,7 @@
                                 $1.500
                             </span>
                             <span class="product-card__unit"
-                                  th:text="'/ ' + (${producto.unidadMedida != null} ? producto.unidadMedida : 'kg')">
+                                  th:text="'/ ' + ${oferta.unidadEfectiva().abreviatura}">
                                 / kg
                             </span>
                         </div>
@@ -273,19 +273,19 @@
                     </div>
                     <div class="spec-pill">
                         <div class="spec-pill__label">Unidad de Medida</div>
-                        <div class="spec-pill__value" th:text="${producto.unidadMedida != null ? producto.unidadMedida : 'Kilogramo'}">
+                        <div class="spec-pill__value" th:text="${producto.unidadPorDefecto != null ? producto.unidadPorDefecto.nombre + ' (' + producto.unidadPorDefecto.abreviatura + ')' : (producto.unidadMedida != null ? producto.unidadMedida : 'Unidades')}">
                             Kg
                         </div>
                     </div>
                     <div class="spec-pill">
-                        <div class="spec-pill__label">Tipo de Venta</div>
-                        <div class="spec-pill__value" th:text="${producto.tipoVenta == 'PESO' ? 'Por Peso' : 'Por Unidad / Paquete'}">
-                            Por Peso
+                        <div class="spec-pill__label">Unidades Permitidas</div>
+                        <div class="spec-pill__value" th:text="${producto.unidadesPermitidas != null and !producto.unidadesPermitidas.isEmpty() ? #strings.listJoin(producto.unidadesPermitidas.![abreviatura], ', ') : producto.abreviaturaUnidad}">
+                            kg, lb
                         </div>
                     </div>
                     <div class="spec-pill">
                         <div class="spec-pill__label">Stock Disponible</div>
-                        <div class="spec-pill__value" th:text="${producto.stockTotal != null ? ((producto.stockTotal % 1 == 0 ? #numbers.formatDecimal(producto.stockTotal, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(producto.stockTotal, 1, 'POINT', 1, 'COMMA')) + ' ' + (producto.unidadMedida != null ? producto.unidadMedida : 'unidades')) : '0 unidades'}">
+                        <div class="spec-pill__value" th:text="${producto.stockTotal != null ? ((producto.stockTotal % 1 == 0 ? #numbers.formatDecimal(producto.stockTotal, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(producto.stockTotal, 1, 'POINT', 1, 'COMMA')) + ' ' + producto.abreviaturaUnidad) : '0 ' + producto.abreviaturaUnidad}">
                             0 unidades
                         </div>
                     </div>

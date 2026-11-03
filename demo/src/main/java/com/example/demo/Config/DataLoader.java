@@ -12,9 +12,11 @@ import com.example.demo.repository.UbicacionRepository;
 import com.example.demo.repository.UsuarioRepository;
 import com.example.demo.repository.ZonaMunicipioRepository;
 import com.example.demo.services.AppConfigService;
+import com.example.demo.services.CatalogoInicializador;
 import com.example.demo.services.ZonasLogistica;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.core.annotation.Order;
@@ -37,16 +39,19 @@ public class DataLoader implements CommandLineRunner {
     private final ZonaMunicipioRepository zonaMunicipioRepository;
     private final TarifaEnvioRepository tarifaEnvioRepository;
     private final UbicacionRepository ubicacionRepository;
+    private final CatalogoInicializador catalogoInicializador;
 
     public DataLoader(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder,
             AppConfigService configService, ZonaMunicipioRepository zonaMunicipioRepository,
-            TarifaEnvioRepository tarifaEnvioRepository, UbicacionRepository ubicacionRepository) {
+            TarifaEnvioRepository tarifaEnvioRepository, UbicacionRepository ubicacionRepository,
+            @Autowired(required = false) CatalogoInicializador catalogoInicializador) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
         this.configService = configService;
         this.zonaMunicipioRepository = zonaMunicipioRepository;
         this.tarifaEnvioRepository = tarifaEnvioRepository;
         this.ubicacionRepository = ubicacionRepository;
+        this.catalogoInicializador = catalogoInicializador;
     }
 
     private static final String ADMIN_EMAIL = "admin1@demo.com";
@@ -66,6 +71,10 @@ public class DataLoader implements CommandLineRunner {
             inicializarConfiguracion();
 
             inicializarZonasYTarifas();
+
+            if (catalogoInicializador != null) {
+                catalogoInicializador.ejecutar();
+            }
 
             logger.info("✅ DataLoader finalizado correctamente");
 

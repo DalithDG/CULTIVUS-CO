@@ -2,14 +2,17 @@ package com.example.demo.Controller;
 
 import com.example.demo.Model.Carrito;
 import com.example.demo.Model.OfertaVendedor;
-import com.example.demo.Model.ProductoCatalogo;
 import com.example.demo.Model.Usuario;
 import com.example.demo.Model.embebidos.ProductoCarrito;
+import com.example.demo.Model.embebidos.UnidadMedida;
 import com.example.demo.repository.CarritoRepository;
 import com.example.demo.repository.OfertaRepository;
-import com.example.demo.repository.ProductoCatalogoRepository;
+import com.example.demo.repository.UsuarioRepository;
+import com.example.demo.services.CalculoEnvioService;
+import com.example.demo.services.ValidacionCantidad;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -17,13 +20,13 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Controller
 @RequestMapping("/carrito")
 public class CarritoController {
+
+    private static final String CARRITO_ANONIMO_KEY = "carritoAnonimo";
 
     @Autowired
     private CarritoRepository carritoRepository;
@@ -32,13 +35,10 @@ public class CarritoController {
     private OfertaRepository ofertaRepository;
 
     @Autowired
-    private ProductoCatalogoRepository catalogoRepository;
-
-    @Autowired
-    private com.example.demo.services.CalculoEnvioService calculoEnvioService;
+    private CalculoEnvioService calculoEnvioService;
 
     @Autowired(required = false)
-    private com.example.demo.repository.UsuarioRepository usuarioRepository;
+    private UsuarioRepository usuarioRepository;
 
     private Usuario obtenerUsuarioActual(HttpSession session) {
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
@@ -51,32 +51,119 @@ public class CarritoController {
     }
 
     /**
-     * Muestra el carrito del usuario
+     * Obtiene o crea el carrito activo.
+     * Si el usuario está autenticado, busca su carrito en MongoDB y si tenía un carrito anónimo previo
+     * en la sesión HTTP, fusiona sus ítems al carrito persistido.
+     * Si el visitante es anónimo (no logueado), almacena el carrito en la sesión HTTP (carritoAnonimo).
+     */
+    private Carrito obtenerOCrearCarrito(HttpSession session, Usuario usuario) {
+        if (usuario != null && usuario.getId() != null) {
+            Carrito carrito = carritoRepository.findByUsuarioId(usuario.getId())
+                    .orElseGet(() -> {
+                        Carrito nuevo = new Carrito(usuario.getId());
+                        return carritoRepository.save(nuevo);
+                    });
+
+            // Fusionar ítems del carrito anónimo si existían
+            Carrito anonimo = (Carrito) session.getAttribute(CARRITO_ANONIMO_KEY);
+            if (anonimo != null && anonimo.getItems() != null && !anonimo.getItems().isEmpty()) {
+                for (ProductoCarrito itemAnonimo : anonimo.getItems()) {
+                    Optional<ProductoCarrito> existente = carrito.getItems().stream()
+                            .filter(i -> itemAnonimo.getOfertaId() != null && itemAnonimo.getOfertaId().equals(i.getOfertaId()))
+                            .findFirst();
+                    if (existente.isPresent()) {
+                        existente.get().setCantidad(ValidacionCantidad.sumar(existente.get().getCantidad(), itemAnonimo.getCantidad()));
+                    } else {
+                        carrito.getItems().add(itemAnonimo);
+                    }
+                }
+                carrito.recalcularTotal();
+                carrito.setUpdatedAt(LocalDateTime.now());
+                carrito = carritoRepository.save(carrito);
+                session.removeAttribute(CARRITO_ANONIMO_KEY);
+            }
+            return carrito;
+        } else {
+            Carrito anonimo = (Carrito) session.getAttribute(CARRITO_ANONIMO_KEY);
+            if (anonimo == null) {
+                anonimo = new Carrito("anonimo_" + session.getId());
+                session.setAttribute(CARRITO_ANONIMO_KEY, anonimo);
+            }
+            return anonimo;
+        }
+    }
+
+    private void guardarCarrito(HttpSession session, Usuario usuario, Carrito carrito) {
+        carrito.recalcularTotal();
+        carrito.setUpdatedAt(LocalDateTime.now());
+        if (usuario != null && usuario.getId() != null) {
+            carritoRepository.save(carrito);
+        } else {
+            session.setAttribute(CARRITO_ANONIMO_KEY, carrito);
+        }
+    }
+
+    /**
+     * Valida (en el servidor, siempre desde la unidad de la OFERTA) la cantidad que quedaría en el carrito.
+     */
+    private String validarCantidadCarrito(OfertaVendedor oferta, double cantidadAgregada, double cantidadTotal) {
+        if (!oferta.isDisponible() || !oferta.estaPublicada()) {
+            return "Este producto ya no está disponible.";
+        }
+        UnidadMedida unidad = oferta.unidadEfectiva();
+        // 1) lo enviado: > 0, entero/decimales según la unidad
+        String error = ValidacionCantidad.validarCantidad(unidad, cantidadAgregada, null, null);
+        if (error != null) {
+            return error;
+        }
+        // 2) el total resultante: mínimo y stock
+        double stock = oferta.getStock() != null ? oferta.getStock() : 0.0;
+        return ValidacionCantidad.validarCantidad(unidad, cantidadTotal, oferta.getCompraMinima(), stock);
+    }
+
+    /** Copia al ítem los datos de la oferta que se pintan en el carrito (unidad, mínimo, step). */
+    private void sincronizarItemConOferta(ProductoCarrito item, OfertaVendedor oferta) {
+        UnidadMedida unidad = oferta.unidadEfectiva();
+        item.setUnidadAbreviatura(unidad.getAbreviatura());
+        item.setPermiteDecimales(unidad.permiteDecimales());
+        item.setCompraMinima(oferta.getCompraMinima());
+    }
+
+    private ProductoCarrito crearItem(OfertaVendedor oferta, double cantidad) {
+        String vendedorNombre = oferta.getVendedor() != null ? oferta.getVendedor().getNombre() : "";
+        ProductoCarrito nuevoItem = new ProductoCarrito(
+                oferta.getProductoCatalogoId(),
+                oferta.getId(),
+                oferta.getVendedor() != null ? oferta.getVendedor().getId() : null,
+                vendedorNombre,
+                oferta.getNombreProducto(),
+                oferta.getImagenUrl(),
+                oferta.getPrecio(),
+                cantidad,
+                oferta.unidadEfectiva().getAbreviatura(),
+                oferta.getCompraMinima()
+        );
+        nuevoItem.setPermiteDecimales(oferta.unidadEfectiva().permiteDecimales());
+        return nuevoItem;
+    }
+
+    /**
+     * Muestra el carrito de compras (permite visitantes anónimos y compradores).
      */
     @GetMapping
     public String mostrarCarrito(HttpSession session, Model model,
-            RedirectAttributes redirectAttributes) {
+                                 RedirectAttributes redirectAttributes) {
 
         Usuario usuario = obtenerUsuarioActual(session);
-        if (usuario == null) {
-            redirectAttributes.addFlashAttribute("error",
-                    "Debe iniciar sesión para ver su carrito");
-            return "redirect:/usuario/login";
-        }
-        if (!usuario.puedeComprar()) {
+        if (usuario != null && !usuario.puedeComprar()) {
             redirectAttributes.addFlashAttribute("error", Usuario.MENSAJE_VENDEDOR_NO_PUEDE_COMPRAR);
             return "redirect:/vendedor/dashboard";
         }
 
-        // Obtener o crear carrito del usuario
-        Carrito carrito = carritoRepository.findByUsuarioId(usuario.getId())
-                .orElseGet(() -> {
-                    Carrito nuevo = new Carrito(usuario.getId());
-                    return carritoRepository.save(nuevo);
-                });
+        Carrito carrito = obtenerOCrearCarrito(session, usuario);
 
         // Agrupar items por vendedor para la vista (US-21 Item 6)
-        java.util.Map<String, java.util.List<ProductoCarrito>> itemsPorVendedor = new java.util.LinkedHashMap<>();
+        Map<String, List<ProductoCarrito>> itemsPorVendedor = new LinkedHashMap<>();
         for (ProductoCarrito item : carrito.getItems()) {
             String nombreVendedor = item.getVendedorNombre();
             if (nombreVendedor == null || nombreVendedor.isBlank()) {
@@ -94,15 +181,15 @@ public class CarritoController {
             if (nombreVendedor == null || nombreVendedor.isBlank()) {
                 nombreVendedor = "Productor Local";
             }
-            itemsPorVendedor.computeIfAbsent(nombreVendedor, k -> new java.util.ArrayList<>()).add(item);
+            itemsPorVendedor.computeIfAbsent(nombreVendedor, k -> new ArrayList<>()).add(item);
         }
 
-        // Envío estimado basado en la ciudad guardada del comprador
-        String ciudadComprador = (usuario.getUbicacion() != null && usuario.getUbicacion().getCiudad() != null
+        // Envío estimado basado en la ciudad guardada del comprador (si está autenticado)
+        String ciudadComprador = (usuario != null && usuario.getUbicacion() != null && usuario.getUbicacion().getCiudad() != null
                 && !usuario.getUbicacion().getCiudad().isBlank())
                 ? usuario.getUbicacion().getCiudad().trim() : null;
 
-        com.example.demo.services.CalculoEnvioService.ResultadoCalculoEnvio calculoEnvio =
+        CalculoEnvioService.ResultadoCalculoEnvio calculoEnvio =
                 calculoEnvioService.calcularTarifaCarrito(carrito, ciudadComprador != null ? ciudadComprador : "");
         double subtotal = carrito.getTotalEstimado();
         double envioEstimado = (ciudadComprador != null) ? calculoEnvio.getTotalCop() : 0.0;
@@ -123,7 +210,8 @@ public class CarritoController {
     }
 
     /**
-     * Agrega una oferta al carrito (nuevo flujo: recibe ofertaId en vez de productoId)
+     * Agrega una oferta al carrito (recibe ofertaId).
+     * Permite usuarios anónimos (invitados) y compradores registrados.
      */
     @PostMapping("/agregar")
     public String agregarAlCarrito(
@@ -133,12 +221,7 @@ public class CarritoController {
             RedirectAttributes redirectAttributes) {
         try {
             Usuario usuario = obtenerUsuarioActual(session);
-            if (usuario == null) {
-                redirectAttributes.addFlashAttribute("error",
-                        "Debe iniciar sesión para agregar productos al carrito");
-                return "redirect:/usuario/login";
-            }
-            if (!usuario.puedeComprar()) {
+            if (usuario != null && !usuario.puedeComprar()) {
                 redirectAttributes.addFlashAttribute("error", Usuario.MENSAJE_VENDEDOR_NO_PUEDE_COMPRAR);
                 return "redirect:/vendedor/dashboard";
             }
@@ -146,76 +229,47 @@ public class CarritoController {
             OfertaVendedor oferta = ofertaRepository.findById(ofertaId)
                     .orElseThrow(() -> new IllegalArgumentException("Oferta no encontrada"));
 
-            // Rechazar si la oferta pertenece al propio usuario
-            if (oferta.getVendedor() != null && usuario.getId() != null
+            // Rechazar si la oferta pertenece al propio usuario vendedor
+            if (oferta.getVendedor() != null && usuario != null && usuario.getId() != null
                     && usuario.getId().equals(oferta.getVendedor().getId())) {
                 redirectAttributes.addFlashAttribute("error", "No puedes comprar tus propios productos.");
                 return "redirect:/producto/" + oferta.getProductoCatalogoId();
             }
 
-            // Verificar stock
-            if (oferta.getStock() < cantidad) {
-                redirectAttributes.addFlashAttribute("error",
-                        "No hay suficiente stock disponible");
-                return "redirect:/producto/" + oferta.getProductoCatalogoId();
-            }
+            Carrito carrito = obtenerOCrearCarrito(session, usuario);
 
-            // Obtener o crear carrito
-            Carrito carrito = carritoRepository.findByUsuarioId(usuario.getId())
-                    .orElseGet(() -> new Carrito(usuario.getId()));
-
-            // Verificar si la oferta ya está en el carrito (por ofertaId)
             Optional<ProductoCarrito> itemExistente = carrito.getItems().stream()
                     .filter(i -> ofertaId.equals(i.getOfertaId()))
                     .findFirst();
 
-            if (itemExistente.isPresent()) {
-                // Actualizar cantidad del item existente
-                ProductoCarrito item = itemExistente.get();
-                Double nuevaCantidad = item.getCantidad() + cantidad;
+            double cantidadSolicitada = cantidad != null ? cantidad : 0.0;
+            double nuevaCantidad = itemExistente
+                    .map(i -> ValidacionCantidad.sumar(i.getCantidad(), cantidadSolicitada))
+                    .orElse(cantidadSolicitada);
 
-                if (oferta.getStock() < nuevaCantidad) {
-                    redirectAttributes.addFlashAttribute("error",
-                            "No hay suficiente stock disponible");
-                    return "redirect:/carrito";
-                }
-
-                item.setCantidad(nuevaCantidad);
-            } else {
-                // Agregar nuevo item al carrito
-                ProductoCatalogo catalogo = catalogoRepository.findById(oferta.getProductoCatalogoId())
-                        .orElse(null);
-                String unidadAb = catalogo != null && catalogo.getUnidadMedida() != null
-                        ? catalogo.getUnidadMedida() : "unid";
-                String vendedorNombre = oferta.getVendedor() != null ? oferta.getVendedor().getNombre() : "";
-
-                ProductoCarrito nuevoItem = new ProductoCarrito(
-                        oferta.getProductoCatalogoId(),
-                        oferta.getId(),
-                        oferta.getVendedor().getId(),
-                        vendedorNombre,
-                        oferta.getNombreProducto(),
-                        oferta.getImagenUrl(),
-                        oferta.getPrecio(),
-                        cantidad,
-                        unidadAb,
-                        oferta.getCompraMinima()
-                );
-                carrito.getItems().add(nuevoItem);
+            // Validación única (unidad de la oferta): enteros/decimales, mínimo y stock
+            String error = validarCantidadCarrito(oferta, cantidadSolicitada, nuevaCantidad);
+            if (error != null) {
+                redirectAttributes.addFlashAttribute("error", error);
+                return "redirect:/producto/" + oferta.getProductoCatalogoId();
             }
 
-            // Recalcular total y guardar
-            carrito.recalcularTotal();
-            carrito.setUpdatedAt(LocalDateTime.now());
-            carritoRepository.save(carrito);
+            if (itemExistente.isPresent()) {
+                ProductoCarrito item = itemExistente.get();
+                item.setCantidad(nuevaCantidad);
+                sincronizarItemConOferta(item, oferta);
+            } else {
+                carrito.getItems().add(crearItem(oferta, cantidadSolicitada));
+            }
+
+            guardarCarrito(session, usuario, carrito);
 
             redirectAttributes.addFlashAttribute("mensaje", "Producto agregado al carrito");
 
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error",
-                    "Error al agregar producto al carrito");
+            redirectAttributes.addFlashAttribute("error", "Error al agregar producto al carrito");
         }
 
         return "redirect:/carrito";
@@ -223,6 +277,7 @@ public class CarritoController {
 
     /**
      * Endpoint AJAX para agregar al carrito sin recargar la página.
+     * Permite usuarios anónimos (visitantes) y compradores registrados.
      * Devuelve JSON con {success, mensaje/error, totalItems}.
      */
     @PostMapping("/agregar-ajax")
@@ -236,76 +291,51 @@ public class CarritoController {
 
         try {
             Usuario usuario = obtenerUsuarioActual(session);
-            if (usuario == null) {
-                response.put("success", false);
-                response.put("error", "Debes iniciar sesión para agregar productos al carrito");
-                response.put("redirectLogin", true);
-                return ResponseEntity.ok(response);
-            }
-            if (!usuario.puedeComprar()) {
+            if (usuario != null && !usuario.puedeComprar()) {
                 response.put("success", false);
                 response.put("error", Usuario.MENSAJE_VENDEDOR_NO_PUEDE_COMPRAR);
-                return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body(response);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
             }
 
             OfertaVendedor oferta = ofertaRepository.findById(ofertaId)
                     .orElseThrow(() -> new IllegalArgumentException("Oferta no encontrada"));
 
-            // Rechazar si la oferta pertenece al propio usuario
-            if (oferta.getVendedor() != null && usuario.getId() != null
+            // Rechazar si la oferta pertenece al propio usuario vendedor
+            if (oferta.getVendedor() != null && usuario != null && usuario.getId() != null
                     && usuario.getId().equals(oferta.getVendedor().getId())) {
                 response.put("success", false);
                 response.put("error", "No puedes comprar tus propios productos.");
-                return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body(response);
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
             }
 
-            if (oferta.getStock() < cantidad) {
-                response.put("success", false);
-                response.put("error", "No hay suficiente stock disponible");
-                return ResponseEntity.ok(response);
-            }
-
-            Carrito carrito = carritoRepository.findByUsuarioId(usuario.getId())
-                    .orElseGet(() -> new Carrito(usuario.getId()));
+            Carrito carrito = obtenerOCrearCarrito(session, usuario);
 
             Optional<ProductoCarrito> itemExistente = carrito.getItems().stream()
                     .filter(i -> ofertaId.equals(i.getOfertaId()))
                     .findFirst();
 
-            if (itemExistente.isPresent()) {
-                ProductoCarrito item = itemExistente.get();
-                Double nuevaCantidad = item.getCantidad() + cantidad;
-                if (oferta.getStock() < nuevaCantidad) {
-                    response.put("success", false);
-                    response.put("error", "Solo quedan " + oferta.getStock() + " unidades disponibles");
-                    return ResponseEntity.ok(response);
-                }
-                item.setCantidad(nuevaCantidad);
-            } else {
-                ProductoCatalogo catalogo = catalogoRepository.findById(oferta.getProductoCatalogoId())
-                        .orElse(null);
-                String unidadAb = catalogo != null && catalogo.getUnidadMedida() != null
-                        ? catalogo.getUnidadMedida() : "unid";
-                String vendedorNombre = oferta.getVendedor() != null ? oferta.getVendedor().getNombre() : "";
+            double cantidadSolicitada = cantidad != null ? cantidad : 0.0;
+            double nuevaCantidad = itemExistente
+                    .map(i -> ValidacionCantidad.sumar(i.getCantidad(), cantidadSolicitada))
+                    .orElse(cantidadSolicitada);
 
-                ProductoCarrito nuevoItem = new ProductoCarrito(
-                        oferta.getProductoCatalogoId(),
-                        oferta.getId(),
-                        oferta.getVendedor().getId(),
-                        vendedorNombre,
-                        oferta.getNombreProducto(),
-                        oferta.getImagenUrl(),
-                        oferta.getPrecio(),
-                        cantidad,
-                        unidadAb,
-                        oferta.getCompraMinima()
-                );
-                carrito.getItems().add(nuevoItem);
+            // Validación única (unidad de la oferta): enteros/decimales, mínimo y stock
+            String error = validarCantidadCarrito(oferta, cantidadSolicitada, nuevaCantidad);
+            if (error != null) {
+                response.put("success", false);
+                response.put("error", error);
+                return ResponseEntity.ok(response);
             }
 
-            carrito.recalcularTotal();
-            carrito.setUpdatedAt(LocalDateTime.now());
-            carritoRepository.save(carrito);
+            if (itemExistente.isPresent()) {
+                ProductoCarrito item = itemExistente.get();
+                item.setCantidad(nuevaCantidad);
+                sincronizarItemConOferta(item, oferta);
+            } else {
+                carrito.getItems().add(crearItem(oferta, cantidadSolicitada));
+            }
+
+            guardarCarrito(session, usuario, carrito);
 
             response.put("success", true);
             response.put("mensaje", "¡" + oferta.getNombreProducto() + " agregado al carrito!");
@@ -324,7 +354,7 @@ public class CarritoController {
     }
 
     /**
-     * Actualiza la cantidad de un producto en el carrito
+     * Actualiza la cantidad de un producto en el carrito (anónimo o registrado).
      */
     @PostMapping("/actualizar")
     public String actualizarCantidad(
@@ -334,46 +364,41 @@ public class CarritoController {
             RedirectAttributes redirectAttributes) {
         try {
             Usuario usuario = obtenerUsuarioActual(session);
-            if (usuario == null) {
-                return "redirect:/usuario/login";
-            }
-            if (!usuario.puedeComprar()) {
+            if (usuario != null && !usuario.puedeComprar()) {
                 redirectAttributes.addFlashAttribute("error", Usuario.MENSAJE_VENDEDOR_NO_PUEDE_COMPRAR);
                 return "redirect:/vendedor/dashboard";
             }
 
-            Carrito carrito = carritoRepository.findByUsuarioId(usuario.getId())
-                    .orElseThrow(() -> new IllegalArgumentException("Carrito no encontrado"));
+            Carrito carrito = obtenerOCrearCarrito(session, usuario);
 
-            if (cantidad <= 0) {
-                // Eliminar item si la cantidad es 0 o menor
+            if (cantidad == null || cantidad <= 0) {
                 carrito.getItems().removeIf(i -> ofertaId.equals(i.getOfertaId()));
-                redirectAttributes.addFlashAttribute("mensaje",
-                        "Producto eliminado del carrito");
+                redirectAttributes.addFlashAttribute("mensaje", "Producto eliminado del carrito");
             } else {
-                // Verificar stock
                 OfertaVendedor oferta = ofertaRepository.findById(ofertaId)
                         .orElseThrow(() -> new IllegalArgumentException("Oferta no encontrada"));
 
-                if (oferta.getStock() < cantidad) {
-                    redirectAttributes.addFlashAttribute("error",
-                            "No hay suficiente stock disponible");
+                String error = validarCantidadCarrito(oferta, cantidad, cantidad);
+                if (error != null) {
+                    redirectAttributes.addFlashAttribute("error", error);
                     return "redirect:/carrito";
                 }
 
-                // Actualizar cantidad del item
                 carrito.getItems().stream()
                         .filter(i -> ofertaId.equals(i.getOfertaId()))
                         .findFirst()
-                        .ifPresent(i -> i.setCantidad(cantidad));
+                        .ifPresent(i -> {
+                            i.setCantidad(cantidad);
+                            sincronizarItemConOferta(i, oferta);
+                        });
 
                 redirectAttributes.addFlashAttribute("mensaje", "Cantidad actualizada");
             }
 
-            carrito.recalcularTotal();
-            carrito.setUpdatedAt(LocalDateTime.now());
-            carritoRepository.save(carrito);
+            guardarCarrito(session, usuario, carrito);
 
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Error al actualizar el carrito");
         }
@@ -382,7 +407,7 @@ public class CarritoController {
     }
 
     /**
-     * Elimina un producto del carrito
+     * Elimina un producto del carrito (anónimo o registrado).
      */
     @PostMapping("/eliminar")
     public String eliminarDelCarrito(
@@ -391,21 +416,14 @@ public class CarritoController {
             RedirectAttributes redirectAttributes) {
         try {
             Usuario usuario = obtenerUsuarioActual(session);
-            if (usuario == null) {
-                return "redirect:/usuario/login";
-            }
-            if (!usuario.puedeComprar()) {
+            if (usuario != null && !usuario.puedeComprar()) {
                 redirectAttributes.addFlashAttribute("error", Usuario.MENSAJE_VENDEDOR_NO_PUEDE_COMPRAR);
                 return "redirect:/vendedor/dashboard";
             }
 
-            Carrito carrito = carritoRepository.findByUsuarioId(usuario.getId())
-                    .orElseThrow(() -> new IllegalArgumentException("Carrito no encontrado"));
-
+            Carrito carrito = obtenerOCrearCarrito(session, usuario);
             carrito.getItems().removeIf(i -> ofertaId.equals(i.getOfertaId()));
-            carrito.recalcularTotal();
-            carrito.setUpdatedAt(LocalDateTime.now());
-            carritoRepository.save(carrito);
+            guardarCarrito(session, usuario, carrito);
 
             redirectAttributes.addFlashAttribute("mensaje", "Producto eliminado del carrito");
 
@@ -413,6 +431,29 @@ public class CarritoController {
             redirectAttributes.addFlashAttribute("error", "Error al eliminar el producto");
         }
 
+        return "redirect:/carrito";
+    }
+
+    /**
+     * Vacía todos los productos del carrito.
+     */
+    @PostMapping("/vaciar")
+    public String vaciarCarrito(HttpSession session, RedirectAttributes redirectAttributes) {
+        try {
+            Usuario usuario = obtenerUsuarioActual(session);
+            if (usuario != null && !usuario.puedeComprar()) {
+                redirectAttributes.addFlashAttribute("error", Usuario.MENSAJE_VENDEDOR_NO_PUEDE_COMPRAR);
+                return "redirect:/vendedor/dashboard";
+            }
+
+            Carrito carrito = obtenerOCrearCarrito(session, usuario);
+            carrito.getItems().clear();
+            guardarCarrito(session, usuario, carrito);
+
+            redirectAttributes.addFlashAttribute("mensaje", "Carrito vaciado");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "Error al vaciar el carrito");
+        }
         return "redirect:/carrito";
     }
 }

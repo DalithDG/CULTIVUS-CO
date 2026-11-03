@@ -140,7 +140,21 @@ public class AdminController {
             model.addAttribute("mensajesPaginados", msgs);
             model.addAttribute("mensajesRecibidosPaginados", msgs);
         } else if ("moderacion".equals(activePage)) {
-            model.addAttribute("catalogoPendiente", catalogoService.listarPendientesPaginados(page, 50));
+            org.springframework.data.domain.Page<com.example.demo.Model.ProductoCatalogo> pendientes =
+                    catalogoService.listarPendientesPaginados(page, 50);
+            model.addAttribute("catalogoPendiente", pendientes);
+            // US-06: oferta pendiente (con su vendedor) ligada a cada sugerencia
+            java.util.Map<String, java.util.List<com.example.demo.Model.OfertaVendedor>> ofertasPendientes =
+                    new java.util.HashMap<>();
+            for (com.example.demo.Model.ProductoCatalogo cp : pendientes.getContent()) {
+                ofertasPendientes.put(cp.getId(), catalogoService.listarOfertasPendientes(cp.getId()));
+            }
+            model.addAttribute("ofertasPendientes", ofertasPendientes);
+            // Productos de la lista por defecto (para la acción "Ya existe")
+            java.util.List<com.example.demo.Model.ProductoCatalogo> listaDefecto =
+                    new java.util.ArrayList<>(catalogoService.listarAprobados());
+            listaDefecto.sort((a, b) -> a.getNombre().compareToIgnoreCase(b.getNombre()));
+            model.addAttribute("productosExistentes", listaDefecto);
         } else if ("retiros".equals(activePage)) {
             String filtro = (filterParam == null || filterParam.isBlank()) ? "PENDIENTE" : filterParam.trim().toUpperCase();
             com.example.demo.Model.SolicitudRetiro.Estado estadoEnum = null;
@@ -843,7 +857,7 @@ public class AdminController {
 
         try {
             catalogoService.aprobarProducto(id);
-            redirectAttributes.addFlashAttribute("mensaje", "Producto aprobado en el catálogo");
+            redirectAttributes.addFlashAttribute("mensaje", "Producto aprobado: entra a la lista por defecto y la oferta del vendedor quedó publicada");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Error al aprobar producto: " + e.getMessage());
         }
@@ -853,6 +867,7 @@ public class AdminController {
 
     @PostMapping("/catalogo/{id}/rechazar")
     public String rechazarProductoCatalogo(@PathVariable String id,
+            @RequestParam(value = "motivo", required = false) String motivo,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
 
@@ -861,10 +876,32 @@ public class AdminController {
         }
 
         try {
-            catalogoService.rechazarProducto(id);
-            redirectAttributes.addFlashAttribute("mensaje", "Producto rechazado del catálogo");
+            catalogoService.rechazarProducto(id, motivo);
+            redirectAttributes.addFlashAttribute("mensaje", "Sugerencia rechazada. El vendedor fue notificado con el motivo.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Error al rechazar producto: " + e.getMessage());
+        }
+
+        return "redirect:/admin/moderacion";
+    }
+
+    /** "Ya existe": la oferta toma el nombre, categoría y unidad del producto existente y se publica. */
+    @PostMapping("/catalogo/{id}/ya-existe")
+    public String yaExisteProductoCatalogo(@PathVariable String id,
+            @RequestParam(value = "productoExistenteId", required = false) String productoExistenteId,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        if (!verificarAdmin(session, redirectAttributes)) {
+            return "redirect:/usuario/login";
+        }
+
+        try {
+            com.example.demo.Model.ProductoCatalogo existente = catalogoService.marcarYaExiste(id, productoExistenteId);
+            redirectAttributes.addFlashAttribute("mensaje",
+                    "Oferta publicada como '" + existente.getNombre() + "'. La sugerencia fue descartada y el vendedor fue notificado.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "No se pudo marcar como existente: " + e.getMessage());
         }
 
         return "redirect:/admin/moderacion";

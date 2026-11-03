@@ -31,6 +31,9 @@ class DataLoaderTest {
     @Mock
     private AppConfigService configService;
 
+    @Mock
+    private com.example.demo.services.CatalogoInicializador catalogoInicializador;
+
     @InjectMocks
     private DataLoader dataLoader;
 

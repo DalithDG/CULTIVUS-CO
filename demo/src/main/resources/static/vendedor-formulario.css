@@ -1,0 +1,623 @@
+/* ============================================================
+   vendedor-formulario.css · Cultivus
+   Diseño de formularios de Vendedor bajo Apple Design System (HIG):
+   - Tipografía fluida y jerarquía clara
+   - Tarjetas tipo Liquid Glass con bordes sutiles y sombras suaves
+   - Controles de selección y campos con feedback táctil (>= 44px)
+   - Estados dinámicos, selector de unidades, preview de imágenes
+   - 100% responsive (móvil 360px hasta escritorio 1440px)
+   ============================================================ */
+
+:root {
+  --vf-green: #367A45;
+  --vf-green-hover: #2B6337;
+  --vf-green-light: #EBF3ED;
+  --vf-green-soft: rgba(54, 122, 69, 0.08);
+  --vf-lime: #EABF45;
+  --vf-ink: #30372D;
+  --vf-ink-secondary: #5A6556;
+  --vf-muted: #795548;
+  --vf-line: #E5DFD3;
+  --vf-line-focus: #367A45;
+  --vf-card-bg: #FFFFFF;
+  --vf-card-subtle: #FAF8F5;
+  --vf-card-amber: #FFFDF5;
+  --vf-amber-border: #E8D39E;
+  --vf-amber-ink: #704E08;
+  --vf-radius: 18px;
+  --vf-radius-sm: 12px;
+  --vf-radius-pill: 999px;
+  --vf-shadow: 0 4px 20px -2px rgba(48, 55, 45, 0.05), 0 2px 6px rgba(48, 55, 45, 0.03);
+  --vf-shadow-elevated: 0 16px 36px -12px rgba(48, 55, 45, 0.12), 0 3px 10px rgba(48, 55, 45, 0.04);
+}
+
+/* ── Contenedor Principal ──────────────────────────────────── */
+
+.vf-wrapper {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 24px 20px 80px;
+}
+
+/* ── Hero / Encabezado de Página ────────────────────────────── */
+
+.vf-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.vf-header__main {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.vf-header__icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--vf-green) 0%, var(--vf-green-hover) 100%);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  box-shadow: 0 8px 18px -4px rgba(54, 122, 69, 0.35);
+  flex-shrink: 0;
+}
+
+.vf-header__title {
+  margin: 0 0 4px;
+  font-size: clamp(1.45rem, 2.8vw, 1.9rem);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--vf-ink);
+}
+
+.vf-header__subtitle {
+  margin: 0;
+  font-size: 0.94rem;
+  color: var(--vf-ink-secondary);
+  line-height: 1.4;
+}
+
+.vf-steps-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: var(--vf-radius-pill);
+  background: var(--vf-green-soft);
+  color: var(--vf-green);
+  font-size: 0.8rem;
+  font-weight: 600;
+  border: 1px solid rgba(54, 122, 69, 0.18);
+}
+
+/* ── Tarjetas Tipo Card ────────────────────────────────────── */
+
+.vf-card {
+  background: var(--vf-card-bg);
+  border-radius: var(--vf-radius);
+  border: 1px solid var(--vf-line);
+  box-shadow: var(--vf-shadow);
+  overflow: hidden;
+  margin-bottom: 24px;
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.vf-card--elevated {
+  box-shadow: var(--vf-shadow-elevated);
+}
+
+.vf-card--amber {
+  background: var(--vf-card-amber);
+  border-color: var(--vf-amber-border);
+}
+
+.vf-card__body {
+  padding: 28px;
+}
+
+/* ── Secciones con Indicador Numerado ──────────────────────── */
+
+.vf-section {
+  padding-bottom: 24px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--vf-line);
+}
+
+.vf-section:last-child {
+  padding-bottom: 0;
+  margin-bottom: 0;
+  border-bottom: none;
+}
+
+.vf-section__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.vf-section__badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--vf-green-light);
+  color: var(--vf-green);
+  font-size: 0.84rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vf-section__title {
+  margin: 0;
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: var(--vf-ink);
+  letter-spacing: -0.015em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.vf-section__subtitle {
+  margin: 2px 0 0 40px;
+  font-size: 0.84rem;
+  color: var(--vf-ink-secondary);
+}
+
+/* ── Sistema de Campos y Grillas ────────────────────────────── */
+
+.vf-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.vf-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.vf-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.vf-field--full {
+  grid-column: 1 / -1;
+}
+
+.vf-label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--vf-ink);
+  letter-spacing: -0.01em;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.vf-label .req {
+  color: #C0392B;
+  font-weight: 700;
+}
+
+.vf-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.vf-input,
+.vf-select,
+.vf-textarea {
+  width: 100%;
+  font-family: inherit;
+  font-size: 16px; /* Evita zoom automático en iOS Safari */
+  color: var(--vf-ink);
+  background: var(--vf-card-subtle);
+  border: 1.5px solid var(--vf-line);
+  border-radius: var(--vf-radius-sm);
+  padding: 12px 16px;
+  min-height: 48px; /* Objetivo táctil HIG */
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.vf-input:focus,
+.vf-select:focus,
+.vf-textarea:focus {
+  background: #FFFFFF;
+  border-color: var(--vf-line-focus);
+  box-shadow: 0 0 0 3.5px rgba(54, 122, 69, 0.15);
+}
+
+.vf-input:disabled,
+.vf-select:disabled {
+  background: #F0ECE4;
+  color: #8C8476;
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+.vf-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2330372D' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 14px;
+  padding-right: 40px;
+  cursor: pointer;
+}
+
+.vf-textarea {
+  min-height: 96px;
+  resize: vertical;
+  line-height: 1.45;
+}
+
+.vf-input-currency {
+  position: relative;
+}
+
+.vf-input-currency .vf-currency-symbol {
+  position: absolute;
+  left: 14px;
+  font-weight: 700;
+  color: var(--vf-ink-secondary);
+  font-size: 1.05rem;
+  pointer-events: none;
+}
+
+.vf-input-currency .vf-input {
+  padding-left: 32px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.vf-hint {
+  font-size: 0.8rem;
+  color: var(--vf-muted);
+  line-height: 1.35;
+  margin-top: 2px;
+}
+
+/* ── Tarjeta de Producto Seleccionado (Live Preview) ────────── */
+
+.vf-product-preview {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 18px;
+  background: var(--vf-green-soft);
+  border: 1px solid rgba(54, 122, 69, 0.22);
+  border-radius: var(--vf-radius-sm);
+  margin-top: 14px;
+  animation: vfFadeIn 0.3s ease;
+}
+
+.vf-product-preview__thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  object-fit: cover;
+  background: #FFFFFF;
+  border: 1px solid rgba(48, 55, 45, 0.08);
+  flex-shrink: 0;
+}
+
+.vf-product-preview__info h4 {
+  margin: 0 0 3px;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--vf-ink);
+}
+
+.vf-product-preview__info p {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--vf-ink-secondary);
+}
+
+/* ── Selector de Unidades Apple Segmented / Pill Style ──────── */
+
+.vf-unit-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.vf-unit-pill {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: var(--vf-radius-pill);
+  border: 1.5px solid var(--vf-line);
+  background: var(--vf-card-subtle);
+  color: var(--vf-ink);
+  font-size: 0.92rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.vf-unit-pill:hover {
+  background: #FFFFFF;
+  border-color: var(--vf-green);
+  transform: translateY(-1px);
+}
+
+.vf-unit-pill.active {
+  background: var(--vf-green);
+  color: #FFFFFF;
+  border-color: var(--vf-green);
+  box-shadow: 0 4px 14px -2px rgba(54, 122, 69, 0.35);
+}
+
+.vf-unit-pill input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.vf-unit-locked {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 20px;
+  border-radius: var(--vf-radius-pill);
+  background: var(--vf-green-light);
+  color: var(--vf-green-hover);
+  font-size: 0.95rem;
+  font-weight: 700;
+  border: 1px solid rgba(54, 122, 69, 0.25);
+}
+
+/* ── Previsualización de Imagen ────────────────────────────── */
+
+.vf-image-preview-box {
+  margin-top: 12px;
+  display: none;
+  align-items: center;
+  gap: 14px;
+}
+
+.vf-image-preview-box.has-image {
+  display: flex;
+}
+
+.vf-image-preview {
+  width: 90px;
+  height: 90px;
+  border-radius: 14px;
+  object-fit: cover;
+  border: 1px solid var(--vf-line);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+/* ── Sección "No encuentro mi producto" (Sugerencia) ────────── */
+
+.vf-suggestion-box {
+  background: rgba(234, 191, 69, 0.08);
+  border: 1px solid rgba(234, 191, 69, 0.35);
+  border-radius: var(--vf-radius);
+  padding: 22px 24px;
+  margin-top: 24px;
+}
+
+.vf-suggestion-box__title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--vf-amber-ink);
+  margin: 0 0 6px;
+}
+
+.vf-suggestion-box__desc {
+  margin: 0 0 16px;
+  font-size: 0.88rem;
+  color: var(--vf-ink-secondary);
+  line-height: 1.45;
+}
+
+/* Alerta de nombres similares en vivo */
+.vf-similar-alert {
+  display: none;
+  background: #FFF9E6;
+  border: 1px solid #E6CA65;
+  border-radius: var(--vf-radius-sm);
+  padding: 12px 16px;
+  margin-top: 10px;
+  font-size: 0.86rem;
+  color: #634500;
+  animation: vfFadeIn 0.25s ease;
+}
+
+.vf-similar-alert.visible {
+  display: block;
+}
+
+.vf-similar-alert strong {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 700;
+}
+
+/* ── Checkbox Apple Style ───────────────────────────────────── */
+
+.vf-checkbox-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.vf-checkbox-wrap input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  accent-color: var(--vf-green);
+  cursor: pointer;
+  margin-top: 2px;
+}
+
+.vf-checkbox-wrap span {
+  font-size: 0.88rem;
+  color: var(--vf-ink);
+  line-height: 1.35;
+}
+
+/* ── Barra de Botones de Acción (Footer) ─────────────────────── */
+
+.vf-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 14px;
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid var(--vf-line);
+}
+
+.vf-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: var(--vf-radius-pill);
+  padding: 12px 26px;
+  min-height: 48px; /* Touch target >= 44px */
+  text-decoration: none;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.vf-btn--primary {
+  background: linear-gradient(135deg, var(--vf-green) 0%, var(--vf-green-hover) 100%);
+  color: #FFFFFF;
+  box-shadow: 0 6px 18px -3px rgba(54, 122, 69, 0.4);
+}
+
+.vf-btn--primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -4px rgba(54, 122, 69, 0.45);
+}
+
+.vf-btn--primary:active {
+  transform: translateY(0);
+}
+
+.vf-btn--secondary {
+  background: transparent;
+  color: var(--vf-ink-secondary);
+  border-color: var(--vf-line);
+}
+
+.vf-btn--secondary:hover {
+  background: var(--vf-card-subtle);
+  color: var(--vf-ink);
+  border-color: var(--vf-line-focus);
+}
+
+/* ── Alertas Generales ──────────────────────────────────────── */
+
+.vf-alert {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: var(--vf-radius-sm);
+  margin-bottom: 20px;
+  font-size: 0.92rem;
+  font-weight: 500;
+  line-height: 1.4;
+  animation: vfFadeIn 0.3s ease;
+}
+
+.vf-alert--success {
+  background: var(--vf-green-light);
+  color: #1F532B;
+  border: 1px solid rgba(54, 122, 69, 0.25);
+}
+
+.vf-alert--error {
+  background: #FDF2F0;
+  color: #9C2E22;
+  border: 1px solid rgba(192, 57, 43, 0.25);
+}
+
+/* ── Animaciones ────────────────────────────────────────────── */
+
+@keyframes vfFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Responsive Mobile & Tablet (Apple HIG Breakpoints) ─────── */
+
+@media (max-width: 768px) {
+  .vf-wrapper {
+    padding: 16px 14px 90px;
+  }
+
+  .vf-card__body {
+    padding: 20px 16px;
+  }
+
+  .vf-grid-2,
+  .vf-grid-3 {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .vf-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .vf-actions {
+    flex-direction: column-reverse;
+    gap: 10px;
+  }
+
+  .vf-btn {
+    width: 100%;
+  }
+
+  .vf-section__subtitle {
+    margin-left: 0;
+    margin-top: 4px;
+  }
+}
+

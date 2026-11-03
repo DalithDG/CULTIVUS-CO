@@ -1,4 +1,4 @@
-package com.example.demo.Controller;
+﻿package com.example.demo.Controller;
 
 import com.example.demo.Model.Carrito;
 import com.example.demo.Model.Compra;
@@ -31,6 +31,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.time.LocalDateTime;
 
 @Controller
 @RequestMapping("/pago")
@@ -89,6 +91,19 @@ public class PagoController {
     }
 
     /**
+     * Validación única de cantidades (US-06) para un ítem del carrito, leyendo SIEMPRE la unidad,
+     * la compra mínima y el stock de la oferta (nunca lo guardado en el carrito).
+     *
+     * @return mensaje de error en español (con el nombre del producto) o null si es válido
+     */
+    private String validarCantidadItem(OfertaVendedor oferta, ProductoCarrito item) {
+        double stock = oferta.getStock() != null ? oferta.getStock() : 0.0;
+        String error = com.example.demo.services.ValidacionCantidad.validarCantidad(
+                oferta.unidadEfectiva(), item.getCantidad(), oferta.getCompraMinima(), stock);
+        return error != null ? "'" + item.getNombre() + "': " + error : null;
+    }
+
+    /**
      * Muestra el formulario de pago
      */
     @GetMapping
@@ -97,13 +112,34 @@ public class PagoController {
 
         Usuario usuario = obtenerUsuarioActual(session);
         if (usuario == null) {
-            redirectAttributes.addFlashAttribute("error",
-                    "Debe iniciar sesión para realizar el pago");
-            return "redirect:/usuario/login";
+            redirectAttributes.addFlashAttribute("mensaje",
+                    "Para continuar con tu compra, por favor regístrate como comprador o inicia sesión.");
+            return "redirect:/usuario/registro?tipo=comprador&redirect=/pago";
         }
         if (!usuario.puedeComprar()) {
             redirectAttributes.addFlashAttribute("error", Usuario.MENSAJE_VENDEDOR_NO_PUEDE_COMPRAR);
             return "redirect:/vendedor/dashboard";
+        }
+
+        // Si el usuario tenía un carrito anónimo en sesión antes de identificarse, migrarlo a su carrito en BD
+        Carrito anonimo = (Carrito) session.getAttribute("carritoAnonimo");
+        if (anonimo != null && anonimo.getItems() != null && !anonimo.getItems().isEmpty()) {
+            Carrito carritoUsuario = carritoRepository.findByUsuarioId(usuario.getId())
+                    .orElseGet(() -> new Carrito(usuario.getId()));
+            for (ProductoCarrito itemAnonimo : anonimo.getItems()) {
+                Optional<ProductoCarrito> existente = carritoUsuario.getItems().stream()
+                        .filter(i -> itemAnonimo.getOfertaId() != null && itemAnonimo.getOfertaId().equals(i.getOfertaId()))
+                        .findFirst();
+                if (existente.isPresent()) {
+                    existente.get().setCantidad(com.example.demo.services.ValidacionCantidad.sumar(existente.get().getCantidad(), itemAnonimo.getCantidad()));
+                } else {
+                    carritoUsuario.getItems().add(itemAnonimo);
+                }
+            }
+            carritoUsuario.recalcularTotal();
+            carritoUsuario.setUpdatedAt(LocalDateTime.now());
+            carritoRepository.save(carritoUsuario);
+            session.removeAttribute("carritoAnonimo");
         }
 
         // Obtener carrito del usuario
@@ -123,33 +159,18 @@ public class PagoController {
             return "redirect:/carrito";
         }
 
-        // 2. Validar compra mínima y STOCK por OFERTA (US-21 Item 7)
+        // 2. Validar compra mínima, STOCK y reglas de la unidad por OFERTA (US-21 Item 7 / US-06)
         for (ProductoCarrito item : carrito.getItems()) {
             if (item.getOfertaId() != null) {
                 OfertaVendedor oferta = ofertaRepository.findById(item.getOfertaId()).orElse(null);
-                if (oferta == null || !oferta.isDisponible()) {
+                if (oferta == null || !oferta.isDisponible() || !oferta.estaPublicada()) {
                     redirectAttributes.addFlashAttribute("error",
                             "El producto '" + item.getNombre() + "' ya no está disponible.");
                     return "redirect:/carrito";
                 }
-                // Validar Compra Mínima
-                if (item.getCantidad() < oferta.getCompraMinima()) {
-                    String unidad = item.getUnidadAbreviatura() != null ? item.getUnidadAbreviatura() : "unid";
-                    redirectAttributes.addFlashAttribute("error",
-                            "El producto '" + item.getNombre() + "' requiere una compra mínima de " +
-                            oferta.getCompraMinima() + " " + unidad + ". Tienes " + item.getCantidad());
-                    return "redirect:/carrito";
-                }
-                // Validar Stock disponible
-                double stockDisponible = oferta.getStock() != null ? oferta.getStock() : 0.0;
-                if (stockDisponible < item.getCantidad()) {
-                    String unidad = item.getUnidadAbreviatura() != null ? item.getUnidadAbreviatura() : "unid";
-                    redirectAttributes.addFlashAttribute("error",
-                            "El producto '" + item.getNombre() + "' no tiene suficiente stock (disponible: " +
-                            (stockDisponible % 1 == 0 ? String.format("%.0f", stockDisponible) : stockDisponible) +
-                            " " + unidad + ", en tu carrito: " +
-                            (item.getCantidad() % 1 == 0 ? String.format("%.0f", item.getCantidad()) : item.getCantidad()) +
-                            " " + unidad + ").");
+                String errorCantidad = validarCantidadItem(oferta, item);
+                if (errorCantidad != null) {
+                    redirectAttributes.addFlashAttribute("error", errorCantidad);
                     return "redirect:/carrito";
                 }
             }
@@ -320,15 +341,21 @@ public class PagoController {
                                 + String.format("%,.0f", limiteMaximo)));
             }
 
-            // Verificar stock antes de registrar el pedido
+            // Verificar disponibilidad, reglas de la unidad y stock antes de registrar el pedido
+            // (un request manipulado, con el carrito alterado, también se rechaza aquí)
             for (ProductoCarrito item : carrito.getItems()) {
                 if (item.getOfertaId() != null) {
                     OfertaVendedor oferta = ofertaRepository.findById(item.getOfertaId())
                             .orElseThrow(() -> new IllegalArgumentException(
                                     "Oferta no encontrada para: " + item.getNombre()));
-                    if (oferta.getStock() < item.getCantidad()) {
-                        return org.springframework.http.ResponseEntity.badRequest().body(java.util.Map.of("ok", false,
-                                "error", "El producto " + item.getNombre() + " no tiene suficiente stock"));
+                    if (!oferta.isDisponible() || !oferta.estaPublicada()) {
+                        return org.springframework.http.ResponseEntity.badRequest().body(java.util.Map.of(
+                                "ok", false, "error", "El producto '" + item.getNombre() + "' ya no está disponible."));
+                    }
+                    String errorCantidad = validarCantidadItem(oferta, item);
+                    if (errorCantidad != null) {
+                        return org.springframework.http.ResponseEntity.badRequest().body(java.util.Map.of(
+                                "ok", false, "error", errorCantidad));
                     }
                 }
             }
