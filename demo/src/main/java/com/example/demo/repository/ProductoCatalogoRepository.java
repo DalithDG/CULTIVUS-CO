@@ -51,4 +51,13 @@ public interface ProductoCatalogoRepository extends MongoRepository<ProductoCata
 
     /** Productos sugeridos por un vendedor específico */
     List<ProductoCatalogo> findBySugeridoPor(String vendedorId);
+
+    // Búsqueda paginada para panel de administración
+    org.springframework.data.domain.Page<ProductoCatalogo> findByNombreContainingIgnoreCaseOrDescripcionContainingIgnoreCase(String nombre, String descripcion, org.springframework.data.domain.Pageable pageable);
+
+    @Query("{ 'categoria.id': ?0 }")
+    org.springframework.data.domain.Page<ProductoCatalogo> findByCategoriaId(String categoriaId, org.springframework.data.domain.Pageable pageable);
+
+    @Query("{ '$and': [ { '$or': [ { 'nombre': { $regex: ?0, $options: 'i' } }, { 'descripcion': { $regex: ?0, $options: 'i' } } ] }, { 'categoria.id': ?1 } ] }")
+    org.springframework.data.domain.Page<ProductoCatalogo> findBySearchAndCategoria(String search, String categoriaId, org.springframework.data.domain.Pageable pageable);
 }

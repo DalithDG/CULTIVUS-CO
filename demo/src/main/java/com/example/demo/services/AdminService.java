@@ -3,6 +3,7 @@ package com.example.demo.services;
 import com.example.demo.Model.Role;
 import com.example.demo.Model.Usuario;
 import com.example.demo.Model.Producto;
+import com.example.demo.Model.ProductoCatalogo;
 import com.example.demo.Model.Pedido;
 import com.example.demo.Model.Resena;
 import com.example.demo.Model.Categoria;
@@ -34,6 +35,12 @@ public class AdminService {
 
     @Autowired
     private ProductoRepository productoRepository;
+
+    @Autowired(required = false)
+    private ProductoCatalogoRepository catalogoRepository;
+
+    @Autowired(required = false)
+    private OfertaRepository ofertaRepository;
 
     @Autowired
     private PedidoRepository pedidoRepository;
@@ -168,14 +175,23 @@ public class AdminService {
         org.springframework.data.domain.Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         
         boolean hasSearch = (search != null && !search.trim().isEmpty());
-        boolean hasRole = (role != null && !role.trim().isEmpty());
+        boolean hasRole = (role != null && !role.trim().isEmpty() && !"TODOS".equalsIgnoreCase(role.trim()));
+        
+        Role roleEnum = null;
+        if (hasRole) {
+            try {
+                roleEnum = Role.valueOf(role.trim().toUpperCase());
+            } catch (IllegalArgumentException e) {
+                hasRole = false;
+            }
+        }
         
         if (hasSearch && hasRole) {
-            return usuarioRepository.findBySearchAndRole(search, Role.valueOf(role), pageable);
+            return usuarioRepository.findBySearchAndRole(search.trim(), roleEnum, pageable);
         } else if (hasSearch) {
-            return usuarioRepository.findByNombreContainingIgnoreCaseOrEmailContainingIgnoreCase(search, search, pageable);
+            return usuarioRepository.findByNombreContainingIgnoreCaseOrEmailContainingIgnoreCase(search.trim(), search.trim(), pageable);
         } else if (hasRole) {
-            return usuarioRepository.findByRolesContaining(Role.valueOf(role), pageable);
+            return usuarioRepository.findByRolesContaining(roleEnum, pageable);
         }
         
         return usuarioRepository.findAll(pageable);
@@ -196,7 +212,7 @@ public class AdminService {
                 .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
 
         usuario.getRoles().clear(); // Si el admin quiere forzar UN rol específico
-        usuario.addRole(Role.valueOf(nuevoRol));
+        usuario.addRole(Role.valueOf(nuevoRol.trim().toUpperCase()));
         usuarioRepository.save(usuario);
     }
 
@@ -270,20 +286,36 @@ public class AdminService {
     // ==================== GESTIÓN DE PRODUCTOS ====================
 
     /**
-     * Obtener productos paginados y con filtro de búsqueda
+     * Obtener productos paginados y con filtro de búsqueda.
+     * Soporta tanto la colección legacy 'productos' como el catálogo central 'productos_catalogo'.
      */
-    public org.springframework.data.domain.Page<Producto> obtenerProductosPaginados(int page, int size, String search, String categoriaId) {
+    public org.springframework.data.domain.Page<?> obtenerProductosPaginados(int page, int size, String search, String categoriaId) {
         org.springframework.data.domain.Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         
         boolean hasSearch = (search != null && !search.trim().isEmpty());
         boolean hasCategoria = (categoriaId != null && !categoriaId.trim().isEmpty());
         
-        if (hasSearch && hasCategoria) {
-            return productoRepository.findBySearchAndCategoria(search, categoriaId, pageable);
-        } else if (hasSearch) {
-            return productoRepository.findByNombreContainingIgnoreCaseOrDescripcionContainingIgnoreCase(search, search, pageable);
-        } else if (hasCategoria) {
-            return productoRepository.findByCategoriaId(categoriaId, pageable);
+        if (productoRepository.count() > 0) {
+            if (hasSearch && hasCategoria) {
+                return productoRepository.findBySearchAndCategoria(search.trim(), categoriaId.trim(), pageable);
+            } else if (hasSearch) {
+                return productoRepository.findByNombreContainingIgnoreCaseOrDescripcionContainingIgnoreCase(search.trim(), search.trim(), pageable);
+            } else if (hasCategoria) {
+                return productoRepository.findByCategoriaId(categoriaId.trim(), pageable);
+            }
+            return productoRepository.findAll(pageable);
+        }
+
+        // Catálogo centralizado
+        if (catalogoRepository != null) {
+            if (hasSearch && hasCategoria) {
+                return catalogoRepository.findBySearchAndCategoria(search.trim(), categoriaId.trim(), pageable);
+            } else if (hasSearch) {
+                return catalogoRepository.findByNombreContainingIgnoreCaseOrDescripcionContainingIgnoreCase(search.trim(), search.trim(), pageable);
+            } else if (hasCategoria) {
+                return catalogoRepository.findByCategoriaId(categoriaId.trim(), pageable);
+            }
+            return catalogoRepository.findAll(pageable);
         }
         
         return productoRepository.findAll(pageable);
@@ -293,6 +325,16 @@ public class AdminService {
      * Eliminar producto
      */
     public void eliminarProducto(String productoId) {
+        if (catalogoRepository != null && catalogoRepository.existsById(productoId)) {
+            catalogoRepository.deleteById(productoId);
+            if (ofertaRepository != null) {
+                try {
+                    ofertaRepository.deleteByProductoCatalogoId(productoId);
+                } catch (Exception ignored) {
+                }
+            }
+            return;
+        }
         productoRepository.deleteById(productoId);
     }
 
@@ -519,7 +561,10 @@ public class AdminService {
         Map<String, Object> estadisticas = new HashMap<>();
 
         estadisticas.put("totalUsuarios", usuarioRepository.count());
-        estadisticas.put("totalProductos", productoRepository.count());
+        long totalProd = (catalogoRepository != null && catalogoRepository.count() > 0)
+                ? catalogoRepository.count()
+                : productoRepository.count();
+        estadisticas.put("totalProductos", totalProd);
         estadisticas.put("totalPedidos", pedidoRepository.count());
         estadisticas.put("totalResenas", resenaRepository.count());
 
@@ -544,7 +589,6 @@ public class AdminService {
     }
 
     public org.springframework.data.domain.Page<Notificacion> obtenerNotificacionesPaginadas(int page, int size) {
-        // Asumiendo que no tiene campo createdAt, ordenamos de forma genérica o podemos no ordenar
         return notificacionRepository.findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id")));
     }
 
@@ -565,7 +609,6 @@ public class AdminService {
     }
 
     public org.springframework.data.domain.Page<Mensaje> obtenerMensajesPaginados(int page, int size) {
-        // Mensaje suele tener un id secuencial o fecha, ordenamos por id desc
         return mensajeRepository.findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id")));
     }
 
@@ -576,7 +619,6 @@ public class AdminService {
     // ==================== SESIONES (Actividad Reciente) ====================
 
     public List<Usuario> obtenerUsuariosActivos() {
-        // Consideramos "activos" a los que se conectaron en las últimas 24 horas
         LocalDateTime hace24Horas = LocalDateTime.now().minusHours(24);
         return usuarioRepository.findAll().stream()
                 .filter(u -> u.getUltimaConexion() != null && u.getUltimaConexion().isAfter(hace24Horas))

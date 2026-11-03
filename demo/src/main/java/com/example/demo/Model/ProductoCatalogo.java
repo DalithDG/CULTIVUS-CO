@@ -1,6 +1,7 @@
 package com.example.demo.Model;
 
 import com.example.demo.Model.embebidos.CategoriaProducto;
+import com.example.demo.Model.embebidos.DatosVendedor;
 import com.example.demo.Model.embebidos.UnidadMedida;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -266,4 +267,26 @@ public class ProductoCatalogo {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    // Compatibilidad para vistas de catálogo
+    public Double getPrecio() {
+        return precioMinimo != null ? precioMinimo : 0.0;
+    }
+
+    public Double getStock() {
+        return stockTotal != null ? stockTotal : 0.0;
+    }
+
+    public boolean isDisponible() {
+        return activo && aprobado;
+    }
+
+    public DatosVendedor getVendedor() {
+        if (totalVendedores != null && totalVendedores > 0) {
+            DatosVendedor dv = new DatosVendedor();
+            dv.setNombre(totalVendedores + (totalVendedores == 1 ? " vendedor" : " vendedores"));
+            return dv;
+        }
+        return null;
+    }
 }

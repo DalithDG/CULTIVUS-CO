@@ -2,9 +2,6 @@ package com.example.demo.Controller;
 
 import com.example.demo.Model.OfertaVendedor;
 import com.example.demo.Model.Pedido;
-
-
-
 import com.example.demo.Model.Usuario;
 import com.example.demo.security.SecurityContextRefreshService;
 import com.example.demo.services.AdminService;
@@ -342,6 +339,7 @@ public class AdminController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String rol,
+            @RequestParam(value = "role", required = false) String role,
             HttpSession session, Model model,
             RedirectAttributes redirectAttributes) {
 
@@ -349,10 +347,12 @@ public class AdminController {
             return "redirect:/usuario/login";
         }
 
+        String rolFiltro = (rol != null && !rol.isBlank()) ? rol : role;
         Usuario admin = (Usuario) session.getAttribute("usuarioLogueado");
-        cargarDatosDashboard(model, admin, "usuarios", page, search, rol);
+        cargarDatosDashboard(model, admin, "usuarios", page, search, rolFiltro);
         model.addAttribute("activePage", "usuarios");
-        model.addAttribute("rolFilter", rol);
+        model.addAttribute("rolFilter", rolFiltro);
+        model.addAttribute("roleFilter", rolFiltro);
 
         return "admin/usuarios";
     }
@@ -984,7 +984,7 @@ public class AdminController {
 
     @GetMapping("/retiros/{id}/comprobante")
     public String verComprobanteRetiroAdmin(
-            @PathVariable("id") String id,
+            @PathVariable String id,
             HttpSession session,
             Model model,
             RedirectAttributes redirectAttributes) {
