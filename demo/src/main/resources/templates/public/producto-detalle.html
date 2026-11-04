@@ -84,7 +84,7 @@
                 <div class="price-card">
                     <div class="price-card__row">
                         <span class="price-card__main" th:if="${producto.precioMinimo != null}"
-                              th:text="'Desde $' + ${#numbers.formatDecimal(producto.precioMinimo, 0, 'COMMA', 0, 'POINT')}">
+                              th:text="'Desde $' + ${#numbers.formatInteger(producto.precioMinimo, 1, 'POINT')}">
                             Desde $0
                         </span>
                         <span class="price-card__unit" th:if="${producto.precioMinimo != null}"
@@ -181,7 +181,7 @@
 
                         <div class="product-card__price-row">
                             <span class="product-card__price"
-                                  th:text="'$' + ${#numbers.formatDecimal(oferta.precio, 0, 'COMMA', 0, 'POINT')}">
+                                  th:text="'$' + ${#numbers.formatInteger(oferta.precio, 1, 'POINT')}">
                                 $1.500
                             </span>
                             <span class="product-card__unit"

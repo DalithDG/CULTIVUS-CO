@@ -134,6 +134,55 @@ class CatalogoInicializadorTest {
     }
 
     @Test
+    @DisplayName("recalcularMetricasProductos calcula precioMinimo, totalVendedores y stockTotal correctamente")
+    void testRecalcularMetricasProductos() {
+        ProductoCatalogo prodConOfertas = new ProductoCatalogo();
+        prodConOfertas.setId("prod-1");
+        prodConOfertas.setNombre("Tomate");
+
+        ProductoCatalogo prodSinOfertas = new ProductoCatalogo();
+        prodSinOfertas.setId("prod-2");
+        prodSinOfertas.setNombre("Aguacate");
+        prodSinOfertas.setTotalVendedores(5);
+        prodSinOfertas.setPrecioMinimo(4000.0);
+        prodSinOfertas.setStockTotal(10.0);
+
+        OfertaVendedor o1 = new OfertaVendedor();
+        o1.setId("of-1");
+        o1.setProductoCatalogoId("prod-1");
+        o1.setDisponible(true);
+        o1.setPrecio(3000.0);
+        o1.setStock(15.0);
+        o1.setEstadoPublicacion(EstadoPublicacion.PUBLICADO);
+
+        OfertaVendedor o2 = new OfertaVendedor();
+        o2.setId("of-2");
+        o2.setProductoCatalogoId("prod-1");
+        o2.setDisponible(true);
+        o2.setPrecio(2500.0);
+        o2.setStock(10.0);
+        o2.setEstadoPublicacion(EstadoPublicacion.PUBLICADO);
+
+        when(catalogoRepository.findAll()).thenReturn(List.of(prodConOfertas, prodSinOfertas));
+        when(ofertaRepository.findByProductoCatalogoIdAndDisponibleTrue("prod-1")).thenReturn(List.of(o1, o2));
+        when(ofertaRepository.findByProductoCatalogoIdAndDisponibleTrue("prod-2")).thenReturn(List.of());
+
+        int actualizados = inicializador.recalcularMetricasProductos();
+
+        assertEquals(2, actualizados);
+        assertEquals(2500.0, prodConOfertas.getPrecioMinimo());
+        assertEquals(2, prodConOfertas.getTotalVendedores());
+        assertEquals(25.0, prodConOfertas.getStockTotal());
+
+        assertNull(prodSinOfertas.getPrecioMinimo());
+        assertEquals(0, prodSinOfertas.getTotalVendedores());
+        assertEquals(0.0, prodSinOfertas.getStockTotal());
+
+        verify(catalogoRepository).save(prodConOfertas);
+        verify(catalogoRepository).save(prodSinOfertas);
+    }
+
+    @Test
     @DisplayName("ejecutar corre todas las fases sin lanzar excepciones")
     void testEjecutarEndToEnd() {
         when(categoriaRepository.findByNombreIgnoreCase(anyString())).thenReturn(Optional.empty());

@@ -93,7 +93,7 @@
                         <div class="card-stats">
                             <div class="stat-box">
                                 <span class="stat-label" th:text="${'Precio por ' + producto.unidadEfectiva().abreviatura}">Precio</span>
-                                <span class="stat-value price" th:text="${'$' + #numbers.formatDecimal(producto.precio, 0, 'POINT', 0, 'COMMA')}">$0</span>
+                                <span class="stat-value price" th:text="${'$' + #numbers.formatInteger(producto.precio, 1, 'POINT')}">$0</span>
                             </div>
                             <div class="stat-box">
                                 <span class="stat-label" th:text="${'Stock (' + producto.unidadEfectiva().abreviatura + ')'}">Stock</span>

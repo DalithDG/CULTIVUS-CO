@@ -38,7 +38,7 @@
                     <div class="producto-info">
                         <h3 th:text="${producto.nombre}">Nombre del Producto</h3>
                         <span class="precio" th:if="${producto.precioMinimo != null}"
-                            th:text="'Desde $' + ${#numbers.formatDecimal(producto.precioMinimo, 0, 'COMMA', 0, 'POINT')}">Desde $0</span>
+                            th:text="'Desde $' + ${#numbers.formatInteger(producto.precioMinimo, 1, 'POINT')}">Desde $0</span>
                         <span class="precio" th:unless="${producto.precioMinimo != null}">Próximamente</span>
                         
                         <a th:href="@{/producto/{id}(id=${producto.id})}" class="btn-agregar" style="text-decoration: none; text-align: center;">

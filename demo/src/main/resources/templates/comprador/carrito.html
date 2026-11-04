@@ -88,7 +88,7 @@
                                 <h3 class="cart-item__name" th:text="${detalle.nombre}"></h3>
 
                                 <p class="cart-item__price">
-                                    $<span th:text="${#numbers.formatDecimal(detalle.precioUnitario, 0, 'POINT', 0, 'COMMA')}">0</span>
+                                    $<span th:text="${#numbers.formatInteger(detalle.precioUnitario, 1, 'POINT')}">0</span>
                                     <span th:text="${' por ' + (detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : 'un')}"> por un</span>
                                     <small style="color:var(--text-muted); margin-left:4px;">
                                         (× <span th:text="${(detalle.cantidad % 1 == 0 ? #numbers.formatDecimal(detalle.cantidad, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(detalle.cantidad, 1, 'POINT', 2, 'COMMA')) + ' ' + (detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : '')}">1 un</span>)
@@ -112,19 +112,23 @@
                                             <button type="button" class="cart-stepper__btn"
                                                 th:classappend="${detalle.cantidad <= (detalle.compraMinima != null ? detalle.compraMinima : 1)} ? 'is-min'"
                                                 aria-label="Disminuir cantidad"
-                                                th:attr="onclick=${'cambiarCantidad(this, -' + (detalle.permiteDecimales ? '0.1' : '1') + ')'}">
+                                                th:attr="data-paso=${detalle.permiteDecimales ? '0.1' : '1'}"
+                                                onclick="cambiarCantidad(this, -1)">
                                                 <i class="fa-solid fa-minus" aria-hidden="true"></i>
                                             </button>
                                             <input type="number" name="cantidad"
                                                 th:value="${detalle.cantidad % 1 == 0 ? #numbers.formatDecimal(detalle.cantidad, 0, 'POINT', 0, 'COMMA') : detalle.cantidad}"
-                                                th:min="${detalle.compraMinima != null ? detalle.compraMinima : (detalle.permiteDecimales ? '0.1' : '1')}"
+                                                th:min="${detalle.compraMinima != null ? detalle.compraMinima : (detalle.permiteDecimales ? '0.01' : '1')}"
                                                 max="9999"
-                                                th:step="${detalle.permiteDecimales ? '0.1' : '1'}"
+                                                th:step="${detalle.permiteDecimales ? '0.01' : '1'}"
+                                                th:attr="data-paso=${detalle.permiteDecimales ? '0.1' : '1'}"
                                                 aria-label="Cantidad"
-                                                class="cart-stepper__input">
+                                                class="cart-stepper__input"
+                                                onchange="this.form.submit()">
                                             <button type="button" class="cart-stepper__btn"
                                                 aria-label="Aumentar cantidad"
-                                                th:attr="onclick=${'cambiarCantidad(this, ' + (detalle.permiteDecimales ? '0.1' : '1') + ')'}">
+                                                th:attr="data-paso=${detalle.permiteDecimales ? '0.1' : '1'}"
+                                                onclick="cambiarCantidad(this, 1)">
                                                 <i class="fa-solid fa-plus" aria-hidden="true"></i>
                                             </button>
                                         </div>
@@ -141,7 +145,7 @@
                             </div>
 
                             <div class="cart-item__total">
-                                $<span th:text="${#numbers.formatDecimal(detalle.precioUnitario * detalle.cantidad, 0, 'COMMA', 0, 'POINT')}">0</span>
+                                $<span th:text="${#numbers.formatInteger(detalle.precioUnitario * detalle.cantidad, 1, 'POINT')}">0</span>
                             </div>
                         </article>
                     </section>
@@ -152,13 +156,12 @@
                     <dl class="cart-summary__list">
                         <div class="cart-summary__row">
                             <dt>Subtotal</dt>
-                            <dd>$<span th:text="${#numbers.formatDecimal(
-                                subtotal, 0, 'COMMA', 0, 'POINT')}">0</span></dd>
+                            <dd>$<span th:text="${#numbers.formatInteger(subtotal, 1, 'POINT')}">0</span></dd>
                         </div>
                         <div class="cart-summary__row">
                             <dt>Envío</dt>
                             <dd th:if="${tieneCiudad}">
-                                $<span th:text="${#numbers.formatDecimal(envioEstimado, 0, 'COMMA', 0, 'POINT')}">0</span>
+                                $<span th:text="${#numbers.formatInteger(envioEstimado, 1, 'POINT')}">0</span>
                                 <small>(estimado)</small>
                             </dd>
                             <dd th:unless="${tieneCiudad}">—</dd>
@@ -170,8 +173,7 @@
                     </p>
                     <dl class="cart-summary__total">
                         <dt>Total</dt>
-                        <dd>$<span th:text="${#numbers.formatDecimal(
-                            total, 0, 'COMMA', 0, 'POINT')}">0</span></dd>
+                        <dd>$<span th:text="${#numbers.formatInteger(total, 1, 'POINT')}">0</span></dd>
                     </dl>
                     <a th:if="${usuario != null}" th:href="@{/pago}" class="cart-btn">
                         <i class="fa-solid fa-credit-card" aria-hidden="true"></i> Proceder al pago
@@ -199,11 +201,18 @@
          * Bug #3 corregido: reemplaza el onchange muerto en input readonly.
          * Bug #4 corregido: respeta min=1 y max=99 antes de incrementar.
          */
-        function cambiarCantidad(btn, delta) {
+        function cambiarCantidad(btn, direccion) {
             const form  = btn.closest('form');
             const input = form.querySelector('input[name="cantidad"]');
+            const paso = parseFloat(btn.dataset.paso || btn.getAttribute('data-paso')) ||
+                         parseFloat(input.dataset.paso || input.getAttribute('data-paso')) ||
+                         (input.step === '0.01' ? 0.1 : (parseFloat(input.step) || 1));
+            let delta = typeof direccion === 'number' ? direccion : parseFloat(direccion);
+            if (delta === 1 || delta === -1) {
+                delta = delta * paso;
+            }
             const val = parseFloat(input.value) || 0;
-            const min = parseFloat(input.getAttribute('min')) || 0.1;
+            const min = parseFloat(input.getAttribute('min')) || (input.step === '0.01' ? 0.01 : 1);
             const max = parseFloat(input.getAttribute('max')) || 9999;
             let nuevo = Math.round((val + delta) * 100) / 100;
             if (nuevo < min) nuevo = min;

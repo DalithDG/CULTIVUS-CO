@@ -41,10 +41,13 @@ public class CatalogoService {
 
     /**
      * Lista todos los productos aprobados y activos del catálogo (vista pública).
+     * Solo incluye productos con vendedores disponibles (totalVendedores > 0).
      * Cada item tiene precioMinimo y totalVendedores ya calculados.
      */
     public List<ProductoCatalogo> listarCatalogo() {
-        return catalogoRepository.findByAprobadoTrueAndActivoTrue();
+        return catalogoRepository.findByAprobadoTrueAndActivoTrue().stream()
+                .filter(p -> p != null && p.getTotalVendedores() != null && p.getTotalVendedores() > 0)
+                .collect(Collectors.toList());
     }
 
     /**
@@ -551,7 +554,10 @@ public class CatalogoService {
         if (producto == null) return;
 
         List<OfertaVendedor> ofertasActivas = ofertaRepository
-                .findByProductoCatalogoIdAndDisponibleTrue(productoCatalogoId);
+                .findByProductoCatalogoIdAndDisponibleTrue(productoCatalogoId).stream()
+                .filter(o -> o.isDisponible() && o.getPrecio() != null && o.getPrecio() > 0
+                        && (o.getEstadoPublicacion() == null || o.getEstadoPublicacion() == EstadoPublicacion.PUBLICADO))
+                .collect(Collectors.toList());
 
         if (ofertasActivas.isEmpty()) {
             producto.setPrecioMinimo(null);
@@ -563,7 +569,7 @@ public class CatalogoService {
                     .min()
                     .orElse(0.0);
             double stockTotal = ofertasActivas.stream()
-                    .mapToDouble(OfertaVendedor::getStock)
+                    .mapToDouble(o -> o.getStock() != null ? o.getStock() : 0.0)
                     .sum();
 
             producto.setPrecioMinimo(precioMin);

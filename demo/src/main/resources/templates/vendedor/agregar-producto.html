@@ -5,7 +5,11 @@
     <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Nueva Oferta · Vendedor | Cultivus</title>
+    <title>Publicar Oferta | Cultivus Vendedor</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" th:href="@{/header.css}">
     <link rel="stylesheet" th:href="@{/vendedor-panel.css}">
@@ -14,7 +18,6 @@
 </head>
 
 <body class="vs-layout">
-    <!-- Header Vendedor -->
     <header th:replace="~{fragments/header-vendedor :: siteHeader}"></header>
     <main class="vs-main">
 
@@ -22,16 +25,12 @@
             <!-- Header Apple Style -->
             <div class="vf-header">
                 <div class="vf-header__main">
-                    <div class="vf-header__icon" aria-hidden="true">
-                        <i class="fas fa-plus"></i>
-                    </div>
                     <div>
-                        <h1 class="vf-header__title">Nueva Oferta</h1>
+                        <h1 class="vf-header__title"><i class="fas fa-plus-circle" aria-hidden="true"></i> Nueva Oferta</h1>
                         <p class="vf-header__subtitle">Selecciona el producto del catálogo y publica con su unidad de venta autorizada.</p>
                     </div>
                 </div>
                 <div class="vf-steps-badge">
-                    <i class="fas fa-shield-halved" aria-hidden="true"></i>
                     <span>Catálogo Verificado</span>
                 </div>
             </div>
@@ -55,9 +54,7 @@
                         <div class="vf-section__header">
                             <span class="vf-section__badge">1</span>
                             <div>
-                                <h2 class="vf-section__title">
-                                    <i class="fas fa-search" aria-hidden="true"></i> Elige tu Producto
-                                </h2>
+                                <h2 class="vf-section__title">Elige tu Producto</h2>
                                 <p class="vf-section__subtitle">Elige la categoría para ver los productos autorizados disponibles.</p>
                             </div>
                         </div>
@@ -69,7 +66,7 @@
                                     <span>Categoría <span class="req">*</span></span>
                                 </label>
                                 <select id="categoriaSelect" class="vf-select" required>
-                                    <option value="">-- Elige una categoría --</option>
+                                    <option value="">Elige una categoría</option>
                                     <option th:each="cat : ${categoriasConProductos}"
                                             th:value="${cat.id}"
                                             th:text="${cat.nombre}">Verduras</option>
@@ -103,21 +100,19 @@
                     <form id="formOfertaCatalogo" th:action="@{/vendedor/productos/guardar}" method="post" style="display:none;">
                         <input type="hidden" name="productoCatalogoId" id="hiddenProductoId">
 
-                        <!-- Sección 2: Unidad de Venta -->
+                        <!-- Sección 2: Condiciones de Venta -->
                         <div class="vf-section">
                             <div class="vf-section__header">
                                 <span class="vf-section__badge">2</span>
                                 <div>
-                                    <h2 class="vf-section__title">
-                                        <i class="fas fa-scale-balanced" aria-hidden="true"></i> Unidad de Venta
-                                    </h2>
-                                    <p class="vf-section__subtitle">Define cómo se mide y se vende tu producto.</p>
+                                    <h2 class="vf-section__title">Condiciones de Venta</h2>
+                                    <p class="vf-section__subtitle">Define la unidad autorizada, el precio y la disponibilidad para los compradores.</p>
                                 </div>
                             </div>
 
-                            <div class="vf-field">
+                            <div class="vf-field" style="margin-bottom: 20px;">
                                 <label class="vf-label" for="unidadAbreviaturaSelect" id="labelUnidadVenta">
-                                    <span>Unidad autorizada <span class="req">*</span></span>
+                                    <span>Unidad de Venta Autorizada <span class="req">*</span></span>
                                 </label>
 
                                 <!-- Selector cuando hay múltiples unidades permitidas -->
@@ -135,19 +130,6 @@
                                     </div>
                                     <input type="hidden" id="hiddenUnidadUnica" name="unidadAbreviatura">
                                     <span class="vf-hint" style="display:block; margin-top:6px;">Este producto tiene una única unidad de venta autorizada.</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Sección 3: Precio, Stock y Mínimo -->
-                        <div class="vf-section">
-                            <div class="vf-section__header">
-                                <span class="vf-section__badge">3</span>
-                                <div>
-                                    <h2 class="vf-section__title">
-                                        <i class="fas fa-tag" aria-hidden="true"></i> Precio y Stock
-                                    </h2>
-                                    <p class="vf-section__subtitle">Establece tu precio por unidad y la disponibilidad para los compradores.</p>
                                 </div>
                             </div>
 
@@ -170,7 +152,7 @@
                                     <label class="vf-label" for="stock" id="labelStock">
                                         <span>Stock Disponible <span class="req">*</span></span>
                                     </label>
-                                    <input type="number" id="stock" name="stock" required min="0.01" step="0.01"
+                                    <input type="number" id="stock" name="stock" required min="1" step="1"
                                            class="vf-input" placeholder="Ej: 50">
                                     <span class="vf-hint" id="hintStock">Cantidad total disponible</span>
                                 </div>
@@ -180,22 +162,20 @@
                                     <label class="vf-label" for="compraMinima" id="labelMinima">
                                         <span>Compra Mínima <span class="req">*</span></span>
                                     </label>
-                                    <input type="number" id="compraMinima" name="compraMinima" required min="0.01" step="0.01"
+                                    <input type="number" id="compraMinima" name="compraMinima" required min="1" step="1"
                                            value="1" class="vf-input" placeholder="Ej: 1">
                                     <span class="vf-hint" id="hintMinima">Pedido mínimo por comprador</span>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Sección 4: Detalles Opcionales -->
+                        <!-- Sección 3: Detalles y Presentación -->
                         <div class="vf-section">
                             <div class="vf-section__header">
-                                <span class="vf-section__badge">4</span>
+                                <span class="vf-section__badge">3</span>
                                 <div>
-                                    <h2 class="vf-section__title">
-                                        <i class="fas fa-circle-info" aria-hidden="true"></i> Detalles y Presentación
-                                    </h2>
-                                    <p class="vf-section__subtitle">Información adicional para facilitar el despacho y dar confianza al comprador.</p>
+                                    <h2 class="vf-section__title">Detalles y Presentación</h2>
+                                    <p class="vf-section__subtitle">Información adicional de entrega y fotografía para dar confianza al comprador.</p>
                                 </div>
                             </div>
 
@@ -228,28 +208,16 @@
                                               class="vf-textarea"
                                               placeholder="Ej: Cosecha fresca de hoy en Carmen de Bolívar, sin pesticidas químicos..."></textarea>
                                 </div>
-                            </div>
-                        </div>
 
-                        <!-- Sección 5: Imagen Personalizada -->
-                        <div class="vf-section">
-                            <div class="vf-section__header">
-                                <span class="vf-section__badge">5</span>
-                                <div>
-                                    <h2 class="vf-section__title">
-                                        <i class="fas fa-image" aria-hidden="true"></i> Imagen de tu Oferta (opcional)
-                                    </h2>
-                                    <p class="vf-section__subtitle">Si no agregas una foto propia, se usará la imagen oficial del catálogo.</p>
+                                <!-- Imagen URL -->
+                                <div class="vf-field vf-field--full">
+                                    <label class="vf-label" for="imagenUrl">
+                                        <span>Imagen personalizada de tu oferta (opcional)</span>
+                                    </label>
+                                    <input type="url" id="imagenUrl" name="imagenUrl" class="vf-input"
+                                           placeholder="https://ejemplo.com/foto-cosecha.jpg">
+                                    <span class="vf-hint">Si no agregas una foto propia, se usará la imagen oficial del catálogo.</span>
                                 </div>
-                            </div>
-
-                            <div class="vf-field">
-                                <label class="vf-label" for="imagenUrl">
-                                    <span>URL de la Imagen</span>
-                                </label>
-                                <input type="url" id="imagenUrl" name="imagenUrl" class="vf-input"
-                                       placeholder="https://ejemplo.com/foto-cosecha.jpg">
-                                <span class="vf-hint">Introduce un enlace directo a la fotografía.</span>
                             </div>
 
                             <div id="imagePreviewBox" class="vf-image-preview-box">
@@ -264,7 +232,7 @@
                                 <i class="fas fa-arrow-left" aria-hidden="true"></i> Volver a Mis Productos
                             </a>
                             <button type="submit" class="vf-btn vf-btn--primary">
-                                <i class="fas fa-check" aria-hidden="true"></i> Publicar Oferta
+                                <i class="fas fa-paper-plane" aria-hidden="true"></i> Publicar Oferta
                             </button>
                         </div>
                     </form>
@@ -272,9 +240,7 @@
                     <!-- ═══ FORMA B: "NO ENCUENTRO MI PRODUCTO" (SUGERENCIA) ═══ -->
                     <form id="formSugerirProducto" th:action="@{/vendedor/productos/sugerir}" method="post" style="display:none;">
                         <div class="vf-suggestion-box">
-                            <h3 class="vf-suggestion-box__title">
-                                <i class="fas fa-lightbulb" aria-hidden="true"></i> Sugerir un Nuevo Producto al Catálogo
-                            </h3>
+                            <h3 class="vf-suggestion-box__title">Sugerir un Nuevo Producto al Catálogo</h3>
                             <p class="vf-suggestion-box__desc">
                                 Tu producto pasará por revisión rápida de nuestro equipo. Tu oferta quedará registrada como
                                 <strong>EN REVISIÓN</strong> y se publicará automáticamente en cuanto sea aprobada.
@@ -287,7 +253,7 @@
                                         <span>Categoría del Producto <span class="req">*</span></span>
                                     </label>
                                     <select id="sugCategoria" name="categoriaId" class="vf-select" required>
-                                        <option value="">-- Elige categoría --</option>
+                                        <option value="">Elige una categoría</option>
                                         <option th:each="cat : ${categorias}"
                                                 th:value="${cat.id}"
                                                 th:text="${cat.nombre}">Frutas</option>
@@ -314,13 +280,13 @@
                                         <span>Unidad de Venta Propuesta <span class="req">*</span></span>
                                     </label>
                                     <select id="sugUnidad" name="unidadSugerida" class="vf-select" required>
-                                        <option value="">-- Elige una unidad --</option>
+                                        <option value="">Elige una unidad</option>
                                         <option th:each="u : ${unidadesMedida}"
                                                 th:value="${u.abreviatura}"
                                                 th:data-tipo="${u.tipo}"
                                                 th:data-decimales="${u.permiteDecimales()}"
                                                 th:text="${u.nombre + ' (' + u.abreviatura + ') · ' + u.tipo}">Kilogramos (kg)</option>
-                                        <option value="otra">➕ Otra unidad personalizada...</option>
+                                        <option value="otra">Otra unidad personalizada...</option>
                                     </select>
                                 </div>
 
@@ -344,9 +310,7 @@
                             <div class="vf-section__header">
                                 <span class="vf-section__badge">2</span>
                                 <div>
-                                    <h2 class="vf-section__title">
-                                        <i class="fas fa-tag" aria-hidden="true"></i> Tu Oferta de Venta
-                                    </h2>
+                                    <h2 class="vf-section__title">Tu Oferta de Venta</h2>
                                     <p class="vf-section__subtitle">Define precio y stock inicial para tu producto propuesto.</p>
                                 </div>
                             </div>
@@ -366,14 +330,14 @@
                                     <label class="vf-label" for="sugStock" id="sugLabelStock">
                                         <span>Stock Disponible <span class="req">*</span></span>
                                     </label>
-                                    <input type="number" id="sugStock" name="stock" required min="0.01" step="any"
+                                    <input type="number" id="sugStock" name="stock" required min="1" step="1"
                                            class="vf-input" placeholder="Ej: 20">
                                 </div>
                                 <div class="vf-field">
                                     <label class="vf-label" for="sugCompraMinima" id="sugLabelMinima">
                                         <span>Compra Mínima <span class="req">*</span></span>
                                     </label>
-                                    <input type="number" id="sugCompraMinima" name="compraMinima" required min="0.01" step="any"
+                                    <input type="number" id="sugCompraMinima" name="compraMinima" required min="1" step="1"
                                            value="1" class="vf-input" placeholder="Ej: 1">
                                 </div>
                             </div>
@@ -417,10 +381,10 @@
 
                         <div class="vf-actions">
                             <button type="button" class="vf-btn vf-btn--secondary" id="btnCancelarSugerir">
-                                <i class="fas fa-times" aria-hidden="true"></i> Cancelar Sugerencia
+                                Cancelar Sugerencia
                             </button>
                             <button type="submit" class="vf-btn vf-btn--primary" style="background: linear-gradient(135deg, #B8860B 0%, #8B6508 100%);">
-                                <i class="fas fa-paper-plane" aria-hidden="true"></i> Enviar Sugerencia a Moderación
+                                Enviar Sugerencia a Moderación
                             </button>
                         </div>
                     </form>
@@ -483,11 +447,11 @@
                     })
                     .then(data => {
                         productosActuales = data;
-                        let html = '<option value="">-- Elige un producto --</option>';
+                        let html = '<option value="">Elige un producto</option>';
                         data.forEach((p, idx) => {
                             html += `<option value="${p.id}" data-idx="${idx}">${p.nombre}</option>`;
                         });
-                        html += '<option value="__OTRO__">➕ No encuentro mi producto (sugerir nuevo)...</option>';
+                        html += '<option value="__OTRO__">No encuentro mi producto (sugerir nuevo)...</option>';
                         prodSelect.innerHTML = html;
                         prodSelect.disabled = false;
                     })
@@ -515,6 +479,7 @@
                     if (catSelect.value) {
                         document.getElementById('sugCategoria').value = catSelect.value;
                     }
+                    actualizarReglasSugerir();
                     return;
                 }
 
@@ -672,7 +637,17 @@
                     sugOtraNombre.required = true;
                     const fracc = sugOtraFracc.checked;
                     sugStock.step = fracc ? '0.01' : '1';
+                    sugStock.min = fracc ? '0.01' : '1';
                     sugMinima.step = fracc ? '0.01' : '1';
+                    sugMinima.min = fracc ? '0.01' : '1';
+                    if (!fracc) {
+                        if (sugStock.value && sugStock.value.includes('.')) {
+                            sugStock.value = Math.floor(parseFloat(sugStock.value));
+                        }
+                        if (sugMinima.value && sugMinima.value.includes('.')) {
+                            sugMinima.value = Math.max(1, Math.floor(parseFloat(sugMinima.value)));
+                        }
+                    }
                     sugCampoPeso.style.display = fracc ? 'none' : 'flex';
                     sugCampoPaq.style.display = fracc ? 'none' : 'flex';
                 } else {
@@ -681,7 +656,17 @@
                     const opt = sugUnidad.options[sugUnidad.selectedIndex];
                     const decimales = opt ? opt.getAttribute('data-decimales') === 'true' : false;
                     sugStock.step = decimales ? '0.01' : '1';
+                    sugStock.min = decimales ? '0.01' : '1';
                     sugMinima.step = decimales ? '0.01' : '1';
+                    sugMinima.min = decimales ? '0.01' : '1';
+                    if (!decimales) {
+                        if (sugStock.value && sugStock.value.includes('.')) {
+                            sugStock.value = Math.floor(parseFloat(sugStock.value));
+                        }
+                        if (sugMinima.value && sugMinima.value.includes('.')) {
+                            sugMinima.value = Math.max(1, Math.floor(parseFloat(sugMinima.value)));
+                        }
+                    }
                     sugCampoPeso.style.display = decimales ? 'none' : 'flex';
                     sugCampoPaq.style.display = decimales ? 'none' : 'flex';
                 }
@@ -709,7 +694,6 @@
 
         <footer class="vs-footer">
             <div class="vs-footer__brand">
-                <i class="fas fa-seedling"></i>
                 <span>Cultivus Colombia · Publicar Nueva Oferta</span>
             </div>
             <div class="vs-footer__links">

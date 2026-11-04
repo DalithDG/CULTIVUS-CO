@@ -184,7 +184,7 @@
 
                             <div class="product-card__price-row">
                                 <span class="product-card__price" th:if="${producto.precioMinimo != null}"
-                                      th:text="'$' + ${#numbers.formatDecimal(producto.precioMinimo, 0, 'POINT', 0, 'COMMA')}">
+                                      th:text="'$' + ${#numbers.formatInteger(producto.precioMinimo, 1, 'POINT')}">
                                     $2.500
                                 </span>
                                 <span class="product-card__price" th:if="${producto.precioMinimo == null}"
@@ -209,7 +209,7 @@
                 <!-- Estado Vacío -->
                 <div class="ui-empty" th:if="${catalogo == null or catalogo.isEmpty()}">
                     <div class="ui-empty__icon"><i class="fas fa-box-open"></i></div>
-                    <h3 class="ui-empty__title">Aún no hay productos en esta categoría</h3>
+                    <h3 class="ui-empty__title">Aún no hay productores en esta categoría</h3>
                     <p class="ui-empty__desc">Pronto nuestros productores locales agregarán nuevas cosechas.</p>
                     <a th:href="@{/category}" class="ui-btn ui-btn--secondary" style="margin-top: 12px;">
                         Ver todos los productos

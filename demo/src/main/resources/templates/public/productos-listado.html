@@ -198,7 +198,7 @@
                 <div class="producto-body">
                     <h3 th:text="${producto.nombre}">Nombre del producto</h3>
                     <div class="producto-precio"
-                        th:text="'$' + ${#numbers.formatDecimal(producto.precio, 0, 'COMMA', 0, 'POINT')}">
+                        th:text="'$' + ${#numbers.formatInteger(producto.precio, 1, 'POINT')}">
                         $0
                     </div>
                     <div class="producto-meta">

@@ -106,6 +106,27 @@ class GuestCartAndCatalogTest {
     }
 
     @Test
+    void visitanteAnonimoPuedeComprarFraccion1Punto25KgConCompraMinima0Punto25() {
+        ofertaTest.setCompraMinima(0.25);
+        MockHttpSession sessionAnonima = new MockHttpSession();
+        when(ofertaRepository.findById("of-1")).thenReturn(Optional.of(ofertaTest));
+
+        ResponseEntity<Map<String, Object>> response = carritoController.agregarAlCarritoAjax("of-1", 1.25, sessionAnonima);
+
+        assertNotNull(response);
+        assertEquals(200, response.getStatusCode().value());
+        assertTrue((Boolean) response.getBody().get("success"));
+
+        Carrito carrito = (Carrito) sessionAnonima.getAttribute("carritoAnonimo");
+        assertNotNull(carrito);
+        assertEquals(1, carrito.getItems().size());
+        assertEquals(1.25, carrito.getItems().get(0).getCantidad());
+        assertEquals("kg", carrito.getItems().get(0).getUnidadAbreviatura());
+        assertEquals(0.25, carrito.getItems().get(0).getCompraMinima());
+        assertTrue(carrito.getItems().get(0).isPermiteDecimales());
+    }
+
+    @Test
     void visitanteAnonimoPuedeVerCarrito() {
         MockHttpSession sessionAnonima = new MockHttpSession();
         when(calculoEnvioService.calcularTarifaCarrito(any(), anyString()))
