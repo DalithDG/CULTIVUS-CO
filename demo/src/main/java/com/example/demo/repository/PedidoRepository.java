@@ -44,4 +44,7 @@ public interface PedidoRepository extends MongoRepository<Pedido, String> {
 
     // Pedidos pagados que quedaron en revisión del admin (stock insuficiente al confirmar)
     List<Pedido> findByRequiereRevisionTrue();
+
+    /** US-06: hay pedidos con esta oferta (productoId del item = id de la oferta). */
+    boolean existsByItems_ProductoId(String ofertaId);
 }

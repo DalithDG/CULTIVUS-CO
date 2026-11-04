@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -95,7 +95,7 @@
                             $16.040
                         </span>
                         <span class="price-card__unit"
-                              th:text="'/ ' + (${producto != null and producto.unidadMedida != null} ? producto.unidadMedida : 'unid')">
+                              th:text="'/ ' + ${oferta.unidadEfectiva().abreviatura}">
                             / kg
                         </span>
                     </div>
@@ -120,10 +120,10 @@
                                     <i class="fas fa-minus"></i>
                                 </button>
                                 <input type="number" name="cantidad" id="inputCantidad"
-                                       th:value="${oferta.compraMinima != null ? oferta.compraMinima : 1}"
+                                       th:value="${oferta.compraMinima != null ? (oferta.compraMinima % 1 == 0 ? #numbers.formatDecimal(oferta.compraMinima, 0, 'POINT', 0, 'COMMA') : oferta.compraMinima) : 1}"
                                        th:min="${oferta.compraMinima != null ? oferta.compraMinima : 1}"
                                        th:max="${oferta.stock}"
-                                       step="any"
+                                       th:step="${oferta.unidadEfectiva().permiteDecimales() ? '0.1' : '1'}"
                                        readonly>
                                 <button type="button" onclick="modificarCantidad(1)" aria-label="Aumentar cantidad">
                                     <i class="fas fa-plus"></i>
@@ -133,7 +133,7 @@
 
                         <p class="purchase-form__note" th:if="${oferta.compraMinima != null and oferta.compraMinima > 1}">
                             <i class="fas fa-info-circle"></i> Compra mínima: 
-                            <strong th:text="${(oferta.compraMinima % 1 == 0 ? #numbers.formatDecimal(oferta.compraMinima, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(oferta.compraMinima, 1, 'POINT', 1, 'COMMA'))} + ' ' + (${producto != null and producto.unidadMedida != null} ? ${producto.unidadMedida} : 'unid')">1</strong>
+                            <strong th:text="${(oferta.compraMinima % 1 == 0 ? #numbers.formatDecimal(oferta.compraMinima, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(oferta.compraMinima, 1, 'POINT', 2, 'COMMA')) + ' ' + oferta.unidadEfectiva().abreviatura}">1</strong>
                         </p>
 
                         <button type="submit" class="ui-btn ui-btn--primary ui-btn--full ui-btn--lg" style="margin-top: 16px;">
@@ -203,14 +203,14 @@
                     </div>
                     <div class="spec-pill">
                         <div class="spec-pill__label">Stock Disponible</div>
-                        <div class="spec-pill__value" th:text="${(oferta.stock % 1 == 0 ? #numbers.formatDecimal(oferta.stock, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(oferta.stock, 1, 'POINT', 1, 'COMMA'))} + ' ' + (${producto != null and producto.unidadMedida != null} ? producto.unidadMedida : 'unid')">
+                        <div class="spec-pill__value" th:text="${(oferta.stock % 1 == 0 ? #numbers.formatDecimal(oferta.stock, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(oferta.stock, 1, 'POINT', 2, 'COMMA'))} + ' ' + ${oferta.unidadEfectiva().abreviatura}">
                             100
                         </div>
                     </div>
                     <div class="spec-pill">
-                        <div class="spec-pill__label">Tipo de Venta</div>
-                        <div class="spec-pill__value" th:text="${producto != null and producto.tipoVenta == 'PESO' ? 'Por Peso' : 'Por Unidad'}">
-                            Por Peso
+                        <div class="spec-pill__label">Unidad de Venta</div>
+                        <div class="spec-pill__value" th:text="${oferta.unidadEfectiva().nombre + ' (' + oferta.unidadEfectiva().abreviatura + ')'}">
+                            Kilogramos
                         </div>
                     </div>
                     <div class="spec-pill">

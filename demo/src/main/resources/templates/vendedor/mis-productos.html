@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -53,33 +53,59 @@
                         <img th:src="${producto.imagenUrl}" th:alt="${producto.nombreProducto}"
                             onerror="this.src='/images/placeholder.svg'">
                         <div class="status-overlay">
-                            <span th:if="${producto.disponible}" class="badge-premium badge-active">
-                                <i class="fas fa-check-circle" aria-hidden="true"></i> Activo
+                            <!-- Estado PENDIENTE -->
+                            <span th:if="${producto.estadoPublicacion != null and producto.estadoPublicacion.name() == 'PENDIENTE'}"
+                                  class="badge-premium" style="background:#EABF45; color:#30372D;">
+                                <i class="fas fa-hourglass-half" aria-hidden="true"></i> En revisión
                             </span>
-                            <span th:unless="${producto.disponible}" class="badge-premium badge-inactive">
-                                <i class="fas fa-pause-circle" aria-hidden="true"></i> Pausado
+                            <!-- Estado RECHAZADO -->
+                            <span th:if="${producto.estadoPublicacion != null and producto.estadoPublicacion.name() == 'RECHAZADO'}"
+                                  class="badge-premium badge-inactive" style="background:#e74c3c; color:#fff;">
+                                <i class="fas fa-ban" aria-hidden="true"></i> Rechazado
+                            </span>
+                            <!-- Estado PUBLICADO -->
+                            <span th:if="${producto.estadoPublicacion == null or producto.estadoPublicacion.name() == 'PUBLICADO'}"
+                                  th:classappend="${producto.disponible} ? 'badge-active' : 'badge-inactive'"
+                                  class="badge-premium">
+                                <i th:class="${producto.disponible} ? 'fas fa-check-circle' : 'fas fa-pause-circle'" aria-hidden="true"></i>
+                                <span th:text="${producto.disponible ? 'Publicado' : 'Pausado'}">Publicado</span>
                             </span>
                         </div>
                     </div>
 
                     <div class="card-body">
                         <h3 th:text="${producto.nombreProducto}">Producto</h3>
-                        <p th:text="${producto.descripcionVendedor}">Descripción corta...</p>
+                        <p th:text="${producto.descripcionVendedor != null and !producto.descripcionVendedor.isEmpty() ? producto.descripcionVendedor : 'Sin descripción adicional.'}">Descripción corta...</p>
+
+                        <!-- Mensaje si fue rechazada -->
+                        <div th:if="${producto.estadoPublicacion != null and producto.estadoPublicacion.name() == 'RECHAZADO'}"
+                             style="background:#fde8e8; border-left:3px solid #e74c3c; padding:8px 10px; border-radius:4px; margin-bottom:12px; font-size:0.85rem; color:#c0392b;">
+                            <strong>Motivo de rechazo:</strong>
+                            <span th:text="${producto.motivoRechazo != null ? producto.motivoRechazo : 'Sin motivo especificado'}">Motivo</span>
+                        </div>
+
+                        <!-- Mensaje si está pendiente -->
+                        <div th:if="${producto.estadoPublicacion != null and producto.estadoPublicacion.name() == 'PENDIENTE'}"
+                             style="background:#fef9e7; border-left:3px solid #EABF45; padding:8px 10px; border-radius:4px; margin-bottom:12px; font-size:0.85rem; color:#795548;">
+                            ⏳ Un administrador revisará tu producto sugerido pronto.
+                        </div>
 
                         <div class="card-stats">
                             <div class="stat-box">
-                                <span class="stat-label">Precio</span>
-                                <span class="stat-value price" th:text="${'$' + #numbers.formatDecimal(producto.precio, 0, 'COMMA', 0, 'POINT')}">$0</span>
+                                <span class="stat-label" th:text="${'Precio por ' + producto.unidadEfectiva().abreviatura}">Precio</span>
+                                <span class="stat-value price" th:text="${'$' + #numbers.formatDecimal(producto.precio, 0, 'POINT', 0, 'COMMA')}">$0</span>
                             </div>
                             <div class="stat-box">
-                                <span class="stat-label">Stock</span>
-                                <span class="stat-value" th:text="${(producto.stock % 1 == 0 ? #numbers.formatDecimal(producto.stock, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(producto.stock, 1, 'POINT', 1, 'COMMA'))}">0</span>
+                                <span class="stat-label" th:text="${'Stock (' + producto.unidadEfectiva().abreviatura + ')'}">Stock</span>
+                                <span class="stat-value"
+                                      th:text="${(producto.stock % 1 == 0 ? #numbers.formatDecimal(producto.stock, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(producto.stock, 1, 'POINT', 2, 'COMMA')) + ' ' + producto.unidadEfectiva().abreviatura}">0 kg</span>
                             </div>
                         </div>
 
                         <div class="card-footer">
                             <a th:href="@{/vendedor/productos/editar/{id}(id=${producto.id})}" class="btn-action btn-edit">
-                                <i class="fas fa-pen" aria-hidden="true"></i> Editar
+                                <i class="fas fa-pen" aria-hidden="true"></i>
+                                <span th:text="${producto.estadoPublicacion != null and producto.estadoPublicacion.name() == 'RECHAZADO' ? 'Corregir' : 'Editar'}">Editar</span>
                             </a>
                             <form th:action="@{/vendedor/productos/eliminar/{id}(id=${producto.id})}" method="post"
                                 onsubmit="return confirm('¿Está seguro de eliminar esta oferta permanentemente?');">
@@ -99,7 +125,7 @@
                 <span>Cultivus Colombia · Mi Catálogo de Productos</span>
             </div>
             <div class="vs-footer__links">
-                <span>&copy; 2025 Cultivus. Todos los derechos reservados.</span>
+                <span>&copy; 2026 Cultivus. Todos los derechos reservados.</span>
             </div>
         </footer>
     </main>

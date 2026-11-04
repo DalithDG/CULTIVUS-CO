@@ -1,12 +1,16 @@
 package com.example.demo.Model;
 
 import com.example.demo.Model.embebidos.CategoriaProducto;
+import com.example.demo.Model.embebidos.DatosVendedor;
+import com.example.demo.Model.embebidos.UnidadMedida;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Representa un TIPO de producto único en la plataforma (ficha maestra del catálogo).
@@ -40,11 +44,24 @@ public class ProductoCatalogo {
     @Field("categoria")
     private CategoriaProducto categoria;
 
+    /**
+     * LEGACY (anterior a US-06): ya no se usa en validaciones ni vistas. Se conserva solo para que la
+     * migración del DataLoader pueda copiar la unidad antigua a las ofertas existentes.
+     */
     @Field("tipo_venta")
     private String tipoVenta;
 
+    /** LEGACY: abreviatura de la unidad antigua (ver nota de tipoVenta). */
     @Field("unidad_medida")
     private String unidadMedida;
+
+    /** Unidad sugerida al vendedor al publicar (US-06). */
+    @Field("unidad_por_defecto")
+    private UnidadMedida unidadPorDefecto;
+
+    /** Entre 1 y 3 unidades entre las que el vendedor puede elegir. Si hay una sola, el campo va bloqueado. */
+    @Field("unidades_permitidas")
+    private List<UnidadMedida> unidadesPermitidas = new ArrayList<>();
 
     // ── Campos calculados (se actualizan al crear/editar/eliminar ofertas) ──
 
@@ -106,6 +123,71 @@ public class ProductoCatalogo {
         this.createdAt = LocalDateTime.now();
     }
 
+    /**
+     * Constructor US-06: producto con unidad por defecto y unidades permitidas (1 a 3).
+     * Si la lista llega vacía se usa solo la unidad por defecto.
+     */
+    public ProductoCatalogo(String nombre, String descripcion, String imagenUrl,
+                            CategoriaProducto categoria, UnidadMedida unidadPorDefecto,
+                            List<UnidadMedida> unidadesPermitidas) {
+        this.nombre = nombre;
+        this.nombreNormalizado = normalizarNombre(nombre);
+        this.descripcion = descripcion;
+        this.imagenUrl = imagenUrl;
+        this.categoria = categoria;
+        this.activo = true;
+        this.aprobado = false;
+        this.totalVendedores = 0;
+        this.stockTotal = 0.0;
+        this.createdAt = LocalDateTime.now();
+        definirUnidades(unidadPorDefecto, unidadesPermitidas);
+    }
+
+    // ── Unidades (US-06) ──
+
+    /**
+     * Define la unidad por defecto y las permitidas (1 a 3). La por defecto siempre queda incluida
+     * y de primera. Lanza IllegalArgumentException si hay más de 3 o no hay ninguna.
+     */
+    public void definirUnidades(UnidadMedida porDefecto, List<UnidadMedida> permitidas) {
+        if (porDefecto == null) {
+            throw new IllegalArgumentException("El producto debe tener una unidad por defecto.");
+        }
+        List<UnidadMedida> lista = new ArrayList<>();
+        lista.add(porDefecto.copia());
+        if (permitidas != null) {
+            for (UnidadMedida u : permitidas) {
+                if (u == null || u.getAbreviatura() == null) continue;
+                boolean repetida = lista.stream().anyMatch(x -> x.getAbreviatura().equalsIgnoreCase(u.getAbreviatura()));
+                if (!repetida) {
+                    lista.add(u.copia());
+                }
+            }
+        }
+        if (lista.size() > 3) {
+            throw new IllegalArgumentException("Un producto admite entre 1 y 3 unidades de venta.");
+        }
+        this.unidadPorDefecto = lista.get(0);
+        this.unidadesPermitidas = lista;
+    }
+
+    /** Busca una unidad permitida por abreviatura (sin distinguir mayúsculas). Null si no está permitida. */
+    public UnidadMedida buscarUnidadPermitida(String abreviatura) {
+        if (abreviatura == null || unidadesPermitidas == null) return null;
+        for (UnidadMedida u : unidadesPermitidas) {
+            if (u.getAbreviatura() != null && u.getAbreviatura().equalsIgnoreCase(abreviatura.trim())) {
+                return u;
+            }
+        }
+        return null;
+    }
+
+    /** Abreviatura para mostrar junto al precio en listados ("kg", "un"...). Sin unidad: "un". */
+    public String getAbreviaturaUnidad() {
+        return unidadPorDefecto != null && unidadPorDefecto.getAbreviatura() != null
+                ? unidadPorDefecto.getAbreviatura() : "un";
+    }
+
     // ── Utilidad ──
 
     /**
@@ -154,6 +236,14 @@ public class ProductoCatalogo {
     public String getUnidadMedida() { return unidadMedida; }
     public void setUnidadMedida(String unidadMedida) { this.unidadMedida = unidadMedida; }
 
+    public UnidadMedida getUnidadPorDefecto() { return unidadPorDefecto; }
+    public void setUnidadPorDefecto(UnidadMedida unidadPorDefecto) { this.unidadPorDefecto = unidadPorDefecto; }
+
+    public List<UnidadMedida> getUnidadesPermitidas() {
+        if (unidadesPermitidas == null) { unidadesPermitidas = new ArrayList<>(); } return unidadesPermitidas;
+    }
+    public void setUnidadesPermitidas(List<UnidadMedida> unidadesPermitidas) { this.unidadesPermitidas = unidadesPermitidas; }
+
     public Double getPrecioMinimo() { return precioMinimo; }
     public void setPrecioMinimo(Double precioMinimo) { this.precioMinimo = precioMinimo; }
 
@@ -177,4 +267,26 @@ public class ProductoCatalogo {
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    // Compatibilidad para vistas de catálogo
+    public Double getPrecio() {
+        return precioMinimo != null ? precioMinimo : 0.0;
+    }
+
+    public Double getStock() {
+        return stockTotal != null ? stockTotal : 0.0;
+    }
+
+    public boolean isDisponible() {
+        return activo && aprobado;
+    }
+
+    public DatosVendedor getVendedor() {
+        if (totalVendedores != null && totalVendedores > 0) {
+            DatosVendedor dv = new DatosVendedor();
+            dv.setNombre(totalVendedores + (totalVendedores == 1 ? " vendedor" : " vendedores"));
+            return dv;
+        }
+        return null;
+    }
 }

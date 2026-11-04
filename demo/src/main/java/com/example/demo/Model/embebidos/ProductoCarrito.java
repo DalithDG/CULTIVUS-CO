@@ -1,6 +1,7 @@
 package com.example.demo.Model.embebidos;
 
-public class ProductoCarrito {
+public class ProductoCarrito implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
 
     private String productoId;          // Ahora es el productoCatalogoId
     private String ofertaId;            // ID de la OfertaVendedor específica
@@ -13,7 +14,7 @@ public class ProductoCarrito {
     private String unidadAbreviatura;
     private Double subtotal;
     private Double compraMinima;
-
+    private Boolean permiteDecimales;
     public ProductoCarrito() {
     }
 
@@ -80,4 +81,16 @@ public class ProductoCarrito {
 
     public Double getCompraMinima() { return compraMinima; }
     public void setCompraMinima(Double compraMinima) { this.compraMinima = compraMinima; }
+
+    /**
+     * Solo para pintar el step/min en el carrito; el servidor siempre revalida desde la oferta.
+     * Si el ítem es anterior a US-06 se deriva de la abreviatura guardada.
+     */
+    public boolean isPermiteDecimales() {
+        if (permiteDecimales != null) {
+            return permiteDecimales;
+        }
+        return UnidadMedida.deAbreviatura(unidadAbreviatura).permiteDecimales();
+    }
+    public void setPermiteDecimales(Boolean permiteDecimales) { this.permiteDecimales = permiteDecimales; }
 }

@@ -11,7 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Document(collection = "carritos")
-public class Carrito {
+public class Carrito implements java.io.Serializable {
+    private static final long serialVersionUID = 1L;
 
     @Id
     private String id;
@@ -52,8 +53,12 @@ public class Carrito {
         this.updatedAt = LocalDateTime.now();
     }
 
+    /**
+     * Número de productos distintos en el carrito (el contador del header).
+     * Antes sumaba cantidades; con kg/lb/L decimales eso mostraría "2.5" en el contador.
+     */
     public Double getTotalArticulos() {
-        return items.stream().mapToDouble(ProductoCarrito::getCantidad).sum();
+        return (double) items.size();
     }
 
     // Getters y Setters

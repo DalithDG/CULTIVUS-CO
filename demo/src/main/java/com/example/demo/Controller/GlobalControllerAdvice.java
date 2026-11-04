@@ -44,6 +44,10 @@ public class GlobalControllerAdvice {
                     .map(c -> c.getItems() != null ? c.getItems().size() : 0)
                     .orElse(0);
         }
+        com.example.demo.Model.Carrito anonimo = (com.example.demo.Model.Carrito) session.getAttribute("carritoAnonimo");
+        if (anonimo != null && anonimo.getItems() != null) {
+            return anonimo.getItems().size();
+        }
         return 0;
     }
 

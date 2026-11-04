@@ -53,6 +53,11 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
         String requestUri = request.getRequestURI() != null ? request.getRequestURI() : "";
         String ruta = requestUri.startsWith(contexto) ? requestUri.substring(contexto.length()) : requestUri;
 
+        if (accessDeniedException instanceof org.springframework.security.web.csrf.CsrfException) {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Acceso denegado: token CSRF inválido o ausente.");
+            return;
+        }
+
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth == null || !auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
             response.sendRedirect(contexto + "/usuario/login");

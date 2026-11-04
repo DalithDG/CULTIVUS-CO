@@ -35,15 +35,15 @@
                             <select name="role" class="adm-select">
                                 <option value="">Todos los Roles</option>
                                 <option th:each="r : ${roles}"
-                                        th:value="${r.name()}"
-                                        th:text="${r.name()}"
-                                        th:selected="${r.name() == roleFilter}"></option>
+                                        th:value="${#strings.toString(r)}"
+                                        th:text="${#strings.toString(r)}"
+                                        th:selected="${#strings.toString(r) == roleFilter or #strings.toString(r) == rolFilter}"></option>
                             </select>
                             <button type="submit" class="btn-action">
                                 <i class="fas fa-search" aria-hidden="true"></i>
                                 <span>Filtrar</span>
                             </button>
-                            <a th:if="${(searchQuery != null and !searchQuery.isEmpty()) or (roleFilter != null and !roleFilter.isEmpty())}"
+                            <a th:if="${(searchQuery != null and !searchQuery.isEmpty()) or (roleFilter != null and !roleFilter.isEmpty()) or (rolFilter != null and !rolFilter.isEmpty())}"
                                 th:href="@{/admin/usuarios}" class="btn-action btn-action--outline">
                                 <i class="fas fa-times" aria-hidden="true"></i>
                                 <span>Limpiar</span>
@@ -74,10 +74,10 @@
                                     <td>
                                         <form th:action="@{/admin/usuarios/{id}/cambiar-rol(id=${user.id})}" method="post" class="adm-inline-form">
                                             <select name="nuevoRol" class="role-select">
-                                                <option th:each="rol : ${roles}"
-                                                        th:value="${rol.name()}"
-                                                        th:text="${rol.name()}"
-                                                        th:selected="${user.rol != null and rol.name() == user.rol.name()}">
+                                                <option th:each="rolOpt : ${roles}"
+                                                        th:value="${#strings.toString(rolOpt)}"
+                                                        th:text="${#strings.toString(rolOpt)}"
+                                                        th:selected="${user.rol != null and #strings.toString(rolOpt) == user.rol.name()}">
                                                 </option>
                                             </select>
                                             <button type="submit" class="btn-action">
@@ -117,11 +117,11 @@
                                 th:text="${usuarios.totalPages}">1</strong>
                         </span>
                         <div class="adm-pagination__controls">
-                            <a th:if="${usuarios.hasPrevious()}" th:href="@{/admin/usuarios(page=${usuarios.number - 1}, search=${searchQuery}, role=${roleFilter})}" class="adm-page-btn">
+                            <a th:if="${usuarios.hasPrevious()}" th:href="@{/admin/usuarios(page=${usuarios.number - 1}, search=${searchQuery}, role=${roleFilter != null ? roleFilter : rolFilter})}" class="adm-page-btn">
                                 <i class="fas fa-chevron-left" aria-hidden="true"></i> Anterior
                             </a>
                             <span class="adm-page-pill" th:text="${usuarios.number + 1}">1</span>
-                            <a th:if="${usuarios.hasNext()}" th:href="@{/admin/usuarios(page=${usuarios.number + 1}, search=${searchQuery}, role=${roleFilter})}" class="adm-page-btn">
+                            <a th:if="${usuarios.hasNext()}" th:href="@{/admin/usuarios(page=${usuarios.number + 1}, search=${searchQuery}, role=${roleFilter != null ? roleFilter : rolFilter})}" class="adm-page-btn">
                                 Siguiente <i class="fas fa-chevron-right" aria-hidden="true"></i>
                             </a>
                         </div>

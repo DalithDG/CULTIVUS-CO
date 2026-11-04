@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head th:replace="~{admin/fragments/head :: head('Moderación')}"></head>
@@ -37,13 +37,14 @@
                                     <th>Imagen</th>
                                     <th>Nombre Sugerido</th>
                                     <th>Categoría</th>
-                                    <th>Venta / Unidad</th>
-                                    <th>Descripción General</th>
+                                    <th>Unidad de venta</th>
+                                    <th>Oferta del vendedor</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr th:each="cp : ${catalogoPendiente.content}">
+                                <tr th:each="cp : ${catalogoPendiente.content}"
+                                    th:with="ofertasDeCp=${ofertasPendientes != null ? ofertasPendientes.get(cp.id) : null}">
                                     <td>
                                         <img th:src="${cp.imagenUrl}" alt="img" class="adm-thumb--lg"
                                             onerror="this.src='/images/placeholder.svg'">
@@ -51,21 +52,49 @@
                                     <td><span class="adm-cell-title" th:text="${cp.nombre}">Nombre</span></td>
                                     <td><span class="badge badge-category" th:text="${cp.categoria != null ? cp.categoria.nombre : '-'}">Cat</span></td>
                                     <td>
-                                        <span class="adm-cell-title" th:text="${cp.tipoVenta}">PESO</span> ·
-                                        <span class="adm-muted" th:text="${cp.unidadMedida}">kg</span>
+                                        <span class="adm-cell-title"
+                                            th:text="${cp.unidadPorDefecto != null ? cp.unidadPorDefecto.nombre + ' (' + cp.unidadPorDefecto.abreviatura + ')' : cp.unidadMedida}">Kilogramos (kg)</span>
+                                        <span class="adm-muted"
+                                            th:if="${cp.unidadPorDefecto != null}"
+                                            th:text="${cp.unidadPorDefecto.permiteDecimales() ? ' · admite decimales' : ' · solo enteros'}"> · admite decimales</span>
                                     </td>
-                                    <td><p class="adm-cell-sub" th:text="${cp.descripcion}">Desc</p></td>
                                     <td>
-                                        <div class="adm-actions">
+                                        <div th:each="of : ${ofertasDeCp}" class="adm-cell-sub">
+                                            <strong th:text="${of.vendedor != null ? of.vendedor.nombre : 'Vendedor'}">Vendedor</strong><br>
+                                            <span th:text="${'$' + #numbers.formatDecimal(of.precio, 0, 'POINT', 0, 'COMMA') + ' por ' + of.unidadEfectiva().abreviatura}">$0 por kg</span><br>
+                                            <span th:text="${'Stock: ' + of.stock + ' ' + of.unidadEfectiva().abreviatura + ' · mínimo ' + of.compraMinima}">Stock</span>
+                                        </div>
+                                        <span class="adm-muted" th:if="${ofertasDeCp == null or ofertasDeCp.isEmpty()}">Sin oferta asociada</span>
+                                    </td>
+                                    <td>
+                                        <div class="adm-actions" style="flex-direction: column; align-items: stretch; gap: 8px; min-width: 240px;">
+                                            <!-- Aprobar: entra a la lista por defecto y la oferta se publica -->
                                             <form th:action="@{/admin/catalogo/{id}/aprobar(id=${cp.id})}" method="post" class="adm-inline-form">
-                                                <button type="submit" class="btn-action" title="Aprobar para el Catálogo">
+                                                <button type="submit" class="btn-action" title="Aprobar: el producto entra a la lista y la oferta se publica">
                                                     <i class="fas fa-check" aria-hidden="true"></i>
                                                     <span>Aprobar</span>
                                                 </button>
                                             </form>
-                                            <form th:action="@{/admin/catalogo/{id}/rechazar(id=${cp.id})}" method="post" class="adm-inline-form"
-                                                onsubmit="return confirm('¿Rechazar sugerencia de catálogo?')">
-                                                <button type="submit" class="btn-action btn-delete" title="Rechazar">
+                                            <!-- Ya existe: la oferta toma nombre, categoría y unidad del producto elegido -->
+                                            <form th:action="@{/admin/catalogo/{id}/ya-existe(id=${cp.id})}" method="post" class="adm-inline-form"
+                                                onsubmit="return confirm('¿Publicar la oferta como el producto elegido y descartar la sugerencia?')">
+                                                <label class="adm-muted" th:for="${'existente-' + cp.id}">Ya existe como:</label>
+                                                <select name="productoExistenteId" required th:id="${'existente-' + cp.id}" style="width: 100%;">
+                                                    <option value="">Elige el producto existente…</option>
+                                                    <option th:each="pe : ${productosExistentes}" th:value="${pe.id}"
+                                                        th:text="${pe.nombre + ' (' + (pe.categoria != null ? pe.categoria.nombre : '-') + ' · ' + pe.abreviaturaUnidad + ')'}">Yuca</option>
+                                                </select>
+                                                <button type="submit" class="btn-action" title="Ya existe en la lista">
+                                                    <i class="fas fa-link" aria-hidden="true"></i>
+                                                    <span>Ya existe</span>
+                                                </button>
+                                            </form>
+                                            <!-- Rechazar con motivo (el vendedor lo ve y puede corregir y reenviar) -->
+                                            <form th:action="@{/admin/catalogo/{id}/rechazar(id=${cp.id})}" method="post" class="adm-inline-form">
+                                                <label class="adm-muted" th:for="${'motivo-' + cp.id}">Motivo del rechazo:</label>
+                                                <input type="text" name="motivo" required maxlength="300" th:id="${'motivo-' + cp.id}"
+                                                    placeholder="Ej: la foto no corresponde al producto" style="width: 100%;">
+                                                <button type="submit" class="btn-action btn-delete" title="Rechazar con motivo">
                                                     <i class="fas fa-times" aria-hidden="true"></i>
                                                     <span>Rechazar</span>
                                                 </button>

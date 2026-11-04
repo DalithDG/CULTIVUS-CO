@@ -104,6 +104,7 @@ public class UsuarioController {
             @RequestParam(value = "contrasena", required = false) String contrasena,
             @RequestParam(value = "departamento", required = false) String nombreDepartamento,
             @RequestParam(value = "ciudad", required = false) String nombreCiudad,
+            @RequestParam(value = "redirect", required = false) String redirect,
             Model model,
             RedirectAttributes redirectAttributes) {
         try {
@@ -213,42 +214,14 @@ public class UsuarioController {
     }
 
     @GetMapping("/verificar")
-    public String mostrarVerificar(@RequestParam(value = "email", required = false) String email,
-            Model model, HttpSession session, RedirectAttributes redirectAttributes) {
-        String cleanEmail = email != null ? email.trim() : "";
-        if (cleanEmail.isEmpty()) {
-            Object logueado = session.getAttribute("usuarioLogueado");
-            if (logueado instanceof Usuario && ((Usuario) logueado).isEmailVerificado()) {
-                return "redirect:/usuario/inicio";
-            }
-            redirectAttributes.addFlashAttribute("error", "Debes indicar el correo a verificar.");
-            return "redirect:/usuario/login";
-        }
-        Usuario u = usuarioService.findByEmail(cleanEmail);
-        if (u == null) {
-            redirectAttributes.addFlashAttribute("error", "No se encontró ningún usuario con ese correo.");
-            return "redirect:/usuario/login";
-        }
-        if (u.isEmailVerificado()) {
-            redirectAttributes.addFlashAttribute("mensaje", "Tu cuenta ya se encuentra verificada. Inicia sesión.");
-            return "redirect:/usuario/login";
-        }
-        Object logueado = session.getAttribute("usuarioLogueado");
-        if (logueado instanceof Usuario && ((Usuario) logueado).isEmailVerificado()) {
-            return "redirect:/usuario/inicio";
-        }
-        model.addAttribute("email", cleanEmail);
-        if (u.getCodigoVerificacionExpira() != null) {
-            model.addAttribute("expiraEpoch", u.getCodigoVerificacionExpira().atZone(java.time.ZoneId.systemDefault())
-                    .toInstant().toEpochMilli());
-        }
+    public String mostrarVerificar(@RequestParam("email") String email, Model model) {
+        model.addAttribute("email", email);
         return "auth/verificar";
     }
 
     @PostMapping("/verificar")
     public String verificarCodigo(@RequestParam("email") String email,
             @RequestParam("codigo") String codigo,
-            HttpSession session,
             RedirectAttributes redirectAttributes) {
         String cleanEmail = email != null ? email.trim() : "";
         String cleanCodigo = codigo != null ? codigo.trim() : "";
@@ -259,52 +232,11 @@ public class UsuarioController {
             u.setEmailVerificado(true);
             u.setCodigoVerificacion(null);
             usuarioService.save(u);
-            // Iniciar sesión automáticamente
-            session.setAttribute("usuarioLogueado", u);
-            if (securityContextRefreshService != null && u.getEmail() != null) {
-                try {
-                    securityContextRefreshService.refrescarAutenticacion(u.getEmail());
-                } catch (Exception ignored) {
-                }
-            }
-            redirectAttributes.addFlashAttribute("mensaje", "Correo verificado exitosamente. ¡Bienvenido a Cultivus!");
-            return "redirect:/usuario/inicio";
+            redirectAttributes.addFlashAttribute("mensaje", "Correo verificado. Inicie sesión.");
+            return "redirect:/usuario/login";
         }
-        redirectAttributes.addFlashAttribute("error", "Código inválido o expirado. Verifica los 6 dígitos.");
-        return "redirect:/usuario/verificar?email="
-                + java.net.URLEncoder.encode(cleanEmail, java.nio.charset.StandardCharsets.UTF_8);
-    }
-
-    @PostMapping("/verificar/reenviar")
-    public String reenviarCodigoVerificacion(@RequestParam("email") String email,
-            RedirectAttributes redirectAttributes) {
-        String cleanEmail = email != null ? email.trim() : "";
-        try {
-            Usuario u = usuarioService.findByEmail(cleanEmail);
-            if (u != null) {
-                if (u.isEmailVerificado()) {
-                    redirectAttributes.addFlashAttribute("mensaje",
-                            "Tu cuenta ya se encuentra verificada. Inicia sesión.");
-                    return "redirect:/usuario/login";
-                }
-                String nuevoCodigo = String.format("%06d", new java.util.Random().nextInt(999999));
-                u.setCodigoVerificacion(nuevoCodigo);
-                u.setCodigoVerificacionExpira(LocalDateTime.now().plusMinutes(15));
-                usuarioService.save(u);
-                if (registroMailService != null) {
-                    registroMailService.enviarCodigoVerificacion(u.getEmail(), u.getNombre(), nuevoCodigo);
-                }
-                redirectAttributes.addFlashAttribute("mensaje",
-                        "Hemos enviado un nuevo código de verificación a tu correo.");
-            } else {
-                redirectAttributes.addFlashAttribute("error",
-                        "No se encontró ningún usuario con ese correo electrónico.");
-            }
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "No fue posible reenviar el código. Intenta de nuevo.");
-        }
-        return "redirect:/usuario/verificar?email="
-                + java.net.URLEncoder.encode(cleanEmail, java.nio.charset.StandardCharsets.UTF_8);
+        redirectAttributes.addFlashAttribute("error", "Código inválido.");
+        return "redirect:/usuario/verificar?email=" + email;
     }
 
     @GetMapping("/login")

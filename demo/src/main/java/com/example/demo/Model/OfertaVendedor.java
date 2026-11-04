@@ -1,6 +1,7 @@
 package com.example.demo.Model;
 
 import com.example.demo.Model.embebidos.DatosVendedor;
+import com.example.demo.Model.embebidos.UnidadMedida;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -60,10 +61,23 @@ public class OfertaVendedor {
     @Field("descripcion_vendedor")
     private String descripcionVendedor;
 
+    // ── Unidad de venta (US-06) ──
+
+    /** Copia de la unidad elegida al publicar. Toda validación de cantidades lee esta unidad. */
+    @Field("unidad_medida")
+    private UnidadMedida unidadMedida;
+
     // ── Moderación ──
 
-    // Las ofertas se aprueban automáticamente según la nueva regla de negocio.
-    // Se eliminaron estadoAprobacion y motivoRechazo.
+    // Las ofertas de productos de la lista por defecto se publican automáticamente.
+    // Solo las ligadas a un producto sugerido pasan por PENDIENTE / RECHAZADO (US-06).
+
+    @Field("estado_publicacion")
+    private EstadoPublicacion estadoPublicacion = EstadoPublicacion.PUBLICADO;
+
+    /** Motivo del rechazo (solo cuando estadoPublicacion = RECHAZADO). */
+    @Field("motivo_rechazo")
+    private String motivoRechazo;
 
     // ── Nombre del producto (desnormalizado para facilitar vistas) ──
 
@@ -143,6 +157,28 @@ public class OfertaVendedor {
 
     public String getNombreProducto() { return nombreProducto; }
     public void setNombreProducto(String nombreProducto) { this.nombreProducto = nombreProducto; }
+
+    public UnidadMedida getUnidadMedida() { return unidadMedida; }
+    public void setUnidadMedida(UnidadMedida unidadMedida) { this.unidadMedida = unidadMedida; }
+
+    public EstadoPublicacion getEstadoPublicacion() {
+        return estadoPublicacion != null ? estadoPublicacion : EstadoPublicacion.PUBLICADO;
+    }
+    public void setEstadoPublicacion(EstadoPublicacion estadoPublicacion) { this.estadoPublicacion = estadoPublicacion; }
+
+    public String getMotivoRechazo() { return motivoRechazo; }
+    public void setMotivoRechazo(String motivoRechazo) { this.motivoRechazo = motivoRechazo; }
+
+    /** true si la oferta ya fue publicada (ofertas antiguas sin estado cuentan como publicadas). */
+    public boolean estaPublicada() { return getEstadoPublicacion() == EstadoPublicacion.PUBLICADO; }
+
+    /**
+     * Unidad efectiva de la oferta para validar cantidades. Si la oferta es anterior a US-06 y
+     * a\u00fan no fue migrada, se asume "un" (solo enteros); nunca se consulta el cat\u00e1logo.
+     */
+    public UnidadMedida unidadEfectiva() {
+        return unidadMedida != null ? unidadMedida : UnidadMedida.porDefecto();
+    }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

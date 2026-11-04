@@ -218,7 +218,8 @@ public class SecurityConfig {
                         // ── Comprador: compras, carrito y pedidos ────────────────────
                         .requestMatchers("/usuario/**").access(soloRol("COMPRADOR"))
                         .requestMatchers("/comprador/**").access(soloRol("COMPRADOR"))
-                        .requestMatchers("/carrito/**").access(soloRol("COMPRADOR"))
+                        .requestMatchers("/carrito/**").access(anonimoORol("COMPRADOR"))
+                        .requestMatchers("/pago/**").access(anonimoORol("COMPRADOR"))
 
                         .anyRequest().authenticated())
                 // maximumSessions(-1) = sin límite de sesiones, pero registrando

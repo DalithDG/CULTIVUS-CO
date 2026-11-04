@@ -33,6 +33,9 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final UsuarioRepository usuarioRepository;
     private final NotificacionRepository notificacionRepository;
 
+    @Autowired(required = false)
+    private com.example.demo.repository.CarritoRepository carritoRepository;
+
     @Autowired
     public CustomAuthenticationSuccessHandler(UsuarioRepository usuarioRepository,
                                              NotificacionRepository notificacionRepository) {
@@ -82,6 +85,32 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                 long notificacionesCount = notificacionRepository.findByUsuarioIdOrderByFechaDesc(usuario.getId())
                         .stream().filter(n -> !n.isLeida()).count();
                 session.setAttribute("notificacionesCount", notificacionesCount);
+
+                // Si había un carrito anónimo en sesión y el usuario puede comprar, fusionar ítems
+                if (usuario.puedeComprar() && carritoRepository != null) {
+                    try {
+                        com.example.demo.Model.Carrito anonimo = (com.example.demo.Model.Carrito) session.getAttribute("carritoAnonimo");
+                        if (anonimo != null && anonimo.getItems() != null && !anonimo.getItems().isEmpty()) {
+                            com.example.demo.Model.Carrito carritoUsuario = carritoRepository.findByUsuarioId(usuario.getId())
+                                    .orElseGet(() -> new com.example.demo.Model.Carrito(usuario.getId()));
+                            for (com.example.demo.Model.embebidos.ProductoCarrito itemAnonimo : anonimo.getItems()) {
+                                java.util.Optional<com.example.demo.Model.embebidos.ProductoCarrito> existente = carritoUsuario.getItems().stream()
+                                        .filter(i -> itemAnonimo.getOfertaId() != null && itemAnonimo.getOfertaId().equals(i.getOfertaId()))
+                                        .findFirst();
+                                if (existente.isPresent()) {
+                                    existente.get().setCantidad(com.example.demo.services.ValidacionCantidad.sumar(existente.get().getCantidad(), itemAnonimo.getCantidad()));
+                                } else {
+                                    carritoUsuario.getItems().add(itemAnonimo);
+                                }
+                            }
+                            carritoUsuario.recalcularTotal();
+                            carritoUsuario.setUpdatedAt(LocalDateTime.now());
+                            carritoRepository.save(carritoUsuario);
+                            session.removeAttribute("carritoAnonimo");
+                        }
+                    } catch (Exception ignored) {
+                    }
+                }
 
                 // Revisar si hay una URL de retorno solicitada explícitamente o guardada por Spring Security
                 String redirectParam = request.getParameter("redirect");

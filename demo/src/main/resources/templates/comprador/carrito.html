@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -88,9 +88,11 @@
                                 <h3 class="cart-item__name" th:text="${detalle.nombre}"></h3>
 
                                 <p class="cart-item__price">
-                                    $<span th:text="${#numbers.formatDecimal(
-                                        detalle.precioUnitario, 0, 'COMMA', 0, 'POINT')}">0</span>
-                                    × <span th:text="${(detalle.cantidad % 1 == 0 ? #numbers.formatDecimal(detalle.cantidad, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(detalle.cantidad, 1, 'POINT', 2, 'COMMA'))} + ' ' + ${detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : ''}">1</span>
+                                    $<span th:text="${#numbers.formatDecimal(detalle.precioUnitario, 0, 'POINT', 0, 'COMMA')}">0</span>
+                                    <span th:text="${' por ' + (detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : 'un')}"> por un</span>
+                                    <small style="color:var(--text-muted); margin-left:4px;">
+                                        (× <span th:text="${(detalle.cantidad % 1 == 0 ? #numbers.formatDecimal(detalle.cantidad, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(detalle.cantidad, 1, 'POINT', 2, 'COMMA')) + ' ' + (detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : '')}">1 un</span>)
+                                    </small>
                                 </p>
 
                                 <!-- Nota de compra mínima (Informativo) -->
@@ -110,17 +112,19 @@
                                             <button type="button" class="cart-stepper__btn"
                                                 th:classappend="${detalle.cantidad <= (detalle.compraMinima != null ? detalle.compraMinima : 1)} ? 'is-min'"
                                                 aria-label="Disminuir cantidad"
-                                                onclick="cambiarCantidad(this, -1)">
+                                                th:attr="onclick=${'cambiarCantidad(this, -' + (detalle.permiteDecimales ? '0.1' : '1') + ')'}">
                                                 <i class="fa-solid fa-minus" aria-hidden="true"></i>
                                             </button>
                                             <input type="number" name="cantidad"
-                                                th:value="${detalle.cantidad}"
-                                                min="0.01" max="9999" step="any"
+                                                th:value="${detalle.cantidad % 1 == 0 ? #numbers.formatDecimal(detalle.cantidad, 0, 'POINT', 0, 'COMMA') : detalle.cantidad}"
+                                                th:min="${detalle.compraMinima != null ? detalle.compraMinima : (detalle.permiteDecimales ? '0.1' : '1')}"
+                                                max="9999"
+                                                th:step="${detalle.permiteDecimales ? '0.1' : '1'}"
                                                 aria-label="Cantidad"
                                                 class="cart-stepper__input">
                                             <button type="button" class="cart-stepper__btn"
                                                 aria-label="Aumentar cantidad"
-                                                onclick="cambiarCantidad(this, +1)">
+                                                th:attr="onclick=${'cambiarCantidad(this, ' + (detalle.permiteDecimales ? '0.1' : '1') + ')'}">
                                                 <i class="fa-solid fa-plus" aria-hidden="true"></i>
                                             </button>
                                         </div>
@@ -169,8 +173,14 @@
                         <dd>$<span th:text="${#numbers.formatDecimal(
                             total, 0, 'COMMA', 0, 'POINT')}">0</span></dd>
                     </dl>
-                    <a th:href="@{/pago}" class="cart-btn">
+                    <a th:if="${usuario != null}" th:href="@{/pago}" class="cart-btn">
                         <i class="fa-solid fa-credit-card" aria-hidden="true"></i> Proceder al pago
+                    </a>
+                    <a th:if="${usuario == null}" th:href="@{/usuario/registro(tipo='comprador', redirect='/pago')}" class="cart-btn">
+                        <i class="fa-solid fa-user-plus" aria-hidden="true"></i> Registrarme para pagar
+                    </a>
+                    <a th:if="${usuario == null}" th:href="@{/usuario/login(redirect='/pago')}" class="cart-link" style="margin-top: 8px; font-size: 0.88rem; text-align: center; display: block;">
+                        ¿Ya tienes cuenta? Inicia sesión
                     </a>
                     <a th:href="@{/}" class="cart-link">
                         <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Continuar comprando
@@ -192,10 +202,10 @@
         function cambiarCantidad(btn, delta) {
             const form  = btn.closest('form');
             const input = form.querySelector('input[name="cantidad"]');
-            const val = parseFloat(input.value) || 1;
-            let nuevo = val + delta;
-            const min = parseFloat(input.getAttribute('min')) || 1;
+            const val = parseFloat(input.value) || 0;
+            const min = parseFloat(input.getAttribute('min')) || 0.1;
             const max = parseFloat(input.getAttribute('max')) || 9999;
+            let nuevo = Math.round((val + delta) * 100) / 100;
             if (nuevo < min) nuevo = min;
             if (nuevo > max) nuevo = max;
             input.value = Number.isInteger(nuevo) ? nuevo : parseFloat(nuevo.toFixed(2));

@@ -52,7 +52,7 @@
         </div>
 
         <!-- Formulario -->
-        <form class="auth-form" th:action="@{/usuario/guardar}" method="post" id="registroForm">
+        <form class="auth-form" th:action="@{/usuario/guardar}" method="post" id="registroForm">`n            <input type="hidden" name="redirect" th:if="${param.redirect != null}" th:value="${param.redirect[0]}">
             <!-- Nombre -->
             <div class="auth-field">
                 <label class="auth-label" for="nombre">Nombre completo <span class="req">*</span></label>
@@ -131,7 +131,7 @@
         <!-- Iniciar Sesión Link -->
         <p class="auth-footer-prompt">
             ¿Ya tienes cuenta?
-            <a th:href="@{/usuario/login}" class="auth-footer-link">Inicia sesión aquí</a>
+            <a th:href="@{/usuario/login(redirect=${param.redirect != null ? param.redirect[0] : null})}" class="auth-footer-link">Inicia sesión aquí</a>
         </p>
 
         <!-- Volver al Inicio -->

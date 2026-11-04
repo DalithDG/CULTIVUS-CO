@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -136,6 +136,8 @@
                                       th:text="'$' + ${#numbers.formatDecimal(producto.precioMinimo, 0, 'COMMA', 0, 'POINT')}">
                                     $0
                                 </span>
+                                <span class="product-card__unit" th:if="${producto.precioMinimo != null}"
+                                      th:text="'/ ' + ${producto.abreviaturaUnidad}">/ kg</span>
                                 <span class="product-card__price" th:if="${producto.precioMinimo == null}"
                                       style="font-size: 1rem; color: var(--c-earth); font-weight: 500;">
                                     Próximamente
@@ -144,7 +146,7 @@
 
                             <p style="font-size: 0.8rem; color: var(--c-earth); margin-bottom: 8px;" th:if="${producto.stockTotal != null}">
                                 <i class="fas fa-boxes-stacked"></i> 
-                                <span th:text="${producto.stockTotal + ' ' + (producto.unidadMedida ?: 'unid') + ' disponibles'}"></span>
+                                <span th:text="${(producto.stockTotal % 1 == 0 ? #numbers.formatDecimal(producto.stockTotal, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(producto.stockTotal, 1, 'POINT', 1, 'COMMA')) + ' ' + producto.abreviaturaUnidad + ' disponibles'}"></span>
                             </p>
 
                             <div class="product-card__actions">
