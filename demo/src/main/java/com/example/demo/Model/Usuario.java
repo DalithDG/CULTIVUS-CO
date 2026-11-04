@@ -58,6 +58,9 @@ public class Usuario {
     @Field("codigo_verificacion")
     private String codigoVerificacion;
 
+    @Field("codigo_verificacion_expira")
+    private LocalDateTime codigoVerificacionExpira;
+
     @Field("email_verificado")
     private boolean emailVerificado;
 
@@ -189,6 +192,9 @@ public class Usuario {
 
     public String getCodigoVerificacion() { return codigoVerificacion; }
     public void setCodigoVerificacion(String codigoVerificacion) { this.codigoVerificacion = codigoVerificacion; }
+
+    public LocalDateTime getCodigoVerificacionExpira() { return codigoVerificacionExpira; }
+    public void setCodigoVerificacionExpira(LocalDateTime codigoVerificacionExpira) { this.codigoVerificacionExpira = codigoVerificacionExpira; }
 
     public boolean isEmailVerificado() { return emailVerificado; }
     public void setEmailVerificado(boolean emailVerificado) { this.emailVerificado = emailVerificado; }

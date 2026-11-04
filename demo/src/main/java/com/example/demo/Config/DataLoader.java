@@ -1,6 +1,7 @@
 package com.example.demo.Config;
 
 import com.example.demo.Model.Role;
+import com.example.demo.Model.Ubicacion;
 import com.example.demo.Model.Usuario;
 import com.example.demo.Model.embebidos.PerfilAdmin;
 import com.example.demo.Model.embebidos.PerfilTransportista;
@@ -198,6 +199,41 @@ public class DataLoader implements CommandLineRunner {
     }
 
     private void inicializarZonasYTarifas() {
+        if (ubicacionRepository != null && ubicacionRepository.count() == 0) {
+            logger.info("📍 Sembrando departamentos y ciudades en UbicacionRepository...");
+            List<CiudadUbicacion> bolivarCiudades = new ArrayList<>();
+            for (ZonasLogistica.ZonaDef def : ZonasLogistica.ZONAS) {
+                for (String muni : def.municipios()) {
+                    bolivarCiudades.add(new CiudadUbicacion(muni.trim()));
+                }
+            }
+            bolivarCiudades.sort((c1, c2) -> c1.getNombre().compareToIgnoreCase(c2.getNombre()));
+            ubicacionRepository.save(new Ubicacion("Bolívar", bolivarCiudades));
+
+            ubicacionRepository.save(new Ubicacion("Atlántico", List.of(
+                    new CiudadUbicacion("Barranquilla"), new CiudadUbicacion("Soledad"), new CiudadUbicacion("Malambo"),
+                    new CiudadUbicacion("Sabanalarga"), new CiudadUbicacion("Baranoa"), new CiudadUbicacion("Puerto Colombia"),
+                    new CiudadUbicacion("Galapa")
+            )));
+            ubicacionRepository.save(new Ubicacion("Sucre", List.of(
+                    new CiudadUbicacion("Sincelejo"), new CiudadUbicacion("Corozal"), new CiudadUbicacion("San Marcos"),
+                    new CiudadUbicacion("Tolú"), new CiudadUbicacion("Coveñas"), new CiudadUbicacion("Sampués")
+            )));
+            ubicacionRepository.save(new Ubicacion("Magdalena", List.of(
+                    new CiudadUbicacion("Santa Marta"), new CiudadUbicacion("Ciénaga"), new CiudadUbicacion("Fundación"),
+                    new CiudadUbicacion("El Banco"), new CiudadUbicacion("Plato")
+            )));
+            ubicacionRepository.save(new Ubicacion("Antioquia", List.of(
+                    new CiudadUbicacion("Medellín"), new CiudadUbicacion("Bello"), new CiudadUbicacion("Itagüí"),
+                    new CiudadUbicacion("Envigado"), new CiudadUbicacion("Rionegro")
+            )));
+            ubicacionRepository.save(new Ubicacion("Cundinamarca", List.of(
+                    new CiudadUbicacion("Bogotá D.C."), new CiudadUbicacion("Soacha"), new CiudadUbicacion("Chía"),
+                    new CiudadUbicacion("Zipaquirá"), new CiudadUbicacion("Facatativá")
+            )));
+            logger.info("✅ Departamentos y ciudades sembrados exitosamente.");
+        }
+
         if (zonaMunicipioRepository.count() == 0) {
             logger.info("🗺️ Cargando catálogo de zonas y municipios de Bolívar...");
             Map<String, String> nombresUbicaciones = new HashMap<>();

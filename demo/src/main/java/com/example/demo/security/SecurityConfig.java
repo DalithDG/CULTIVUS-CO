@@ -144,6 +144,8 @@ public class SecurityConfig {
                                 "/usuario/login", "/comprador/login",
                                 "/usuario/registro", "/comprador/registro",
                                 "/usuario/guardar", "/comprador/guardar",
+                                "/usuario/verificar", "/usuario/verificar/**",
+                                "/comprador/verificar", "/comprador/verificar/**",
                                 // Recuperación de contraseña: solo las rutas necesarias,
                                 // públicas pero con CSRF activo.
                                 "/usuario/recuperar", "/comprador/recuperar",

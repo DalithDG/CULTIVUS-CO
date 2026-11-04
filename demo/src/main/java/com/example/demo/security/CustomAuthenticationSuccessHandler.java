@@ -67,6 +67,12 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             Usuario usuario = usuarioRepository.findByEmail(emailLimpio).orElse(null);
 
             if (usuario != null) {
+                // Bloquear inicio de sesión si el correo no está verificado
+                if (!usuario.isEmailVerificado()) {
+                    request.getSession().invalidate();
+                    getRedirectStrategy().sendRedirect(request, response, "/usuario/verificar?email=" + java.net.URLEncoder.encode(usuario.getEmail(), java.nio.charset.StandardCharsets.UTF_8));
+                    return;
+                }
                 usuario.setUltimaConexion(LocalDateTime.now());
                 usuarioRepository.save(usuario);
 

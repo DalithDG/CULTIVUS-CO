@@ -1,6 +1,13 @@
 package com.example.demo.services;
 
 import jakarta.mail.internet.MimeMessage;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -42,13 +49,15 @@ public class RegistroMailService {
     @Async
     public void enviarBienvenida(String destinatario, String nombre, String rol) {
         String asunto = "Bienvenido a Cultivus";
-        String texto = "Hola " + nombre + ",\n\nTu registro como " + rol + " en Cultivus fue exitoso.\n\nEquipo Cultivus";
+        String texto = "Hola " + nombre + ",\n\nTu registro como " + rol
+                + " en Cultivus fue exitoso.\n\nEquipo Cultivus";
         String html = "<p>Hola " + nombre + ",</p><p>Tu registro como <b>" + rol + "</b> en Cultivus fue exitoso.</p>";
         enviar(destinatario, asunto, texto, html);
     }
 
     @Async
     public void enviarCodigoVerificacion(String destinatario, String nombre, String codigo) {
+        log.warn("[DEV] Código de verificación para {}: {}", destinatario, codigo);
         String asunto = "Código de verificación - Cultivus";
         String texto = "Hola " + nombre + ",\n\nTu código de verificación es: " + codigo + "\n\nEquipo Cultivus";
         String html = "<p>Hola " + nombre + ",</p><p>Tu código de verificación es: <b>" + codigo + "</b></p>";
@@ -56,7 +65,15 @@ public class RegistroMailService {
     }
 
     private void enviar(String destinatario, String asunto, String texto, String html) {
-        if (!StringUtils.hasText(destinatario)) return;
+        if (!StringUtils.hasText(destinatario)) {
+            return;
+        }
+        // Webhook HTTPS (ideal para Render Free)
+        if (StringUtils.hasText(webhookUrl)) {
+            if (enviarPorWebhook(destinatario, asunto, texto, html)) {
+                return;
+            }
+        }
         // SMTP
         if (StringUtils.hasText(host) && StringUtils.hasText(username) && StringUtils.hasText(password)) {
             try {
@@ -64,10 +81,10 @@ public class RegistroMailService {
                 if (ms != null) {
                     MimeMessage msg = ms.createMimeMessage();
                     MimeMessageHelper h = new MimeMessageHelper(msg, true, "UTF-8");
-                    h.setFrom(remitente);
-                    h.setTo(destinatario);
-                    h.setSubject(asunto);
-                    h.setText(texto, html);
+                    h.setFrom(Objects.requireNonNull(remitente));
+                    h.setTo(Objects.requireNonNull(destinatario));
+                    h.setSubject(Objects.requireNonNull(asunto));
+                    h.setText(Objects.requireNonNull(texto), Objects.requireNonNull(html));
                     ms.send(msg);
                     log.info("Correo de registro enviado a {}", destinatario);
                     return;
@@ -77,5 +94,45 @@ public class RegistroMailService {
             }
         }
         log.warn("SMTP no configurado: correo de registro no enviado a {}", destinatario);
+    }
+
+    private boolean enviarPorWebhook(String destinatario, String asunto, String texto, String htmlBody) {
+        try {
+            HttpClient client = HttpClient.newBuilder()
+                    .followRedirects(HttpClient.Redirect.NEVER)
+                    .connectTimeout(Duration.ofSeconds(15))
+                    .build();
+            String json = "{\"to\":\"" + escapar(destinatario) + "\","
+                    + "\"subject\":\"" + escapar(asunto) + "\","
+                    + "\"text\":\"" + escapar(texto) + "\","
+                    + "\"html\":\"" + escapar(htmlBody) + "\"}";
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(webhookUrl.trim()))
+                    .timeout(Duration.ofSeconds(20))
+                    .header("Content-Type", "application/json; charset=UTF-8")
+                    .POST(HttpRequest.BodyPublishers.ofString(json, StandardCharsets.UTF_8))
+                    .build();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            int status = response.statusCode();
+            if (status >= 200 && status < 400) {
+                log.info("Correo de registro enviado por webhook (status={})", status);
+                return true;
+            }
+            log.error("Fallo webhook registro (status={})", status);
+        } catch (Exception e) {
+            log.error("Error webhook registro: {}", e.getMessage());
+        }
+        return false;
+    }
+
+    private static String escapar(String valor) {
+        if (valor == null) {
+            return "";
+        }
+        return valor.replace("\\", "\\\\")
+                .replace("\"", "\\\"")
+                .replace("\r", "\\r")
+                .replace("\n", "\\n")
+                .replace("\t", "\\t");
     }
 }

@@ -23,8 +23,14 @@
             <!-- Buscador Amplio Adaptable -->
             <div th:replace="~{fragments/nav-publico :: buscador}"></div>
 
-            <!-- Acciones de Usuario (Iniciar sesión, Carrito) -->
+            <!-- Acciones de Usuario (Vender, Iniciar sesión, Carrito) -->
             <div class="header-actions">
+                <!-- Vender en Cultivus en barra de escritorio -->
+                <a th:href="@{/vendedor/registro}" class="btn-sell highlight" title="Vender en Cultivus">
+                    <i class="fas fa-store"></i>
+                    <span>Vender en Cultivus</span>
+                </a>
+
                 <!-- Iniciar sesión (botón secundario tintado) -->
                 <a th:href="@{/usuario/login}" class="btn-login">
                     <i class="fas fa-user"></i>
@@ -39,7 +45,7 @@
             </div>
 
             <!-- Mobile Menu Toggle -->
-            <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Abrir menú">
+            <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Abrir menú de navegación móvil">
                 <span></span>
                 <span></span>
                 <span></span>
@@ -47,23 +53,92 @@
         </div>
     </div>
 
-    <!-- Mobile Menu -->
-    <div class="mobile-menu mobile-menu--publico" id="mobileMenu">
+    <!-- Mobile Menu Adaptable Apple -->
+    <div class="mobile-menu mobile-menu--publico" id="mobileMenu" aria-hidden="true">
         <div class="mobile-menu-header">
             <span>Menú</span>
             <button class="mobile-menu-close" id="mobileMenuClose" aria-label="Cerrar menú">
                 <i class="fas fa-times"></i>
             </button>
         </div>
-        <nav class="mobile-nav">
-            <th:block th:replace="~{fragments/nav-publico :: enlacesMovilPublico}"></th:block>
+
+        <!-- Tarjeta de bienvenida a visitantes -->
+        <div class="mobile-guest-card">
+            <div class="mobile-guest-head">
+                <div class="mobile-guest-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="mobile-guest-text">
+                    <span class="mobile-guest-title">¡Bienvenido a Cultivus!</span>
+                    <span class="mobile-guest-subtitle">Compra directo del campo o vende tus cosechas</span>
+                </div>
+            </div>
+            <div class="mobile-guest-actions">
+                <a th:href="@{/usuario/login}" class="mobile-guest-btn primary">
+                    <i class="fas fa-sign-in-alt"></i>
+                    <span>Iniciar sesión</span>
+                </a>
+                <a th:href="@{/usuario/registro}" class="mobile-guest-btn secondary">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Registrarse</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Buscador integrado en móvil -->
+        <div class="header-search header-search--mobile">
+            <form th:action="@{/buscar}" method="get" role="search">
+                <input type="search" name="q" placeholder="Buscar productos o fincas..."
+                    autocomplete="off" aria-label="Buscar productos" class="header-search__input">
+                <button type="submit" aria-label="Buscar" class="header-search__btn">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
+        </div>
+
+        <nav class="mobile-nav" aria-label="Navegación móvil pública">
+            <!-- Accesos rápidos en cuadrícula 2x2 -->
+            <div class="mobile-quick-grid">
+                <a th:href="@{/}" class="mobile-quick-card">
+                    <i class="fas fa-home"></i>
+                    <span>Inicio</span>
+                </a>
+                <a th:href="@{/category}" class="mobile-quick-card">
+                    <i class="fas fa-th-large"></i>
+                    <span>Categorías</span>
+                </a>
+                <a th:href="@{/ofertas}" class="mobile-quick-card">
+                    <i class="fas fa-tag"></i>
+                    <span>Ofertas</span>
+                </a>
+                <a th:href="@{/carrito}" class="mobile-quick-card">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Carrito</span>
+                    <em class="mobile-quick-badge" th:if="${carritoCount != null and carritoCount > 0}" th:text="${carritoCount}">0</em>
+                </a>
+            </div>
+
+            <span class="mobile-section-label">Explorar mercado</span>
+            <a th:href="@{/productores#productores}"><i class="fas fa-seedling"></i> Productores</a>
+            <a th:href="@{/nosotros#sobre-nosotros}"><i class="fas fa-info-circle"></i> Sobre nosotros</a>
+
             <div class="mobile-divider"></div>
-            <a th:href="@{/vendedor/registro}" class="mobile-highlight"><i class="fas fa-store"></i> Vender en
-                Cultivus</a>
-            <a th:href="@{/transportista/registro}" class="mobile-highlight"><i class="fas fa-truck-fast"></i> Conviértete en Transportista</a>
-            <a th:href="@{/usuario/login}"><i class="fas fa-sign-in-alt"></i> Iniciar sesión</a>
-            <a th:href="@{/usuario/registro}"><i class="fas fa-user-plus"></i> Registrarse</a>
+            <span class="mobile-section-label">Únete a Cultivus</span>
+            <a th:href="@{/vendedor/registro}" class="mobile-highlight">
+                <i class="fas fa-store"></i> Vender en Cultivus
+            </a>
+            <a th:href="@{/transportista/registro}" class="mobile-highlight">
+                <i class="fas fa-truck-fast"></i> Conviértete en transportista
+            </a>
         </nav>
+
+        <!-- Pie fijo con botón de iniciar sesión -->
+        <div class="mobile-menu-footer">
+            <a th:href="@{/usuario/login}" class="mobile-login-footer-btn">
+                <i class="fas fa-sign-in-alt"></i>
+                <span>Iniciar sesión</span>
+            </a>
+        </div>
     </div>
 
     <script th:src="@{/js/header.js}"></script>

@@ -684,11 +684,9 @@ body.menu-open .site-header--comprador {
 
 /* ── 10. Móvil (≤1024px) y Menú Lateral ────────────────────────────────────── */
 @media (max-width: 1024px) {
-  .header--comprador .header-nav {
-    display: none;
-  }
-
-  .header--comprador .account-menu {
+  .header--comprador .header-nav,
+  .header--comprador .account-menu,
+  .header--comprador .btn-sell {
     display: none;
   }
 
@@ -699,8 +697,7 @@ body.menu-open .site-header--comprador {
 
 @media (max-width: 768px) {
 
-  .header--comprador .header-search--wide,
-  .header--comprador .btn-sell {
+  .header--comprador .header-search--wide {
     display: none;
   }
 
