@@ -90,6 +90,10 @@ public class DataLoader implements CommandLineRunner {
      * se actualiza automáticamente para no dejar contraseñas en texto plano.
      */
     private void migrarAdminSiEsNecesario(Usuario admin) {
+        if (!admin.isEmailVerificado()) {
+            admin.setEmailVerificado(true);
+            usuarioRepository.save(admin);
+        }
         String contrasenaActual = admin.getContrasena();
 
         // BCrypt siempre empieza con "$2a$", "$2b$" o "$2y$"
@@ -123,6 +127,7 @@ public class DataLoader implements CommandLineRunner {
         admin.setContrasena(passwordEncoder.encode(ADMIN_PASSWORD));
         admin.setRol(Role.ADMIN);
         admin.setPerfilAdmin(perfilAdmin);
+        admin.setEmailVerificado(true);
 
         usuarioRepository.save(admin);
 
@@ -166,6 +171,7 @@ public class DataLoader implements CommandLineRunner {
             transportista.addRole(Role.TRANSPORTISTA);
             transportista.addRole(Role.COMPRADOR);
             transportista.setPerfilTransportista(perfil);
+            transportista.setEmailVerificado(true);
 
             usuarioRepository.save(transportista);
             logger.info("✅ Usuario TRANSPORTISTA demo creado:");

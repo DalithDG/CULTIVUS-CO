@@ -28,9 +28,18 @@
                             </h3>
                             <p class="adm-section-head__sub">Productos publicados en la plataforma con su categoría, precio, inventario y estado.</p>
                         </div>
+                        <div class="adm-section-head__actions">
+                            <a th:href="@{/admin/moderacion}" class="btn-action btn-action--outline">
+                                <i class="fas fa-lightbulb" aria-hidden="true"></i>
+                                <span>Sugerencias de Catálogo</span>
+                                <span class="admin-nav-badge" th:if="${catalogoPendienteCount != null and catalogoPendienteCount > 0}" th:text="${catalogoPendienteCount}">0</span>
+                            </a>
+                        </div>
+                    </div>
 
-                        <!-- Buscador y Filtro -->
-                        <form th:action="@{/admin/productos}" method="get" class="adm-filter-form">
+                    <!-- Buscador y Filtro -->
+                    <div style="padding: 16px 24px; border-bottom: 1px solid var(--adm-line); background: var(--adm-bg);">
+                        <form th:action="@{/admin/productos}" method="get" class="adm-filter-form" style="margin: 0;">
                             <input type="text" name="search" th:value="${searchQuery}" placeholder="Buscar por nombre o descripción..." class="adm-input adm-input--search">
                             <select name="categoriaId" class="adm-select">
                                 <option value="">Todas las Categorías</option>

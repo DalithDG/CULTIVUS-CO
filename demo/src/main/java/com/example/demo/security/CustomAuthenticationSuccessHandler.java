@@ -35,14 +35,16 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
     @Autowired
     public CustomAuthenticationSuccessHandler(UsuarioRepository usuarioRepository,
-                                             NotificacionRepository notificacionRepository) {
+            NotificacionRepository notificacionRepository) {
         this.usuarioRepository = usuarioRepository;
         this.notificacionRepository = notificacionRepository;
     }
 
     private boolean esRutaSegura(String url) {
-        if (url == null || url.isBlank()) return false;
-        if (!url.startsWith("/") || url.startsWith("//")) return false;
+        if (url == null || url.isBlank())
+            return false;
+        if (!url.startsWith("/") || url.startsWith("//"))
+            return false;
         String low = url.toLowerCase();
         return !low.startsWith("/usuario/login") && !low.startsWith("/usuario/logout")
                 && !low.startsWith("/logout") && !low.startsWith("/error");
@@ -50,8 +52,8 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
-                                        HttpServletResponse response,
-                                        Authentication authentication) throws IOException, ServletException {
+            HttpServletResponse response,
+            Authentication authentication) throws IOException, ServletException {
 
         clearAuthenticationAttributes(request);
 
@@ -67,6 +69,18 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             Usuario usuario = usuarioRepository.findByEmail(emailLimpio).orElse(null);
 
             if (usuario != null) {
+                // Administradores quedan verificados automáticamente
+                if (usuario.hasRole(Role.ADMIN) && !usuario.isEmailVerificado()) {
+                    usuario.setEmailVerificado(true);
+                    usuarioRepository.save(usuario);
+                }
+                // Bloquear inicio de sesión si el correo no está verificado
+                if (!usuario.isEmailVerificado()) {
+                    request.getSession().invalidate();
+                    getRedirectStrategy().sendRedirect(request, response, "/usuario/verificar?email="
+                            + java.net.URLEncoder.encode(usuario.getEmail(), java.nio.charset.StandardCharsets.UTF_8));
+                    return;
+                }
                 usuario.setUltimaConexion(LocalDateTime.now());
                 usuarioRepository.save(usuario);
 
@@ -77,7 +91,8 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                         .stream().filter(n -> !n.isLeida()).count();
                 session.setAttribute("notificacionesCount", notificacionesCount);
 
-                // Revisar si hay una URL de retorno solicitada explícitamente o guardada por Spring Security
+                // Revisar si hay una URL de retorno solicitada explícitamente o guardada por
+                // Spring Security
                 String redirectParam = request.getParameter("redirect");
                 String targetUrl = null;
 
@@ -103,7 +118,8 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
                 if (targetUrl != null) {
                     // Regla de negocio: un vendedor no puede comprar (/carrito o /pago)
-                    if (usuario.hasRole(Role.VENDEDOR) && (targetUrl.startsWith("/carrito") || targetUrl.startsWith("/pago"))) {
+                    if (usuario.hasRole(Role.VENDEDOR)
+                            && (targetUrl.startsWith("/carrito") || targetUrl.startsWith("/pago"))) {
                         session.setAttribute("error", Usuario.MENSAJE_VENDEDOR_NO_PUEDE_COMPRAR);
                         getRedirectStrategy().sendRedirect(request, response, "/vendedor/dashboard");
                         return;

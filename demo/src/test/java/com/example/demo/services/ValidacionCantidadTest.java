@@ -80,6 +80,25 @@ class ValidacionCantidadTest {
     }
 
     @Test
+    @DisplayName("Permite comprar 1.25 kg con compra mínima de 0.25 kg")
+    void permite1Punto25KgConCompraMinima0Punto25() {
+        // Cantidad exacta 1.25 kg con compra mínima 0.25 kg y stock 5.0 kg
+        assertNull(ValidacionCantidad.validarCantidad(kg, 1.25, 0.25, 5.0));
+
+        // Cantidad mínima exacta 0.25 kg con compra mínima 0.25 kg
+        assertNull(ValidacionCantidad.validarCantidad(kg, 0.25, 0.25, 5.0));
+
+        // Cantidad menor a compra mínima 0.25 kg es rechazada
+        String errorMenor = ValidacionCantidad.validarCantidad(kg, 0.20, 0.25, 5.0);
+        assertNotNull(errorMenor);
+        assertEquals("La compra mínima es 0,25 kg.", errorMenor);
+
+        // Compra mínima 0.25 es coherente con unidad fraccionable (kg) y rechazada en enteros
+        assertNull(ValidacionCantidad.validarCoherenciaUnidad(kg, 0.25, "La compra mínima"));
+        assertNotNull(ValidacionCantidad.validarCoherenciaUnidad(un, 0.25, "La compra mínima"));
+    }
+
+    @Test
     @DisplayName("AC2: Peso y Volumen también aceptan enteros")
     void unidadesPesoYVolumenAceptanEnteros() {
         assertNull(ValidacionCantidad.validarCantidad(kg, 2.0, 1.0, 10.0));

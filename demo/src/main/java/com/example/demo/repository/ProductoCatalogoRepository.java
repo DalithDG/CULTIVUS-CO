@@ -22,19 +22,19 @@ public interface ProductoCatalogoRepository extends MongoRepository<ProductoCata
     List<ProductoCatalogo> findByAprobadoTrueAndActivoTrue();
 
     /** Catálogo público paginado */
-    @Query(value = "{ 'aprobado': true, 'activo': true }", collation = "{ 'locale': 'es', 'strength': 2 }")
+    @Query(value = "{ 'aprobado': true, 'activo': true, 'totalVendedores': { $gt: 0 } }", collation = "{ 'locale': 'es', 'strength': 2 }")
     Page<ProductoCatalogo> findPublico(Pageable pageable);
 
     /** Catálogo por categoría(es) paginado */
-    @Query(value = "{ 'aprobado': true, 'activo': true, 'categoria.id': { $in: ?0 } }", collation = "{ 'locale': 'es', 'strength': 2 }")
+    @Query(value = "{ 'aprobado': true, 'activo': true, 'totalVendedores': { $gt: 0 }, 'categoria.id': { $in: ?0 } }", collation = "{ 'locale': 'es', 'strength': 2 }")
     Page<ProductoCatalogo> findPublicoByCategorias(List<String> categoriaIds, Pageable pageable);
 
     /** Catálogo con precio máximo paginado */
-    @Query(value = "{ 'aprobado': true, 'activo': true, 'precioMinimo': { $lte: ?0 } }", collation = "{ 'locale': 'es', 'strength': 2 }")
+    @Query(value = "{ 'aprobado': true, 'activo': true, 'totalVendedores': { $gt: 0 }, 'precioMinimo': { $lte: ?0 } }", collation = "{ 'locale': 'es', 'strength': 2 }")
     Page<ProductoCatalogo> findPublicoByPrecioMax(Double precioMax, Pageable pageable);
 
     /** Catálogo por categoría(es) y precio máximo paginado */
-    @Query(value = "{ 'aprobado': true, 'activo': true, 'categoria.id': { $in: ?0 }, 'precioMinimo': { $lte: ?1 } }", collation = "{ 'locale': 'es', 'strength': 2 }")
+    @Query(value = "{ 'aprobado': true, 'activo': true, 'totalVendedores': { $gt: 0 }, 'categoria.id': { $in: ?0 }, 'precioMinimo': { $lte: ?1 } }", collation = "{ 'locale': 'es', 'strength': 2 }")
     Page<ProductoCatalogo> findPublicoByCategoriasAndPrecioMax(List<String> categoriaIds, Double precioMax, Pageable pageable);
 
     /** Catálogo por categoría */

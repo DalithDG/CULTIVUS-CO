@@ -254,11 +254,11 @@
                                 <div class="order-item__sub">
                                     <span th:text="${detalle.cantidad}">1</span>
                                     <span th:text="${detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : 'unid'}"></span>
-                                    × $<span th:text="${#numbers.formatDecimal(detalle.precioUnitario, 0, 'COMMA', 0, 'POINT')}">0</span>
+                                    × $<span th:text="${#numbers.formatInteger(detalle.precioUnitario, 1, 'POINT')}">0</span>
                                 </div>
                             </div>
                             <div class="order-item__total">
-                                $<span th:text="${#numbers.formatDecimal(detalle.subtotal, 0, 'COMMA', 0, 'POINT')}">0</span>
+                                $<span th:text="${#numbers.formatInteger(detalle.subtotal, 1, 'POINT')}">0</span>
                             </div>
                         </div>
                     </div>
@@ -266,11 +266,11 @@
                     <div class="order-totals">
                         <div class="order-row">
                             <span>Subtotal productos</span>
-                            <span>$<span th:text="${#numbers.formatDecimal(subtotal, 0, 'COMMA', 0, 'POINT')}">0</span></span>
+                            <span>$<span th:text="${#numbers.formatInteger(subtotal, 1, 'POINT')}">0</span></span>
                         </div>
                         <div class="order-row">
                             <span>Envío (departamental)</span>
-                            <span>$<span id="displayEnvio" th:text="${#numbers.formatDecimal(costoEnvio, 0, 'COMMA', 0, 'POINT')}">0</span></span>
+                            <span>$<span id="displayEnvio" th:text="${#numbers.formatInteger(costoEnvio, 1, 'POINT')}">0</span></span>
                         </div>
                         <ul id="desgloseEnvio" class="ship-list" th:if="${desgloseEnvio != null and !desgloseEnvio.empty}">
                             <li th:each="d : ${desgloseEnvio}" class="ship-item">
@@ -279,7 +279,7 @@
                                     <span class="ship-item__route" th:text="${(d.ciudadOrigen != null ? d.ciudadOrigen : 'Origen') + ' (Zona ' + (d.zonaOrigen != null ? d.zonaOrigen : '-') + ') → ' + (d.ciudadDestino != null ? d.ciudadDestino : 'Destino') + ' (Zona ' + (d.zonaDestino != null ? d.zonaDestino : '-') + ')'}">Origen → Destino</span>
                                     <span class="ship-chip" th:if="${d.tarifaPorDefecto}">Tarifa estándar</span>
                                 </div>
-                                <span class="ship-item__price">$<span th:text="${#numbers.formatDecimal(d.tarifaCentavos / 100.0, 0, 'COMMA', 0, 'POINT')}">0</span></span>
+                                <span class="ship-item__price">$<span th:text="${#numbers.formatInteger(d.tarifaCentavos / 100.0, 1, 'POINT')}">0</span></span>
                             </li>
                         </ul>
                         <p class="order-note">
@@ -287,7 +287,7 @@
                         </p>
                         <div class="order-row order-row--total">
                             <span>Total</span>
-                            <span>$<span id="displayTotal" th:text="${#numbers.formatDecimal(total, 0, 'COMMA', 0, 'POINT')}">0</span></span>
+                            <span>$<span id="displayTotal" th:text="${#numbers.formatInteger(total, 1, 'POINT')}">0</span></span>
                         </div>
                     </div>
 
