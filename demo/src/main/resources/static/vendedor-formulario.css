@@ -76,6 +76,14 @@
   font-weight: 700;
   letter-spacing: -0.025em;
   color: var(--vf-ink);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.vf-header__title i {
+  color: var(--vf-green);
+  font-size: 0.9em;
 }
 
 .vf-header__subtitle {
@@ -139,9 +147,9 @@
 
 .vf-section__header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 }
 
 .vf-section__badge {
@@ -155,6 +163,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
 }
 
 .vf-section__title {
@@ -169,9 +179,10 @@
 }
 
 .vf-section__subtitle {
-  margin: 2px 0 0 40px;
+  margin: 3px 0 0 0;
   font-size: 0.84rem;
   color: var(--vf-ink-secondary);
+  line-height: 1.35;
 }
 
 /* ── Sistema de Campos y Grillas ────────────────────────────── */

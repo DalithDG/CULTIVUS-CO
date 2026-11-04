@@ -52,7 +52,8 @@
         </div>
 
         <!-- Formulario -->
-        <form class="auth-form" th:action="@{/usuario/guardar}" method="post" id="registroForm">`n            <input type="hidden" name="redirect" th:if="${param.redirect != null}" th:value="${param.redirect[0]}">
+        <form class="auth-form" th:action="@{/usuario/guardar}" method="post" id="registroForm">
+            <input type="hidden" name="redirect" th:if="${param.redirect != null}" th:value="${param.redirect[0]}">
             <!-- Nombre -->
             <div class="auth-field">
                 <label class="auth-label" for="nombre">Nombre completo <span class="req">*</span></label>

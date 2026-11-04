@@ -169,6 +169,11 @@ public class CatalogoInicializador {
         } catch (Exception e) {
             logger.error("❌ US-06: error migrando ofertas existentes", e);
         }
+        try {
+            recalcularMetricasProductos();
+        } catch (Exception e) {
+            logger.error("❌ US-06: error recalculando métricas de productos", e);
+        }
     }
 
     /**
@@ -340,5 +345,44 @@ public class CatalogoInicializador {
             logger.info("✅ US-06: {} ofertas migradas con su unidad de venta", migradas);
         }
         return migradas;
+    }
+
+    /**
+     * Fase final: recalcula precioMinimo, totalVendedores y stockTotal de todos los productos
+     * del catálogo a partir de sus ofertas disponibles.
+     */
+    public int recalcularMetricasProductos() {
+        int actualizados = 0;
+        for (ProductoCatalogo p : catalogoRepository.findAll()) {
+            List<OfertaVendedor> ofertasActivas = ofertaRepository.findByProductoCatalogoIdAndDisponibleTrue(p.getId()).stream()
+                    .filter(o -> o.isDisponible() && o.getPrecio() != null && o.getPrecio() > 0
+                            && (o.getEstadoPublicacion() == null || o.getEstadoPublicacion() == EstadoPublicacion.PUBLICADO))
+                    .collect(java.util.stream.Collectors.toList());
+
+            if (ofertasActivas.isEmpty()) {
+                p.setPrecioMinimo(null);
+                p.setTotalVendedores(0);
+                p.setStockTotal(0.0);
+            } else {
+                double precioMin = ofertasActivas.stream()
+                        .mapToDouble(OfertaVendedor::getPrecio)
+                        .min()
+                        .orElse(0.0);
+                double stockTotal = ofertasActivas.stream()
+                        .mapToDouble(o -> o.getStock() != null ? o.getStock() : 0.0)
+                        .sum();
+
+                p.setPrecioMinimo(precioMin);
+                p.setTotalVendedores(ofertasActivas.size());
+                p.setStockTotal(stockTotal);
+            }
+            p.setUpdatedAt(LocalDateTime.now());
+            catalogoRepository.save(p);
+            actualizados++;
+        }
+        if (actualizados > 0) {
+            logger.info("✅ US-06: {} productos con métricas recalculadas desde ofertas disponibles", actualizados);
+        }
+        return actualizados;
     }
 }

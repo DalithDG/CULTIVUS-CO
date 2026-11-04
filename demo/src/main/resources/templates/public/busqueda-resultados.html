@@ -133,7 +133,7 @@
 
                             <div class="product-card__price-row">
                                 <span class="product-card__price" th:if="${producto.precioMinimo != null}" 
-                                      th:text="'$' + ${#numbers.formatDecimal(producto.precioMinimo, 0, 'COMMA', 0, 'POINT')}">
+                                      th:text="'$' + ${#numbers.formatInteger(producto.precioMinimo, 1, 'POINT')}">
                                     $0
                                 </span>
                                 <span class="product-card__unit" th:if="${producto.precioMinimo != null}"

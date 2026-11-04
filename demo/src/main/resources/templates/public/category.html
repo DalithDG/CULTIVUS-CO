@@ -418,7 +418,7 @@
 
                                         <div class="cat-card__price-row">
                                             <span class="cat-card__price-val" th:if="${producto.precioMinimo != null}"
-                                                th:text="'$' + ${#numbers.formatDecimal(producto.precioMinimo, 0, 'POINT', 0, 'COMMA')}">
+                                                th:text="'$' + ${#numbers.formatInteger(producto.precioMinimo, 1, 'POINT')}">
                                                 $2.500
                                             </span>
                                             <span class="cat-card__price-val" th:if="${producto.precioMinimo == null}">
@@ -451,7 +451,7 @@
                             <!-- ESTADO VACÍO CUANDO NO HAY PRODUCTOS -->
                             <div class="cat-empty" th:if="${catalogo == null or catalogo.isEmpty()}" style="grid-column: 1 / -1; text-align: center; padding: 4rem 1rem;">
                                 <i class="fas fa-box-open" style="font-size: 3rem; color: #a0aec0; margin-bottom: 1rem; display: block;"></i>
-                                <h3 style="color: #4a5568; font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">Aún no hay productos para esta categoría</h3>
+                                <h3 style="color: #4a5568; font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">Aún no hay productores en esta categoría</h3>
                                 <p style="color: #718096; font-size: 0.95rem;">Pronto nuestros productores locales agregarán nuevas cosechas.</p>
                             </div>
 

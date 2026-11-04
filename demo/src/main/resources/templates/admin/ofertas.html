@@ -57,7 +57,7 @@
                                     <td><span class="adm-cell-title" th:text="${of.nombreProducto}">Producto</span></td>
                                     <td th:text="${of.vendedor != null ? (of.vendedor.razonSocial != null ? of.vendedor.razonSocial : of.vendedor.nombre) : 'Sin vendedor'}">Vendedor</td>
                                     <td class="adm-td-right">
-                                        <span class="adm-amount" th:text="${of.precio != null ? '$' + #numbers.formatDecimal(of.precio, 1, 'POINT', 0, 'COMMA') : '-'}">$0</span>
+                                        <span class="adm-amount" th:text="${of.precio != null ? '$' + #numbers.formatInteger(of.precio, 1, 'POINT') : '-'}">$0</span>
                                     </td>
                                     <td class="adm-td-right adm-tabular" th:text="${of.stock != null ? of.stock : 0}">0</td>
                                     <td class="adm-td-right adm-tabular" th:text="${of.compraMinima != null ? of.compraMinima : 1}">1</td>

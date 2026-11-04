@@ -80,10 +80,11 @@
 
                     <div class="product-card__price-row">
                         <span class="product-card__price"
-                              th:text="'$' + ${#numbers.formatDecimal(o.precio, 0, 'COMMA', 0, 'POINT')}">
+                              th:text="'$' + ${o.precio != null ? #numbers.formatInteger(o.precio, 1, 'POINT') : '0'}">
                             $0
                         </span>
-                        <span class="product-card__unit">/ lote</span>
+                        <span class="product-card__unit"
+                              th:text="'/ ' + ${o.unidadMedida != null ? o.unidadMedida.abreviatura : 'un'}">/ kg</span>
                     </div>
 
                     <div class="product-card__actions">

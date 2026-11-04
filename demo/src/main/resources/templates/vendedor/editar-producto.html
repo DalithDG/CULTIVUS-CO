@@ -21,16 +21,12 @@
             <!-- Header Apple Style -->
             <div class="vf-header">
                 <div class="vf-header__main">
-                    <div class="vf-header__icon" aria-hidden="true">
-                        <i class="fas fa-pen-to-square"></i>
-                    </div>
                     <div>
                         <h1 class="vf-header__title">Editar Oferta</h1>
                         <p class="vf-header__subtitle">Actualiza el precio, stock o detalles de tu producto en el mercado.</p>
                     </div>
                 </div>
                 <div class="vf-steps-badge">
-                    <i class="fas fa-boxes-stacked" aria-hidden="true"></i>
                     <span>Gestión de Inventario</span>
                 </div>
             </div>
@@ -74,7 +70,7 @@
                             </p>
                             <p th:if="${oferta.estadoPublicacion != null and oferta.estadoPublicacion.name() == 'PENDIENTE'}"
                                style="color:#795548; font-weight:600; margin-top:4px;">
-                                ⏳ En revisión por el administrador (no visible al público aún)
+                                En revisión por el administrador (no visible al público aún)
                             </p>
                         </div>
                     </div>
@@ -87,9 +83,7 @@
                             <div class="vf-section__header">
                                 <span class="vf-section__badge">1</span>
                                 <div>
-                                    <h2 class="vf-section__title">
-                                        <i class="fas fa-wrench" aria-hidden="true"></i> Corregir Sugerencia
-                                    </h2>
+                                    <h2 class="vf-section__title">Corregir Sugerencia</h2>
                                     <p class="vf-section__subtitle">Ajusta los datos del producto para que el administrador pueda aprobarlo.</p>
                                 </div>
                             </div>
@@ -111,7 +105,7 @@
                                                 th:value="${u.abreviatura}"
                                                 th:selected="${unidad.abreviatura == u.abreviatura}"
                                                 th:text="${u.nombre + ' (' + u.abreviatura + ')'}">Kilogramos (kg)</option>
-                                        <option value="otra">➕ Otra (personalizada)...</option>
+                                        <option value="otra">Otra unidad personalizada...</option>
                                     </select>
                                 </div>
                             </div>
@@ -131,10 +125,10 @@
 
                         <div class="vf-actions">
                             <a th:href="@{/vendedor/mis-productos}" class="vf-btn vf-btn--secondary">
-                                <i class="fas fa-arrow-left" aria-hidden="true"></i> Volver a Mis Productos
+                                Volver a Mis Productos
                             </a>
                             <button type="submit" class="vf-btn vf-btn--primary" style="background: linear-gradient(135deg, #B8860B 0%, #8B6508 100%);">
-                                <i class="fas fa-paper-plane" aria-hidden="true"></i> Reenviar a Revisión
+                                Reenviar a Revisión
                             </button>
                         </div>
                     </form>
@@ -148,9 +142,7 @@
                             <div class="vf-section__header">
                                 <span class="vf-section__badge">1</span>
                                 <div>
-                                    <h2 class="vf-section__title">
-                                        <i class="fas fa-scale-balanced" aria-hidden="true"></i> Unidad de Venta
-                                    </h2>
+                                    <h2 class="vf-section__title">Unidad de Venta</h2>
                                     <p class="vf-section__subtitle">Verifica o ajusta la unidad autorizada para esta oferta.</p>
                                 </div>
                             </div>
@@ -198,9 +190,7 @@
                             <div class="vf-section__header">
                                 <span class="vf-section__badge">2</span>
                                 <div>
-                                    <h2 class="vf-section__title">
-                                        <i class="fas fa-tag" aria-hidden="true"></i> Precio y Stock
-                                    </h2>
+                                    <h2 class="vf-section__title">Precio y Stock</h2>
                                     <p class="vf-section__subtitle">Ajusta tu precio y disponibilidad.</p>
                                 </div>
                             </div>
@@ -213,7 +203,7 @@
                                     <div class="vf-input-wrap vf-input-currency">
                                         <span class="vf-currency-symbol">$</span>
                                         <input type="number" id="precio" name="precio" required min="100" step="1"
-                                               class="vf-input" th:value="${oferta.precio}">
+                                               class="vf-input" th:value="${oferta.precio != null ? #numbers.formatInteger(oferta.precio, 1, 'NONE') : ''}">
                                     </div>
                                 </div>
                                 <div class="vf-field">
@@ -244,9 +234,7 @@
                             <div class="vf-section__header">
                                 <span class="vf-section__badge">3</span>
                                 <div>
-                                    <h2 class="vf-section__title">
-                                        <i class="fas fa-circle-info" aria-hidden="true"></i> Detalles Específicos
-                                    </h2>
+                                    <h2 class="vf-section__title">Detalles Específicos</h2>
                                     <p class="vf-section__subtitle">Ajusta notas de cosecha y peso para los compradores.</p>
                                 </div>
                             </div>
@@ -294,10 +282,10 @@
                         <!-- Botones de Acción -->
                         <div class="vf-actions">
                             <a th:href="@{/vendedor/mis-productos}" class="vf-btn vf-btn--secondary">
-                                <i class="fas fa-arrow-left" aria-hidden="true"></i> Volver a Mis Productos
+                                Volver a Mis Productos
                             </a>
                             <button type="submit" class="vf-btn vf-btn--primary">
-                                <i class="fas fa-save" aria-hidden="true"></i> Guardar Cambios
+                                Guardar Cambios
                             </button>
                         </div>
                     </form>
@@ -372,7 +360,6 @@
         </script>
         <footer class="vs-footer">
             <div class="vs-footer__brand">
-                <i class="fas fa-seedling"></i>
                 <span>Cultivus Colombia · Editar Oferta</span>
             </div>
             <div class="vs-footer__links">

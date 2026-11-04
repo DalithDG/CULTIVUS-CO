@@ -91,7 +91,7 @@
                 <div class="price-card">
                     <div class="price-card__row">
                         <span class="price-card__main"
-                              th:text="'$' + ${#numbers.formatDecimal(oferta.precio, 0, 'COMMA', 0, 'POINT')}">
+                              th:text="'$' + ${#numbers.formatInteger(oferta.precio, 1, 'POINT')}">
                             $16.040
                         </span>
                         <span class="price-card__unit"
@@ -116,22 +116,24 @@
                         <div class="purchase-form__qty-row">
                             <label class="purchase-form__label" for="inputCantidad">Cantidad a comprar:</label>
                             <div class="qty-stepper">
-                                <button type="button" onclick="modificarCantidad(-1)" aria-label="Disminuir cantidad">
+                                <button type="button" onclick="modificarCantidad(-1, this)" aria-label="Disminuir cantidad"
+                                        th:attr="data-paso=${oferta.unidadEfectiva().permiteDecimales() ? '0.1' : '1'}">
                                     <i class="fas fa-minus"></i>
                                 </button>
                                 <input type="number" name="cantidad" id="inputCantidad"
                                        th:value="${oferta.compraMinima != null ? (oferta.compraMinima % 1 == 0 ? #numbers.formatDecimal(oferta.compraMinima, 0, 'POINT', 0, 'COMMA') : oferta.compraMinima) : 1}"
-                                       th:min="${oferta.compraMinima != null ? oferta.compraMinima : 1}"
+                                       th:min="${oferta.compraMinima != null ? oferta.compraMinima : (oferta.unidadEfectiva().permiteDecimales() ? '0.01' : '1')}"
                                        th:max="${oferta.stock}"
-                                       th:step="${oferta.unidadEfectiva().permiteDecimales() ? '0.1' : '1'}"
-                                       readonly>
-                                <button type="button" onclick="modificarCantidad(1)" aria-label="Aumentar cantidad">
+                                       th:step="${oferta.unidadEfectiva().permiteDecimales() ? '0.01' : '1'}"
+                                       th:attr="data-paso=${oferta.unidadEfectiva().permiteDecimales() ? '0.1' : '1'}">
+                                <button type="button" onclick="modificarCantidad(1, this)" aria-label="Aumentar cantidad"
+                                        th:attr="data-paso=${oferta.unidadEfectiva().permiteDecimales() ? '0.1' : '1'}">
                                     <i class="fas fa-plus"></i>
                                 </button>
                             </div>
                         </div>
 
-                        <p class="purchase-form__note" th:if="${oferta.compraMinima != null and oferta.compraMinima > 1}">
+                        <p class="purchase-form__note" th:if="${oferta.compraMinima != null and (oferta.compraMinima != 1.0 or (oferta.unidadEfectiva().permiteDecimales() and oferta.compraMinima < 1))}">
                             <i class="fas fa-info-circle"></i> Compra mínima: 
                             <strong th:text="${(oferta.compraMinima % 1 == 0 ? #numbers.formatDecimal(oferta.compraMinima, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(oferta.compraMinima, 1, 'POINT', 2, 'COMMA')) + ' ' + oferta.unidadEfectiva().abreviatura}">1</strong>
                         </p>
@@ -280,13 +282,15 @@
 
     <!-- SCRIPTS -->
     <script>
-        function modificarCantidad(delta) {
+        function modificarCantidad(delta, btn) {
             const input = document.getElementById('inputCantidad');
             if (!input) return;
-            const step = parseFloat(input.step) || 1;
-            const min = parseFloat(input.min) || 1;
+            const paso = (btn && parseFloat(btn.dataset.paso || btn.getAttribute('data-paso'))) ||
+                         parseFloat(input.dataset.paso || input.getAttribute('data-paso')) ||
+                         (input.step === '0.01' ? 0.1 : (parseFloat(input.step) || 1));
+            const min = parseFloat(input.min) || (input.step === '0.01' ? 0.01 : 1);
             const max = parseFloat(input.max) || 99999;
-            let val = (parseFloat(input.value) || min) + (delta * step);
+            let val = (parseFloat(input.value) || min) + (delta * paso);
             if (val < min) val = min;
             if (val > max) val = max;
             input.value = Math.round(val * 100) / 100;
