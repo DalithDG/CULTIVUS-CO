@@ -475,12 +475,16 @@ public class AdminController {
         if (!verificarAdmin(session, redirectAttributes)) return "redirect:/usuario/login";
 
         Usuario admin = (Usuario) session.getAttribute("usuarioLogueado");
-        cargarDatosDashboard(model, admin, "ofertas", page, null, null);
-        org.springframework.data.domain.Page<OfertaVendedor> ofertas = ofertaService.obtenerOfertasPaginadas(page, 50);
-        model.addAttribute("ofertas", ofertas);
-        model.addAttribute("activePage", "ofertas");
-
-        return "admin/ofertas";
+        try {
+            cargarDatosDashboard(model, admin, "ofertas", page, null, null);
+            org.springframework.data.domain.Page<OfertaVendedor> ofertas = ofertaService.obtenerOfertasPaginadas(page, 50);
+            model.addAttribute("ofertas", ofertas);
+            model.addAttribute("activePage", "ofertas");
+            return "admin/ofertas";
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", "No se pudieron cargar las ofertas: " + e.getMessage());
+            return "redirect:/admin/dashboard";
+        }
     }
 
     @PostMapping("/resenas/{id}/eliminar")
