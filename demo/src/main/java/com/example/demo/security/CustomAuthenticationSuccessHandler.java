@@ -70,6 +70,11 @@ public class CustomAuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             Usuario usuario = usuarioRepository.findByEmail(emailLimpio).orElse(null);
 
             if (usuario != null) {
+                // Administradores quedan verificados automáticamente
+                if (usuario.hasRole(Role.ADMIN) && !usuario.isEmailVerificado()) {
+                    usuario.setEmailVerificado(true);
+                    usuarioRepository.save(usuario);
+                }
                 // Bloquear inicio de sesión si el correo no está verificado
                 if (!usuario.isEmailVerificado()) {
                     request.getSession().invalidate();
