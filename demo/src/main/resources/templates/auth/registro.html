@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <head>
@@ -51,40 +51,10 @@
             </span>
         </div>
 
-        <!-- Botones Sociales OAuth -->
-        <div class="auth-social-stack">
-            <a th:href="@{/oauth2/authorization/google}" class="auth-social-btn" id="btnGoogle">
-                <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg"
-                    aria-hidden="true">
-                    <path
-                        d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"
-                        fill="#4285F4" />
-                    <path
-                        d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"
-                        fill="#34A853" />
-                    <path
-                        d="M3.964 10.706A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.706V4.962H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.038l3.007-2.332z"
-                        fill="#FBBC05" />
-                    <path
-                        d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.962L3.964 7.294C4.672 5.163 6.656 3.58 9 3.58z"
-                        fill="#EA4335" />
-                </svg>
-                <span>Registrarse con Google</span>
-            </a>
-
-            <a th:href="@{/oauth2/authorization/facebook}" class="auth-social-btn" id="btnFacebook">
-                <i class="fab fa-facebook-f" aria-hidden="true"></i>
-                <span>Registrarse con Facebook</span>
-            </a>
-        </div>
-
-        <div class="auth-divider">
-            <span>O con tu correo</span>
-        </div>
-
         <!-- Formulario -->
         <form class="auth-form" th:action="@{/usuario/guardar}" method="post" id="registroForm">
             <input type="hidden" name="redirect" th:if="${param.redirect != null}" th:value="${param.redirect[0]}">
+
             <!-- Nombre -->
             <div class="auth-field">
                 <label class="auth-label" for="nombre">Nombre completo <span class="req">*</span></label>
@@ -123,26 +93,28 @@
                 </div>
             </div>
 
-            <!-- Fila Departamento y Ciudad (2 columnas) -->
+            <!-- Ubicación: Departamento (Bolívar) y Municipio en 2 columnas -->
             <div class="auth-two-cols">
                 <div class="auth-field">
                     <label class="auth-label" for="departamento">Departamento <span class="req">*</span></label>
                     <div class="auth-input-wrap">
-                        <i class="fas fa-map-marked-alt field-icon" aria-hidden="true"></i>
-                        <select id="departamento" name="departamento" class="auth-select" required
-                            th:data-selected="${departamento}">
-                            <option value="">Cargando departamentos...</option>
+                        <i class="fas fa-map-location-dot field-icon" aria-hidden="true"></i>
+                        <select id="departamento" name="departamento" class="auth-select" required>
+                            <option value="Bolívar" selected>Bolívar</option>
                         </select>
                     </div>
                 </div>
 
                 <div class="auth-field">
-                    <label class="auth-label" for="ciudad">Ciudad / Municipio <span class="req">*</span></label>
+                    <label class="auth-label" for="ciudad">Municipio <span class="req">*</span></label>
                     <div class="auth-input-wrap">
                         <i class="fas fa-city field-icon" aria-hidden="true"></i>
-                        <select id="ciudad" name="ciudad" class="auth-select" required disabled
-                            th:data-selected="${ciudad}">
-                            <option value="">Selecciona departamento</option>
+                        <select id="ciudad" name="ciudad" class="auth-select" required th:data-selected="${ciudad}">
+                            <option value="">Selecciona tu municipio</option>
+                            <option th:each="m : ${municipios}"
+                                    th:value="${m}"
+                                    th:text="${m}"
+                                    th:selected="${ciudad != null and ciudad == m}"></option>
                         </select>
                     </div>
                 </div>
@@ -178,6 +150,7 @@
         function togglePassword(inputId) {
             const input = document.getElementById(inputId);
             const icon = document.getElementById('togglePwdIcon');
+            if (!input || !icon) return;
             if (input.type === 'password') {
                 input.type = 'text';
                 icon.classList.replace('fa-eye', 'fa-eye-slash');
@@ -187,59 +160,33 @@
             }
         }
 
-        const deptSelect = document.getElementById('departamento');
-        const ciudadSelect = document.getElementById('ciudad');
-        const selectedDeptValue = deptSelect.getAttribute('data-selected') || '';
-        const selectedCiudadValue = ciudadSelect.getAttribute('data-selected') || '';
-
-        const departamentosData = [
-            { name: "Bolívar", cities: ["Cartagena", "Magangué", "Turbaco"] }
-        ];
-
-        function cargarDepartamentos() {
-            deptSelect.innerHTML = '<option value="">Selecciona departamento</option>';
-            departamentosData.forEach(dept => {
-                const opt = document.createElement('option');
-                opt.value = dept.name;
-                opt.textContent = dept.name;
-                if (selectedDeptValue && selectedDeptValue.toLowerCase() === dept.name.toLowerCase()) {
-                    opt.selected = true;
-                }
-                deptSelect.appendChild(opt);
-            });
-
-            if (deptSelect.value) {
-                cargarCiudades(deptSelect.value);
-            }
-        }
-
-        function cargarCiudades(deptNombre) {
-            ciudadSelect.innerHTML = '<option value="">Cargando ciudades...</option>';
-            ciudadSelect.disabled = true;
-
-            const found = departamentosData.find(d => d.name.toLowerCase() === deptNombre.toLowerCase());
-            if (found && found.cities) {
-                ciudadSelect.innerHTML = '<option value="">Selecciona ciudad</option>';
-                found.cities.forEach(city => {
+        // Respaldo automático: si el select no tiene opciones del backend, carga todos los municipios de Bolívar
+        (function() {
+            const ciudadSelect = document.getElementById('ciudad');
+            if (ciudadSelect && ciudadSelect.options.length <= 1) {
+                const municipiosBolivar = [
+                    "Achí", "Altos del Rosario", "Arenal", "Arjona", "Arroyohondo", "Barranco de Loba",
+                    "Calamar", "Cantagallo", "Cartagena", "Cicuco", "Clemencia", "Córdoba",
+                    "El Carmen de Bolívar", "El Guamo", "El Peñón", "Hatillo de Loba", "Magangué",
+                    "Mahates", "Margarita", "María la Baja", "Mompox", "Montecristo", "Morales",
+                    "Norosí", "Pinillos", "Regidor", "Río Viejo", "San Cristóbal", "San Estanislao",
+                    "San Fernando", "San Jacinto", "San Jacinto del Cauca", "San Juan Nepomuceno",
+                    "San Martín de Loba", "San Pablo", "Santa Catalina", "Santa Rosa", "Santa Rosa del Sur",
+                    "Simití", "Soplaviento", "Talaigua Nuevo", "Tiquisio", "Turbaco", "Turbaná", "Villanueva", "Zambrano"
+                ];
+                const selectedVal = ciudadSelect.getAttribute('data-selected') || '';
+                ciudadSelect.innerHTML = '<option value="">Selecciona tu municipio</option>';
+                municipiosBolivar.forEach(function(m) {
                     const opt = document.createElement('option');
-                    opt.value = city;
-                    opt.textContent = city;
-                    if (selectedCiudadValue && selectedCiudadValue.toLowerCase() === city.toLowerCase()) {
+                    opt.value = m;
+                    opt.textContent = m;
+                    if (selectedVal && selectedVal.toLowerCase() === m.toLowerCase()) {
                         opt.selected = true;
                     }
                     ciudadSelect.appendChild(opt);
                 });
-                ciudadSelect.disabled = false;
-            } else {
-                ciudadSelect.innerHTML = '<option value="">Selecciona departamento primero</option>';
             }
-        }
-
-        deptSelect.addEventListener('change', function () {
-            cargarCiudades(this.value);
-        });
-
-        cargarDepartamentos();
+        })();
     </script>
 </body>
 

@@ -59,6 +59,9 @@ public class UsuarioController {
     @org.springframework.beans.factory.annotation.Autowired(required = false)
     private com.example.demo.security.SecurityContextRefreshService securityContextRefreshService;
 
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private com.example.demo.repository.ZonaMunicipioRepository zonaMunicipioRepository;
+
     @org.springframework.beans.factory.annotation.Autowired
     public UsuarioController(UsuarioService usuarioService,
             UbicacionService ubicacionService,
@@ -88,6 +91,8 @@ public class UsuarioController {
     public String mostrarFormularioRegistro(Model model) {
         model.addAttribute("usuario", new Usuario());
         model.addAttribute("departamentos", ubicacionService.obtenerTodos());
+        model.addAttribute("municipios", obtenerListaMunicipios());
+        model.addAttribute("departamento", "Bolívar");
         return "auth/registro";
     }
 
@@ -101,6 +106,9 @@ public class UsuarioController {
             Model model,
             RedirectAttributes redirectAttributes) {
         try {
+            if (nombreDepartamento == null || nombreDepartamento.trim().isEmpty()) {
+                nombreDepartamento = "Bolívar";
+            }
             // Validaciones de campos vacíos
             if (nombre == null || nombre.trim().isEmpty()) {
                 model.addAttribute("error", "El nombre es requerido");
@@ -588,16 +596,39 @@ public class UsuarioController {
         return PasswordPolicy.validar(contrasena);
     }
 
+        private List<String> obtenerListaMunicipios() {
+        List<String> munis = null;
+        if (zonaMunicipioRepository != null) {
+            try {
+                munis = zonaMunicipioRepository.findAll().stream()
+                        .map(com.example.demo.Model.ZonaMunicipio::getMunicipio)
+                        .filter(m -> m != null && !m.trim().isEmpty())
+                        .distinct()
+                        .sorted(String.CASE_INSENSITIVE_ORDER)
+                        .toList();
+            } catch (Exception ignored) {
+            }
+        }
+        if (munis == null || munis.isEmpty()) {
+            munis = com.example.demo.services.ZonasLogistica.ZONAS.stream()
+                    .flatMap(z -> z.municipios().stream())
+                    .distinct()
+                    .sorted(String.CASE_INSENSITIVE_ORDER)
+                    .toList();
+        }
+        return munis;
+    }
+
     private void preservarDatosFormulario(Model model, String nombre, String email,
             String departamento, String ciudad) {
         if (nombre != null)
             model.addAttribute("nombre", nombre);
         if (email != null)
             model.addAttribute("email", email);
-        if (departamento != null)
-            model.addAttribute("departamento", departamento);
+        model.addAttribute("departamento", (departamento != null && !departamento.trim().isEmpty()) ? departamento : "Bolívar");
         if (ciudad != null)
             model.addAttribute("ciudad", ciudad);
+        model.addAttribute("municipios", obtenerListaMunicipios());
     }
 
     // --- SECCIÓN DE NOTIFICACIONES ---
