@@ -10,6 +10,7 @@ public class DatosVendedor {
     private String razonSocial;
     private String telefonoContacto;
     private String descripcionNegocio;
+    private Double calificacionPromedio;
 
     public DatosVendedor() {
     }
@@ -47,4 +48,7 @@ public class DatosVendedor {
 
     public String getDescripcionNegocio() { return descripcionNegocio; }
     public void setDescripcionNegocio(String descripcionNegocio) { this.descripcionNegocio = descripcionNegocio; }
+
+    public Double getCalificacionPromedio() { return calificacionPromedio; }
+    public void setCalificacionPromedio(Double calificacionPromedio) { this.calificacionPromedio = calificacionPromedio; }
 }

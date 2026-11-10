@@ -84,7 +84,14 @@
 
                 <p class="product-info__meta">
                     <span>Vendido por:</span>
-                    <strong th:text="${oferta.vendedor != null and oferta.vendedor.razonSocial != null and !oferta.vendedor.razonSocial.isEmpty()} ? ${oferta.vendedor.razonSocial} : (${oferta.vendedor != null} ? ${oferta.vendedor.nombre} : 'Productor Local')">
+                    <a th:if="${oferta.vendedor != null and oferta.vendedor.id != null}"
+                       th:href="@{/vendedor/{id}/perfil(id=${oferta.vendedor.id})}">
+                        <strong th:text="${oferta.vendedor != null and oferta.vendedor.razonSocial != null and !oferta.vendedor.razonSocial.isEmpty()} ? ${oferta.vendedor.razonSocial} : (${oferta.vendedor != null} ? ${oferta.vendedor.nombre} : 'Productor Local')">
+                            Finca Local
+                        </strong>
+                    </a>
+                    <strong th:unless="${oferta.vendedor != null and oferta.vendedor.id != null}"
+                            th:text="${oferta.vendedor != null and oferta.vendedor.razonSocial != null and !oferta.vendedor.razonSocial.isEmpty()} ? ${oferta.vendedor.razonSocial} : (${oferta.vendedor != null} ? ${oferta.vendedor.nombre} : 'Productor Local')">
                         Finca Local
                     </strong>
                     <i th:if="${oferta.vendedor != null and oferta.vendedor.verificado}" class="fas fa-check-circle" style="color: var(--c-green);" title="Productor Verificado"></i>
@@ -254,6 +261,11 @@
             </div>
 
             <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <a th:if="${oferta.vendedor.id != null}"
+                   th:href="@{/vendedor/{id}/perfil(id=${oferta.vendedor.id})}"
+                   class="ui-btn ui-btn--primary ui-btn--sm">
+                    <i class="fas fa-store"></i> Ver perfil de la tienda
+                </a>
                 <a th:if="${oferta.vendedor.telefonoContacto != null and !oferta.vendedor.telefonoContacto.isEmpty()}"
                    th:href="'https://wa.me/' + ${#strings.replace(oferta.vendedor.telefonoContacto, ' ', '')}"
                    target="_blank" class="ui-btn ui-btn--secondary ui-btn--sm">

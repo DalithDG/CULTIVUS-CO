@@ -21,9 +21,20 @@
         </a>
 
         <div class="product-card__body">
+            <a class="product-card__producer"
+               th:if="${oferta.vendedor != null and oferta.vendedor.id != null}"
+               th:href="@{/vendedor/{id}/perfil(id=${oferta.vendedor.id})}"
+               th:text="${oferta.vendedor.nombre != null ? oferta.vendedor.nombre : 'Productor local'}">
+                Productor local
+            </a>
             <span class="product-card__producer"
+                  th:unless="${oferta.vendedor != null and oferta.vendedor.id != null}"
                   th:text="${oferta.vendedor != null and oferta.vendedor.nombre != null ? oferta.vendedor.nombre : 'Productor local'}">
                 Productor local
+            </span>
+            <span th:if="${oferta.vendedor != null and oferta.vendedor.calificacionPromedio != null}"
+                  style="font-size:0.85em;color:#f5a623;">
+                ⭐ <span th:text="${#numbers.formatDecimal(oferta.vendedor.calificacionPromedio,1,1)}"></span>
             </span>
 
             <a th:href="@{/oferta/{id}(id=${oferta.id})}" style="text-decoration:none; color:inherit;">

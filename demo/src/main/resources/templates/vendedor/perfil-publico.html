@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title th:text="${(perfil != null and perfil.razonSocial != null and !perfil.razonSocial.isBlank()) ? perfil.razonSocial + ' | Cultivus' : vendedor.nombre + ' | Cultivus'}">
+        Tienda del Productor | Cultivus
+    </title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <link rel="stylesheet" th:href="@{/checkout-tokens.css}">
+    <link rel="stylesheet" th:href="@{/cultivus-ui.css}">
+    <link rel="stylesheet" th:href="@{/product-apple.css}">
+    <link rel="stylesheet" th:href="@{/footer.css}">
+
+    <style>
+        .vendor-hero {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 28px;
+            align-items: center;
+            background: var(--c-surface);
+            border: 1px solid var(--c-line);
+            border-radius: var(--radius-xl, 24px);
+            padding: 32px;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 40px;
+        }
+
+        .vendor-hero__main {
+            display: flex;
+            align-items: flex-start;
+            gap: 22px;
+        }
+
+        .vendor-hero__avatar {
+            width: 76px;
+            height: 76px;
+            border-radius: 22px;
+            background: linear-gradient(135deg, var(--c-green) 0%, var(--c-green-dark, #255830) 100%);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 800;
+            flex-shrink: 0;
+            box-shadow: 0 8px 20px rgba(54, 122, 69, 0.24);
+        }
+
+        .vendor-hero__badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .vendor-hero__title {
+            font-size: clamp(1.55rem, 2.8vw, 2.15rem);
+            font-weight: 800;
+            color: var(--c-ink);
+            letter-spacing: -0.025em;
+            margin: 0 0 6px;
+            line-height: 1.2;
+        }
+
+        .vendor-hero__owner {
+            font-size: 0.92rem;
+            color: var(--c-earth);
+            margin: 0 0 10px;
+            font-weight: 500;
+        }
+
+        .vendor-hero__desc {
+            font-size: 0.96rem;
+            color: var(--c-earth);
+            line-height: 1.55;
+            margin: 0 0 16px;
+            max-width: 660px;
+        }
+
+        .vendor-hero__meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            font-size: 0.88rem;
+            color: var(--c-earth);
+            margin-bottom: 16px;
+        }
+
+        .vendor-hero__meta-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .vendor-hero__meta-item i {
+            color: var(--c-green);
+        }
+
+        .vendor-hero__actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .vendor-hero__stats {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--c-wheat-soft, #FAF7F0);
+            border: 1px solid var(--c-line);
+            border-radius: 20px;
+            padding: 22px 28px;
+            min-width: 210px;
+            text-align: center;
+        }
+
+        .vendor-hero__score {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--c-ink);
+            line-height: 1;
+            font-variant-numeric: tabular-nums;
+            margin-bottom: 6px;
+        }
+
+        .vendor-hero__stars {
+            color: #F59E0B;
+            font-size: 1rem;
+            letter-spacing: 2px;
+            margin-bottom: 6px;
+        }
+
+        .vendor-hero__reviews-count {
+            font-size: 0.84rem;
+            font-weight: 600;
+            color: var(--c-earth);
+        }
+
+        .vendor-hero__divider {
+            width: 100%;
+            height: 1px;
+            background: var(--c-line);
+            margin: 14px 0;
+        }
+
+        .vendor-hero__offers-count {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--c-green);
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .vendor-section {
+            margin-bottom: 48px;
+        }
+
+        .vendor-section__header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 22px;
+        }
+
+        .reviews-layout {
+            display: grid;
+            grid-template-columns: 1.35fr 1fr;
+            gap: 28px;
+            align-items: start;
+        }
+
+        .review-card {
+            background: var(--c-surface);
+            border: 1px solid var(--c-line);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 14px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .review-card__top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .review-card__author {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .review-card__avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: var(--c-green-soft);
+            color: var(--c-green);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.92rem;
+            flex-shrink: 0;
+        }
+
+        .review-card__name {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--c-ink);
+            display: block;
+        }
+
+        .review-card__date {
+            font-size: 0.78rem;
+            color: var(--c-earth);
+        }
+
+        .review-card__stars {
+            color: #F59E0B;
+            font-size: 0.88rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .review-card__comment {
+            font-size: 0.94rem;
+            color: var(--c-ink);
+            line-height: 1.55;
+            margin: 0;
+        }
+
+        .review-card__comment--empty {
+            color: var(--c-earth);
+            font-style: italic;
+        }
+
+        .star-picker {
+            display: inline-flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+            gap: 6px;
+        }
+
+        .star-picker input {
+            display: none;
+        }
+
+        .star-picker label {
+            cursor: pointer;
+            font-size: 1.65rem;
+            color: #DDD3BA;
+            transition: color 0.15s ease, transform 0.15s ease;
+        }
+
+        .star-picker label:hover,
+        .star-picker label:hover ~ label,
+        .star-picker input:checked ~ label {
+            color: #F59E0B;
+        }
+
+        .star-picker label:hover {
+            transform: scale(1.1);
+        }
+
+        @media (max-width: 860px) {
+            .vendor-hero {
+                grid-template-columns: 1fr;
+                padding: 24px;
+            }
+
+            .vendor-hero__stats {
+                width: 100%;
+            }
+
+            .reviews-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .vendor-hero__main {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body class="product-page">
+
+    <!-- HEADER INSTITUCIONAL -->
+    <th:block th:replace="~{fragments/header :: siteHeader}"></th:block>
+
+    <main class="ui-container">
+
+        <!-- MIGAS DE PAN -->
+        <nav class="ui-breadcrumb" aria-label="Migas de pan">
+            <a th:href="@{/}"><i class="fas fa-home"></i> Inicio</a>
+            <span class="sep">/</span>
+            <a th:href="@{/productores#productores}">Productores</a>
+            <span class="sep">/</span>
+            <span class="current"
+                  th:text="${(perfil != null and perfil.razonSocial != null and !perfil.razonSocial.isBlank()) ? perfil.razonSocial : vendedor.nombre}">
+                Tienda del Productor
+            </span>
+        </nav>
+
+        <!-- ALERTAS FLASH -->
+        <div th:if="${mensaje != null}" class="ui-alert ui-alert--success" role="status">
+            <i class="fas fa-check-circle"></i>
+            <span th:text="${mensaje}">Operación exitosa</span>
+        </div>
+        <div th:if="${error != null}" class="ui-alert ui-alert--danger" role="alert">
+            <i class="fas fa-exclamation-circle"></i>
+            <span th:text="${error}">Ha ocurrido un error</span>
+        </div>
+
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <!-- CABECERA DEL PRODUCTOR / TIENDA                               -->
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <section class="vendor-hero"
+                 th:with="nombreTienda=${(perfil != null and perfil.razonSocial != null and !perfil.razonSocial.isBlank()) ? perfil.razonSocial : vendedor.nombre}">
+            <div class="vendor-hero__main">
+                <div class="vendor-hero__avatar" aria-hidden="true">
+                    <span th:text="${#strings.substring(nombreTienda, 0, 1).toUpperCase()}">P</span>
+                </div>
+
+                <div>
+                    <div class="vendor-hero__badges">
+                        <span class="ui-chip ui-chip--green">
+                            <i class="fas fa-seedling"></i> Productor Local
+                        </span>
+                        <span class="ui-chip ui-chip--green" th:if="${perfil != null and perfil.verificado}">
+                            <i class="fas fa-check-circle"></i> Tienda Verificada
+                        </span>
+                        <span class="ui-chip ui-chip--wheat"
+                              th:if="${perfil != null and perfil.tipoProductos != null and !perfil.tipoProductos.isBlank()}"
+                              th:text="${perfil.tipoProductos}">
+                            Cultivos del campo
+                        </span>
+                    </div>
+
+                    <h1 class="vendor-hero__title" th:text="${nombreTienda}">Nombre del Productor</h1>
+
+                    <p class="vendor-hero__owner"
+                       th:if="${perfil != null and perfil.razonSocial != null and !perfil.razonSocial.isBlank() and vendedor.nombre != null and !perfil.razonSocial.equalsIgnoreCase(vendedor.nombre)}">
+                        Representado por <strong th:text="${vendedor.nombre}">Productor</strong>
+                    </p>
+
+                    <p class="vendor-hero__desc"
+                       th:text="${(perfil != null and perfil.descripcionNegocio != null and !perfil.descripcionNegocio.isBlank()) ? perfil.descripcionNegocio : 'Agricultor local comprometido con llevar cosechas frescas del campo directamente a tu mesa, sin intermediarios.'}">
+                        Descripción del productor.
+                    </p>
+
+                    <div class="vendor-hero__meta">
+                        <span class="vendor-hero__meta-item"
+                              th:if="${perfil != null and perfil.direccionNegocio != null and !perfil.direccionNegocio.isBlank()}">
+                            <i class="fas fa-location-dot"></i>
+                            <span th:text="${perfil.direccionNegocio}">Ubicación</span>
+                        </span>
+                        <span class="vendor-hero__meta-item"
+                              th:if="${(perfil == null or perfil.direccionNegocio == null or perfil.direccionNegocio.isBlank()) and vendedor.ubicacion != null and !vendedor.ubicacion.isBlank()}">
+                            <i class="fas fa-location-dot"></i>
+                            <span th:text="${vendedor.ubicacion}">Bolívar, Colombia</span>
+                        </span>
+                        <span class="vendor-hero__meta-item"
+                              th:if="${perfil != null and perfil.telefonoContacto != null and !perfil.telefonoContacto.isBlank()}">
+                            <i class="fas fa-phone"></i>
+                            <span th:text="${perfil.telefonoContacto}">Teléfono</span>
+                        </span>
+                        <span class="vendor-hero__meta-item"
+                              th:if="${perfil != null and perfil.permiteRecogidaEnTienda}">
+                            <i class="fas fa-store"></i>
+                            <span>Permite recogida en tienda</span>
+                        </span>
+                    </div>
+
+                    <div class="vendor-hero__actions">
+                        <a th:if="${perfil != null and perfil.telefonoContacto != null and !perfil.telefonoContacto.isBlank()}"
+                           th:href="'https://wa.me/' + ${#strings.replace(perfil.telefonoContacto, ' ', '')}"
+                           target="_blank" rel="noopener" class="ui-btn ui-btn--secondary ui-btn--sm">
+                            <i class="fab fa-whatsapp"></i> Contactar por WhatsApp
+                        </a>
+                        <a href="#cosechas-disponibles" class="ui-btn ui-btn--tertiary ui-btn--sm">
+                            <i class="fas fa-basket-shopping"></i> Ver productos
+                        </a>
+                        <a href="#resenas-vendedor" class="ui-btn ui-btn--tertiary ui-btn--sm">
+                            <i class="fas fa-star"></i> Ver reseñas (<span th:text="${totalResenas}">0</span>)
+                        </a>
+                        <a th:if="${esPropioPerfil != null and esPropioPerfil}"
+                           th:href="@{/vendedor/editar}" class="ui-btn ui-btn--primary ui-btn--sm">
+                            <i class="fas fa-pen"></i> Editar mi tienda
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resumen de Calificación -->
+            <div class="vendor-hero__stats">
+                <div class="vendor-hero__score" th:text="${#numbers.formatDecimal(promedio, 1, 1)}">0.0</div>
+                <div class="vendor-hero__stars" aria-hidden="true">
+                    <i th:each="star : ${#numbers.sequence(1, 5)}"
+                       th:class="${promedio >= star ? 'fas fa-star' : (promedio >= star - 0.5 ? 'fas fa-star-half-stroke' : 'far fa-star')}"></i>
+                </div>
+                <div class="vendor-hero__reviews-count"
+                     th:text="${totalResenas == 1 ? '1 reseña verificada' : totalResenas + ' reseñas verificadas'}">
+                    0 reseñas verificadas
+                </div>
+                <div class="vendor-hero__divider"></div>
+                <div class="vendor-hero__offers-count">
+                    <i class="fas fa-boxes-stacked"></i>
+                    <span th:text="${ofertas != null ? (ofertas.size() == 1 ? '1 cosecha activa' : ofertas.size() + ' cosechas activas') : '0 cosechas activas'}">
+                        0 cosechas activas
+                    </span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <!-- PRODUCTOS / COSECHAS DISPONIBLES                              -->
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <section class="vendor-section" id="cosechas-disponibles">
+            <div class="vendor-section__header">
+                <div>
+                    <h2 class="ui-title-2">
+                        Cosechas Disponibles
+                        (<span th:text="${ofertas != null ? ofertas.size() : 0}">0</span>)
+                    </h2>
+                    <p class="ui-subtitle" style="margin-bottom: 0;">
+                        Productos publicados directamente por este agricultor.
+                    </p>
+                </div>
+            </div>
+
+            <div class="product-grid" th:if="${ofertas != null and !ofertas.isEmpty()}">
+                <th:block th:each="oferta : ${ofertas}">
+                    <th:block th:replace="~{fragments/oferta-card :: card(${oferta})}"></th:block>
+                </th:block>
+            </div>
+
+            <div class="ui-empty" th:if="${ofertas == null or ofertas.isEmpty()}">
+                <div class="ui-empty__icon"><i class="fas fa-seedling"></i></div>
+                <h3 class="ui-empty__title">Sin cosechas publicadas por ahora</h3>
+                <p class="ui-empty__desc">
+                    Este productor no tiene lotes disponibles en este momento. Explora otras cosechas del catálogo.
+                </p>
+                <a th:href="@{/ofertas}" class="ui-btn ui-btn--secondary">
+                    Ver todas las ofertas
+                </a>
+            </div>
+        </section>
+
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <!-- RESEÑAS Y CALIFICACIONES                                      -->
+        <!-- ══════════════════════════════════════════════════════════════ -->
+        <section class="vendor-section" id="resenas-vendedor">
+            <div class="vendor-section__header">
+                <div>
+                    <h2 class="ui-title-2">
+                        Opiniones de Compradores
+                        (<span th:text="${totalResenas}">0</span>)
+                    </h2>
+                    <p class="ui-subtitle" style="margin-bottom: 0;">
+                        Reseñas reales de compradores que recibieron pedidos entregados de esta tienda.
+                    </p>
+                </div>
+            </div>
+
+            <div class="reviews-layout">
+                <!-- Columna Izquierda: Listado de reseñas -->
+                <div>
+                    <div th:if="${resenas != null and !resenas.isEmpty()}">
+                        <article th:each="r : ${resenas}" class="review-card"
+                                 th:with="autor=${autoresResenas != null and r.usuarioId != null and autoresResenas.containsKey(r.usuarioId) ? autoresResenas.get(r.usuarioId) : 'Comprador verificado'}">
+                            <div class="review-card__top">
+                                <div class="review-card__author">
+                                    <div class="review-card__avatar" aria-hidden="true">
+                                        <span th:text="${#strings.substring(autor, 0, 1).toUpperCase()}">C</span>
+                                    </div>
+                                    <div>
+                                        <span class="review-card__name" th:text="${autor}">Comprador verificado</span>
+                                        <span class="review-card__date"
+                                              th:text="${r.fecha != null ? #temporals.format(r.fecha, 'dd/MM/yyyy') : ''}">
+                                            Fecha
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="review-card__stars" th:attr="aria-label=${r.calificacion + ' de 5 estrellas'}">
+                                    <i th:each="star : ${#numbers.sequence(1, 5)}"
+                                       th:class="${star <= r.calificacion ? 'fas fa-star' : 'far fa-star'}"></i>
+                                    <strong style="margin-left: 4px; color: var(--c-ink);" th:text="${r.calificacion}">5</strong>
+                                </div>
+                            </div>
+
+                            <p class="review-card__comment"
+                               th:if="${r.comentario != null and !r.comentario.isBlank()}"
+                               th:text="${r.comentario}">
+                                Excelente producto y atención.
+                            </p>
+                            <p class="review-card__comment review-card__comment--empty"
+                               th:if="${r.comentario == null or r.comentario.isBlank()}">
+                                Calificación sin comentario adicional.
+                            </p>
+                        </article>
+
+                        <!-- Paginación -->
+                        <div class="ui-pagination" style="display: flex; align-items: center; gap: 12px; margin-top: 20px;"
+                             th:if="${totalPages > 1}">
+                            <a class="ui-btn ui-btn--secondary ui-btn--sm"
+                               th:classappend="${currentPage <= 0 ? 'ui-btn--disabled' : ''}"
+                               th:href="@{/vendedor/{id}/perfil(id=${vendedor.id}, page=${currentPage - 1})} + '#resenas-vendedor'">
+                                <i class="fas fa-chevron-left"></i> Anterior
+                            </a>
+                            <span style="font-size: 0.9rem; font-weight: 600; color: var(--c-earth);"
+                                  th:text="'Página ' + (${currentPage + 1}) + ' de ' + ${totalPages}">
+                                Página 1 de 1
+                            </span>
+                            <a class="ui-btn ui-btn--secondary ui-btn--sm"
+                               th:classappend="${currentPage + 1 >= totalPages ? 'ui-btn--disabled' : ''}"
+                               th:href="@{/vendedor/{id}/perfil(id=${vendedor.id}, page=${currentPage + 1})} + '#resenas-vendedor'">
+                                Siguiente <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Sin reseñas aún -->
+                    <div class="ui-empty" th:if="${resenas == null or resenas.isEmpty()}">
+                        <div class="ui-empty__icon"><i class="far fa-star"></i></div>
+                        <h3 class="ui-empty__title">Aún no hay reseñas</h3>
+                        <p class="ui-empty__desc">
+                            Sé el primero en calificar a este productor después de recibir tu pedido.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Columna Derecha: Formulario para dejar reseña -->
+                <div class="ui-card" th:if="${usuarioLogueado != null}">
+                    <h3 class="ui-title-3" style="margin-bottom: 6px;">Deja tu reseña</h3>
+                    <p style="font-size: 0.88rem; color: var(--c-earth); margin: 0 0 18px; line-height: 1.45;">
+                        Comparte tu experiencia con las cosechas y el cumplimiento de este productor.
+                    </p>
+
+                    <div th:if="${puedeResenar != null and !puedeResenar}"
+                         class="ui-alert ui-alert--warning" style="margin-bottom: 16px;">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Para enviar una reseña debes tener un pedido <strong>entregado</strong> de esta tienda que aún no hayas calificado.</span>
+                    </div>
+
+                    <form th:action="@{/vendedor/{id}/resena(id=${vendedor.id})}" method="post">
+                        <div class="ui-form-group">
+                            <label class="ui-form-label">Calificación <span class="req">*</span></label>
+                            <div class="star-picker" role="radiogroup" aria-label="Selecciona de 1 a 5 estrellas">
+                                <input type="radio" id="star5" name="calificacion" value="5" checked>
+                                <label for="star5" title="5 estrellas - Excelente"><i class="fas fa-star"></i></label>
+                                <input type="radio" id="star4" name="calificacion" value="4">
+                                <label for="star4" title="4 estrellas - Muy bueno"><i class="fas fa-star"></i></label>
+                                <input type="radio" id="star3" name="calificacion" value="3">
+                                <label for="star3" title="3 estrellas - Bueno"><i class="fas fa-star"></i></label>
+                                <input type="radio" id="star2" name="calificacion" value="2">
+                                <label for="star2" title="2 estrellas - Regular"><i class="fas fa-star"></i></label>
+                                <input type="radio" id="star1" name="calificacion" value="1">
+                                <label for="star1" title="1 estrella - Malo"><i class="fas fa-star"></i></label>
+                            </div>
+                        </div>
+
+                        <div class="ui-form-group">
+                            <label class="ui-form-label" for="comentarioResena">Comentario (opcional)</label>
+                            <textarea id="comentarioResena" name="comentario" class="ui-textarea" rows="4"
+                                      maxlength="500"
+                                      placeholder="¿Qué tal la frescura, el empaque y la atención del productor?"></textarea>
+                            <span class="ui-form-hint">Máximo 500 caracteres.</span>
+                        </div>
+
+                        <button type="submit" class="ui-btn ui-btn--primary ui-btn--full">
+                            <i class="fas fa-paper-plane"></i> Publicar reseña
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Invitación a iniciar sesión si es visitante -->
+                <div class="ui-card" th:if="${usuarioLogueado == null and (esPropioPerfil == null or !esPropioPerfil)}">
+                    <h3 class="ui-title-3" style="margin-bottom: 8px;">¿Ya compraste en esta tienda?</h3>
+                    <p style="font-size: 0.9rem; color: var(--c-earth); margin: 0 0 18px; line-height: 1.5;">
+                        Inicia sesión con tu cuenta de comprador para calificar los productos que recibiste de este agricultor.
+                    </p>
+                    <a th:href="@{/usuario/login}" class="ui-btn ui-btn--secondary ui-btn--full">
+                        <i class="fas fa-sign-in-alt"></i> Iniciar sesión para reseñar
+                    </a>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER INSTITUCIONAL -->
+    <th:block th:replace="~{fragments/footer :: siteFooter}"></th:block>
+
+</body>
+
+</html>

@@ -202,6 +202,10 @@ public class SecurityConfig {
                         // transportista).
                         .requestMatchers("/vendedor/registro", "/vendedor/guardar")
                         .access(anonimoORol("COMPRADOR", "VENDEDOR"))
+                        // Perfil público del vendedor: lo ve cualquiera (enlazado desde las ofertas).
+                        .requestMatchers(HttpMethod.GET, "/vendedor/*/perfil").permitAll()
+                        // Reseñas de vendedor: solo compradores (se valida además un pedido entregado).
+                        .requestMatchers(HttpMethod.POST, "/vendedor/*/resena").access(soloRol("COMPRADOR"))
                         .requestMatchers("/vendedor/**").access(soloRol("VENDEDOR"))
 
                         // ── Transportista ───────────────────────────────────────────
