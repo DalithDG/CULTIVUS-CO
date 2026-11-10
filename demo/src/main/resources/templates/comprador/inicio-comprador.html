@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
+
     <link rel="stylesheet" th:href="@{/checkout-tokens.css}">
     <link rel="stylesheet" th:href="@{/cultivus-ui.css}">
     <link rel="stylesheet" th:href="@{/catalog-apple.css}">
@@ -62,8 +62,8 @@
 
                 <div class="home-hero__visual" aria-hidden="true">
                     <div class="home-hero__image-card">
-                        <img th:src="@{/images/ImagenIndex4-opt.jpg}" alt="Cosechas colombianas"
-                             onerror="this.onerror=null;this.src='/images/placeholders/sin-foto.svg'">
+                        <img th:src="@{/images/ImagenIndex4-opt.webp}" alt="Cosechas colombianas"
+                            onerror="this.onerror=null;this.src='/images/placeholders/sin-foto.svg'">
                     </div>
                     <div class="home-hero__float-card">
                         <div class="home-hero__float-icon">
@@ -150,12 +150,11 @@
 
             <div class="cats-grid">
                 <a th:each="cat : ${@imagenes.categoriasPublicas(categorias)}"
-                   th:href="@{/category(categoria=${cat.id})}"
-                   class="cat-tile">
+                    th:href="@{/category(categoria=${cat.id})}" class="cat-tile">
                     <div class="cat-tile__img-wrap">
-                        <img th:src="@{${@imagenes.categoria(cat.nombre)}}" th:alt="${cat.nombre}"
-                             width="60" height="60" loading="lazy" decoding="async"
-                             onerror="this.onerror=null;this.src='/images/placeholders/sin-foto.svg'">
+                        <img th:src="@{${@imagenes.categoria(cat.nombre)}}" th:alt="${cat.nombre}" width="60"
+                            height="60" loading="lazy" decoding="async"
+                            onerror="this.onerror=null;this.src='/images/placeholders/sin-foto.svg'">
                     </div>
                     <div class="cat-tile__info">
                         <h3 class="cat-tile__title" th:text="${cat.nombre}">Categoría</h3>

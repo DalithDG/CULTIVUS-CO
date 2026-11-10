@@ -48,7 +48,7 @@ body {
       rgba(0, 0, 0, 0.589),
       rgba(0, 0, 0, 0.507)
     ),
-    url("/images/imageIndex-opt.jpg") center/cover no-repeat;
+    url("/images/imageIndex-opt.webp") center/cover no-repeat;
   color: var(--white);
   overflow: hidden;
 }

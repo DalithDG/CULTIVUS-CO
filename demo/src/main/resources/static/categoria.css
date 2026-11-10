@@ -81,7 +81,7 @@
     position: relative;
     width: 100%;
     min-height: 380px;
-    background: #1e3816 url('/images/banner-categoria-opt.jpg') center center / cover no-repeat;
+    background: #1e3816 url('/images/banner-categoria-opt.webp') center center / cover no-repeat;
     display: flex;
     align-items: center;
     padding: 48px 0 52px;
@@ -1127,7 +1127,7 @@
 
 @media (max-width: 768px) {
   .cat-hero {
-    background-image: url('/images/banner-categoria-mobile.jpg') !important;
+    background-image: url('/images/banner-categoria-mobile.webp') !important;
   }
 }
 

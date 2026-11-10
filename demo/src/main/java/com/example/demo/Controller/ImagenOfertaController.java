@@ -63,7 +63,19 @@ public class ImagenOfertaController {
         if (usuario == null) {
             return error(HttpStatus.UNAUTHORIZED, "Debes iniciar sesión primero.");
         }
-        if (!vendedorService.esVendedor(usuario.getId())) {
+        boolean esVendedor = vendedorService.esVendedor(usuario.getId());
+        if (!esVendedor) {
+            // Fallback: si Spring Security ya autenticó al usuario con rol VENDEDOR
+            // (la ruta /vendedor/** ya exige ese rol), permitimos la subida aunque
+            // el registro en BD aún no refleje el rol (p.ej. sesión desactualizada).
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.getAuthorities() != null
+                    && auth.getAuthorities().stream()
+                            .anyMatch(a -> "ROLE_VENDEDOR".equals(a.getAuthority()))) {
+                esVendedor = true;
+            }
+        }
+        if (!esVendedor) {
             return error(HttpStatus.FORBIDDEN, "Debes registrarte como vendedor primero.");
         }
         if (!cloudinaryService.estaConfigurado()) {

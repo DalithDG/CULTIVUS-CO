@@ -197,7 +197,7 @@ body {
 
 /* =========================================================
    HERO — foto a todo el ancho, texto a la izquierda
-   Imagen optimizada: /images/ImagenIndex4-opt.jpg
+   Imagen optimizada: /images/ImagenIndex4-opt.webp
    ========================================================= */
 .ip-hero {
   position: relative;
@@ -211,7 +211,7 @@ body {
 .ip-hero__bg {
   position: absolute;
   inset: 0;
-  background: url('/images/ImagenIndex4-opt.jpg') center 30% / cover no-repeat;
+  background: url('/images/ImagenIndex4-opt.webp') center 30% / cover no-repeat;
 }
 
 .ip-hero__overlay {
@@ -881,7 +881,7 @@ body {
 .ip-cta-vendor__bg {
   position: absolute;
   inset: 0;
-  background: url('/images/ImageIndex3-opt.jpg') center/cover no-repeat;
+  background: url('/images/ImageIndex3-opt.webp') center/cover no-repeat;
   filter: blur(1px) brightness(.4);
 }
 
@@ -988,7 +988,7 @@ body {
 .ip-cta-transport__bg {
   position: absolute;
   inset: 0;
-  background: url('/images/ImageIndex2-opt.jpg') center/cover no-repeat;
+  background: url('/images/ImageIndex2-opt.webp') center/cover no-repeat;
   filter: blur(1px) brightness(.32);
 }
 
@@ -1204,10 +1204,10 @@ body {
 }
 @media (max-width: 768px) {
   .ip-cta-vendor__bg {
-    background-image: url('/images/ImageIndex3-mobile.jpg') !important;
+    background-image: url('/images/ImageIndex3-mobile.webp') !important;
   }
   .ip-cta-transport__bg {
-    background-image: url('/images/ImageIndex2-mobile.jpg') !important;
+    background-image: url('/images/ImageIndex2-mobile.webp') !important;
   }
 }
 
