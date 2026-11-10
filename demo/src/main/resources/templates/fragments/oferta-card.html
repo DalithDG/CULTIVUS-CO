@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+    <!--
+        Tarjeta pública de una OFERTA de vendedor. Única fuente de tarjetas de inicio, comprador y /category.
+        Uso: <th:block th:replace="~{fragments/oferta-card :: card(${oferta})}"></th:block>
+        - Enlaza a /oferta/{id}; el botón "Agregar" envía ofertaId a /carrito/agregar.
+        - Sin foto propia muestra la foto de referencia del catálogo con la etiqueta "Foto de referencia".
+    -->
+    <article th:fragment="card(oferta)" class="product-card">
+        <a th:href="@{/oferta/{id}(id=${oferta.id})}" class="product-card__img-wrap">
+            <img th:src="${@imagenes.tarjeta(oferta)}" th:alt="${oferta.nombreProducto}"
+                 class="product-card__img" width="800" height="800" loading="lazy" decoding="async"
+                 onerror="this.onerror=null;this.src='/images/placeholders/sin-foto.svg'">
+            <span class="ui-chip ui-chip--green product-card__badge" th:unless="${@imagenes.esReferencia(oferta)}">
+                <i class="fas fa-leaf"></i> Fresco
+            </span>
+            <span class="product-card__ref-label" th:if="${@imagenes.esReferencia(oferta)}">Foto de referencia</span>
+        </a>
+
+        <div class="product-card__body">
+            <span class="product-card__producer"
+                  th:text="${oferta.vendedor != null and oferta.vendedor.nombre != null ? oferta.vendedor.nombre : 'Productor local'}">
+                Productor local
+            </span>
+
+            <a th:href="@{/oferta/{id}(id=${oferta.id})}" style="text-decoration:none; color:inherit;">
+                <h3 class="product-card__title" th:text="${oferta.nombreProducto}">Producto</h3>
+            </a>
+
+            <div class="product-card__price-row">
+                <span class="product-card__price"
+                      th:text="'$' + ${#numbers.formatInteger(oferta.precio, 1, 'POINT')}">$0</span>
+                <span class="product-card__unit"
+                      th:text="'/ ' + ${oferta.unidadEfectiva().abreviatura}">/ kg</span>
+            </div>
+
+            <div class="product-card__actions">
+                <form th:if="${(session.usuarioLogueado == null or session.usuarioLogueado.puedeComprar()) and (oferta.stock == null or oferta.stock > 0)}"
+                      th:action="@{/carrito/agregar}" method="post">
+                    <input type="hidden" name="ofertaId" th:value="${oferta.id}">
+                    <input type="hidden" name="cantidad" th:value="${oferta.compraMinima}">
+                    <button type="submit" class="ui-btn ui-btn--primary ui-btn--full ui-btn--sm"
+                            aria-label="Agregar al carrito">
+                        <i class="fas fa-shopping-cart"></i> Agregar
+                    </button>
+                </form>
+                <button th:if="${oferta.stock != null and oferta.stock <= 0}" type="button"
+                        class="ui-btn ui-btn--secondary ui-btn--full ui-btn--sm" disabled>Agotado</button>
+                <button th:if="${session.usuarioLogueado != null and !session.usuarioLogueado.puedeComprar()}"
+                        type="button" class="ui-btn ui-btn--vendor-blocked ui-btn--full ui-btn--sm" disabled
+                        title="Con cuenta de vendedor no puedes comprar">
+                    <i class="fas fa-store-slash"></i> Vendedor
+                </button>
+            </div>
+        </div>
+    </article>
+
+</body>
+
+</html>
+

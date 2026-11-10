@@ -217,4 +217,39 @@ class GuestCartAndCatalogTest {
         assertEquals(1, lista.size());
         assertEquals("Cebolla Cabezona", lista.get(0).get("nombre"));
     }
+
+    @Test
+    void imagenUrlHelperInsertaTransformacionesEnCloudinaryYUsaFallbackUnico() {
+        com.example.demo.services.ImagenUrlHelper helper = new com.example.demo.services.ImagenUrlHelper();
+        String urlCloudinary = "https://res.cloudinary.com/demo/image/upload/v1234/cultivus/ofertas/tomate.webp";
+
+        assertEquals(
+                "https://res.cloudinary.com/demo/image/upload/f_auto,q_auto,c_fill,w_800,h_800/v1234/cultivus/ofertas/tomate.webp",
+                helper.tarjeta(urlCloudinary));
+        assertEquals(
+                "https://res.cloudinary.com/demo/image/upload/f_auto,q_auto,w_1200/v1234/cultivus/ofertas/tomate.webp",
+                helper.detalle(urlCloudinary));
+
+        OfertaVendedor sinFotoPropia = new OfertaVendedor();
+        sinFotoPropia.setImagenUrl(null);
+        sinFotoPropia.setImagenReferencia("/images/productos/mango-de-azucar.webp");
+        assertTrue(helper.esReferencia(sinFotoPropia));
+        assertEquals("/images/productos/mango-de-azucar.webp", helper.tarjeta(sinFotoPropia));
+
+        OfertaVendedor sinNada = new OfertaVendedor();
+        assertEquals("/images/placeholders/sin-foto.svg", helper.tarjeta(sinNada));
+    }
+
+    @Test
+    void imagenValidadorCompruebaMagicBytesReales() {
+        byte[] jpeg = new byte[] {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE0, 0, 0, 0, 0, 0, 0, 0, 0};
+        byte[] png = new byte[] {(byte) 0x89, 'P', 'N', 'G', 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 0};
+        byte[] webp = new byte[] {'R', 'I', 'F', 'F', 0, 0, 0, 0, 'W', 'E', 'B', 'P'};
+        byte[] falsoJpg = "<html>no soy imagen</html>".getBytes();
+
+        assertEquals("image/jpeg", com.example.demo.services.ImagenValidador.validar(jpeg));
+        assertEquals("image/png", com.example.demo.services.ImagenValidador.validar(png));
+        assertEquals("image/webp", com.example.demo.services.ImagenValidador.validar(webp));
+        assertThrows(IllegalArgumentException.class, () -> com.example.demo.services.ImagenValidador.validar(falsoJpg));
+    }
 }

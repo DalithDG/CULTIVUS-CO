@@ -51,7 +51,7 @@ body {
   background: linear-gradient(135deg,
       rgba(0, 0, 0, 0.596) 0%,
       rgba(0, 0, 0, 0.459) 100%),
-    url("/images/login-bg.png") center/cover no-repeat;
+    url("/images/login-bg.webp") center/cover no-repeat;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -92,7 +92,7 @@ body {
   background: linear-gradient(135deg,
       rgba(0, 0, 0, 0.603) 0%,
       rgba(0, 0, 0, 0.596) 100%),
-    url("/images/registro-hero.png") center/cover no-repeat;
+    url("/images/registro-hero.webp") center/cover no-repeat;
   padding: 60px 50px;
   color: var(--white);
   display: flex;

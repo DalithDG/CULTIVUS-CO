@@ -1,7 +1,8 @@
 package com.example.demo.services;
 
-import com.example.demo.Model.ProductoCatalogo;
-import com.example.demo.repository.ProductoCatalogoRepository;
+import com.example.demo.Model.EstadoPublicacion;
+import com.example.demo.Model.OfertaVendedor;
+import com.example.demo.repository.OfertaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +16,10 @@ import java.util.stream.Collectors;
 public class BusquedaService {
 
     @Autowired
-    private ProductoCatalogoRepository catalogoRepository;
+    private OfertaRepository ofertaRepository;
+
+    @Autowired(required = false)
+    private CatalogoService catalogoService;
 
     private static final Pattern DIACRITICS_PATTERN = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
 
@@ -29,24 +33,30 @@ public class BusquedaService {
     }
 
     /**
-     * Obtiene solo productos aprobados, activos y con ofertas activas de vendedores (totalVendedores > 0).
+     * Obtiene solo ofertas públicas (disponible = true, estado PUBLICADO y precio no nulo).
      */
-    private List<ProductoCatalogo> obtenerPublicosConVendedores() {
-        List<ProductoCatalogo> todos = catalogoRepository.findByAprobadoTrueAndActivoTrue();
-        if (todos == null) {
+    private List<OfertaVendedor> obtenerOfertasPublicas() {
+        List<OfertaVendedor> todas = ofertaRepository.findAll();
+        if (todas == null) {
             return Collections.emptyList();
         }
-        return todos.stream()
-                .filter(p -> p != null && p.getTotalVendedores() != null && p.getTotalVendedores() > 0)
+        List<OfertaVendedor> publicas = todas.stream()
+                .filter(o -> o != null
+                        && o.isDisponible()
+                        && o.getEstadoPublicacion() == EstadoPublicacion.PUBLICADO
+                        && o.getPrecio() != null)
                 .collect(Collectors.toList());
+        if (catalogoService != null) {
+            catalogoService.enriquecerConReferencia(publicas);
+        }
+        return publicas;
     }
 
     /**
-     * Buscar productos del catálogo por query (nombre).
-     * Solo retorna ProductoCatalogo con totalVendedores > 0.
+     * Buscar ofertas públicas por query (nombre del producto, descripción o vendedor).
      */
-    public List<ProductoCatalogo> buscarProductos(String query) {
-        List<ProductoCatalogo> base = obtenerPublicosConVendedores();
+    public List<OfertaVendedor> buscarProductos(String query) {
+        List<OfertaVendedor> base = obtenerOfertasPublicas();
         if (query == null || query.trim().isEmpty()) {
             return base;
         }
@@ -55,12 +65,14 @@ public class BusquedaService {
         String[] palabras = queryNormalizada.split("\\s+");
 
         return base.stream()
-                .filter(p -> {
-                    if (p.getNombre() == null) return false;
-                    String nombreNorm = normalizar(p.getNombre());
-                    String normalizadoDoc = p.getNombreNormalizado() != null ? normalizar(p.getNombreNormalizado()) : "";
+                .filter(o -> {
+                    String nombreNorm = normalizar(o.getNombreProducto());
+                    String catNorm = normalizar(o.getCategoriaNombre());
+                    String vendedorNorm = (o.getVendedor() != null) ? normalizar(o.getVendedor().getNombre()) : "";
                     for (String palabra : palabras) {
-                        if (!palabra.isEmpty() && (nombreNorm.contains(palabra) || normalizadoDoc.contains(palabra))) {
+                        if (!palabra.isEmpty() && (nombreNorm.contains(palabra)
+                                || catNorm.contains(palabra)
+                                || vendedorNorm.contains(palabra))) {
                             return true;
                         }
                     }
@@ -70,57 +82,50 @@ public class BusquedaService {
     }
 
     /**
-     * Buscar productos del catálogo por categoría.
-     * Solo retorna ProductoCatalogo con totalVendedores > 0.
+     * Buscar ofertas públicas por categoría.
      */
-    public List<ProductoCatalogo> buscarPorCategoria(String categoriaId) {
+    public List<OfertaVendedor> buscarPorCategoria(String categoriaId) {
+        List<OfertaVendedor> base = obtenerOfertasPublicas();
         if (categoriaId == null || categoriaId.isBlank()) {
-            return obtenerPublicosConVendedores();
+            return base;
         }
-        List<ProductoCatalogo> porCat = catalogoRepository.findByCategoriaIdAndAprobadoTrueAndActivoTrue(categoriaId);
-        if (porCat == null) {
-            return Collections.emptyList();
-        }
-        return porCat.stream()
-                .filter(p -> p != null && p.getTotalVendedores() != null && p.getTotalVendedores() > 0)
+        return base.stream()
+                .filter(o -> categoriaId.equals(o.getCategoriaId()))
                 .collect(Collectors.toList());
     }
 
     /**
-     * Buscar productos del catálogo con vendedores disponibles.
+     * Buscar todas las ofertas públicas disponibles.
      */
-    public List<ProductoCatalogo> buscarConStock() {
-        return obtenerPublicosConVendedores();
+    public List<OfertaVendedor> buscarConStock() {
+        return obtenerOfertasPublicas();
     }
 
     /**
-     * Búsqueda avanzada con filtros sobre el catálogo (solo con totalVendedores > 0).
+     * Búsqueda avanzada con filtros sobre ofertas públicas.
      */
-    public List<ProductoCatalogo> busquedaAvanzada(String query, String categoriaId,
-                                                    Double precioMin, Double precioMax) {
-        List<ProductoCatalogo> resultados = buscarProductos(query);
+    public List<OfertaVendedor> busquedaAvanzada(String query, String categoriaId,
+                                                  Double precioMin, Double precioMax) {
+        List<OfertaVendedor> resultados = buscarProductos(query);
 
-        // Filtrar por categoría si se especifica
         if (categoriaId != null && !categoriaId.isEmpty()) {
             resultados = resultados.stream()
-                    .filter(p -> p != null && p.getCategoria() != null &&
-                            categoriaId.equals(p.getCategoria().getId()))
+                    .filter(o -> o != null && categoriaId.equals(o.getCategoriaId()))
                     .collect(Collectors.toList());
         }
 
-        // Filtrar por rango de precio (usando precioMinimo del catálogo)
         if (precioMin != null && precioMax != null) {
             resultados = resultados.stream()
-                    .filter(p -> p != null && p.getPrecioMinimo() != null &&
-                            p.getPrecioMinimo() >= precioMin && p.getPrecioMinimo() <= precioMax)
+                    .filter(o -> o != null && o.getPrecio() != null
+                            && o.getPrecio() >= precioMin && o.getPrecio() <= precioMax)
                     .collect(Collectors.toList());
         } else if (precioMin != null) {
             resultados = resultados.stream()
-                    .filter(p -> p != null && p.getPrecioMinimo() != null && p.getPrecioMinimo() >= precioMin)
+                    .filter(o -> o != null && o.getPrecio() != null && o.getPrecio() >= precioMin)
                     .collect(Collectors.toList());
         } else if (precioMax != null) {
             resultados = resultados.stream()
-                    .filter(p -> p != null && p.getPrecioMinimo() != null && p.getPrecioMinimo() <= precioMax)
+                    .filter(o -> o != null && o.getPrecio() != null && o.getPrecio() <= precioMax)
                     .collect(Collectors.toList());
         }
 

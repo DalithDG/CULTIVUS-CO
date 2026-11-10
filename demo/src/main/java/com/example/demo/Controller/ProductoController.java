@@ -11,6 +11,7 @@ import com.example.demo.Model.embebidos.UnidadMedida;
 import com.example.demo.repository.CategoriaRepository;
 import com.example.demo.repository.OfertaRepository;
 import com.example.demo.services.CatalogoService;
+import com.example.demo.services.ImagenUrlHelper;
 import com.example.demo.services.OfertaService;
 import com.example.demo.services.VendedorService;
 import jakarta.servlet.http.HttpSession;
@@ -31,7 +32,8 @@ import java.util.Map;
 @RequestMapping("/vendedor")
 public class ProductoController {
 
-    private static final String IMAGEN_POR_DEFECTO = "/images/placeholder.jpg";
+    /** Las fotos de ofertas solo se aceptan si vienen de nuestra carpeta de Cloudinary. */
+    private static final String PREFIJO_IMAGEN_CLOUDINARY = "https://res.cloudinary.com/";
 
     @Autowired
     private CatalogoService catalogoService;
@@ -204,10 +206,8 @@ public class ProductoController {
                 }
             }
 
-            // Si no se proporcionó imagen, usar la del producto
-            if (imagenUrl == null || imagenUrl.trim().isEmpty()) {
-                imagenUrl = catalogo.getImagenUrl();
-            }
+            // La foto propia es obligatoria (el servicio lo valida); ya no se copia la del catálogo
+            imagenUrl = normalizarImagenUrl(imagenUrl);
 
             OfertaVendedor oferta = construirOferta(usuario, productoCatalogoId, unidad, precio, stock, peso,
                     pesoPromedioUnidad, descripcionPaquete, compraMinima, imagenUrl, descripcionVendedor,
@@ -270,11 +270,15 @@ public class ProductoController {
 
             UnidadMedida unidad = resolverUnidadSugerida(unidadSugerida, unidadOtraNombre, unidadOtraFraccionable);
 
-            String imagen = (imagenUrl == null || imagenUrl.isBlank()) ? IMAGEN_POR_DEFECTO : imagenUrl.trim();
+            String imagen = normalizarImagenUrl(imagenUrl);
+            if (imagen == null) {
+                throw new IllegalArgumentException("Sube una foto de tu producto para enviar la sugerencia.");
+            }
             String descripcion = (descripcionVendedor != null && !descripcionVendedor.isBlank())
                     ? descripcionVendedor.trim() : "Producto sugerido por un vendedor de Cultivus.";
 
-            ProductoCatalogo sugerido = new ProductoCatalogo(nombre.trim(), descripcion, imagen,
+            // La foto del vendedor pertenece a su oferta; la referencia del catálogo la define el admin
+            ProductoCatalogo sugerido = new ProductoCatalogo(nombre.trim(), descripcion, ImagenUrlHelper.SIN_FOTO,
                     categoriaEmbebida, unidad, List.of(unidad));
 
             OfertaVendedor oferta = construirOferta(usuario, null, unidad, precio, stock, peso,
@@ -318,6 +322,7 @@ public class ProductoController {
 
         // Obtener ofertas del vendedor
         List<OfertaVendedor> ofertas = ofertaService.listarOfertasVendedor(usuario.getId());
+        catalogoService.enriquecerConReferencia(ofertas);
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("ofertas", ofertas);
@@ -356,6 +361,9 @@ public class ProductoController {
         }
 
         ProductoCatalogo productoCatalogo = catalogoService.obtenerPorId(oferta.getProductoCatalogoId());
+        if (productoCatalogo != null) {
+            oferta.setImagenReferencia(productoCatalogo.getImagenUrl());
+        }
 
         List<UnidadMedida> unidadesElegibles = productoCatalogo != null
                 ? unidadesPermitidasDe(productoCatalogo) : new ArrayList<>();
@@ -433,8 +441,9 @@ public class ProductoController {
             }
             oferta.setCompraMinima(compraMinima);
 
-            if (imagenUrl != null && !imagenUrl.trim().isEmpty()) {
-                oferta.setImagenUrl(imagenUrl);
+            String imagenNueva = normalizarImagenUrl(imagenUrl);
+            if (imagenNueva != null) {
+                oferta.setImagenUrl(imagenNueva);
             }
             if (descripcionVendedor != null) {
                 oferta.setDescripcionVendedor(descripcionVendedor);
@@ -523,6 +532,18 @@ public class ProductoController {
 
     // ── Métodos auxiliares ────────────────────────────────────────────────────
 
+    /** Vacío → null; si trae valor, debe ser una URL de Cloudinary (https). */
+    private String normalizarImagenUrl(String imagenUrl) {
+        if (imagenUrl == null || imagenUrl.isBlank()) {
+            return null;
+        }
+        String url = imagenUrl.trim();
+        if (!url.startsWith(PREFIJO_IMAGEN_CLOUDINARY)) {
+            throw new IllegalArgumentException("La foto debe subirse desde el formulario.");
+        }
+        return url;
+    }
+
     private OfertaVendedor construirOferta(Usuario usuario, String productoCatalogoId, UnidadMedida unidad,
             Double precio, Double stock, Double peso, Double pesoPromedioUnidad, String descripcionPaquete,
             Double compraMinima, String imagenUrl, String descripcionVendedor, String nombreProducto) {
@@ -609,7 +630,7 @@ public class ProductoController {
     private void crearCategoriasPorDefecto() {
         String[] categorias = {
             "Frutas", "Verduras", "Lácteos", "Carnes y Aves",
-            "Granos y Cereales", "Bebidas", "Panadería", "Condimentos", "Otros",
+            "Granos y Cereales", "Condimentos",
             "Café y Cacao", "Miel"
         };
         for (String nombre : categorias) {

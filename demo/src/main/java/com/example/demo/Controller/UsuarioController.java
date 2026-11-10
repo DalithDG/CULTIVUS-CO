@@ -351,25 +351,11 @@ public class UsuarioController {
             return "redirect:/admin/dashboard";
         }
 
-        // Cargar productos del catálogo aprobados
-        List<ProductoCatalogo> productos = catalogoService.listarCatalogo()
-                .stream()
-                .limit(8)
-                .collect(Collectors.toList());
-
         model.addAttribute("usuario", usuario);
-        model.addAttribute("productos", productos);
         model.addAttribute("categorias", categoriaRepository.findAll());
 
-        // Ofertas destacadas: disponibles, con precio, las más recientes primero
-        List<OfertaVendedor> ofertasDestacadas = ofertaRepository.findAll().stream()
-                .filter(o -> o.isDisponible() && o.getPrecio() != null)
-                .sorted(Comparator.comparing(
-                        (OfertaVendedor o) -> o.getCreatedAt() != null ? o.getCreatedAt() : LocalDateTime.MIN)
-                        .reversed())
-                .limit(4)
-                .collect(Collectors.toList());
-        model.addAttribute("ofertas", ofertasDestacadas);
+        // Tarjetas: las 8 ofertas públicas más recientes (el catálogo solo es lista de referencia)
+        model.addAttribute("ofertas", catalogoService.listarOfertasRecientes(8));
 
         // Estadísticas de comprador para el dashboard
         long totalPedidos = pedidoRepository.findByCompradorId(usuario.getId()).size();

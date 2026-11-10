@@ -107,7 +107,7 @@ body.vs-layout textarea:focus-visible {
 
 .vs-topbar__logo img,
 .vs-topbar__logo-img {
-    height: 36px;
+    height: 46px;
     width: auto;
     display: block;
     object-fit: contain;

@@ -57,11 +57,14 @@
                         </button>
                     </div>
 
-                    <img th:src="${oferta.imagenUrl != null and !oferta.imagenUrl.isBlank()} ? ${oferta.imagenUrl} : (${producto != null and producto.imagenUrl != null} ? producto.imagenUrl : '/images/placeholder.svg')"
+                    <img th:src="${@imagenes.detalle(oferta)}"
                          th:alt="${oferta.nombreProducto}"
                          id="mainProductImage"
                          class="product-gallery__img"
-                         onerror="this.src='/images/placeholder.svg'">
+                         width="1200" height="1200" decoding="async"
+                         style="aspect-ratio: 1 / 1; object-fit: cover;"
+                         onerror="this.onerror=null;this.src='/images/placeholders/sin-foto.svg'">
+                    <span class="product-card__ref-label" th:if="${@imagenes.esReferencia(oferta)}">Foto de referencia</span>
                 </div>
             </div>
 

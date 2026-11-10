@@ -53,7 +53,7 @@
                                     th:with="ofertasDeCp=${ofertasPendientes != null ? ofertasPendientes.get(cp.id) : null}">
                                     <td>
                                         <img th:src="${cp.imagenUrl}" alt="img" class="adm-thumb--lg"
-                                            onerror="this.src='/images/placeholder.svg'">
+                                            onerror="this.src='/images/placeholders/sin-foto.svg'">
                                     </td>
                                     <td>
                                         <span class="adm-cell-title" th:text="${cp.nombre}">Nombre</span>

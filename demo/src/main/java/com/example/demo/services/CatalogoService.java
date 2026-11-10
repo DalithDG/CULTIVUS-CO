@@ -51,65 +51,68 @@ public class CatalogoService {
     }
 
     /**
-     * Catálogo paginado con filtros por categoría(es), precio máximo y orden.
+     * Ofertas públicas paginadas con filtros por categoría(s), precio máximo y orden.
+     * Una oferta es pública si está disponible, PUBLICADA y tiene precio.
+     * Las tarjetas de inicio y /category salen siempre de aquí, nunca del catálogo.
      */
-    public Page<ProductoCatalogo> listarCatalogo(int page, int size, List<String> categoriaIds, String orden, Double precioMax) {
+    public Page<OfertaVendedor> listarOfertasPublicas(int page, int size, List<String> categoriaIds,
+            String orden, Double precioMax) {
         int pagina = Math.max(0, page);
         int tamano = Math.min(48, Math.max(1, size));
 
-        Sort sort = construirOrden(orden);
+        Sort sort = construirOrdenOfertas(orden);
         Pageable pageable = PageRequest.of(pagina, tamano, sort);
 
-        Page<ProductoCatalogo> resultado = consultarPagina(categoriaIds, precioMax, pageable);
+        Page<OfertaVendedor> resultado = consultarPaginaOfertas(categoriaIds, precioMax, pageable);
 
         // Si la página pedida no existe, usar la última disponible
         if (resultado.getTotalPages() > 0 && pagina >= resultado.getTotalPages()) {
             pagina = resultado.getTotalPages() - 1;
             pageable = PageRequest.of(pagina, tamano, sort);
-            resultado = consultarPagina(categoriaIds, precioMax, pageable);
+            resultado = consultarPaginaOfertas(categoriaIds, precioMax, pageable);
         }
-
+        enriquecerConReferencia(resultado.getContent());
         return resultado;
     }
 
-    private Page<ProductoCatalogo> consultarPagina(List<String> categoriaIds, Double precioMax, Pageable pageable) {
+    /** Las {@code cantidad} ofertas públicas más recientes (inicio público y de comprador). */
+    public List<OfertaVendedor> listarOfertasRecientes(int cantidad) {
+        Pageable pageable = PageRequest.of(0, Math.max(1, cantidad), construirOrdenOfertas("recientes"));
+        return enriquecerConReferencia(ofertaRepository.findPublicas(pageable).getContent());
+    }
+
+    private Page<OfertaVendedor> consultarPaginaOfertas(List<String> categoriaIds, Double precioMax,
+            Pageable pageable) {
         boolean tieneCategorias = categoriaIds != null && !categoriaIds.isEmpty();
         boolean tienePrecio = precioMax != null;
 
         if (tieneCategorias && tienePrecio) {
-            return catalogoRepository.findPublicoByCategoriasAndPrecioMax(categoriaIds, precioMax, pageable);
+            return ofertaRepository.findPublicasByCategoriasAndPrecioMax(categoriaIds, precioMax, pageable);
         }
         if (tieneCategorias) {
-            return catalogoRepository.findPublicoByCategorias(categoriaIds, pageable);
+            return ofertaRepository.findPublicasByCategorias(categoriaIds, pageable);
         }
         if (tienePrecio) {
-            return catalogoRepository.findPublicoByPrecioMax(precioMax, pageable);
+            return ofertaRepository.findPublicasByPrecioMax(precioMax, pageable);
         }
-        return catalogoRepository.findPublico(pageable);
+        return ofertaRepository.findPublicas(pageable);
     }
 
-    private org.springframework.data.domain.Sort construirOrden(String orden) {
+    private Sort construirOrdenOfertas(String orden) {
         if (orden == null) {
             orden = "relevancia";
         }
         switch (orden) {
             case "precio-menor":
-                return org.springframework.data.domain.Sort.by(
-                        new org.springframework.data.domain.Sort.Order(org.springframework.data.domain.Sort.Direction.ASC, "precioMinimo")
-                                .with(org.springframework.data.domain.Sort.NullHandling.NULLS_LAST));
+                return Sort.by(Sort.Order.asc("precio")).and(Sort.by("id").ascending());
             case "precio-mayor":
-                return org.springframework.data.domain.Sort.by(
-                        new org.springframework.data.domain.Sort.Order(org.springframework.data.domain.Sort.Direction.DESC, "precioMinimo")
-                                .with(org.springframework.data.domain.Sort.NullHandling.NULLS_LAST));
+                return Sort.by(Sort.Order.desc("precio")).and(Sort.by("id").ascending());
             case "nombre":
-                return org.springframework.data.domain.Sort.by("nombre").ascending();
+                return Sort.by(Sort.Order.asc("nombreProducto")).and(Sort.by("id").ascending());
             case "recientes":
-                return org.springframework.data.domain.Sort.by("createdAt").descending()
-                        .and(org.springframework.data.domain.Sort.by("id").ascending());
             case "relevancia":
             default:
-                return org.springframework.data.domain.Sort.by("createdAt").descending()
-                        .and(org.springframework.data.domain.Sort.by("id").ascending());
+                return Sort.by("createdAt").descending().and(Sort.by("id").ascending());
         }
     }
 
@@ -163,6 +166,7 @@ public class CatalogoService {
         int toIndex = Math.min(fromIndex + tamano, total);
         List<OfertaVendedor> sublist = todas.subList(fromIndex, toIndex);
 
+        enriquecerConReferencia(sublist);
         return new org.springframework.data.domain.PageImpl<>(sublist, PageRequest.of(pagina, tamano), total);
     }
 
@@ -439,6 +443,10 @@ public class CatalogoService {
         for (OfertaVendedor oferta : pendientes) {
             oferta.setProductoCatalogoId(existente.getId());
             oferta.setNombreProducto(existente.getNombre());
+            if (existente.getCategoria() != null) {
+                oferta.setCategoriaId(existente.getCategoria().getId());
+                oferta.setCategoriaNombre(existente.getCategoria().getNombre());
+            }
             oferta.setUnidadMedida(unidad.copia());
             oferta.setEstadoPublicacion(EstadoPublicacion.PUBLICADO);
             oferta.setMotivoRechazo(null);
@@ -593,6 +601,36 @@ public class CatalogoService {
      * Obtiene una oferta específica por su ID.
      */
     public OfertaVendedor obtenerOfertaPorId(String id) {
-        return ofertaRepository.findById(id).orElse(null);
+        OfertaVendedor oferta = ofertaRepository.findById(id).orElse(null);
+        if (oferta != null) {
+            enriquecerConReferencia(List.of(oferta));
+        }
+        return oferta;
+    }
+
+    /**
+     * Completa en cada oferta la foto de referencia del catálogo (campo transitorio) para mostrarla
+     * cuando el vendedor no subió foto propia. Una sola consulta para toda la lista.
+     */
+    public List<OfertaVendedor> enriquecerConReferencia(List<OfertaVendedor> ofertas) {
+        if (ofertas == null || ofertas.isEmpty()) {
+            return ofertas;
+        }
+        java.util.Set<String> ids = ofertas.stream()
+                .filter(o -> o != null && o.getProductoCatalogoId() != null)
+                .map(OfertaVendedor::getProductoCatalogoId)
+                .collect(Collectors.toSet());
+        java.util.Map<String, String> imagenes = new java.util.HashMap<>();
+        for (ProductoCatalogo p : catalogoRepository.findAllById(ids)) {
+            if (p.getImagenUrl() != null) {
+                imagenes.put(p.getId(), p.getImagenUrl());
+            }
+        }
+        for (OfertaVendedor o : ofertas) {
+            if (o != null) {
+                o.setImagenReferencia(imagenes.get(o.getProductoCatalogoId()));
+            }
+        }
+        return ofertas;
     }
 }

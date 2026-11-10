@@ -82,30 +82,30 @@ body.menu-open .site-header--publico {
 }
 
 .header--publico .header-logo img {
-  height: 36px;
+  height: 48px;
   width: auto;
   object-fit: contain;
   transition: height var(--t-duration) var(--ease-apple);
 }
 
 .header--publico.scrolled .header-logo img {
-  height: 32px;
+  height: 40px;
 }
 
 /* ── 3. Navegación Principal en Píldora ─────────────────────────────────────── */
 .header--publico .header-nav {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
 }
 
 .header--publico .nav-link {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 8px 14px;
+  padding: 8px 12px;
   border-radius: var(--radius-full);
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 500;
   color: var(--c-ink-muted);
   text-decoration: none;
@@ -249,13 +249,14 @@ body.menu-open .site-header--publico {
 
 /* ── 5. Buscador Tipo Píldora Elegante ───────────────────────────────────────── */
 .header--publico .header-search {
-  flex: 0 1 320px;
+  flex: 0 1 280px;
+  min-width: 170px;
   position: relative;
   transition: flex-basis var(--t-duration) var(--ease-apple);
 }
 
 .header--publico .header-search:focus-within {
-  flex-basis: 360px;
+  flex-basis: 320px;
 }
 
 .header--publico .header-search form {
@@ -345,33 +346,55 @@ body.menu-open .site-header--publico {
 .header--publico .header-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
-/* Botón Vender en Cultivus */
+/* Botón Vender en Cultivus (Secundario refinado y equilibrado) */
 .header--publico .btn-sell {
-  height: 38px;
+  height: 40px;
   border-radius: var(--radius-full);
   padding: 0 14px;
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   text-decoration: none;
-  background: var(--c-green-soft);
-  border: 1px solid rgba(54, 122, 69, 0.22);
-  color: var(--c-green);
+  background: rgba(48, 55, 45, 0.04);
+  border: 1px solid rgba(48, 55, 45, 0.09);
+  color: var(--c-ink);
   transition: all var(--t-duration) var(--ease-apple);
   white-space: nowrap;
 }
 
+.header--publico .btn-sell i {
+  color: var(--c-green);
+  font-size: 13.5px;
+  transition: transform var(--t-duration) var(--ease-apple);
+}
+
 .header--publico .btn-sell:hover {
-  background: var(--c-green-active);
+  background: var(--c-green-soft);
+  color: var(--c-green);
+  border-color: rgba(54, 122, 69, 0.25);
   transform: none;
 }
 
-/* Botón Iniciar sesión (secundario tintado Apple) */
+.header--publico .btn-sell:hover i {
+  transform: scale(1.08);
+}
+
+/* Separador sutil para ordenar el grupo de vendedor y el grupo de usuario/carrito */
+.header--publico .header-actions__divider {
+  width: 1px;
+  height: 22px;
+  background: var(--c-line);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+/* Botón Iniciar sesión (Principal destacado con jerarquía clara) */
 .header--publico .btn-login {
   display: inline-flex;
   align-items: center;
@@ -379,25 +402,30 @@ body.menu-open .site-header--publico {
   height: 40px;
   padding: 0 16px;
   border-radius: var(--radius-full);
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 600;
-  color: var(--c-green);
-  background: var(--c-green-soft);
-  border: 1px solid rgba(54, 122, 69, 0.22);
+  color: #FFFFFF !important;
+  background: var(--c-green);
+  border: 1px solid var(--c-green);
   text-decoration: none;
   letter-spacing: -0.01em;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(54, 122, 69, 0.16);
   transition: background var(--t-duration) var(--ease-apple),
     border-color var(--t-duration) var(--ease-apple),
+    box-shadow var(--t-duration) var(--ease-apple),
     transform var(--t-duration) var(--ease-apple);
 }
 
 .header--publico .btn-login i {
-  font-size: 14px;
+  font-size: 13.5px;
+  color: #FFFFFF;
 }
 
 .header--publico .btn-login:hover {
-  background: var(--c-green-active);
-  border-color: var(--c-green);
+  background: var(--c-green-dark);
+  border-color: var(--c-green-dark);
+  box-shadow: 0 3px 10px rgba(54, 122, 69, 0.26);
 }
 
 .header--publico .btn-login:active {
@@ -410,21 +438,22 @@ body.menu-open .site-header--publico {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: 1px solid var(--c-line);
-  background: var(--c-surface);
+  border: 1px solid rgba(48, 55, 45, 0.09);
+  background: rgba(48, 55, 45, 0.04);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   color: var(--c-ink-muted);
   text-decoration: none;
   cursor: pointer;
+  flex-shrink: 0;
   transition: background var(--t-duration) var(--ease-apple),
     border-color var(--t-duration) var(--ease-apple),
     color var(--t-duration) var(--ease-apple);
 }
 
 .header--publico .btn-cart i {
-  font-size: 17px;
+  font-size: 16px;
   transition: transform var(--t-duration) var(--ease-apple);
 }
 
@@ -882,12 +911,19 @@ body.menu-open .site-header--publico::before {
 
   .header--publico .header-nav,
   .header--publico .header-search,
-  .header--publico .btn-sell {
-    display: none;
+  .header--publico .btn-sell,
+  .header--publico .header-actions__divider {
+    display: none !important;
   }
 
   .header--publico .mobile-menu-toggle {
     display: flex;
+  }
+}
+
+@media (max-width: 600px) {
+  .header--publico .header-logo img {
+    height: 38px;
   }
 }
 

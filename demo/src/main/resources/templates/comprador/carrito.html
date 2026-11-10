@@ -44,7 +44,9 @@
             </div>
 
             <div th:if="${detalles == null || detalles.isEmpty()}" class="cart-empty">
-                <div class="cart-empty__icon" aria-hidden="true"><i class="fa-solid fa-basket-shopping"></i></div>
+                <img th:src="@{/images/ilustraciones/carrito-vacio.svg}" alt="Carrito vacío"
+                     width="400" height="300" class="ui-empty__illustration" loading="lazy" decoding="async"
+                     style="margin: 0 auto 12px; display: block;">
                 <h2 class="cart-empty__title">Tu carrito está vacío</h2>
                 <p class="cart-empty__text">Agrega productos para comenzar a comprar</p>
                 <a th:href="@{/}" class="cart-btn cart-btn--inline">
@@ -79,10 +81,10 @@
                         </div>
 
                         <article th:each="detalle : ${entry.value}" class="cart-item">
-                            <img th:src="${detalle.imagenUrl}"
+                            <img th:src="${@imagenes.tarjeta(detalle.imagenUrl)}"
                                  th:alt="${detalle.nombre}"
-                                 class="cart-item__img"
-                                 onerror="this.onerror=null;this.src='/images/placeholder.svg'">
+                                 class="cart-item__img" loading="lazy" width="80" height="80"
+                                 onerror="this.onerror=null;this.src='/images/placeholders/sin-foto.svg'">
 
                             <div class="cart-item__body">
                                 <h3 class="cart-item__name" th:text="${detalle.nombre}"></h3>

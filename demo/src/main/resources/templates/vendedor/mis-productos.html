@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Mis Productos · Vendedor | Cultivus</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/cultivus-ui.css}">
     <link rel="stylesheet" th:href="@{/header.css}">
     <link rel="stylesheet" th:href="@{/vendedor-panel.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
@@ -49,9 +50,11 @@
             <!-- Grid de Productos -->
             <div th:if="${ofertas != null and !ofertas.isEmpty()}" class="products-grid">
                 <div th:each="producto : ${ofertas}" class="product-card">
-                    <div class="card-image-wrapper">
-                        <img th:src="${producto.imagenUrl}" th:alt="${producto.nombreProducto}"
-                            onerror="this.src='/images/placeholder.svg'">
+                    <div class="card-image-wrapper" style="position:relative;">
+                        <img th:src="${@imagenes.tarjeta(producto)}" th:alt="${producto.nombreProducto}"
+                             loading="lazy" width="800" height="800"
+                             onerror="this.onerror=null;this.src='/images/placeholders/sin-foto.svg'">
+                        <span class="product-card__ref-label" th:if="${@imagenes.esReferencia(producto)}">Foto de referencia</span>
                         <div class="status-overlay">
                             <!-- Estado PENDIENTE -->
                             <span th:if="${producto.estadoPublicacion != null and producto.estadoPublicacion.name() == 'PENDIENTE'}"

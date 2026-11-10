@@ -45,7 +45,7 @@
                 <i class="fas fa-border-all"></i> Todas
             </a>
             <th:block th:if="${categorias != null and !categorias.isEmpty()}">
-                <a th:each="cat : ${categorias}"
+                <a th:each="cat : ${@imagenes.categoriasPublicas(categorias)}"
                    th:href="@{/category(categoria=${cat.id})}"
                    class="cat-pill-btn"
                    th:classappend="${categoriaSeleccionada != null and #lists.contains(categoriaSeleccionada, cat.id)} ? 'is-active' : ''">
@@ -74,7 +74,7 @@
                         <h3 class="filter-group__title">Categoría</h3>
                         <div class="filter-checkbox-list" id="catCheckboxList">
                             <th:block th:if="${categorias != null and !categorias.isEmpty()}">
-                                <label class="filter-checkbox-item" th:each="cat, iterStat : ${categorias}"
+                                <label class="filter-checkbox-item" th:each="cat, iterStat : ${@imagenes.categoriasPublicas(categorias)}"
                                        th:classappend="${iterStat.index >= 6} ? 'cat-item-extra' : ''"
                                        th:style="${iterStat.index >= 6} ? 'display: none;' : ''">
                                     <input type="checkbox" name="categoria" th:value="${cat.id}"
@@ -138,8 +138,8 @@
                     <div class="catalog-toolbar__count">
                         <i class="fas fa-boxes-stacked"></i>
                         <span>
-                            <strong th:text="${totalItems != null ? totalItems : (catalogo != null ? catalogo.size() : 0)}">0</strong>
-                            productos encontrados
+                            <strong th:text="${totalItems != null ? totalItems : (ofertas != null ? ofertas.size() : 0)}">0</strong>
+                            ofertas encontradas
                         </span>
                     </div>
 
@@ -155,62 +155,24 @@
                     </div>
                 </div>
 
-                <!-- Grid de Productos -->
-                <div class="product-grid" id="productosGrid" th:if="${catalogo != null and !catalogo.isEmpty()}">
-                    <article class="product-card" th:each="producto : ${catalogo}">
-                        <a th:href="@{/producto/{id}(id=${producto.id})}" class="product-card__img-wrap">
-                            <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}"
-                                 class="product-card__img" loading="lazy"
-                                 onerror="this.src='/images/Verduras-opt.jpg'">
-                            <span class="ui-chip ui-chip--green product-card__badge"
-                                  th:if="${producto.totalVendedores == null or producto.totalVendedores <= 1}">
-                                <i class="fas fa-leaf"></i> 100% Natural
-                            </span>
-                            <span class="ui-chip ui-chip--gold product-card__badge"
-                                  th:if="${producto.totalVendedores != null and producto.totalVendedores > 1}">
-                                <i class="fas fa-fire"></i> Más vendido
-                            </span>
-                        </a>
-
-                        <div class="product-card__body">
-                            <span class="product-card__producer"
-                                  th:text="${(producto.categoria != null ? producto.categoria.nombre : 'General') + ' • Producto local'}">
-                                General • Producto local
-                            </span>
-
-                            <a th:href="@{/producto/{id}(id=${producto.id})}" style="text-decoration:none; color:inherit;">
-                                <h3 class="product-card__title" th:text="${producto.nombre}">Nombre del Producto</h3>
-                            </a>
-
-                            <div class="product-card__price-row">
-                                <span class="product-card__price" th:if="${producto.precioMinimo != null}"
-                                      th:text="'$' + ${#numbers.formatInteger(producto.precioMinimo, 1, 'POINT')}">
-                                    $2.500
-                                </span>
-                                <span class="product-card__price" th:if="${producto.precioMinimo == null}"
-                                      style="font-size: 1rem; color: var(--c-earth); font-weight: 500;">
-                                    Consultar
-                                </span>
-                                <span class="product-card__unit"
-                                      th:text="'/ ' + ${producto.abreviaturaUnidad}">
-                                    / kg
-                                </span>
-                            </div>
-
-                            <div class="product-card__actions">
-                                <a th:href="@{/producto/{id}(id=${producto.id})}" class="ui-btn ui-btn--primary ui-btn--full ui-btn--sm">
-                                    <i class="fas fa-eye"></i> Ver opciones
-                                </a>
-                            </div>
-                        </div>
-                    </article>
+                <!-- Grid de ofertas: cada tarjeta es una OFERTA de vendedor (el catálogo es solo lista de referencia) -->
+                <div class="product-grid" id="productosGrid" th:if="${ofertas != null and !ofertas.isEmpty()}">
+                    <th:block th:each="oferta : ${ofertas}">
+                        <th:block th:replace="~{fragments/oferta-card :: card(${oferta})}"></th:block>
+                    </th:block>
                 </div>
 
-                <!-- Estado Vacío -->
-                <div class="ui-empty" th:if="${catalogo == null or catalogo.isEmpty()}">
-                    <div class="ui-empty__icon"><i class="fas fa-box-open"></i></div>
-                    <h3 class="ui-empty__title">Aún no hay productores en esta categoría</h3>
-                    <p class="ui-empty__desc">Pronto nuestros productores locales agregarán nuevas cosechas.</p>
+                <!-- Estado vacío: sin ofertas publicadas en absoluto -->
+                <th:block th:if="${(ofertas == null or ofertas.isEmpty()) and (totalItems == null or totalItems == 0) and (categoriaSeleccionada == null or categoriaSeleccionada.isEmpty()) and precioMax == null}">
+                    <th:block th:replace="~{fragments/estado-vacio :: sinProductos}"></th:block>
+                </th:block>
+
+                <!-- Estado vacío: hay ofertas, pero ninguna coincide con los filtros -->
+                <div class="ui-empty"
+                     th:if="${(ofertas == null or ofertas.isEmpty()) and ((categoriaSeleccionada != null and !categoriaSeleccionada.isEmpty()) or precioMax != null)}">
+                    <div class="ui-empty__icon"><i class="fas fa-filter"></i></div>
+                    <h3 class="ui-empty__title">No hay productos publicados con estos filtros</h3>
+                    <p class="ui-empty__desc">Prueba con otra categoría o un precio máximo mayor.</p>
                     <a th:href="@{/category}" class="ui-btn ui-btn--secondary" style="margin-top: 12px;">
                         Ver todos los productos
                     </a>

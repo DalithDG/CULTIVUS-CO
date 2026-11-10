@@ -1,7 +1,7 @@
 package com.example.demo.Controller;
 
 import com.example.demo.Model.Categoria;
-import com.example.demo.Model.ProductoCatalogo;
+import com.example.demo.Model.OfertaVendedor;
 import com.example.demo.repository.CategoriaRepository;
 import com.example.demo.services.BusquedaService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -32,48 +33,62 @@ public class BusquedaController {
             @RequestParam(value = "orden", required = false, defaultValue = "relevancia") String orden,
             Model model) {
 
-        List<ProductoCatalogo> productos;
+        List<OfertaVendedor> ofertas;
 
-        // Búsqueda con filtros
         if (categoriaId != null || precioMin != null || precioMax != null) {
-            productos = busquedaService.busquedaAvanzada(query, categoriaId, precioMin, precioMax);
+            ofertas = busquedaService.busquedaAvanzada(query, categoriaId, precioMin, precioMax);
         } else if (query != null && !query.trim().isEmpty()) {
-            productos = busquedaService.buscarProductos(query);
+            ofertas = busquedaService.buscarProductos(query);
         } else {
-            productos = busquedaService.buscarConStock();
+            ofertas = busquedaService.buscarConStock();
         }
 
-        // Aplicar ordenamiento (usa precioMinimo del catálogo)
-        if (productos != null && !productos.isEmpty()) {
+        if (ofertas != null && !ofertas.isEmpty()) {
             switch (orden) {
                 case "precio-asc":
-                    productos = productos.stream()
-                            .sorted(Comparator.comparingDouble(p ->
-                                    p.getPrecioMinimo() != null ? p.getPrecioMinimo() : Double.MAX_VALUE))
+                case "precio-menor":
+                    ofertas = ofertas.stream()
+                            .sorted(Comparator.comparingDouble(o ->
+                                    o.getPrecio() != null ? o.getPrecio() : Double.MAX_VALUE))
                             .collect(Collectors.toList());
                     break;
                 case "precio-desc":
-                    productos = productos.stream()
-                            .sorted(Comparator.comparingDouble((ProductoCatalogo p) ->
-                                    p.getPrecioMinimo() != null ? p.getPrecioMinimo() : 0.0).reversed())
+                case "precio-mayor":
+                    ofertas = ofertas.stream()
+                            .sorted(Comparator.comparingDouble((OfertaVendedor o) ->
+                                    o.getPrecio() != null ? o.getPrecio() : 0.0).reversed())
                             .collect(Collectors.toList());
                     break;
+                case "nombre":
+                    ofertas = ofertas.stream()
+                            .sorted(Comparator.comparing(
+                                    o -> o.getNombreProducto() != null ? o.getNombreProducto() : "",
+                                    String.CASE_INSENSITIVE_ORDER))
+                            .collect(Collectors.toList());
+                    break;
+                case "recientes":
                 default:
-                    // Sin ordenamiento adicional
+                    ofertas = ofertas.stream()
+                            .sorted(Comparator.comparing(
+                                    (OfertaVendedor o) -> o.getCreatedAt() != null ? o.getCreatedAt() : LocalDateTime.MIN)
+                                    .reversed())
+                            .collect(Collectors.toList());
                     break;
             }
         }
 
         List<Categoria> categorias = categoriaRepository.findAll();
+        List<OfertaVendedor> listaSegura = ofertas != null ? ofertas : new ArrayList<>();
 
-        model.addAttribute("productos", productos != null ? productos : new ArrayList<>());
+        model.addAttribute("ofertas", listaSegura);
+        model.addAttribute("productos", listaSegura);
         model.addAttribute("categorias", categorias);
         model.addAttribute("query", query);
         model.addAttribute("categoriaSeleccionada", categoriaId);
         model.addAttribute("precioMin", precioMin);
         model.addAttribute("precioMax", precioMax);
         model.addAttribute("orden", orden);
-        model.addAttribute("totalResultados", productos != null ? productos.size() : 0);
+        model.addAttribute("totalResultados", listaSegura.size());
 
         return "public/busqueda-resultados";
     }

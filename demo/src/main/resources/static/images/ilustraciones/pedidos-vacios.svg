@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300" role="img" aria-label="Aún no tienes pedidos">
+  <ellipse cx="200" cy="262" rx="140" ry="14" fill="#E8DDC0"/>
+  <path d="M120 70h130l40 40v140a10 10 0 0 1-10 10H120a10 10 0 0 1-10-10V80a10 10 0 0 1 10-10z" fill="#FAF7F0" stroke="#795548" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M250 70v40h40" fill="#F1E8D3" stroke="#795548" stroke-width="7" stroke-linejoin="round"/>
+  <path d="M140 140h110M140 168h90M140 196h70" stroke="#795548" stroke-width="6" stroke-linecap="round" opacity=".45"/>
+  <circle cx="262" cy="206" r="40" fill="#367A45"/>
+  <path d="M244 207l13 13 24-26" fill="none" stroke="#FFFFFF" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M86 150c0-16 10-26 26-28-2 16-10 26-26 28z" fill="#4E9A5E"/>
+</svg>

@@ -32,14 +32,16 @@ public class CatalogoInicializador {
 
     private static final Logger logger = LoggerFactory.getLogger(CatalogoInicializador.class);
 
-    static final String IMAGEN_PLACEHOLDER = "/images/placeholder.jpg";
+    /** Placeholders anteriores (ya eliminados): los productos/ofertas que aún los usan se migran. */
+    static final List<String> PLACEHOLDERS_LEGADOS = List.of(
+            "/images/placeholder.jpg", "/images/placeholder.svg", "/images/frutas.webp");
 
     /** Categorías que deben existir antes de sembrar (incluye Café y Cacao y Miel). */
     static final List<String> CATEGORIAS_BASE = List.of(
             "Frutas", "Verduras", "Lácteos", "Carnes y Aves", "Granos y Cereales",
-            "Bebidas", "Panadería", "Condimentos", "Otros", "Café y Cacao", "Miel");
+            "Condimentos", "Café y Cacao", "Miel");
 
-    /** Descripción corta genérica por categoría (no se siembran productos en Bebidas, Panadería ni Otros). */
+    /** Descripción corta genérica por categoría. */
     private static final Map<String, String> DESCRIPCION_POR_CATEGORIA = Map.of(
             "Verduras", "Verdura fresca cosechada por productores locales del Caribe colombiano.",
             "Frutas", "Fruta fresca de temporada, directa del campo.",
@@ -170,6 +172,21 @@ public class CatalogoInicializador {
             logger.error("❌ US-06: error migrando ofertas existentes", e);
         }
         try {
+            migrarImagenesCatalogo();
+        } catch (Exception e) {
+            logger.error("❌ Imágenes: error migrando fotos de referencia del catálogo", e);
+        }
+        try {
+            migrarCategoriaYEstadoOfertas();
+        } catch (Exception e) {
+            logger.error("❌ Imágenes: error migrando categoría/estado de ofertas", e);
+        }
+        try {
+            migrarImagenesOfertas();
+        } catch (Exception e) {
+            logger.error("❌ Imágenes: error migrando fotos de ofertas", e);
+        }
+        try {
             recalcularMetricasProductos();
         } catch (Exception e) {
             logger.error("❌ US-06: error recalculando métricas de productos", e);
@@ -265,7 +282,7 @@ public class CatalogoInicializador {
                 ProductoCatalogo nuevo = new ProductoCatalogo(
                         nombre,
                         DESCRIPCION_POR_CATEGORIA.getOrDefault(nombreCategoria, "Producto fresco de productores locales."),
-                        IMAGEN_PLACEHOLDER,
+                        ImagenUrlHelper.rutaReferenciaProducto(nombre),
                         categoriaEmbebida,
                         porDefecto,
                         permitidas);
@@ -343,6 +360,96 @@ public class CatalogoInicializador {
         }
         if (migradas > 0) {
             logger.info("✅ US-06: {} ofertas migradas con su unidad de venta", migradas);
+        }
+        return migradas;
+    }
+
+    /**
+     * Foto de referencia: los productos del catálogo que aún tienen el placeholder viejo (o ninguna imagen)
+     * pasan a /images/productos/{slug}.webp si están aprobados, o al fallback único si son sugerencias.
+     * Idempotente: no toca productos con otra imagen ni los ya migrados.
+     */
+    public int migrarImagenesCatalogo() {
+        int migrados = 0;
+        for (ProductoCatalogo p : catalogoRepository.findAll()) {
+            String actual = p.getImagenUrl();
+            boolean legado = actual == null || actual.isBlank() || PLACEHOLDERS_LEGADOS.contains(actual.trim());
+            if (!legado || p.getNombre() == null) {
+                continue;
+            }
+            String nueva = p.isAprobado()
+                    ? ImagenUrlHelper.rutaReferenciaProducto(p.getNombre())
+                    : ImagenUrlHelper.SIN_FOTO;
+            if (nueva.equals(actual)) {
+                continue;
+            }
+            p.setImagenUrl(nueva);
+            catalogoRepository.save(p);
+            migrados++;
+        }
+        if (migrados > 0) {
+            logger.info("✅ {} productos del catálogo con foto de referencia migrada", migrados);
+        }
+        return migrados;
+    }
+
+    /**
+     * Rellena categoriaId/categoriaNombre en las ofertas existentes (copiadas de su producto del catálogo)
+     * y el estado de publicación ausente (datos antiguos cuentan como PUBLICADO). Idempotente.
+     */
+    public int migrarCategoriaYEstadoOfertas() {
+        int migradas = 0;
+        Map<String, ProductoCatalogo> cache = new LinkedHashMap<>();
+        for (OfertaVendedor oferta : ofertaRepository.findAll()) {
+            boolean cambio = false;
+            boolean sinCategoria = oferta.getCategoriaId() == null || oferta.getCategoriaId().isBlank()
+                    || oferta.getCategoriaNombre() == null || oferta.getCategoriaNombre().isBlank();
+            if (sinCategoria && oferta.getProductoCatalogoId() != null) {
+                ProductoCatalogo producto = cache.computeIfAbsent(oferta.getProductoCatalogoId(),
+                        id -> catalogoRepository.findById(id).orElse(null));
+                if (producto != null && producto.getCategoria() != null) {
+                    oferta.setCategoriaId(producto.getCategoria().getId());
+                    oferta.setCategoriaNombre(producto.getCategoria().getNombre());
+                    cambio = true;
+                }
+            }
+            if (cambio) {
+                ofertaRepository.save(oferta);
+                migradas++;
+            }
+        }
+        // Estado ausente en la base (el campo del modelo ya trae PUBLICADO por defecto, por eso se consulta aparte)
+        for (OfertaVendedor oferta : ofertaRepository.findSinEstadoPublicacion()) {
+            oferta.setEstadoPublicacion(EstadoPublicacion.PUBLICADO);
+            ofertaRepository.save(oferta);
+            migradas++;
+        }
+        if (migradas > 0) {
+            logger.info("✅ {} ofertas migradas con categoría y estado de publicación", migradas);
+        }
+        return migradas;
+    }
+
+    /**
+     * Ofertas sin foto propia: las que no tienen imagen o apuntan a una ruta local (placeholder viejo o
+     * imagen copiada del catálogo) quedan con imagenUrl = null. Las fotos propias (http/https) no se tocan.
+     */
+    public int migrarImagenesOfertas() {
+        int migradas = 0;
+        for (OfertaVendedor oferta : ofertaRepository.findAll()) {
+            String url = oferta.getImagenUrl();
+            if (url == null) {
+                continue;
+            }
+            boolean sinFotoPropia = url.isBlank() || url.trim().startsWith("/images/");
+            if (sinFotoPropia) {
+                oferta.setImagenUrl(null);
+                ofertaRepository.save(oferta);
+                migradas++;
+            }
+        }
+        if (migradas > 0) {
+            logger.info("✅ {} ofertas sin foto propia: imagenUrl dejada en null", migradas);
         }
         return migradas;
     }

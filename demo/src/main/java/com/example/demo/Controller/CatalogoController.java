@@ -38,8 +38,8 @@ public class CatalogoController {
     private CategoriaRepository categoriaRepository;
 
     /**
-     * Muestra el catálogo centralizado (1 card por tipo de producto).
-     * Cada card muestra el precioMinimo y totalVendedores.
+     * Muestra las ofertas publicadas por los vendedores (1 tarjeta por oferta), paginadas y con filtros.
+     * El catálogo de productos no genera tarjetas: es solo lista de referencia.
      */
     @GetMapping({"/category", "/categoria"})
     public String listarCatalogo(
@@ -61,10 +61,11 @@ public class CatalogoController {
         if (size > 48) size = 48;
         if (page < 0) page = 0;
 
-        Page<ProductoCatalogo> pagina =
-                catalogoService.listarCatalogo(page, size, categoriaIds, orden, precioMax);
+        // Las tarjetas salen SOLO de las ofertas públicas (disponibles, PUBLICADAS y con precio)
+        Page<OfertaVendedor> pagina =
+                catalogoService.listarOfertasPublicas(page, size, categoriaIds, orden, precioMax);
 
-        model.addAttribute("catalogo", pagina.getContent());
+        model.addAttribute("ofertas", pagina.getContent());
         model.addAttribute("currentPage", pagina.getNumber());
         model.addAttribute("totalPages", pagina.getTotalPages() > 0 ? pagina.getTotalPages() : 1);
         model.addAttribute("totalItems", pagina.getTotalElements());

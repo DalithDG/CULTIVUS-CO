@@ -988,3 +988,257 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Imágenes de ofertas: etiqueta de foto de referencia y estados vacíos ilustrados ── */
+.product-card__ref-label {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  z-index: 2;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(241, 232, 211, 0.94);
+  color: #795548;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+}
+
+.ui-empty--illustrated {
+  padding-top: 40px;
+}
+
+.ui-empty__illustration {
+  width: min(320px, 78%);
+  height: auto;
+  aspect-ratio: 4 / 3;
+}
+
+/* ── Subida de foto del vendedor ── */
+.photo-uploader {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.photo-uploader__frame {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+}
+
+.photo-uploader__drop {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border: 2px dashed rgba(121, 85, 72, 0.4);
+  border-radius: 16px;
+  background: #F1E8D3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+  color: #795548;
+  text-align: center;
+  padding: 12px;
+}
+
+.photo-uploader__drop:focus-within,
+.photo-uploader__drop:hover {
+  border-color: #367A45;
+}
+
+.photo-uploader.is-uploaded .photo-uploader__drop {
+  border-style: solid;
+  border-color: #367A45;
+}
+
+.photo-uploader.has-error .photo-uploader__drop {
+  border-color: #B3261E;
+}
+
+.photo-uploader__preview {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+
+.photo-uploader.has-photo .photo-uploader__preview {
+  display: block;
+}
+
+.photo-uploader.has-photo .photo-uploader__hint {
+  display: none;
+}
+
+.photo-uploader__input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  font-size: 0;
+}
+
+/* Botón X superior derecho para cancelar o quitar la foto */
+.photo-uploader__clear {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 6;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  background: rgba(48, 55, 45, 0.85);
+  color: #FFFFFF;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
+  transition: background-color 0.18s ease, transform 0.18s ease;
+}
+
+.photo-uploader__clear:hover {
+  background: #B3261E;
+  transform: scale(1.06);
+}
+
+.photo-uploader.has-photo .photo-uploader__clear,
+.photo-uploader.is-loading .photo-uploader__clear {
+  display: inline-flex;
+}
+
+.photo-uploader__loading {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  border-radius: 16px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(241, 232, 211, 0.92);
+  color: #30372D;
+  font-weight: 600;
+}
+
+.photo-uploader.is-loading .photo-uploader__loading {
+  display: flex;
+}
+
+.photo-uploader__loading-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.photo-uploader__cancel-upload {
+  margin-top: 4px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(179, 38, 30, 0.35);
+  background: #FFFFFF;
+  color: #B3261E;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.photo-uploader__cancel-upload:hover {
+  background: #FDF2F2;
+}
+
+/* Barra de acciones debajo de la foto (volver a cargar, reintentar, quitar) */
+.photo-uploader__actions {
+  display: none;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.photo-uploader.has-photo .photo-uploader__actions,
+.photo-uploader.has-error .photo-uploader__actions {
+  display: flex;
+}
+
+.photo-uploader__btn {
+  padding: 7px 13px;
+  border-radius: 10px;
+  border: 1px solid rgba(121, 85, 72, 0.32);
+  background: #FFFFFF;
+  color: #30372D;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background-color 0.18s ease, border-color 0.18s ease;
+}
+
+.photo-uploader__btn:hover {
+  background: #F8F5EE;
+  border-color: #367A45;
+}
+
+.photo-uploader__btn--retry {
+  display: none;
+  border-color: #367A45;
+  background: #367A45;
+  color: #FFFFFF;
+}
+
+.photo-uploader__btn--retry:hover {
+  background: #2B6237;
+  color: #FFFFFF;
+}
+
+.photo-uploader.has-error .photo-uploader__btn--retry {
+  display: inline-flex;
+}
+
+.photo-uploader__btn--remove {
+  color: #B3261E;
+  border-color: rgba(179, 38, 30, 0.3);
+}
+
+.photo-uploader__btn--remove:hover {
+  background: #FDF2F2;
+  border-color: #B3261E;
+}
+
+.photo-uploader__status {
+  font-size: 0.85rem;
+  color: #795548;
+  min-height: 1.2em;
+}
+
+.photo-uploader__status.is-error {
+  color: #B3261E;
+  font-weight: 600;
+}
+
+.photo-uploader__status.is-ok {
+  color: #367A45;
+  font-weight: 600;
+}
+
+@media (max-width: 600px) {
+  .photo-uploader__frame,
+  .photo-uploader__drop {
+    max-width: 100%;
+  }
+}

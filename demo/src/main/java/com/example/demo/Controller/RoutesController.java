@@ -1,6 +1,5 @@
 package com.example.demo.Controller;
 
-import com.example.demo.Model.ProductoCatalogo;
 import com.example.demo.Model.Role;
 import com.example.demo.Model.Usuario;
 import com.example.demo.repository.CategoriaRepository;
@@ -10,9 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Controller
 public class RoutesController {
@@ -39,13 +35,8 @@ public class RoutesController {
             return "redirect:/comprador/inicio";
         }
 
-        // Obtener los primeros 8 productos aprobados del catálogo
-        List<ProductoCatalogo> productos = catalogoService.listarCatalogo()
-                .stream()
-                .limit(8)
-                .collect(Collectors.toList());
-
-        model.addAttribute("productos", productos);
+        // Tarjetas: las 8 ofertas públicas más recientes (el catálogo solo es lista de referencia)
+        model.addAttribute("ofertas", catalogoService.listarOfertasRecientes(8));
         model.addAttribute("categorias", categoriaRepository.findAll());
         return "public/inicio-publico";
     }
@@ -66,8 +57,8 @@ public class RoutesController {
         return "redirect:/registro";
     }
 
-    @GetMapping({ "/frutas", "/verduras", "/lacteos", "/cafe", "/granos", "/miel",
-                   "/carnes", "/bebidas", "/condimentos", "/panaderia", "/otros" })
+    @GetMapping({ "/frutas", "/verduras", "/lacteos", "/cafe", "/cafeYcacao", "/granos", "/miel",
+                   "/carnes", "/bebidas", "/condimentos", "/panaderia", "/otros", "/gb" })
     public String redirigirCategoria(jakarta.servlet.http.HttpServletRequest request) {
         String slug = request.getRequestURI();
         if (slug != null && slug.startsWith("/")) {
@@ -77,14 +68,11 @@ public class RoutesController {
             case "frutas"      -> "Frutas";
             case "verduras"    -> "Verduras";
             case "lacteos"     -> "L\u00E1cteos";
-            case "cafe"        -> "Caf\u00E9 y Cacao";
+            case "cafe", "cafeYcacao" -> "Caf\u00E9 y Cacao";
             case "granos"      -> "Granos y Cereales";
             case "miel"        -> "Miel";
             case "carnes"      -> "Carnes y Aves";
-            case "bebidas"     -> "Bebidas";
             case "condimentos" -> "Condimentos";
-            case "panaderia"   -> "Panadería";
-            case "otros"       -> "Otros";
             default            -> null;
         };
         if (nombre == null) {

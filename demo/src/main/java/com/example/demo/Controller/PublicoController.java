@@ -36,6 +36,9 @@ public class PublicoController {
     @Autowired
     private OfertaRepository ofertaRepository;
 
+    @Autowired(required = false)
+    private com.example.demo.services.CatalogoService catalogoService;
+
     @Autowired
     private UsuarioRepository usuarioRepository;
 
@@ -144,7 +147,7 @@ public class PublicoController {
 
         Pageable pageable = PageRequest.of(pageSolicitada, size,
                 Sort.by(Sort.Direction.DESC, "createdAt"));
-        Page<OfertaVendedor> resultado = ofertaRepository.findByDisponibleTrueAndPrecioNotNull(pageable);
+        Page<OfertaVendedor> resultado = ofertaRepository.findPublicas(pageable);
 
         int totalPages = Math.max(resultado.getTotalPages(), 1);
 
@@ -152,7 +155,11 @@ public class PublicoController {
         // volver a consultar la última página válida.
         if (pageSolicitada >= totalPages) {
             pageable = PageRequest.of(totalPages - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-            resultado = ofertaRepository.findByDisponibleTrueAndPrecioNotNull(pageable);
+            resultado = ofertaRepository.findPublicas(pageable);
+        }
+
+        if (catalogoService != null) {
+            catalogoService.enriquecerConReferencia(resultado.getContent());
         }
 
         int paginaActual = resultado.getNumber();

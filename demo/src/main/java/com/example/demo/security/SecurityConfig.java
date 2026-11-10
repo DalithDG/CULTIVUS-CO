@@ -168,6 +168,7 @@ public class SecurityConfig {
                                 "/verduras",
                                 "/lacteos",
                                 "/cafe",
+                                "/cafeYcacao",
                                 "/granos",
                                 "/miel",
                                 "/carnes",
@@ -175,6 +176,7 @@ public class SecurityConfig {
                                 "/condimentos",
                                 "/panaderia",
                                 "/otros",
+                                "/gb",
                                 "/api/**",
                                 // Página de error de Spring (necesaria para ver el error real)
                                 "/error",

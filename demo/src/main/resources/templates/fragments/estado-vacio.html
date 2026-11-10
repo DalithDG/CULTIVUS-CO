@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+    <!-- Estado vacío del catálogo público: aún no hay ofertas publicadas. -->
+    <div th:fragment="sinProductos" class="ui-empty ui-empty--illustrated">
+        <img th:src="@{/images/ilustraciones/sin-productos.svg}" alt="" width="400" height="300"
+             class="ui-empty__illustration" loading="lazy" decoding="async">
+        <h3 class="ui-empty__title">Aún no hay productos publicados. ¡Sé el primero en vender!</h3>
+        <a th:href="@{/vendedor/registro}" class="ui-btn ui-btn--primary">
+            <i class="fas fa-store"></i> Vender en Cultivus
+        </a>
+    </div>
+
+</body>
+
+</html>

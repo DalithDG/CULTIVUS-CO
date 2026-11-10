@@ -11,7 +11,7 @@
 body {
   height: 100vh;
   height: 100dvh;
-  background: url("/demo/src/main/resources/static/images/imageIndex.jpg") no-repeat center center/cover;
+  background: url("/images/imageIndex-opt.jpg") no-repeat center center/cover;
   display: flex;
   justify-content: center;
   align-items: center;

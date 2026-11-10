@@ -31,8 +31,11 @@
                     <span>Vender en Cultivus</span>
                 </a>
 
-                <!-- Iniciar sesión (botón secundario tintado) -->
-                <a th:href="@{/usuario/login}" class="btn-login">
+                <!-- Separador sutil para organizar las acciones -->
+                <div class="header-actions__divider" aria-hidden="true"></div>
+
+                <!-- Iniciar sesión (botón principal destacado) -->
+                <a th:href="@{/usuario/login}" class="btn-login" title="Iniciar sesión">
                     <i class="fas fa-user"></i>
                     <span>Iniciar sesión</span>
                 </a>

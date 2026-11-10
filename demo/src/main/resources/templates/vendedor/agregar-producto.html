@@ -5,12 +5,15 @@
     <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}">
     <title>Publicar Oferta | Cultivus Vendedor</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/cultivus-ui.css(v=2)}">
     <link rel="stylesheet" th:href="@{/header.css}">
     <link rel="stylesheet" th:href="@{/vendedor-panel.css}">
     <link rel="stylesheet" th:href="@{/vendedor-formulario.css}">
@@ -88,7 +91,8 @@
 
                         <!-- Mini Preview del Producto Seleccionado -->
                         <div id="productPreviewCard" class="vf-product-preview" style="display:none;">
-                            <img id="previewThumb" class="vf-product-preview__thumb" src="/images/placeholder.svg" alt="Producto">
+                            <img id="previewThumb" class="vf-product-preview__thumb" src="/images/placeholders/sin-foto.svg" alt="Producto"
+                                 onerror="this.onerror=null;this.src='/images/placeholders/sin-foto.svg'">
                             <div class="vf-product-preview__info">
                                 <h4 id="previewName">Nombre del Producto</h4>
                                 <p id="previewCatUnit">Categoría · Unidad por defecto: <strong>kg</strong></p>
@@ -209,20 +213,13 @@
                                               placeholder="Ej: Cosecha fresca de hoy en Carmen de Bolívar, sin pesticidas químicos..."></textarea>
                                 </div>
 
-                                <!-- Imagen URL -->
+                                <!-- Foto propia obligatoria (subida a Cloudinary) -->
                                 <div class="vf-field vf-field--full">
-                                    <label class="vf-label" for="imagenUrl">
-                                        <span>Imagen personalizada de tu oferta (opcional)</span>
+                                    <label class="vf-label" for="archivoFotoCatalogo">
+                                        <span>Fotografía propia de tu producto <span class="req">*</span></span>
                                     </label>
-                                    <input type="url" id="imagenUrl" name="imagenUrl" class="vf-input"
-                                           placeholder="https://ejemplo.com/foto-cosecha.jpg">
-                                    <span class="vf-hint">Si no agregas una foto propia, se usará la imagen oficial del catálogo.</span>
+                                    <th:block th:replace="~{fragments/subida-foto :: campoFoto('archivoFotoCatalogo', null, true)}"></th:block>
                                 </div>
-                            </div>
-
-                            <div id="imagePreviewBox" class="vf-image-preview-box">
-                                <img id="imagePreview" class="vf-image-preview" src="" alt="Vista previa">
-                                <span class="vf-hint">Vista previa de la fotografía que verán los compradores.</span>
                             </div>
                         </div>
 
@@ -368,14 +365,13 @@
                             </div>
                         </div>
 
-                        <!-- Imagen opcional sugerencia -->
+                        <!-- Foto propia obligatoria para la sugerencia -->
                         <div class="vf-section">
                             <div class="vf-field">
-                                <label class="vf-label" for="sugImagenUrl">
-                                    <span>URL de Imagen del Producto Propuesto (opcional)</span>
+                                <label class="vf-label" for="archivoFotoSugerencia">
+                                    <span>Fotografía de tu producto <span class="req">*</span></span>
                                 </label>
-                                <input type="url" id="sugImagenUrl" name="imagenUrl" class="vf-input"
-                                       placeholder="https://ejemplo.com/foto-producto.jpg">
+                                <th:block th:replace="~{fragments/subida-foto :: campoFoto('archivoFotoSugerencia', null, true)}"></th:block>
                             </div>
                         </div>
 
@@ -493,7 +489,7 @@
 
                 // Mostrar Preview Card
                 if (productoSeleccionado) {
-                    previewThumb.src = productoSeleccionado.imagenUrl || '/images/placeholder.svg';
+                    previewThumb.src = productoSeleccionado.imagenUrl || '/images/placeholders/sin-foto.svg';
                     previewName.textContent = productoSeleccionado.nombre;
                     const catNombre = catSelect.options[catSelect.selectedIndex].text;
                     const defU = productoSeleccionado.unidadPorDefecto ? productoSeleccionado.unidadPorDefecto.nombre : '';
@@ -674,23 +670,8 @@
 
             sugUnidad.addEventListener('change', actualizarReglasSugerir);
             sugOtraFracc.addEventListener('change', actualizarReglasSugerir);
-
-            // 8. Image preview para oferta de catálogo
-            const imgInput = document.getElementById('imagenUrl');
-            const previewBox = document.getElementById('imagePreviewBox');
-            const previewImg = document.getElementById('imagePreview');
-            if (imgInput && previewBox && previewImg) {
-                imgInput.addEventListener('input', function () {
-                    if (this.value && this.value.startsWith('http')) {
-                        previewImg.src = this.value;
-                        previewBox.classList.add('has-image');
-                        previewImg.onerror = () => previewBox.classList.remove('has-image');
-                    } else {
-                        previewBox.classList.remove('has-image');
-                    }
-                });
-            }
         </script>
+        <script th:src="@{/subida-foto-oferta.js(v=2)}"></script>
 
         <footer class="vs-footer">
             <div class="vs-footer__brand">

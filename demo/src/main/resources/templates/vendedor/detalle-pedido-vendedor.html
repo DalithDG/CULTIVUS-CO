@@ -67,9 +67,9 @@
                                         <div class="vp-product">
                                             <div class="vp-product__image">
                                                 <img th:if="${detalle.imagenSnapshot != null and !detalle.imagenSnapshot.isEmpty()}"
-                                                     th:src="${detalle.imagenSnapshot}"
-                                                     th:alt="${detalle.nombreSnapshot}"
-                                                     onerror="this.src='/images/placeholder.svg'">
+                                                     th:src="${@imagenes.tarjeta(detalle.imagenSnapshot)}"
+                                                     th:alt="${detalle.nombreSnapshot}" loading="lazy" width="56" height="56"
+                                                     onerror="this.onerror=null;this.src='/images/placeholders/sin-foto.svg'">
                                                 <i th:if="${detalle.imagenSnapshot == null or detalle.imagenSnapshot.isEmpty()}"
                                                    class="fa-solid fa-seedling" aria-hidden="true"></i>
                                             </div>

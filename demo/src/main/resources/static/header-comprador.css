@@ -110,14 +110,14 @@ body.menu-open .site-header--comprador {
 }
 
 .header--comprador .header-logo img {
-  height: 36px;
+  height: 48px;
   width: auto;
   object-fit: contain;
   transition: height var(--hb-duration) var(--hb-ease);
 }
 
 .header--comprador.scrolled .header-logo img {
-  height: 32px;
+  height: 40px;
 }
 
 /* ── 3. Navegación Principal en Píldora ─────────────────────────────────────── */
@@ -707,7 +707,7 @@ body.menu-open .site-header--comprador {
   }
 
   .header--comprador .header-logo img {
-    height: 32px;
+    height: 38px;
   }
 }
 

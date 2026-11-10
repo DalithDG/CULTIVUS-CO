@@ -44,6 +44,9 @@ public class OfertaService {
     @Autowired
     private NotificacionService notificacionService;
 
+    @Autowired(required = false)
+    private CloudinaryService cloudinaryService;
+
     // ══════════════════════════════════════════════════════════
     // CRUD de ofertas
     // ══════════════════════════════════════════════════════════
@@ -105,8 +108,14 @@ public class OfertaService {
         validarDatosOferta(oferta);
         asegurarPeso(oferta);
 
-        // Guardar nombre del producto desnormalizado
+        // La foto propia es obligatoria al publicar una oferta nueva
+        if (!oferta.tieneFotoPropia()) {
+            throw new IllegalArgumentException("Sube una foto de tu producto para publicar la oferta.");
+        }
+
+        // Guardar nombre y categoría del producto desnormalizados
         oferta.setNombreProducto(producto.getNombre());
+        copiarCategoria(oferta, producto);
         oferta.setDisponible(!pendiente);
         oferta.setEstadoPublicacion(pendiente ? EstadoPublicacion.PENDIENTE : EstadoPublicacion.PUBLICADO);
         oferta.setMotivoRechazo(null);
@@ -131,6 +140,9 @@ public class OfertaService {
         oferta.setUnidadMedida(sugerido.getUnidadPorDefecto().copia());
         // Validar la oferta ANTES de guardar la sugerencia, para no dejar sugerencias huérfanas
         validarDatosOferta(oferta);
+        if (!oferta.tieneFotoPropia()) {
+            throw new IllegalArgumentException("Sube una foto de tu producto para enviar la sugerencia.");
+        }
 
         ProductoCatalogo guardado = catalogoService.sugerirProducto(sugerido, vendedorId);
         try {
@@ -166,8 +178,19 @@ public class OfertaService {
         validarDatosOferta(oferta);
         asegurarPeso(oferta);
 
+        // La categoría se copia del producto del catálogo (también al editar)
+        if (oferta.getProductoCatalogoId() != null) {
+            catalogoRepository.findById(oferta.getProductoCatalogoId())
+                    .ifPresent(p -> copiarCategoria(oferta, p));
+        }
+
         oferta.setUpdatedAt(LocalDateTime.now());
         OfertaVendedor ofertaActualizada = ofertaRepository.save(oferta);
+
+        // Si se reemplazó la foto, se borra la anterior de Cloudinary (mejor esfuerzo)
+        if (actual.tieneFotoPropia() && !actual.getImagenUrl().equals(oferta.getImagenUrl())) {
+            eliminarImagenSilencioso(actual.getImagenUrl());
+        }
 
         // Recalcular estadísticas del catálogo
         catalogoService.actualizarEstadisticas(oferta.getProductoCatalogoId());
@@ -248,8 +271,31 @@ public class OfertaService {
         String productoCatalogoId = oferta.getProductoCatalogoId();
         ofertaRepository.delete(oferta);
 
+        // Borrar la foto de Cloudinary (mejor esfuerzo; no interrumpe el flujo)
+        if (oferta.tieneFotoPropia()) {
+            eliminarImagenSilencioso(oferta.getImagenUrl());
+        }
+
         // Recalcular estadísticas del catálogo
         catalogoService.actualizarEstadisticas(productoCatalogoId);
+    }
+
+    private void eliminarImagenSilencioso(String url) {
+        if (cloudinaryService == null) {
+            return;
+        }
+        try {
+            cloudinaryService.eliminarPorUrl(url);
+        } catch (Exception ignorada) {
+            // mejor esfuerzo
+        }
+    }
+
+    private static void copiarCategoria(OfertaVendedor oferta, ProductoCatalogo producto) {
+        if (producto.getCategoria() != null) {
+            oferta.setCategoriaId(producto.getCategoria().getId());
+            oferta.setCategoriaNombre(producto.getCategoria().getNombre());
+        }
     }
 
     // ══════════════════════════════════════════════════════════

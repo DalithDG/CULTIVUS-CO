@@ -131,13 +131,16 @@ public class CarritoController {
 
     private ProductoCarrito crearItem(OfertaVendedor oferta, double cantidad) {
         String vendedorNombre = oferta.getVendedor() != null ? oferta.getVendedor().getNombre() : "";
+        String imagen = oferta.tieneFotoPropia()
+                ? oferta.getImagenUrl()
+                : com.example.demo.services.ImagenUrlHelper.rutaReferenciaProducto(oferta.getNombreProducto());
         ProductoCarrito nuevoItem = new ProductoCarrito(
                 oferta.getProductoCatalogoId(),
                 oferta.getId(),
                 oferta.getVendedor() != null ? oferta.getVendedor().getId() : null,
                 vendedorNombre,
                 oferta.getNombreProducto(),
-                oferta.getImagenUrl(),
+                imagen,
                 oferta.getPrecio(),
                 cantidad,
                 oferta.unidadEfectiva().getAbreviatura(),

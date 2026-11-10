@@ -345,6 +345,17 @@
   margin: 0;
 }
 
+.about-page .about-manifesto__body + .about-manifesto__body {
+  margin-top: 14px;
+}
+
+.about-page .about-manifesto__chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 20px;
+}
+
 .about-page .about-manifesto__card {
   position: relative;
   background: var(--c-surface, #FFFFFF);

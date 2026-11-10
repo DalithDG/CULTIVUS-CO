@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300" role="img" aria-label="Carrito vacío">
+  <ellipse cx="200" cy="258" rx="140" ry="14" fill="#E8DDC0"/>
+  <path d="M96 92h38l30 108h136l26-80H146" fill="#F1E8D3" stroke="#795548" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M170 140h126M178 168h110" stroke="#795548" stroke-width="4" stroke-linecap="round" opacity=".45"/>
+  <circle cx="186" cy="228" r="16" fill="#795548"/>
+  <circle cx="290" cy="228" r="16" fill="#795548"/>
+  <circle cx="186" cy="228" r="6" fill="#F1E8D3"/>
+  <circle cx="290" cy="228" r="6" fill="#F1E8D3"/>
+  <g>
+    <path d="M238 112v-34" stroke="#367A45" stroke-width="6" stroke-linecap="round"/>
+    <path d="M238 88c-24-2-36-18-36-38 24 0 38 14 36 38z" fill="#367A45"/>
+    <path d="M238 96c22 0 34-12 36-32-22 0-36 10-36 32z" fill="#4E9A5E"/>
+  </g>
+</svg>

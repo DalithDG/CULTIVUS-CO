@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300" role="img" aria-label="Aún no hay productos publicados">
+  <ellipse cx="200" cy="262" rx="150" ry="16" fill="#E8DDC0"/>
+  <rect x="70" y="150" width="260" height="104" rx="14" fill="#F1E8D3" stroke="#795548" stroke-width="5"/>
+  <path d="M70 178h260" stroke="#795548" stroke-width="5"/>
+  <path d="M90 150l14-52h192l14 52" fill="#FAF7F0" stroke="#795548" stroke-width="5" stroke-linejoin="round"/>
+  <path d="M104 98l-8 52M152 98l-4 52M200 98v52M248 98l4 52M296 98l8 52" stroke="#795548" stroke-width="4" stroke-linecap="round"/>
+  <g>
+    <path d="M200 70v-30" stroke="#367A45" stroke-width="6" stroke-linecap="round"/>
+    <path d="M200 48c-22-2-34-16-34-34 22 0 36 12 34 34z" fill="#367A45"/>
+    <path d="M200 56c20 0 32-12 34-30-20 0-34 10-34 30z" fill="#4E9A5E"/>
+  </g>
+  <rect x="118" y="196" width="60" height="36" rx="8" fill="#FFFFFF" stroke="#795548" stroke-width="4" stroke-dasharray="8 6"/>
+  <rect x="222" y="196" width="60" height="36" rx="8" fill="#FFFFFF" stroke="#795548" stroke-width="4" stroke-dasharray="8 6"/>
+  <circle cx="200" cy="214" r="6" fill="#367A45"/>
+</svg>

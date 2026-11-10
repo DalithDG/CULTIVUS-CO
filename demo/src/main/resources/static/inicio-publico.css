@@ -197,8 +197,7 @@ body {
 
 /* =========================================================
    HERO — foto a todo el ancho, texto a la izquierda
-   La foto principal va en /images/hero-inicio.jpg; mientras
-   no exista se usa ImagenIndex4.jpg como respaldo.
+   Imagen optimizada: /images/ImagenIndex4-opt.jpg
    ========================================================= */
 .ip-hero {
   position: relative;
@@ -212,7 +211,7 @@ body {
 .ip-hero__bg {
   position: absolute;
   inset: 0;
-  background: url('/images/ImagenIndex4.jpg') center 30% / cover no-repeat;
+  background: url('/images/ImagenIndex4-opt.jpg') center 30% / cover no-repeat;
 }
 
 .ip-hero__overlay {

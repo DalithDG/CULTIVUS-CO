@@ -37,6 +37,13 @@ services:
         value: true
       - key: MAIL_STARTTLS
         value: true
+      # Cloudinary (fotos de ofertas): se cargan en el panel de Render, nunca en el repo.
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
       #- key: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID
       #  sync: false
       #- key: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET

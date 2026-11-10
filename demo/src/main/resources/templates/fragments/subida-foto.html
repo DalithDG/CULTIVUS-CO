@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+    <!--
+        Componente reutilizable de subida de foto del vendedor (cámara o galería en móvil).
+        Parámetros:
+          - inputId: id único para el input file
+          - urlActual: URL inicial (null en oferta nueva; oferta.imagenUrl en edición)
+          - obligatoria: true en oferta nueva / sugerencia, false en edición
+    -->
+    <div th:fragment="campoFoto(inputId, urlActual, obligatoria)"
+         class="photo-uploader"
+         th:classappend="${urlActual != null and !urlActual.isBlank()} ? 'has-photo is-uploaded' : ''"
+         th:attr="data-required=${obligatoria}">
+
+        <input type="hidden" name="imagenUrl" class="photo-uploader__url"
+               th:value="${urlActual}" th:attr="data-initial-url=${urlActual}">
+
+        <div class="photo-uploader__frame">
+            <label class="photo-uploader__drop" th:for="${inputId}">
+                <img class="photo-uploader__preview"
+                     th:src="${urlActual != null and !urlActual.isBlank() ? @imagenes.tarjeta(urlActual) : '/images/placeholders/sin-foto.svg'}"
+                     alt="Vista previa cuadrada 1:1" width="800" height="800"
+                     onerror="this.onerror=null;this.src='/images/placeholders/sin-foto.svg'">
+
+                <div class="photo-uploader__hint">
+                    <i class="fas fa-camera" style="font-size: 1.8rem; color: #367A45; display: block; margin-bottom: 8px;" aria-hidden="true"></i>
+                    <strong style="display: block; color: #30372D; font-size: 0.95rem;">
+                        Toca para tomar o elegir una foto
+                    </strong>
+                    <span style="display: block; font-size: 0.8rem; margin-top: 4px;">
+                        Se recortará automáticamente en formato cuadrado 1:1 (máx. 1200×1200 WebP ≤ 200 KB)
+                    </span>
+                </div>
+
+                <input type="file" th:id="${inputId}" class="photo-uploader__input"
+                       accept="image/jpeg,image/png,image/webp,image/*">
+            </label>
+
+            <!-- Botón X en la esquina superior derecha para cancelar o quitar la imagen -->
+            <button type="button" class="photo-uploader__clear" title="Cancelar o quitar foto" aria-label="Cancelar o quitar foto">
+                <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
+
+            <!-- Overlay de carga con botón para cancelar la subida en curso -->
+            <div class="photo-uploader__loading" aria-live="polite">
+                <div class="photo-uploader__loading-box">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 1.4rem; color: #367A45;" aria-hidden="true"></i>
+                    <span class="photo-uploader__loading-text">Procesando y subiendo...</span>
+                    <button type="button" class="photo-uploader__cancel-upload">
+                        <i class="fas fa-times" aria-hidden="true"></i> Cancelar carga
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Controles para volver a cargar, reintentar o quitar la foto -->
+        <div class="photo-uploader__actions">
+            <button type="button" class="photo-uploader__btn photo-uploader__btn--change">
+                <i class="fas fa-camera" aria-hidden="true"></i> Cambiar / Volver a cargar
+            </button>
+            <button type="button" class="photo-uploader__btn photo-uploader__btn--retry">
+                <i class="fas fa-rotate-right" aria-hidden="true"></i> Reintentar subida
+            </button>
+            <button type="button" class="photo-uploader__btn photo-uploader__btn--remove">
+                <i class="fas fa-trash-alt" aria-hidden="true"></i> Quitar foto
+            </button>
+        </div>
+
+        <div class="photo-uploader__status" role="status" aria-live="polite"
+             th:text="${urlActual != null and !urlActual.isBlank() ? 'Foto actual lista. Puedes cambiarla o quitarla cuando quieras.' : (obligatoria ? 'Obligatoria: sube una foto real de tu cosecha.' : 'Opcional: sube una foto propia para reemplazar la imagen de referencia.')}">
+        </div>
+    </div>
+
+</body>
+
+</html>

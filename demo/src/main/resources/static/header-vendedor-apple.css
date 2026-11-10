@@ -25,7 +25,7 @@
 
 .vs-topbar__logo img,
 .vs-topbar__logo-img {
-  height: 36px !important;
+  height: 46px !important;
   width: auto !important;
   object-fit: contain !important;
 }
@@ -358,7 +358,7 @@ html.texto-grande .vs-topbar__accessibility {
 
   .vs-topbar__logo img,
   .vs-topbar__logo-img {
-    height: 30px !important;
+    height: 36px !important;
   }
 
   .vs-topbar__actions {

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
     <meta charset="UTF-8">
@@ -12,6 +13,7 @@
     <link rel="stylesheet" th:href="@{/checkout-tokens.css}">
     <link rel="stylesheet" th:href="@{/pago.css}">
 </head>
+
 <body>
     <header th:replace="~{fragments/header :: siteHeader}"></header>
 
@@ -19,15 +21,18 @@
         <div class="checkout-page__inner">
             <div class="checkout-header">
                 <ol class="checkout-steps" aria-label="Progreso de compra">
-                    <li class="checkout-steps__item is-done"><span class="checkout-steps__num"><i class="fa-solid fa-check" aria-hidden="true"></i></span> Carrito</li>
-                    <li class="checkout-steps__item is-current" aria-current="step"><span class="checkout-steps__num">2</span> Entrega y pago</li>
+                    <li class="checkout-steps__item is-done"><span class="checkout-steps__num"><i
+                                class="fa-solid fa-check" aria-hidden="true"></i></span> Carrito</li>
+                    <li class="checkout-steps__item is-current" aria-current="step"><span
+                            class="checkout-steps__num">2</span> Entrega y pago</li>
                     <li class="checkout-steps__item"><span class="checkout-steps__num">3</span> Confirmación</li>
                 </ol>
                 <a th:href="@{/carrito}" class="checkout-back">
                     <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Volver al carrito
                 </a>
                 <h1 class="checkout-title">Entrega y pago</h1>
-                <p class="checkout-subtitle">Ingresa tus datos de envío para procesar tu orden con Wompi de Bancolombia.</p>
+                <p class="checkout-subtitle">Ingresa tus datos de envío para procesar tu orden con Wompi de Bancolombia.
+                </p>
             </div>
 
             <div th:if="${error}" class="checkout-alert" role="alert">
@@ -63,7 +68,8 @@
 
                     <form id="formCheckout">
                         <!-- Token CSRF inyectado por Thymeleaf -->
-                        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                        <input type="hidden" th:if="${_csrf}" th:name="${_csrf.parameterName}"
+                            th:value="${_csrf.token}" />
 
                         <!-- Bloque: Contacto -->
                         <div class="form-block">
@@ -74,8 +80,8 @@
                                     <div class="field-control">
                                         <i class="fa-regular fa-user" aria-hidden="true"></i>
                                         <input type="text" id="receptor" name="receptor" class="form-input"
-                                               th:value="${usuario != null ? usuario.nombre : ''}"
-                                               placeholder="Ej: Carlos Pérez" required>
+                                            th:value="${usuario != null ? usuario.nombre : ''}"
+                                            placeholder="Ej: Carlos Pérez" required>
                                     </div>
                                 </div>
                                 <div class="form-field">
@@ -83,7 +89,7 @@
                                     <div class="field-control">
                                         <i class="fa-solid fa-phone" aria-hidden="true"></i>
                                         <input type="tel" id="telefono" name="telefono" class="form-input"
-                                               placeholder="Ej: 300 123 4567" required>
+                                            placeholder="Ej: 300 123 4567" required>
                                     </div>
                                     <span class="input-hint">Para coordinar la entrega con el repartidor.</span>
                                 </div>
@@ -99,7 +105,7 @@
                                     <div class="field-control">
                                         <i class="fa-solid fa-map" aria-hidden="true"></i>
                                         <select id="departamento" name="departamento" class="form-select" readonly
-                                                aria-readonly="true" tabindex="-1">
+                                            aria-readonly="true" tabindex="-1">
                                             <option value="Bolívar" selected>Bolívar (Cobertura regional)</option>
                                         </select>
                                         <i class="fa-solid fa-lock field-control__lock" aria-hidden="true"></i>
@@ -176,30 +182,34 @@
 
                             <div class="form-row form-row--single">
                                 <div class="form-field">
-                                    <label for="direccion">Dirección de entrega (casa, apto, barrio) <span class="required">*</span></label>
+                                    <label for="direccion">Dirección de entrega (casa, apto, barrio) <span
+                                            class="required">*</span></label>
                                     <div class="field-control">
                                         <i class="fa-solid fa-house" aria-hidden="true"></i>
                                         <input type="text" id="direccion" name="direccion" class="form-input"
-                                               placeholder="Ej: Cra 14 # 35-22, Barrio Manga, Conjunto Las Flores Apto 302" required>
+                                            placeholder="Ej: Cra 14 # 35-22, Barrio Manga, Conjunto Las Flores Apto 302"
+                                            required>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="form-row">
                                 <div class="form-field">
-                                    <label for="codigoPostal">Código postal <span class="optional">(opcional)</span></label>
+                                    <label for="codigoPostal">Código postal <span
+                                            class="optional">(opcional)</span></label>
                                     <div class="field-control">
                                         <i class="fa-solid fa-envelopes-bulk" aria-hidden="true"></i>
                                         <input type="text" id="codigoPostal" name="codigoPostal" class="form-input"
-                                               placeholder="Ej: 130001">
+                                            placeholder="Ej: 130001">
                                     </div>
                                 </div>
                                 <div class="form-field">
-                                    <label for="notas">Indicaciones adicionales <span class="optional">(opcional)</span></label>
+                                    <label for="notas">Indicaciones adicionales <span
+                                            class="optional">(opcional)</span></label>
                                     <div class="field-control">
                                         <i class="fa-regular fa-comment-dots" aria-hidden="true"></i>
                                         <input type="text" id="notas" name="notas" class="form-input"
-                                               placeholder="Ej: Dejar en portería o tocar timbre blanco">
+                                            placeholder="Ej: Dejar en portería o tocar timbre blanco">
                                     </div>
                                 </div>
                             </div>
@@ -217,20 +227,26 @@
                                 </span>
                             </div>
                             <p class="pay-box__desc">
-                                Al hacer clic, se abrirá el widget oficial y seguro de Wompi. Tus datos bancarios están protegidos y encriptados.
+                                Al hacer clic, se abrirá el widget oficial y seguro de Wompi. Tus datos bancarios están
+                                protegidos y encriptados.
                             </p>
                             <div class="pay-methods">
-                                <span class="cart-chip"><i class="fa-solid fa-credit-card" aria-hidden="true"></i> Tarjeta</span>
-                                <span class="cart-chip"><i class="fa-solid fa-building-columns" aria-hidden="true"></i> PSE</span>
-                                <span class="cart-chip"><i class="fa-solid fa-mobile-screen" aria-hidden="true"></i> Nequi</span>
-                                <span class="cart-chip"><i class="fa-solid fa-money-bill-transfer" aria-hidden="true"></i> Bancolombia</span>
+                                <span class="cart-chip"><i class="fa-solid fa-credit-card" aria-hidden="true"></i>
+                                    Tarjeta</span>
+                                <span class="cart-chip"><i class="fa-solid fa-building-columns" aria-hidden="true"></i>
+                                    PSE</span>
+                                <span class="cart-chip"><i class="fa-solid fa-mobile-screen" aria-hidden="true"></i>
+                                    Nequi</span>
+                                <span class="cart-chip"><i class="fa-solid fa-money-bill-transfer"
+                                        aria-hidden="true"></i> Bancolombia</span>
                             </div>
                         </div>
 
                         <div class="pay-action">
                             <button type="button" id="btnPagar" class="pay-btn">
                                 <i class="fa-solid fa-lock"></i>
-                                Pagar con Wompi · $<span id="btnPagarTotal" th:text="${#numbers.formatDecimal(total, 0, 'COMMA', 0, 'POINT')}">0</span> COP
+                                Pagar con Wompi · $<span id="btnPagarTotal"
+                                    th:text="${#numbers.formatDecimal(total, 0, 'COMMA', 0, 'POINT')}">0</span> COP
                             </button>
                         </div>
                     </form>
@@ -242,19 +258,20 @@
 
                     <div class="order-items">
                         <div th:each="detalle : ${detalles}" class="order-item">
-                            <img th:src="${detalle.imagenUrl}"
-                                 th:alt="${detalle.nombre}"
-                                 class="order-item__img"
-                                 onerror="this.onerror=null;this.src='/images/placeholder.svg'">
+                            <img th:src="${@imagenes.tarjeta(detalle.imagenUrl)}" th:alt="${detalle.nombre}"
+                                class="order-item__img" loading="lazy" width="64" height="64"
+                                onerror="this.onerror=null;this.src='/images/placeholders/sin-foto.svg'">
                             <div>
                                 <div class="order-item__name" th:text="${detalle.nombre}">Nombre Producto</div>
                                 <div class="order-item__vendor"
-                                     th:if="${detalle.vendedorNombre != null && !#strings.isEmpty(detalle.vendedorNombre)}"
-                                     th:text="${detalle.vendedorNombre}">Vendedor</div>
+                                    th:if="${detalle.vendedorNombre != null && !#strings.isEmpty(detalle.vendedorNombre)}"
+                                    th:text="${detalle.vendedorNombre}">Vendedor</div>
                                 <div class="order-item__sub">
                                     <span th:text="${detalle.cantidad}">1</span>
-                                    <span th:text="${detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : 'unid'}"></span>
-                                    × $<span th:text="${#numbers.formatInteger(detalle.precioUnitario, 1, 'POINT')}">0</span>
+                                    <span
+                                        th:text="${detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : 'unid'}"></span>
+                                    × $<span
+                                        th:text="${#numbers.formatInteger(detalle.precioUnitario, 1, 'POINT')}">0</span>
                                 </div>
                             </div>
                             <div class="order-item__total">
@@ -270,24 +287,31 @@
                         </div>
                         <div class="order-row">
                             <span>Envío (departamental)</span>
-                            <span>$<span id="displayEnvio" th:text="${#numbers.formatInteger(costoEnvio, 1, 'POINT')}">0</span></span>
+                            <span>$<span id="displayEnvio"
+                                    th:text="${#numbers.formatInteger(costoEnvio, 1, 'POINT')}">0</span></span>
                         </div>
-                        <ul id="desgloseEnvio" class="ship-list" th:if="${desgloseEnvio != null and !desgloseEnvio.empty}">
+                        <ul id="desgloseEnvio" class="ship-list"
+                            th:if="${desgloseEnvio != null and !desgloseEnvio.empty}">
                             <li th:each="d : ${desgloseEnvio}" class="ship-item">
                                 <div class="ship-item__main">
                                     <span class="ship-item__vendor" th:text="${d.vendedorNombre}">Vendedor</span>
-                                    <span class="ship-item__route" th:text="${(d.ciudadOrigen != null ? d.ciudadOrigen : 'Origen') + ' (Zona ' + (d.zonaOrigen != null ? d.zonaOrigen : '-') + ') → ' + (d.ciudadDestino != null ? d.ciudadDestino : 'Destino') + ' (Zona ' + (d.zonaDestino != null ? d.zonaDestino : '-') + ')'}">Origen → Destino</span>
+                                    <span class="ship-item__route"
+                                        th:text="${(d.ciudadOrigen != null ? d.ciudadOrigen : 'Origen') + ' (Zona ' + (d.zonaOrigen != null ? d.zonaOrigen : '-') + ') → ' + (d.ciudadDestino != null ? d.ciudadDestino : 'Destino') + ' (Zona ' + (d.zonaDestino != null ? d.zonaDestino : '-') + ')'}">Origen
+                                        → Destino</span>
                                     <span class="ship-chip" th:if="${d.tarifaPorDefecto}">Tarifa estándar</span>
                                 </div>
-                                <span class="ship-item__price">$<span th:text="${#numbers.formatInteger(d.tarifaCentavos / 100.0, 1, 'POINT')}">0</span></span>
+                                <span class="ship-item__price">$<span
+                                        th:text="${#numbers.formatInteger(d.tarifaCentavos / 100.0, 1, 'POINT')}">0</span></span>
                             </li>
                         </ul>
                         <p class="order-note">
-                            El costo de envío se calcula por cada vendedor según la zona de recogida y tu zona de entrega.
+                            El costo de envío se calcula por cada vendedor según la zona de recogida y tu zona de
+                            entrega.
                         </p>
                         <div class="order-row order-row--total">
                             <span>Total</span>
-                            <span>$<span id="displayTotal" th:text="${#numbers.formatInteger(total, 1, 'POINT')}">0</span></span>
+                            <span>$<span id="displayTotal"
+                                    th:text="${#numbers.formatInteger(total, 1, 'POINT')}">0</span></span>
                         </div>
                     </div>
 
@@ -524,4 +548,5 @@
 
     <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
 </body>
+
 </html>

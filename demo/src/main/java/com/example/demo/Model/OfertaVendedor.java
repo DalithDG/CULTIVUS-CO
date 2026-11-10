@@ -84,6 +84,19 @@ public class OfertaVendedor {
     @Field("nombre_producto")
     private String nombreProducto;
 
+    // ── Categoría (copiada del producto del catálogo para filtrar tarjetas públicas) ──
+
+    @Indexed
+    @Field("categoria_id")
+    private String categoriaId;
+
+    @Field("categoria_nombre")
+    private String categoriaNombre;
+
+    /** Foto de referencia del catálogo (solo para vistas; no se persiste). */
+    @org.springframework.data.annotation.Transient
+    private String imagenReferencia;
+
     @Field("created_at")
     private LocalDateTime createdAt;
 
@@ -157,6 +170,20 @@ public class OfertaVendedor {
 
     public String getNombreProducto() { return nombreProducto; }
     public void setNombreProducto(String nombreProducto) { this.nombreProducto = nombreProducto; }
+
+    public String getCategoriaId() { return categoriaId; }
+    public void setCategoriaId(String categoriaId) { this.categoriaId = categoriaId; }
+
+    public String getCategoriaNombre() { return categoriaNombre; }
+    public void setCategoriaNombre(String categoriaNombre) { this.categoriaNombre = categoriaNombre; }
+
+    public String getImagenReferencia() { return imagenReferencia; }
+    public void setImagenReferencia(String imagenReferencia) { this.imagenReferencia = imagenReferencia; }
+
+    /** true si el vendedor subió su propia foto (si no, las vistas muestran la foto de referencia). */
+    public boolean tieneFotoPropia() {
+        return imagenUrl != null && !imagenUrl.isBlank();
+    }
 
     public UnidadMedida getUnidadMedida() { return unidadMedida; }
     public void setUnidadMedida(UnidadMedida unidadMedida) { this.unidadMedida = unidadMedida; }

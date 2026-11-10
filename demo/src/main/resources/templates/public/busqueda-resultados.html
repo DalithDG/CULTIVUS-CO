@@ -60,7 +60,7 @@
                         <div class="ui-field-wrap">
                             <select name="categoria" class="ui-select" onchange="this.form.submit()">
                                 <option value="">Todas las categorías</option>
-                                <option th:each="cat : ${categorias}" th:value="${cat.id}" th:text="${cat.nombre}"
+                                <option th:each="cat : ${@imagenes.categoriasPublicas(categorias)}" th:value="${cat.id}" th:text="${cat.nombre}"
                                         th:selected="${cat.id == categoriaSeleccionada}">
                                 </option>
                             </select>
@@ -100,13 +100,13 @@
                         <i class="fas fa-search"></i>
                         <span>
                             <strong th:text="${totalResultados != null ? totalResultados : 0}">0</strong>
-                            <span th:text="${totalResultados == 1 ? 'producto encontrado' : 'productos encontrados'}">productos encontrados</span>
+                            <span th:text="${totalResultados == 1 ? 'oferta encontrada' : 'ofertas encontradas'}">ofertas encontradas</span>
                         </span>
                     </div>
                 </div>
 
                 <!-- Estado Vacío -->
-                <div class="ui-empty" th:if="${productos == null or productos.isEmpty()}">
+                <div class="ui-empty" th:if="${ofertas == null or ofertas.isEmpty()}">
                     <div class="ui-empty__icon"><i class="fas fa-search-minus"></i></div>
                     <h3 class="ui-empty__title">No encontramos coincidencias</h3>
                     <p class="ui-empty__desc">Intenta buscando con otros términos o explora todas nuestras categorías.</p>
@@ -115,47 +115,11 @@
                     </a>
                 </div>
 
-                <!-- Grid de Productos Encontrados -->
-                <div class="product-grid" th:if="${productos != null and !productos.isEmpty()}">
-                    <article class="product-card" th:each="producto : ${productos}">
-                        <a th:href="@{/producto/{id}(id=${producto.id})}" class="product-card__img-wrap">
-                            <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}" 
-                                 class="product-card__img" loading="lazy"
-                                 onerror="this.src='/images/placeholder.svg'">
-                            <span class="ui-chip ui-chip--gold product-card__badge" th:if="${producto.totalVendedores > 0}"
-                                  th:text="${producto.totalVendedores + ' Oferta(s)'}"></span>
-                        </a>
-
-                        <div class="product-card__body">
-                            <a th:href="@{/producto/{id}(id=${producto.id})}" style="text-decoration:none; color:inherit;">
-                                <h3 class="product-card__title" th:text="${producto.nombre}">Nombre</h3>
-                            </a>
-
-                            <div class="product-card__price-row">
-                                <span class="product-card__price" th:if="${producto.precioMinimo != null}" 
-                                      th:text="'$' + ${#numbers.formatInteger(producto.precioMinimo, 1, 'POINT')}">
-                                    $0
-                                </span>
-                                <span class="product-card__unit" th:if="${producto.precioMinimo != null}"
-                                      th:text="'/ ' + ${producto.abreviaturaUnidad}">/ kg</span>
-                                <span class="product-card__price" th:if="${producto.precioMinimo == null}"
-                                      style="font-size: 1rem; color: var(--c-earth); font-weight: 500;">
-                                    Próximamente
-                                </span>
-                            </div>
-
-                            <p style="font-size: 0.8rem; color: var(--c-earth); margin-bottom: 8px;" th:if="${producto.stockTotal != null}">
-                                <i class="fas fa-boxes-stacked"></i> 
-                                <span th:text="${(producto.stockTotal % 1 == 0 ? #numbers.formatDecimal(producto.stockTotal, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(producto.stockTotal, 1, 'POINT', 1, 'COMMA')) + ' ' + producto.abreviaturaUnidad + ' disponibles'}"></span>
-                            </p>
-
-                            <div class="product-card__actions">
-                                <a th:href="@{/producto/{id}(id=${producto.id})}" class="ui-btn ui-btn--primary ui-btn--full ui-btn--sm">
-                                    <i class="fas fa-eye"></i> Ver Detalles
-                                </a>
-                            </div>
-                        </div>
-                    </article>
+                <!-- Grid de Ofertas Encontradas -->
+                <div class="product-grid" th:if="${ofertas != null and !ofertas.isEmpty()}">
+                    <th:block th:each="oferta : ${ofertas}">
+                        <th:block th:replace="~{fragments/oferta-card :: card(${oferta})}"></th:block>
+                    </th:block>
                 </div>
             </section>
 

@@ -5,7 +5,7 @@
     <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="description" content="Conoce qué es Cultivus, cómo funciona el marketplace agrícola y descubre a los productores locales de Bolívar que llevan cosechas frescas a tu mesa.">
+    <meta name="description" content="Cultivus conecta a productores de Bolívar con compradores y transportistas: vende, paga y recibe en un solo lugar.">
     <title>Sobre Nosotros y Productores | Cultivus</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -58,7 +58,7 @@
             </h1>
 
             <p class="about-hero__lead">
-                Conectamos a las familias campesinas de Bolívar directamente con hogares y negocios que buscan cosechas frescas, comercio justo y origen garantizado.
+                Conectamos a productores de Bolívar con compradores y transportistas independientes o empresas aliadas. Compras, pagas y recibes en un solo lugar.
             </p>
 
             <div class="about-hero__actions">
@@ -116,31 +116,40 @@
 
                 <h2 id="manifesto-title" class="about-manifesto__text">
                     <span class="about-manifesto__word">Cultivus</span>
-                    <span class="about-manifesto__word">es</span>
+                    <span class="about-manifesto__word">reúne</span>
+                    <span class="about-manifesto__word">en</span>
                     <span class="about-manifesto__word">un</span>
-                    <span class="about-manifesto__word">marketplace</span>
-                    <span class="about-manifesto__word">que</span>
-                    <span class="about-manifesto__word">conecta</span>
-                    <span class="about-manifesto__word">a</span>
-                    <span class="about-manifesto__word">productores</span>
-                    <span class="about-manifesto__word">agrícolas</span>
-                    <span class="about-manifesto__word">con</span>
-                    <span class="about-manifesto__word">compradores</span>
-                    <span class="about-manifesto__word">que</span>
-                    <span class="about-manifesto__word">buscan</span>
-                    <span class="about-manifesto__word">productos</span>
-                    <span class="about-manifesto__word">frescos,</span>
-                    <span class="about-manifesto__word">de</span>
-                    <span class="about-manifesto__word">calidad</span>
+                    <span class="about-manifesto__word">solo</span>
+                    <span class="about-manifesto__word">lugar</span>
+                    <span class="about-manifesto__word">la</span>
+                    <span class="about-manifesto__word">venta,</span>
+                    <span class="about-manifesto__word">el</span>
+                    <span class="about-manifesto__word">pago</span>
                     <span class="about-manifesto__word">y</span>
-                    <span class="about-manifesto__word">con</span>
-                    <span class="about-manifesto__word">origen</span>
-                    <span class="about-manifesto__word">conocido.</span>
+                    <span class="about-manifesto__word">el</span>
+                    <span class="about-manifesto__word">envío</span>
+                    <span class="about-manifesto__word">de</span>
+                    <span class="about-manifesto__word">los</span>
+                    <span class="about-manifesto__word">productos</span>
+                    <span class="about-manifesto__word">del</span>
+                    <span class="about-manifesto__word">campo</span>
+                    <span class="about-manifesto__word">de</span>
+                    <span class="about-manifesto__word">Bolívar.</span>
                 </h2>
 
                 <p class="about-manifesto__body">
-                    Creemos en un modelo donde el campesino recibe una retribución digna por su labor y el comprador disfruta de alimentos recolectados en su punto óptimo de maduración, acortando la cadena de valor mediante tecnología honesta y trazable.
+                    Muchos productores de Bolívar no tienen cómo llevar su cosecha al comprador: vías limitadas, poco transporte propio y dependencia de intermediarios que fijan los precios.
                 </p>
+
+                <p class="about-manifesto__body">
+                    Cultivus lo resuelve: el productor publica, un transportista recoge y entrega, y tú ves precio y envío antes de pagar.
+                </p>
+
+                <div class="about-manifesto__chips">
+                    <span class="ui-chip ui-chip--green"><i class="fas fa-handshake" aria-hidden="true"></i> Venta directa</span>
+                    <span class="ui-chip ui-chip--green"><i class="fas fa-shield-alt" aria-hidden="true"></i> Pago protegido</span>
+                    <span class="ui-chip ui-chip--green"><i class="fas fa-truck-fast" aria-hidden="true"></i> Envío incluido</span>
+                </div>
             </div>
 
             <div class="about-manifesto__card js-reveal">
@@ -152,8 +161,8 @@
                          loading="lazy" decoding="async">
                 </picture>
                 <div class="about-manifesto__card-caption">
-                    <h4>Cosechas del Día</h4>
-                    <p>Del huerto a tu hogar en tiempos récord.</p>
+                    <h4>Cosechas de Bolívar</h4>
+                    <p>Del campo a tu mesa.</p>
                 </div>
             </div>
         </section>
@@ -173,9 +182,9 @@
                         <!-- Paso 01 -->
                         <article class="about-step-item is-active js-reveal" data-step="0">
                             <div class="about-step-item__num">01</div>
-                            <h3 class="about-step-item__title">Elige cosechas de productores verificados</h3>
+                            <h3 class="about-step-item__title">Elige productos del campo</h3>
                             <p class="about-step-item__desc">
-                                Explora las ofertas activas directamente de las fincas de Bolívar. Conoce quién cultiva cada producto, su origen geográfico y su fecha estimada de recolección.
+                                Explora cosechas de productores de Bolívar y compra a varios en un mismo carrito.
                             </p>
                             <img th:src="@{/images/nosotros/paso-1-elige.jpg}"
                                  alt="Selección de cosechas agrícolas frescas"
@@ -187,9 +196,9 @@
                         <!-- Paso 02 -->
                         <article class="about-step-item js-reveal" data-step="1">
                             <div class="about-step-item__num">02</div>
-                            <h3 class="about-step-item__title">Paga con total seguridad vía Wompi</h3>
+                            <h3 class="about-step-item__title">Paga con Wompi</h3>
                             <p class="about-step-item__desc">
-                                Paga mediante tarjeta de crédito o débito, PSE, Nequi o Bancolombia. Tu dinero permanece custodiado en la plataforma hasta que tu pedido llega en perfecto estado.
+                                Tarjeta, PSE, Nequi o Bancolombia. Tu pago queda protegido hasta completar la entrega.
                             </p>
                             <img th:src="@{/images/nosotros/paso-2-paga.jpg}"
                                  alt="Pago seguro y protegido para alimentos del campo"
@@ -201,9 +210,9 @@
                         <!-- Paso 03 -->
                         <article class="about-step-item js-reveal" data-step="2">
                             <div class="about-step-item__num">03</div>
-                            <h3 class="about-step-item__title">Recibe con seguimiento en tiempo real</h3>
+                            <h3 class="about-step-item__title">Recibe y sigue tu pedido</h3>
                             <p class="about-step-item__desc">
-                                Transportistas locales de nuestra red coordinan la recogida en finca y la entrega hasta tu dirección, con cálculo de envío transparente por cada productor.
+                                Un transportista recoge y entrega. Sigue cada estado: recogido, en ruta, entregado.
                             </p>
                             <img th:src="@{/images/nosotros/paso-3-recibe.jpg}"
                                  alt="Transporte y entrega ágil de productos del campo"
@@ -263,7 +272,7 @@
                     <div class="audience-card__body">
                         <h3 class="audience-card__title">Para Compradores</h3>
                         <p class="audience-card__desc">
-                            Accede a frutas, verduras y productos del agro recién cosechados. Conoce la historia de cada productor y apoya directamente la economía campesina regional.
+                            Compra productos del campo directo al productor, con precio y envío claros.
                         </p>
                         <a th:href="@{/ofertas}" class="audience-card__cta audience-card__cta--green">
                             <span>Comprar en Cultivus</span>
@@ -285,7 +294,7 @@
                     <div class="audience-card__body">
                         <h3 class="audience-card__title">Para Productores</h3>
                         <p class="audience-card__desc">
-                            Vende tus cosechas con total autonomía y precios justos sin intermediarios. Gestiona tus ofertas, recibe pagos en tu cuenta bancaria y haz crecer tu producción.
+                            Publica, fija tus precios y vende sin intermediarios. Cultivus coordina el envío.
                         </p>
                         <a th:href="@{/vendedor/registro}" class="audience-card__cta audience-card__cta--outlined">
                             <span>Vender mis cosechas</span>
@@ -307,7 +316,7 @@
                     <div class="audience-card__body">
                         <h3 class="audience-card__title">Para Transportistas</h3>
                         <p class="audience-card__desc">
-                            Genera ingresos transportando cosechas desde fincas rurales hasta los compradores. Rutas calculadas por proximidad con tarifas transparentes y pagos seguros.
+                            Transportistas independientes y empresas aliadas: elige envíos, ve la ruta y gana con tarifa fija por zona.
                         </p>
                         <a th:href="@{/transportista/registro}" class="audience-card__cta audience-card__cta--outlined">
                             <span>Unirme a la red logística</span>
@@ -334,7 +343,7 @@
                     </div>
                     <h3 class="commitment-card__title">Cosechas Frescas</h3>
                     <p class="commitment-card__desc">
-                        Alimentos recolectados en su punto óptimo directamente de las fincas, sin semanas en bodegas ni químicos innecesarios.
+                        Del productor al comprador, sin intermediarios de por medio.
                     </p>
                 </article>
 
@@ -345,7 +354,7 @@
                     </div>
                     <h3 class="commitment-card__title">Apoyo al Productor</h3>
                     <p class="commitment-card__desc">
-                        Precios justos y transparentes donde el valor real del trabajo agrícola queda directamente en las manos de las familias campesinas.
+                        Precios claros y el valor del trabajo se queda con el campesino.
                     </p>
                 </article>
 
@@ -356,7 +365,7 @@
                     </div>
                     <h3 class="commitment-card__title">Compra Segura</h3>
                     <p class="commitment-card__desc">
-                        Tus transacciones se procesan bajo los estándares bancarios de Wompi, con protección integral hasta confirmar tu entrega.
+                        Pagas con Wompi y el dinero se libera al completar la entrega.
                     </p>
                 </article>
 
@@ -367,7 +376,7 @@
                     </div>
                     <h3 class="commitment-card__title">Cobertura en Bolívar</h3>
                     <p class="commitment-card__desc">
-                        Operación regional enfocada y optimizada en el departamento de Bolívar, garantizando rutas eficientes y frescura insuperable.
+                        Transportistas independientes y empresas aliadas con tarifa fija por zona.
                     </p>
                 </article>
             </div>
@@ -409,7 +418,7 @@
                     <span class="ui-chip ui-chip--green">Directorio Local</span>
                     <h2 id="producers-title" class="about-producers__title">Nuestros Productores</h2>
                     <p class="about-producers__subtitle">
-                        Conoce a los campesinos y huertos que hacen posible la frescura de Cultivus.
+                        Conoce a los campesinos que hacen posible Cultivus.
                     </p>
                 </div>
 
@@ -435,8 +444,8 @@
                     </div>
 
                     <p class="producer-card__desc"
-                       th:text="${p.descripcion != null and !p.descripcion.isBlank()} ? ${p.descripcion} : 'Productor local de Cultivus comprometido con cosechas sostenibles, agroecológicas y de alta calidad.'">
-                        Descripción del productor local.
+                       th:text="${p.descripcion != null and !p.descripcion.isBlank()} ? ${p.descripcion} : 'Productor local de Bolívar que vende directo en Cultivus.'">
+                        Productor local de Bolívar que vende directo en Cultivus.
                     </p>
 
                     <div class="producer-card__footer">
@@ -456,7 +465,7 @@
             <div class="ui-empty js-reveal" th:if="${#lists.isEmpty(productores)}">
                 <div class="ui-empty__icon"><i class="fas fa-seedling" aria-hidden="true"></i></div>
                 <h3 class="ui-empty__title">Pronto conocerás a nuevos productores</h3>
-                <p class="ui-empty__desc">Estamos vinculando y verificando nuevas familias agrícolas en Bolívar.</p>
+                <p class="ui-empty__desc">Estamos sumando y verificando nuevos productores de Bolívar.</p>
             </div>
 
             <!-- Paginación Segura -->

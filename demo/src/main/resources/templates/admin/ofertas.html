@@ -51,7 +51,7 @@
                                     <td>
                                         <img th:if="${of.imagenUrl != null}" th:src="${of.imagenUrl}" alt="img"
                                              class="adm-thumb"
-                                             onerror="this.src='/images/placeholder.svg'">
+                                             onerror="this.src='/images/placeholders/sin-foto.svg'">
                                         <span th:if="${of.imagenUrl == null}" class="adm-muted">-</span>
                                     </td>
                                     <td><span class="adm-cell-title" th:text="${of.nombreProducto}">Producto</span></td>

@@ -76,7 +76,7 @@
                                     <td>
                                         <img th:if="${p.imagenUrl != null and !p.imagenUrl.isEmpty()}" th:src="${p.imagenUrl}" alt="img"
                                              class="adm-thumb"
-                                             onerror="this.src='/images/placeholder.svg'">
+                                             onerror="this.src='/images/placeholders/sin-foto.svg'">
                                         <span th:if="${p.imagenUrl == null or p.imagenUrl.isEmpty()}" class="adm-muted">
                                             <i class="fas fa-leaf" aria-hidden="true"></i>
                                         </span>

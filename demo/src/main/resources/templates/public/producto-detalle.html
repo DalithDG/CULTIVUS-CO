@@ -56,7 +56,7 @@
                     <img th:src="${producto.imagenUrl}"
                          th:alt="${producto.nombre}"
                          class="product-gallery__img"
-                         onerror="this.src='/images/placeholder.svg'">
+                         onerror="this.src='/images/placeholders/sin-foto.svg'">
                 </div>
             </div>
 
@@ -157,58 +157,9 @@
 
             <!-- Grid de Ofertas -->
             <div class="product-grid" th:if="${ofertas != null and !ofertas.isEmpty()}">
-                <article class="product-card" th:each="oferta : ${ofertas}">
-                    <a th:href="@{/oferta/{id}(id=${oferta.id})}" class="product-card__img-wrap">
-                        <img th:src="${oferta.imagenUrl != null and !oferta.imagenUrl.isBlank()} ? ${oferta.imagenUrl} : (${producto.imagenUrl != null} ? producto.imagenUrl : '/images/placeholder.svg')"
-                             th:alt="${oferta.nombreProducto}"
-                             class="product-card__img"
-                             onerror="this.src='/images/placeholder.svg'">
-                        <span class="ui-chip ui-chip--green product-card__badge">
-                            <i class="fas fa-leaf"></i> Cosecha
-                        </span>
-                    </a>
-
-                    <div class="product-card__body">
-                        <span class="product-card__producer">
-                            Vendido por:
-                            <strong th:text="${oferta.vendedor.razonSocial != null and !oferta.vendedor.razonSocial.isEmpty()} ? ${oferta.vendedor.razonSocial} : ${oferta.vendedor.nombre}">Finca La Ruiz</strong>
-                            <i th:if="${oferta.vendedor.verificado}" class="fas fa-check-circle" style="color: var(--c-green);" title="Verificado"></i>
-                        </span>
-
-                        <a th:href="@{/oferta/{id}(id=${oferta.id})}" style="text-decoration:none; color:inherit;">
-                            <h3 class="product-card__title" th:text="${oferta.nombreProducto}">Nombre de la oferta</h3>
-                        </a>
-
-                        <div class="product-card__price-row">
-                            <span class="product-card__price"
-                                  th:text="'$' + ${#numbers.formatInteger(oferta.precio, 1, 'POINT')}">
-                                $1.500
-                            </span>
-                            <span class="product-card__unit"
-                                  th:text="'/ ' + ${oferta.unidadEfectiva().abreviatura}">
-                                / kg
-                            </span>
-                        </div>
-
-                        <div class="product-card__actions">
-                            <!-- Si puede comprar -->
-                            <form th:if="${session.usuarioLogueado == null or session.usuarioLogueado.puedeComprar()}"
-                                  th:action="@{/carrito/agregar}" method="post">
-                                <input type="hidden" name="ofertaId" th:value="${oferta.id}">
-                                <input type="hidden" name="cantidad" th:value="${oferta.compraMinima != null ? oferta.compraMinima : 1}">
-                                <button type="submit" class="ui-btn ui-btn--primary ui-btn--full ui-btn--sm">
-                                    <i class="fas fa-cart-plus"></i> Agregar
-                                </button>
-                            </form>
-                            <!-- Si es vendedor (no puede comprar) -->
-                            <button th:if="${session.usuarioLogueado != null and !session.usuarioLogueado.puedeComprar()}"
-                                    type="button" class="ui-btn ui-btn--vendor-blocked ui-btn--full ui-btn--sm" disabled
-                                    title="Con cuenta de vendedor no puedes realizar compras">
-                                <i class="fas fa-store-slash"></i> Cuenta Vendedor
-                            </button>
-                        </div>
-                    </div>
-                </article>
+                <th:block th:each="oferta : ${ofertas}">
+                    <th:block th:replace="~{fragments/oferta-card :: card(${oferta})}"></th:block>
+                </th:block>
             </div>
 
             <!-- Paginación de ofertas si aplica -->

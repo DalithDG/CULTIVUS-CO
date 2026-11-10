@@ -1,8 +1,8 @@
 package com.example.demo.services;
 
-import com.example.demo.Model.ProductoCatalogo;
-import com.example.demo.Model.embebidos.CategoriaProducto;
-import com.example.demo.repository.ProductoCatalogoRepository;
+import com.example.demo.Model.EstadoPublicacion;
+import com.example.demo.Model.OfertaVendedor;
+import com.example.demo.repository.OfertaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -20,91 +20,107 @@ import static org.mockito.Mockito.when;
 class BusquedaServiceTest {
 
     @Mock
-    private ProductoCatalogoRepository catalogoRepository;
+    private OfertaRepository ofertaRepository;
+
+    @Mock
+    private CatalogoService catalogoService;
 
     @InjectMocks
     private BusquedaService busquedaService;
 
-    private ProductoCatalogo pConVendedor;
-    private ProductoCatalogo pSinVendedor;
-    private ProductoCatalogo pConAcento;
+    private OfertaVendedor ofertaPublicada;
+    private OfertaVendedor ofertaNoDisponible;
+    private OfertaVendedor ofertaConAcento;
+    private OfertaVendedor ofertaPendiente;
 
     @BeforeEach
     void setUp() {
-        CategoriaProducto cat1 = new CategoriaProducto("cat-1", "Frutas");
-        CategoriaProducto cat2 = new CategoriaProducto("cat-2", "Verduras");
+        ofertaPublicada = new OfertaVendedor();
+        ofertaPublicada.setId("of-1");
+        ofertaPublicada.setNombreProducto("Tomate Cherry");
+        ofertaPublicada.setDisponible(true);
+        ofertaPublicada.setEstadoPublicacion(EstadoPublicacion.PUBLICADO);
+        ofertaPublicada.setPrecio(3000.0);
+        ofertaPublicada.setCategoriaId("cat-2");
+        ofertaPublicada.setCategoriaNombre("Verduras");
 
-        pConVendedor = new ProductoCatalogo();
-        pConVendedor.setId("p1");
-        pConVendedor.setNombre("Tomate Cherry");
-        pConVendedor.setTotalVendedores(2);
-        pConVendedor.setPrecioMinimo(3000.0);
-        pConVendedor.setCategoria(cat2);
+        ofertaNoDisponible = new OfertaVendedor();
+        ofertaNoDisponible.setId("of-2");
+        ofertaNoDisponible.setNombreProducto("Yuca");
+        ofertaNoDisponible.setDisponible(false);
+        ofertaNoDisponible.setEstadoPublicacion(EstadoPublicacion.PUBLICADO);
+        ofertaNoDisponible.setPrecio(2000.0);
+        ofertaNoDisponible.setCategoriaId("cat-2");
+        ofertaNoDisponible.setCategoriaNombre("Verduras");
 
-        pSinVendedor = new ProductoCatalogo();
-        pSinVendedor.setId("p2");
-        pSinVendedor.setNombre("Yuca");
-        pSinVendedor.setTotalVendedores(0);
-        pSinVendedor.setPrecioMinimo(2000.0);
-        pSinVendedor.setCategoria(cat2);
+        ofertaConAcento = new OfertaVendedor();
+        ofertaConAcento.setId("of-3");
+        ofertaConAcento.setNombreProducto("Plátano Hartón");
+        ofertaConAcento.setDisponible(true);
+        ofertaConAcento.setEstadoPublicacion(EstadoPublicacion.PUBLICADO);
+        ofertaConAcento.setPrecio(1500.0);
+        ofertaConAcento.setCategoriaId("cat-1");
+        ofertaConAcento.setCategoriaNombre("Frutas");
 
-        pConAcento = new ProductoCatalogo();
-        pConAcento.setId("p3");
-        pConAcento.setNombre("Plátano Hartón");
-        pConAcento.setTotalVendedores(1);
-        pConAcento.setPrecioMinimo(1500.0);
-        pConAcento.setCategoria(cat1);
+        ofertaPendiente = new OfertaVendedor();
+        ofertaPendiente.setId("of-4");
+        ofertaPendiente.setNombreProducto("Tomate de Árbol");
+        ofertaPendiente.setDisponible(true);
+        ofertaPendiente.setEstadoPublicacion(EstadoPublicacion.PENDIENTE);
+        ofertaPendiente.setPrecio(2800.0);
+        ofertaPendiente.setCategoriaId("cat-1");
+        ofertaPendiente.setCategoriaNombre("Frutas");
     }
 
     @Test
-    @DisplayName("buscarProductos solo retorna productos con totalVendedores > 0")
-    void buscarProductosSoloRetornaConVendedores() {
-        when(catalogoRepository.findByAprobadoTrueAndActivoTrue())
-                .thenReturn(List.of(pConVendedor, pSinVendedor, pConAcento));
+    @DisplayName("buscarProductos solo retorna ofertas disponibles, PUBLICADAS y con precio")
+    void buscarProductosSoloRetornaPublicadasDisponibles() {
+        when(ofertaRepository.findAll())
+                .thenReturn(List.of(ofertaPublicada, ofertaNoDisponible, ofertaConAcento, ofertaPendiente));
 
-        List<ProductoCatalogo> resVacio = busquedaService.buscarProductos("");
+        List<OfertaVendedor> resVacio = busquedaService.buscarProductos("");
         assertEquals(2, resVacio.size());
-        assertFalse(resVacio.contains(pSinVendedor));
+        assertFalse(resVacio.contains(ofertaNoDisponible));
+        assertFalse(resVacio.contains(ofertaPendiente));
 
-        List<ProductoCatalogo> resTomate = busquedaService.buscarProductos("Tomate");
+        List<OfertaVendedor> resTomate = busquedaService.buscarProductos("Tomate");
         assertEquals(1, resTomate.size());
-        assertEquals("p1", resTomate.get(0).getId());
+        assertEquals("of-1", resTomate.get(0).getId());
     }
 
     @Test
     @DisplayName("buscarProductos soporta búsquedas sin tilde (platano encuentra Plátano)")
     void buscarProductosSoportaSinTilde() {
-        when(catalogoRepository.findByAprobadoTrueAndActivoTrue())
-                .thenReturn(List.of(pConVendedor, pSinVendedor, pConAcento));
+        when(ofertaRepository.findAll())
+                .thenReturn(List.of(ofertaPublicada, ofertaNoDisponible, ofertaConAcento));
 
-        List<ProductoCatalogo> res = busquedaService.buscarProductos("platano");
+        List<OfertaVendedor> res = busquedaService.buscarProductos("platano");
         assertEquals(1, res.size());
-        assertEquals("p3", res.get(0).getId());
+        assertEquals("of-3", res.get(0).getId());
     }
 
     @Test
-    @DisplayName("buscarPorCategoria solo retorna productos con totalVendedores > 0")
-    void buscarPorCategoriaSoloRetornaConVendedores() {
-        when(catalogoRepository.findByCategoriaIdAndAprobadoTrueAndActivoTrue("cat-2"))
-                .thenReturn(List.of(pConVendedor, pSinVendedor));
+    @DisplayName("buscarPorCategoria solo retorna ofertas públicas de esa categoría")
+    void buscarPorCategoriaSoloRetornaPublicas() {
+        when(ofertaRepository.findAll())
+                .thenReturn(List.of(ofertaPublicada, ofertaNoDisponible, ofertaConAcento));
 
-        List<ProductoCatalogo> res = busquedaService.buscarPorCategoria("cat-2");
+        List<OfertaVendedor> res = busquedaService.buscarPorCategoria("cat-2");
         assertEquals(1, res.size());
-        assertEquals("p1", res.get(0).getId());
+        assertEquals("of-1", res.get(0).getId());
     }
 
     @Test
-    @DisplayName("busquedaAvanzada filtra por categoria y precio respetando totalVendedores > 0")
+    @DisplayName("busquedaAvanzada filtra por categoría y precio sobre ofertas públicas")
     void busquedaAvanzadaFiltros() {
-        when(catalogoRepository.findByAprobadoTrueAndActivoTrue())
-                .thenReturn(List.of(pConVendedor, pSinVendedor, pConAcento));
+        when(ofertaRepository.findAll())
+                .thenReturn(List.of(ofertaPublicada, ofertaNoDisponible, ofertaConAcento));
 
-        List<ProductoCatalogo> res = busquedaService.busquedaAvanzada("tomate", "cat-2", 2000.0, 4000.0);
+        List<OfertaVendedor> res = busquedaService.busquedaAvanzada("tomate", "cat-2", 2000.0, 4000.0);
         assertEquals(1, res.size());
-        assertEquals("p1", res.get(0).getId());
+        assertEquals("of-1", res.get(0).getId());
 
-        List<ProductoCatalogo> resFueraPrecio = busquedaService.busquedaAvanzada("tomate", "cat-2", 3500.0, 5000.0);
+        List<OfertaVendedor> resFueraPrecio = busquedaService.busquedaAvanzada("tomate", "cat-2", 3500.0, 5000.0);
         assertTrue(resFueraPrecio.isEmpty());
     }
 }
-

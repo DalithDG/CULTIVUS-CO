@@ -13,7 +13,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
+
     <link rel="stylesheet" th:href="@{/checkout-tokens.css}">
     <link rel="stylesheet" th:href="@{/cultivus-ui.css}">
     <link rel="stylesheet" th:href="@{/catalog-apple.css}">
@@ -40,7 +40,7 @@
                     </h1>
 
                     <p class="home-hero__subtitle">
-                        Alimentos frescos directamente de productores locales de Bolívar y toda Colombia a tu hogar.
+                        Alimentos frescos directamente de productores locales de Bolívar a tu hogar.
                         Sin intermediarios, con calidad garantizada y precios justos.
                     </p>
 
@@ -49,11 +49,13 @@
                             <i class="fas fa-shopping-cart"></i>
                             <span>Explorar Productos</span>
                         </a>
-                        <a th:href="@{/vendedor/registro}" class="ui-btn ui-btn--secondary ui-btn--lg" id="heroVenderBtn">
+                        <a th:href="@{/vendedor/registro}" class="ui-btn ui-btn--secondary ui-btn--lg"
+                            id="heroVenderBtn">
                             <i class="fas fa-hat-cowboy"></i>
                             <span>Vender en Cultivus</span>
                         </a>
-                        <a th:href="@{/transportista/registro}" class="ui-btn ui-btn--tertiary ui-btn--lg" id="heroTransportistaBtn">
+                        <a th:href="@{/transportista/registro}" class="ui-btn ui-btn--tertiary ui-btn--lg"
+                            id="heroTransportistaBtn">
                             <i class="fas fa-truck-fast"></i>
                             <span>Ser Transportista</span>
                         </a>
@@ -62,8 +64,9 @@
 
                 <div class="home-hero__visual" aria-hidden="true">
                     <div class="home-hero__image-card">
-                        <img th:src="@{/images/ImagenIndex4-opt.jpg}" alt="Cultivus campo colombiano"
-                             onerror="this.src='/images/hero-background.jpg'">
+                        <img th:src="@{/images/ImagenIndex4-opt.jpg}" alt="Cultivus campo colombiano" width="800"
+                            height="600" decoding="async"
+                            onerror="this.onerror=null;this.src='/images/placeholders/sin-foto.svg'">
                     </div>
                     <div class="home-hero__float-card">
                         <div class="home-hero__float-icon">
@@ -125,55 +128,20 @@
             </div>
 
             <div class="cats-grid">
-                <!-- Categorías dinámicas -->
-                <th:block th:if="${categorias != null and !categorias.isEmpty()}">
-                    <a th:each="cat, it : ${categorias}" th:if="${it.index < 8}"
-                       th:with="n=${cat.nombre != null ? #strings.toLowerCase(cat.nombre) : ''}"
-                       th:href="@{/category(categoria=${cat.id})}"
-                       class="cat-tile" th:id="'cat-' + ${cat.id}">
-                        <div class="cat-tile__img-wrap">
-                            <img th:src="${n.contains('fruta') ? '/images/frutas.webp' :
-                                          n.contains('verdura') ? '/images/Verduras-opt.jpg' :
-                                          (n.contains('lácteo') or n.contains('lacteo')) ? '/images/lacteos.jpg' :
-                                          n.contains('carne') ? '/images/carnes y aves.png' :
-                                          n.contains('grano') ? '/images/granos y cereales.png' :
-                                          n.contains('bebida') ? '/images/bebidas.webp' :
-                                          n.contains('condimento') ? '/images/condimentos.png' :
-                                          n.contains('pan') ? '/images/panaderia.png' :
-                                          '/images/hero-background.jpg'}"
-                                 th:alt="${cat.nombre}" loading="lazy">
-                        </div>
-                        <div class="cat-tile__info">
-                            <h3 class="cat-tile__title" th:text="${cat.nombre}">Categoría</h3>
-                            <span class="cat-tile__desc">Cosechas locales</span>
-                        </div>
-                        <i class="fas fa-chevron-right cat-tile__arrow"></i>
-                    </a>
-                </th:block>
-
-                <!-- Respaldo estático -->
-                <th:block th:if="${categorias == null or categorias.isEmpty()}">
-                    <a th:href="@{/category}" class="cat-tile">
-                        <div class="cat-tile__img-wrap"><img th:src="@{/images/frutas.webp}" alt="Frutas"></div>
-                        <div class="cat-tile__info"><h3 class="cat-tile__title">Frutas</h3><span class="cat-tile__desc">Cosechas frescas</span></div>
-                        <i class="fas fa-chevron-right cat-tile__arrow"></i>
-                    </a>
-                    <a th:href="@{/category}" class="cat-tile">
-                        <div class="cat-tile__img-wrap"><img th:src="@{/images/Verduras-opt.jpg}" alt="Verduras"></div>
-                        <div class="cat-tile__info"><h3 class="cat-tile__title">Verduras</h3><span class="cat-tile__desc">De la huerta</span></div>
-                        <i class="fas fa-chevron-right cat-tile__arrow"></i>
-                    </a>
-                    <a th:href="@{/category}" class="cat-tile">
-                        <div class="cat-tile__img-wrap"><img th:src="@{/images/lacteos.jpg}" alt="Lácteos"></div>
-                        <div class="cat-tile__info"><h3 class="cat-tile__title">Lácteos</h3><span class="cat-tile__desc">Artesanales</span></div>
-                        <i class="fas fa-chevron-right cat-tile__arrow"></i>
-                    </a>
-                    <a th:href="@{/category}" class="cat-tile">
-                        <div class="cat-tile__img-wrap"><img th:src="@{'/images/carnes y aves.png'}" alt="Carnes"></div>
-                        <div class="cat-tile__info"><h3 class="cat-tile__title">Carnes</h3><span class="cat-tile__desc">Origen local</span></div>
-                        <i class="fas fa-chevron-right cat-tile__arrow"></i>
-                    </a>
-                </th:block>
+                <!-- Categorías públicas: imagen por slug (/images/categorias/{slug}.webp); si falta, fallback único -->
+                <a th:each="cat : ${@imagenes.categoriasPublicas(categorias)}"
+                    th:href="@{/category(categoria=${cat.id})}" class="cat-tile" th:id="'cat-' + ${cat.id}">
+                    <div class="cat-tile__img-wrap">
+                        <img th:src="@{${@imagenes.categoria(cat.nombre)}}" th:alt="${cat.nombre}" width="60"
+                            height="60" loading="lazy" decoding="async"
+                            onerror="this.onerror=null;this.src='/images/placeholders/sin-foto.svg'">
+                    </div>
+                    <div class="cat-tile__info">
+                        <h3 class="cat-tile__title" th:text="${cat.nombre}">Categoría</h3>
+                        <span class="cat-tile__desc">Cosechas locales</span>
+                    </div>
+                    <i class="fas fa-chevron-right cat-tile__arrow"></i>
+                </a>
             </div>
         </section>
 
@@ -189,59 +157,17 @@
                 </a>
             </div>
 
-            <!-- Grid de Tarjetas Unificadas -->
-            <div th:if="${productos != null and !productos.isEmpty()}" class="product-grid">
-                <article th:each="producto : ${productos}" class="product-card">
-                    <a th:href="@{/producto/{id}(id=${producto.id})}" class="product-card__img-wrap">
-                        <img th:src="${producto.imagenUrl != null ? producto.imagenUrl : '/images/frutas.webp'}"
-                             th:alt="${producto.nombre}" loading="lazy" class="product-card__img"
-                             onerror="this.onerror=null;this.src='/images/frutas.webp'">
-                        <span class="ui-chip ui-chip--green product-card__badge">Fresco</span>
-                    </a>
-
-                    <div class="product-card__body">
-                        <span class="product-card__producer"
-                              th:text="${producto.categoria != null ? producto.categoria.nombre : 'Bolívar, Colombia'}">
-                            Bolívar, Colombia
-                        </span>
-
-                        <a th:href="@{/producto/{id}(id=${producto.id})}" style="text-decoration:none; color:inherit;">
-                            <h3 class="product-card__title" th:text="${producto.nombre}">Nombre del producto</h3>
-                        </a>
-
-                        <div class="product-card__price-row">
-                            <span class="product-card__price" th:if="${producto.precioMinimo != null}"
-                                  th:text="'Desde $' + ${#numbers.formatInteger(producto.precioMinimo, 1, 'POINT')}">Desde $0</span>
-                            <span class="product-card__price" th:unless="${producto.precioMinimo != null}"
-                                  style="font-size: 1rem; color: var(--c-earth); font-weight: 500;">Próximamente</span>
-                        </div>
-
-                        <div class="product-card__actions">
-                            <!-- Si puede comprar -->
-                            <form th:if="${session.usuarioLogueado == null or session.usuarioLogueado.puedeComprar()}"
-                                  th:action="@{/carrito/agregar}" method="post">
-                                <input type="hidden" name="productoId" th:value="${producto.id}">
-                                <button type="submit" class="ui-btn ui-btn--primary ui-btn--full ui-btn--sm" aria-label="Agregar al carrito">
-                                    <i class="fas fa-shopping-cart"></i> Agregar
-                                </button>
-                            </form>
-                            <!-- Si es vendedor (no puede comprar) -->
-                            <button th:if="${session.usuarioLogueado != null and !session.usuarioLogueado.puedeComprar()}"
-                                    type="button" class="ui-btn ui-btn--vendor-blocked ui-btn--full ui-btn--sm" disabled
-                                    title="Con cuenta de vendedor no puedes comprar">
-                                <i class="fas fa-store-slash"></i> Vendedor
-                            </button>
-                        </div>
-                    </div>
-                </article>
+            <!-- Tarjetas: las 8 ofertas públicas más recientes (el catálogo es solo lista de referencia) -->
+            <div th:if="${ofertas != null and !ofertas.isEmpty()}" class="product-grid">
+                <th:block th:each="oferta : ${ofertas}">
+                    <th:block th:replace="~{fragments/oferta-card :: card(${oferta})}"></th:block>
+                </th:block>
             </div>
 
-            <!-- Estado Vacío -->
-            <div th:if="${productos == null or productos.isEmpty()}" class="ui-empty">
-                <div class="ui-empty__icon"><i class="fas fa-seedling"></i></div>
-                <h3 class="ui-empty__title">Próximamente cosechas frescas</h3>
-                <p class="ui-empty__desc">Nuestros productores aliados están alistando nuevas cosechas para ti.</p>
-            </div>
+            <!-- Estado vacío -->
+            <th:block th:if="${ofertas == null or ofertas.isEmpty()}">
+                <th:block th:replace="~{fragments/estado-vacio :: sinProductos}"></th:block>
+            </th:block>
 
             <!-- 5. CTA VENDEDORES & TRANSPORTISTAS -->
             <div class="cta-duo">

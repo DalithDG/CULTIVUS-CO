@@ -5,8 +5,11 @@
     <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="_csrf" th:if="${_csrf != null}" th:content="${_csrf.token}">
+    <meta name="_csrf_header" th:if="${_csrf != null}" th:content="${_csrf.headerName}">
     <title>Editar Oferta · Vendedor | Cultivus</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/cultivus-ui.css(v=2)}">
     <link rel="stylesheet" th:href="@{/header.css}">
     <link rel="stylesheet" th:href="@{/vendedor-panel.css}">
     <link rel="stylesheet" th:href="@{/vendedor-formulario.css}">
@@ -59,8 +62,8 @@
             <div class="vf-card vf-card--elevated">
                 <div class="vf-card__body">
                     <div class="vf-product-preview" style="margin-top:0; margin-bottom:24px;">
-                        <img th:src="${oferta.imagenUrl}" th:alt="${oferta.nombreProducto}"
-                             class="vf-product-preview__thumb" onerror="this.src='/images/placeholder.svg'">
+                        <img th:src="${@imagenes.tarjeta(oferta)}" th:alt="${oferta.nombreProducto}"
+                             class="vf-product-preview__thumb" onerror="this.onerror=null;this.src='/images/placeholders/sin-foto.svg'">
                         <div class="vf-product-preview__info">
                             <h4 th:text="${oferta.nombreProducto}">Producto</h4>
                             <p>
@@ -265,17 +268,13 @@
                             </div>
                         </div>
 
-                        <!-- Sección: Imagen -->
+                        <!-- Sección: Imagen (subida a Cloudinary) -->
                         <div class="vf-section">
                             <div class="vf-field">
-                                <label class="vf-label" for="imagenUrl">
-                                    <span>URL de la Imagen de tu Oferta</span>
+                                <label class="vf-label" for="archivoFotoEdicion">
+                                    <span>Fotografía de tu Oferta</span>
                                 </label>
-                                <input type="url" id="imagenUrl" name="imagenUrl" class="vf-input" th:value="${oferta.imagenUrl}">
-                            </div>
-                            <div id="imagePreviewBox" class="vf-image-preview-box has-image">
-                                <img id="imagePreview" class="vf-image-preview" alt="Vista previa" th:src="${oferta.imagenUrl}">
-                                <span class="vf-hint">Fotografía actual de la oferta.</span>
+                                <th:block th:replace="~{fragments/subida-foto :: campoFoto('archivoFotoEdicion', ${oferta.imagenUrl}, false)}"></th:block>
                             </div>
                         </div>
 
@@ -295,21 +294,6 @@
         </div>
 
         <script>
-            // Image preview
-            const imagenInput = document.getElementById('imagenUrl');
-            const preview = document.getElementById('imagePreview');
-            const previewBox = document.getElementById('imagePreviewBox');
-            if (imagenInput && preview) {
-                imagenInput.addEventListener('input', function() {
-                    if (this.value) {
-                        preview.src = this.value;
-                        if (previewBox) previewBox.classList.add('has-image');
-                    } else {
-                        if (previewBox) previewBox.classList.remove('has-image');
-                    }
-                });
-            }
-
             // Si está en pantalla de rechazo y selecciona "Otra" unidad
             const reenvSelect = document.getElementById('reenviarUnidad');
             const reenvOtra = document.getElementById('campoReenviarOtra');
@@ -358,6 +342,7 @@
                 });
             }
         </script>
+        <script th:src="@{/subida-foto-oferta.js(v=2)}"></script>
         <footer class="vs-footer">
             <div class="vs-footer__brand">
                 <span>Cultivus Colombia · Editar Oferta</span>

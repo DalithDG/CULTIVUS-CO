@@ -4,7 +4,7 @@
     <!-- Imagotipo reutilizable -->
     <img th:fragment="imagotipo (alt, height)" th:src="@{/images/imagotipo_transparente.png}"
          th:alt="${alt != null ? alt : 'Cultivus'}"
-         th:style="'height:' + (${height} != null ? ${height} : '40px') + '; width: auto;'" />
+         th:style="'height:' + (${height} != null ? ${height} : '48px') + '; width: auto;'" />
 
     <!-- Isotipo reutilizable -->
     <img th:fragment="isotipo (alt, height)" th:src="@{/images/isotipo_transparente.png}"

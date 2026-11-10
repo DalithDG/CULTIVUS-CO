@@ -52,9 +52,9 @@ class CatalogoInicializadorTest {
 
         int creadas = inicializador.asegurarCategorias();
 
-        // 11 base - 1 existente = 10 creadas
-        assertEquals(10, creadas);
-        verify(categoriaRepository, times(10)).save(any(Categoria.class));
+        // 8 base - 1 existente = 7 creadas
+        assertEquals(7, creadas);
+        verify(categoriaRepository, times(7)).save(any(Categoria.class));
     }
 
     @Test
@@ -180,6 +180,66 @@ class CatalogoInicializadorTest {
 
         verify(catalogoRepository).save(prodConOfertas);
         verify(catalogoRepository).save(prodSinOfertas);
+    }
+
+    @Test
+    @DisplayName("migrarImagenesCatalogo reemplaza placeholders viejos por /images/productos/{slug}.webp de forma idempotente")
+    void testMigrarImagenesCatalogo() {
+        ProductoCatalogo pMango = new ProductoCatalogo();
+        pMango.setId("prod-1");
+        pMango.setNombre("Mango de azúcar");
+        pMango.setAprobado(true);
+        pMango.setImagenUrl("/images/placeholder.jpg");
+
+        ProductoCatalogo pName = new ProductoCatalogo();
+        pName.setId("prod-2");
+        pName.setNombre("Ñame espino");
+        pName.setAprobado(true);
+        pName.setImagenUrl("/images/productos/name-espino.webp"); // ya migrado
+
+        when(catalogoRepository.findAll()).thenReturn(List.of(pMango, pName));
+
+        int migrados = inicializador.migrarImagenesCatalogo();
+
+        assertEquals(1, migrados);
+        assertEquals("/images/productos/mango-de-azucar.webp", pMango.getImagenUrl());
+        verify(catalogoRepository, times(1)).save(pMango);
+    }
+
+    @Test
+    @DisplayName("migrarCategoriaYEstadoOfertas y migrarImagenesOfertas son idempotentes")
+    void testMigrarCategoriaEImagenesOfertas() {
+        ProductoCatalogo prod = new ProductoCatalogo();
+        prod.setId("prod-1");
+        prod.setNombre("Yuca");
+        prod.setCategoria(new com.example.demo.Model.embebidos.CategoriaProducto("cat-v", "Verduras"));
+
+        OfertaVendedor ofSinFotoPropia = new OfertaVendedor();
+        ofSinFotoPropia.setId("of-1");
+        ofSinFotoPropia.setProductoCatalogoId("prod-1");
+        ofSinFotoPropia.setImagenUrl("/images/placeholder.jpg");
+
+        OfertaVendedor ofCloudinary = new OfertaVendedor();
+        ofCloudinary.setId("of-2");
+        ofCloudinary.setProductoCatalogoId("prod-1");
+        ofCloudinary.setCategoriaId("cat-v");
+        ofCloudinary.setCategoriaNombre("Verduras");
+        ofCloudinary.setImagenUrl("https://res.cloudinary.com/demo/image/upload/v1/cultivus/ofertas/foto1.webp");
+
+        when(ofertaRepository.findAll()).thenReturn(List.of(ofSinFotoPropia, ofCloudinary));
+        when(ofertaRepository.findSinEstadoPublicacion()).thenReturn(List.of());
+        when(catalogoRepository.findById("prod-1")).thenReturn(Optional.of(prod));
+
+        int catMigradas = inicializador.migrarCategoriaYEstadoOfertas();
+        assertEquals(1, catMigradas);
+        assertEquals("cat-v", ofSinFotoPropia.getCategoriaId());
+        assertEquals("Verduras", ofSinFotoPropia.getCategoriaNombre());
+
+        int imgMigradas = inicializador.migrarImagenesOfertas();
+        assertEquals(1, imgMigradas);
+        assertNull(ofSinFotoPropia.getImagenUrl());
+        assertEquals("https://res.cloudinary.com/demo/image/upload/v1/cultivus/ofertas/foto1.webp",
+                ofCloudinary.getImagenUrl());
     }
 
     @Test
