@@ -132,7 +132,8 @@ public class SecurityConfig {
                         // CSRF global en el Sprint 5. Su autenticidad se valida con el checksum del
                         // evento.
                         .ignoringRequestMatchers("/api/wompi/webhook")
-                        .ignoringRequestMatchers("/api/**"))
+                        .ignoringRequestMatchers("/api/**")
+                        .ignoringRequestMatchers("/vendedor/imagenes/**"))
                 .authorizeHttpRequests(authz -> authz
                         // NO QUITAR: webhook de Wompi, publico a proposito (ver comentario en csrf).
                         .requestMatchers(HttpMethod.POST, "/api/wompi/webhook").permitAll()

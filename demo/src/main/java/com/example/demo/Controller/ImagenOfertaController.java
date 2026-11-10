@@ -71,7 +71,7 @@ public class ImagenOfertaController {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             if (auth != null && auth.getAuthorities() != null
                     && auth.getAuthorities().stream()
-                            .anyMatch(a -> "ROLE_VENDEDOR".equals(a.getAuthority()))) {
+                            .anyMatch(a -> "ROLE_VENDEDOR".equals(a.getAuthority()) || "ROLE_ADMIN".equals(a.getAuthority()))) {
                 esVendedor = true;
             }
         }

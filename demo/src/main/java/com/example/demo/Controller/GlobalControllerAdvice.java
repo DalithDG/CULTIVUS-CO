@@ -64,6 +64,19 @@ public class GlobalControllerAdvice {
         return request.getRequestURI();
     }
 
+    @ModelAttribute("_csrf")
+    public org.springframework.security.web.csrf.CsrfToken getCsrfToken(HttpServletRequest request) {
+        if (request == null) {
+            return null;
+        }
+        org.springframework.security.web.csrf.CsrfToken token =
+                (org.springframework.security.web.csrf.CsrfToken) request.getAttribute(org.springframework.security.web.csrf.CsrfToken.class.getName());
+        if (token == null) {
+            token = (org.springframework.security.web.csrf.CsrfToken) request.getAttribute("_csrf");
+        }
+        return token;
+    }
+
     @org.springframework.web.bind.annotation.ExceptionHandler(org.springframework.dao.OptimisticLockingFailureException.class)
     public Object manejarConflictoOptimista(org.springframework.dao.OptimisticLockingFailureException ex,
                                             HttpServletRequest request,

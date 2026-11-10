@@ -210,6 +210,7 @@
             var csrf = obtenerCsrf();
             if (csrf) {
                 headers[csrf.header] = csrf.token;
+                formData.append('_csrf', csrf.token);
             }
 
             try {
@@ -232,9 +233,12 @@
                 }
 
                 if (!resp.ok || !data || !data.url) {
-                    var msg = (data && data.error)
-                        ? data.error
-                        : 'No se pudo subir la imagen al servidor (código ' + resp.status + ').';
+                    var errorDetalle = data && (data.message || data.error);
+                    if (data && data.error && data.message && data.error !== data.message && data.error !== 'Forbidden') {
+                        errorDetalle = data.error + ': ' + data.message;
+                    }
+                    var msg = errorDetalle
+                        || 'No se pudo subir la imagen al servidor (código ' + resp.status + ').';
                     throw new Error(msg);
                 }
 

@@ -17,6 +17,7 @@
 
         <input type="hidden" name="imagenUrl" class="photo-uploader__url"
                th:value="${urlActual}" th:attr="data-initial-url=${urlActual}">
+        <input type="hidden" name="_csrf" th:if="${_csrf != null}" th:value="${_csrf.token}">
 
         <div class="photo-uploader__frame">
             <label class="photo-uploader__drop" th:for="${inputId}">
