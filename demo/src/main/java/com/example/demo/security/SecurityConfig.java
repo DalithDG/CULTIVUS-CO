@@ -70,6 +70,12 @@ public class SecurityConfig {
     private CustomAccessDeniedHandler customAccessDeniedHandler;
 
     @Autowired(required = false)
+    private com.example.demo.repository.UsuarioRepository usuarioRepository;
+
+    @Value("${cultivus.security.remember-me-key:cultivus-remember-me-secret-key-2026}")
+    private String rememberMeKey;
+
+    @Autowired(required = false)
     private OAuth2UsuarioService oAuth2UsuarioService;
 
     @Autowired(required = false)
@@ -244,13 +250,47 @@ public class SecurityConfig {
                         .successHandler(customAuthenticationSuccessHandler)
                         .failureUrl("/usuario/login?error=true")
                         .permitAll())
+                .rememberMe(remember -> remember
+                        .key(rememberMeKey)
+                        .userDetailsService(customUserDetailsService)
+                        .rememberMeCookieName("cultivus_remember_me")
+                        .tokenValiditySeconds(30 * 24 * 60 * 60)
+                        .alwaysRemember(true))
                 .logout(logout -> logout
                         .logoutRequestMatcher(new AntPathRequestMatcher("/usuario/logout"))
                         .logoutSuccessUrl("/")
                         .invalidateHttpSession(true)
                         .clearAuthentication(true)
-                        .deleteCookies("JSESSIONID")
+                        .deleteCookies("JSESSIONID", "cultivus_remember_me")
                         .permitAll())
+                .addFilterAfter(new org.springframework.web.filter.OncePerRequestFilter() {
+                    @Override
+                    protected void doFilterInternal(
+                            jakarta.servlet.http.HttpServletRequest request,
+                            jakarta.servlet.http.HttpServletResponse response,
+                            jakarta.servlet.FilterChain filterChain)
+                            throws jakarta.servlet.ServletException, java.io.IOException {
+                        if (usuarioRepository != null) {
+                            Authentication auth = org.springframework.security.core.context.SecurityContextHolder
+                                    .getContext().getAuthentication();
+                            if (auth != null && auth.isAuthenticated()
+                                    && !(auth instanceof AnonymousAuthenticationToken)) {
+                                jakarta.servlet.http.HttpSession session = request.getSession(false);
+                                if (session == null || session.getAttribute("usuarioLogueado") == null) {
+                                    String email = auth.getName();
+                                    if (email != null && !email.isBlank()) {
+                                        usuarioRepository.findByEmail(email.trim().toLowerCase()).ifPresent(u -> {
+                                            if (u.isEmailVerificado() || u.hasRole(com.example.demo.Model.Role.ADMIN)) {
+                                                request.getSession(true).setAttribute("usuarioLogueado", u);
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                        filterChain.doFilter(request, response);
+                    }
+                }, org.springframework.security.web.authentication.AnonymousAuthenticationFilter.class)
                 .exceptionHandling(exceptions -> exceptions
                         .accessDeniedHandler(customAccessDeniedHandler)
                         .authenticationEntryPoint(

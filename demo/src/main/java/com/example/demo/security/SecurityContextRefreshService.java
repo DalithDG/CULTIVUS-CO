@@ -1,12 +1,13 @@
 package com.example.demo.security;
 
-import com.example.demo.repository.UsuarioRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -14,7 +15,8 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 /**
  * Reconstruye el Authentication de Spring Security a partir de los roles actuales
  * del usuario en la base de datos (CustomUserDetailsService) y lo guarda en el
- * SecurityContext. Evita que cambios de rol requieran cerrar sesión.
+ * SecurityContext y en la HttpSession. Funciona tanto para cambios de rol como
+ * para autenticar al usuario recién verificado en /usuario/verificar.
  */
 @Service
 public class SecurityContextRefreshService {
@@ -23,31 +25,29 @@ public class SecurityContextRefreshService {
     private CustomUserDetailsService customUserDetailsService;
 
     public void refrescarAutenticacion(String email) {
-        if (email == null) {
-            return;
-        }
-        Authentication actual = SecurityContextHolder.getContext().getAuthentication();
-        if (actual == null || !actual.isAuthenticated()) {
+        if (email == null || email.isBlank()) {
             return;
         }
         try {
-            UserDetails userDetails = customUserDetailsService.loadUserByUsername(email);
-            org.springframework.security.authentication.UsernamePasswordAuthenticationToken token =
-                    new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
-                            userDetails,
-                            actual.getCredentials(),
-                            userDetails.getAuthorities());
-            token.setDetails(actual.getDetails());
-            SecurityContextHolder.getContext().setAuthentication(token);
+            Authentication actual = SecurityContextHolder.getContext().getAuthentication();
+            UserDetails userDetails = customUserDetailsService.loadUserByUsername(email.trim().toLowerCase());
+            UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(
+                    userDetails,
+                    null,
+                    userDetails.getAuthorities());
+            if (actual != null && actual.getDetails() != null) {
+                token.setDetails(actual.getDetails());
+            }
 
-            // Persistir en HttpSession para que la nueva Authentication sobreviva al siguiente request
+            SecurityContext context = SecurityContextHolder.createEmptyContext();
+            context.setAuthentication(token);
+            SecurityContextHolder.setContext(context);
+
+            // Persistir en HttpSession para que la Authentication sobreviva a los siguientes requests
             ServletRequestAttributes attrs = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
             if (attrs != null) {
-                HttpSession session = attrs.getRequest().getSession(false);
-                if (session != null) {
-                    SecurityContext context = SecurityContextHolder.getContext();
-                    session.setAttribute("SPRING_SECURITY_CONTEXT", context);
-                }
+                HttpSession session = attrs.getRequest().getSession(true);
+                session.setAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY, context);
             }
         } catch (Exception ignored) {
             // Si el usuario no existe, se mantiene la autenticación actual

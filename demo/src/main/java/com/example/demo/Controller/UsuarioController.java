@@ -192,18 +192,16 @@ public class UsuarioController {
             usuario.setRol(Role.COMPRADOR);
             usuario.setUbicacion(ubicacion);
 
-            usuarioService.save(usuario);
-
-            // Notificación por correo para cualquier rol (aquí comprador)
-            registroMailService.enviarBienvenida(usuario.getEmail(), usuario.getNombre(), "COMPRADOR");
-
-            // Código de verificación para compradores
+            // Código de verificación (el correo de bienvenida se envía únicamente después
+            // de verificar)
             String codigo = String.format("%06d", new java.util.Random().nextInt(999999));
             usuario.setCodigoVerificacion(codigo);
             usuario.setCodigoVerificacionExpira(java.time.LocalDateTime.now().plusMinutes(10));
             usuario.setEmailVerificado(false);
             usuarioService.save(usuario);
-            registroMailService.enviarCodigoVerificacion(usuario.getEmail(), usuario.getNombre(), codigo);
+            if (registroMailService != null) {
+                registroMailService.enviarCodigoVerificacion(usuario.getEmail(), usuario.getNombre(), codigo);
+            }
 
             redirectAttributes.addFlashAttribute("mensaje",
                     "¡Registro exitoso! Revisa tu correo para verificar tu cuenta.");
@@ -234,7 +232,8 @@ public class UsuarioController {
             return "redirect:/usuario/login";
         }
         if (u.getCodigoVerificacionExpira() != null) {
-            model.addAttribute("expiraEn", u.getCodigoVerificacionExpira().atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli());
+            model.addAttribute("expiraEn", u.getCodigoVerificacionExpira().atZone(java.time.ZoneId.systemDefault())
+                    .toInstant().toEpochMilli());
         } else {
             // Si no hay fecha, asignar 10 minutos desde ahora
             java.time.LocalDateTime exp = java.time.LocalDateTime.now().plusMinutes(10);
@@ -254,10 +253,24 @@ public class UsuarioController {
         String cleanEmail = email != null ? email.trim() : "";
         String cleanCodigo = codigo != null ? codigo.trim() : "";
         Usuario u = usuarioService.findByEmail(cleanEmail);
-        if (u != null && cleanCodigo.equals(u.getCodigoVerificacion())) {
+        if (u != null && !cleanCodigo.isEmpty() && cleanCodigo.equals(u.getCodigoVerificacion())) {
+            if (u.getCodigoVerificacionExpira() != null
+                    && u.getCodigoVerificacionExpira().isBefore(java.time.LocalDateTime.now())) {
+                redirectAttributes.addFlashAttribute("error",
+                        "El código ha expirado. Solicita un nuevo código de verificación.");
+                return "redirect:/usuario/verificar?email="
+                        + java.net.URLEncoder.encode(cleanEmail, java.nio.charset.StandardCharsets.UTF_8);
+            }
             u.setEmailVerificado(true);
             u.setCodigoVerificacion(null);
             usuarioService.save(u);
+
+            // Apenas queda verificado el correo, se envía el mensaje de bienvenida
+            if (registroMailService != null) {
+                String rol = u.getRol() != null ? u.getRol().name() : "COMPRADOR";
+                registroMailService.enviarBienvenida(u.getEmail(), u.getNombre(), rol);
+            }
+
             // Iniciar sesión automáticamente
             session.setAttribute("usuarioLogueado", u);
             if (securityContextRefreshService != null && u.getEmail() != null) {
@@ -267,6 +280,11 @@ public class UsuarioController {
                 }
             }
             redirectAttributes.addFlashAttribute("mensaje", "Correo verificado exitosamente. ¡Bienvenido a Cultivus!");
+            if (u.hasRole(Role.VENDEDOR)) {
+                return "redirect:/vendedor/dashboard";
+            } else if (u.hasRole(Role.TRANSPORTISTA)) {
+                return "redirect:/transportista/inicio";
+            }
             return "redirect:/usuario/inicio";
         }
         redirectAttributes.addFlashAttribute("error", "Código inválido o expirado. Verifica los 6 dígitos.");
@@ -307,7 +325,10 @@ public class UsuarioController {
     }
 
     @GetMapping("/login")
-    public String mostrarLogin() {
+    public String mostrarLogin(HttpSession session) {
+        if (session.getAttribute("usuarioLogueado") != null) {
+            return "redirect:/usuario/inicio";
+        }
         return "auth/login";
     }
 
@@ -328,7 +349,8 @@ public class UsuarioController {
             session.setAttribute("usuarioLogueado", usuario);
         }
 
-        // Redirigir según rol propio (sin modos dinámicos). El administrador va siempre a su panel.
+        // Redirigir según rol propio (sin modos dinámicos). El administrador va siempre
+        // a su panel.
         if (usuario.hasRole(Role.ADMIN)) {
             return "redirect:/admin/dashboard";
         }
@@ -354,7 +376,8 @@ public class UsuarioController {
         model.addAttribute("usuario", usuario);
         model.addAttribute("categorias", categoriaRepository.findAll());
 
-        // Tarjetas: las 8 ofertas públicas más recientes (el catálogo solo es lista de referencia)
+        // Tarjetas: las 8 ofertas públicas más recientes (el catálogo solo es lista de
+        // referencia)
         model.addAttribute("ofertas", catalogoService.listarOfertasRecientes(8));
 
         // Estadísticas de comprador para el dashboard
@@ -582,7 +605,7 @@ public class UsuarioController {
         return PasswordPolicy.validar(contrasena);
     }
 
-        private List<String> obtenerListaMunicipios() {
+    private List<String> obtenerListaMunicipios() {
         List<String> munis = null;
         if (zonaMunicipioRepository != null) {
             try {

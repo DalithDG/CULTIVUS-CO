@@ -174,7 +174,7 @@ public class TransportistaController {
                     return "redirect:/transportista/registro";
                 }
 
-                transportistaService.registrarNuevoTransportista(
+                Usuario nuevoTransportista = transportistaService.registrarNuevoTransportista(
                         nombre,
                         email,
                         contrasena,
@@ -195,12 +195,21 @@ public class TransportistaController {
                         null,
                         null
                 );
+
+                String codigo = String.format("%06d", new java.util.Random().nextInt(999999));
+                nuevoTransportista.setCodigoVerificacion(codigo);
+                nuevoTransportista.setCodigoVerificacionExpira(java.time.LocalDateTime.now().plusMinutes(10));
+                nuevoTransportista.setEmailVerificado(false);
+                usuarioRepository.save(nuevoTransportista);
+
                 if (registroMailService != null) {
-                    registroMailService.enviarBienvenida(email, nombre, "TRANSPORTISTA");
+                    registroMailService.enviarCodigoVerificacion(nuevoTransportista.getEmail(), nuevoTransportista.getNombre(), codigo);
                 }
 
-                redirectAttributes.addFlashAttribute("mensaje", "Registro exitoso. Inicia sesión con tus credenciales.");
-                return "redirect:/transportista/login";
+                redirectAttributes.addFlashAttribute("mensaje",
+                        "¡Registro exitoso! Ingresa el código enviado a tu correo para verificar tu cuenta.");
+                return "redirect:/usuario/verificar?email="
+                        + java.net.URLEncoder.encode(nuevoTransportista.getEmail(), java.nio.charset.StandardCharsets.UTF_8);
             }
 
         } catch (IllegalArgumentException e) {

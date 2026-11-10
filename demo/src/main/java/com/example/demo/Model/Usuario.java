@@ -77,6 +77,7 @@ public class Usuario {
         if (rol != null) {
             this.roles.add(rol);
         }
+        this.emailVerificado = true;
         this.createdAt = LocalDateTime.now();
     }
 

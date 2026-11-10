@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light">
+    <meta name="supported-color-schemes" content="light">
+    <title>Código de verificación · Cultivus</title>
+</head>
+
+<body
+    style="margin:0;padding:0;background-color:#FAF6EB;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','SF Pro Display','Inter','Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;color:#30372D;">
+
+    <!-- Preheader invisible para la vista previa en la bandeja de entrada -->
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;font-size:1px;line-height:1px;color:#FAF6EB;"
+        th:text="'Tu código de seguridad de Cultivus es ' + ${codigo} + '. Válido por 10 minutos.'">
+        Tu código de seguridad de Cultivus. Válido por 10 minutos.
+    </div>
+
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+        style="background-color:#FAF6EB;padding:40px 16px;">
+        <tr>
+            <td align="center">
+
+                <!-- TARJETA PRINCIPAL APPLE HIG -->
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+                    style="max-width:540px;background-color:#FFFFFF;border-radius:24px;overflow:hidden;border:1px solid #E6DEC8;box-shadow:0 12px 36px rgba(48,55,45,0.07);">
+
+                    <!-- BARRA SUPERIOR DE ACENTO VERDE CULTIVUS -->
+                    <tr>
+                        <td
+                            style="height:5px;background:linear-gradient(90deg,#367A45 0%,#4C9A5C 50%,#EABF45 100%);font-size:0;line-height:0;">
+                            &nbsp;</td>
+                    </tr>
+
+                    <!-- CABECERA CON LOGO OFICIAL DE CULTIVUS + CHIP DE SEGURIDAD -->
+                    <tr>
+                        <td style="padding:28px 36px 22px;border-bottom:1px solid #F1ECE0;background-color:#FFFFFF;">
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                <tr>
+                                    <td align="left" valign="middle">
+                                        <a th:href="${baseUrl != null ? baseUrl : 'https://cultivus-co.onrender.com'}"
+                                            style="text-decoration:none;display:inline-block;">
+                                            <img th:src="${logoUrl != null ? logoUrl : 'https://cultivus-co.onrender.com/images/imagotipo_transparente.png'}"
+                                                alt="Cultivus" height="42"
+                                                style="display:block;height:42px;width:auto;border:0;outline:none;font-size:20px;font-weight:800;color:#367A45;" />
+                                        </a>
+                                    </td>
+                                    <td align="right" valign="middle">
+                                        <span
+                                            style="display:inline-block;background-color:#EEF6F0;color:#367A45;border:1px solid rgba(54,122,69,0.22);border-radius:999px;padding:5px 12px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">
+                                            Seguridad
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- CUERPO DEL MENSAJE -->
+                    <tr>
+                        <td style="padding:36px 36px 28px;">
+
+                            <!-- Etiqueta superior -->
+                            <div
+                                style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#795548;margin-bottom:8px;">
+                                Activación de cuenta
+                            </div>
+
+                            <!-- Título con tracking negativo estilo Apple Display -->
+                            <h1
+                                style="margin:0 0 16px;font-size:26px;font-weight:800;line-height:1.18;letter-spacing:-0.025em;color:#30372D;">
+                                Confirma tu correo electrónico
+                            </h1>
+
+                            <p style="margin:0 0 12px;font-size:15px;line-height:1.6;color:#30372D;">
+                                Hola <strong th:text="${nombre}">Usuario</strong>,
+                            </p>
+
+                            <p style="margin:0 0 28px;font-size:15px;line-height:1.6;color:#5A6256;">
+                                Estás a un paso de entrar a <strong>Cultivus</strong>. Ingresa este código de 6 dígitos
+                                en la ventana de verificación para activar tu cuenta:
+                            </p>
+
+                            <!-- CONTENEDOR DEL CÓDIGO DE 6 DÍGITOS -->
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+                                style="margin-bottom:28px;">
+                                <tr>
+                                    <td align="center"
+                                        style="background-color:#F4F9F5;border:1.5px solid #C5E0CC;border-radius:18px;padding:26px 20px;">
+                                        <div
+                                            style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#367A45;margin-bottom:10px;">
+                                            Código de verificación único
+                                        </div>
+                                        <div style="font-family:'SF Mono','JetBrains Mono','Fira Code','Courier New',monospace;font-size:38px;font-weight:800;letter-spacing:10px;line-height:1.1;color:#2B6337;font-variant-numeric:tabular-nums;"
+                                            th:text="${codigo}">
+                                            123456
+                                        </div>
+                                        <div style="margin-top:12px;font-size:12px;color:#795548;">
+                                            Expira en <strong>10 minutos</strong> · Uso único
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- BOTÓN SECUNDARIO DE ACCESO DIRECTO -->
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+                                style="margin-bottom:28px;" th:if="${verificarUrl != null}">
+                                <tr>
+                                    <td align="center">
+                                        <a th:href="${verificarUrl}"
+                                            style="display:inline-block;background-color:#367A45;color:#FFFFFF;text-decoration:none;font-size:14px;font-weight:600;padding:13px 26px;border-radius:12px;box-shadow:0 4px 12px rgba(54,122,69,0.22);">
+                                            Ir a la pantalla de verificación
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- AVISO DE PRIVACIDAD Y SEGURIDAD -->
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+                                style="background-color:#FAF6EB;border:1px solid #EAE1CC;border-radius:14px;">
+                                <tr>
+                                    <td style="padding:14px 18px;font-size:12.5px;line-height:1.55;color:#795548;">
+                                        <strong style="color:#30372D;">¿No solicitaste este código?</strong><br>
+                                        Puedes ignorar este mensaje con total tranquilidad. Nadie puede activar tu
+                                        cuenta sin tener acceso a este correo. El equipo de Cultivus nunca te pedirá
+                                        este código por teléfono ni por WhatsApp.
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </td>
+                    </tr>
+
+                    <!-- PIE DE PÁGINA INSTITUCIONAL -->
+                    <tr>
+                        <td
+                            style="padding:22px 36px;background-color:#FAF6EB;border-top:1px solid #EAE1CC;text-align:center;">
+                            <div style="font-size:12px;font-weight:700;color:#30372D;margin-bottom:4px;">
+                                Cultivus · Del campo de Bolívar directo a tu mesa
+                            </div>
+                            <div style="font-size:11.5px;color:#795548;line-height:1.5;">
+                                Comercio agrícola justo, pagos protegidos con Wompi y logística regional.<br>
+                                ¿Necesitas ayuda? Escríbenos a <a href="mailto:Soporte.Cultivus@gmail.com"
+                                    style="color:#367A45;text-decoration:none;font-weight:600;">Soporte.Cultivus@gmail.com</a>
+                            </div>
+                        </td>
+                    </tr>
+
+                </table>
+
+            </td>
+        </tr>
+    </table>
+
+</body>
+
+</html>

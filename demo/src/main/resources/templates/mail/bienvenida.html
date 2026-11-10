@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light">
+    <meta name="supported-color-schemes" content="light">
+    <title>Bienvenido a Cultivus</title>
+</head>
+<body style="margin:0;padding:0;background-color:#FAF6EB;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','SF Pro Display','Inter','Segoe UI',Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;color:#30372D;">
+
+    <!-- Preheader invisible para vista previa en bandeja de entrada -->
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;font-size:1px;line-height:1px;color:#FAF6EB;"
+         th:text="'¡Hola ' + ${nombre} + '! Tu cuenta como ' + ${rol} + ' en Cultivus ya está verificada y lista.'">
+        Tu cuenta en Cultivus ya está verificada y lista para usar.
+    </div>
+
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+           style="background-color:#FAF6EB;padding:40px 16px;">
+        <tr>
+            <td align="center">
+
+                <!-- TARJETA PRINCIPAL APPLE HIG -->
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+                       style="max-width:560px;background-color:#FFFFFF;border-radius:24px;overflow:hidden;border:1px solid #E6DEC8;box-shadow:0 12px 36px rgba(48,55,45,0.07);">
+
+                    <!-- BARRA SUPERIOR DE ACENTO CULTIVUS -->
+                    <tr>
+                        <td style="height:5px;background:linear-gradient(90deg,#367A45 0%,#4C9A5C 50%,#EABF45 100%);font-size:0;line-height:0;">&nbsp;</td>
+                    </tr>
+
+                    <!-- CABECERA CON LOGO OFICIAL DE CULTIVUS + BADGE -->
+                    <tr>
+                        <td style="padding:28px 36px 22px;border-bottom:1px solid #F1ECE0;background-color:#FFFFFF;">
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0">
+                                <tr>
+                                    <td align="left" valign="middle">
+                                        <a th:href="${baseUrl != null ? baseUrl : 'https://cultivus-co.onrender.com'}"
+                                           style="text-decoration:none;display:inline-block;">
+                                            <img th:src="${logoUrl != null ? logoUrl : 'https://cultivus-co.onrender.com/images/imagotipo_transparente.png'}"
+                                                 alt="Cultivus"
+                                                 height="42"
+                                                 style="display:block;height:42px;width:auto;border:0;outline:none;font-size:20px;font-weight:800;color:#367A45;" />
+                                        </a>
+                                    </td>
+                                    <td align="right" valign="middle">
+                                        <span style="display:inline-block;background-color:#EEF6F0;color:#367A45;border:1px solid rgba(54,122,69,0.22);border-radius:999px;padding:5px 12px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;">
+                                            Cuenta Activa
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- CUERPO DEL MENSAJE -->
+                    <tr>
+                        <td style="padding:36px 36px 32px;">
+
+                            <!-- Píldora del rol registrado -->
+                            <div style="margin-bottom:12px;">
+                                <span style="display:inline-block;background-color:#F1E8D3;color:#795548;border-radius:999px;padding:4px 12px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;"
+                                      th:text="'Perfil ' + ${rol}">
+                                    Perfil Comprador
+                                </span>
+                            </div>
+
+                            <!-- Título principal con tracking negativo estilo Apple Display -->
+                            <h1 style="margin:0 0 14px;font-size:28px;font-weight:800;line-height:1.15;letter-spacing:-0.028em;color:#30372D;">
+                                ¡Te damos la bienvenida a Cultivus, <span th:text="${nombre}">Usuario</span>!
+                            </h1>
+
+                            <p style="margin:0 0 26px;font-size:15.5px;line-height:1.6;color:#5A6256;">
+                                Tu cuenta ha sido verificada con éxito. Ahora formas parte de nuestra comunidad que conecta directamente a los productores del campo de Bolívar con hogares y comercios, sin intermediarios.
+                            </p>
+
+                            <!-- BLOQUE DE BENEFICIOS SEGÚN ROL -->
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+                                   style="background-color:#FAF6EB;border:1px solid #EAE1CC;border-radius:18px;padding:22px 24px;margin-bottom:28px;">
+                                <tr>
+                                    <td>
+                                        <div style="font-size:12px;font-weight:700;letter-spacing:0.07em;text-transform:uppercase;color:#367A45;margin-bottom:14px;">
+                                            Primeros pasos en tu cuenta
+                                        </div>
+
+                                        <!-- Si es VENDEDOR -->
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+                                               th:if="${rol == 'VENDEDOR'}">
+                                            <tr>
+                                                <td style="padding:6px 0;font-size:14px;line-height:1.55;color:#30372D;">
+                                                    <strong style="color:#367A45;">1. Publica tus cosechas:</strong> Define tus precios, unidades de venta y stock disponible.
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:6px 0;font-size:14px;line-height:1.55;color:#30372D;">
+                                                    <strong style="color:#367A45;">2. Personaliza tu tienda:</strong> Completa la descripción de tu finca y tu contacto para generar confianza.
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:6px 0;font-size:14px;line-height:1.55;color:#30372D;">
+                                                    <strong style="color:#367A45;">3. Recibe tus pagos seguros:</strong> Registra tu cuenta bancaria o billetera para retirar tus ganancias.
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                        <!-- Si es TRANSPORTISTA -->
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+                                               th:if="${rol == 'TRANSPORTISTA'}">
+                                            <tr>
+                                                <td style="padding:6px 0;font-size:14px;line-height:1.55;color:#30372D;">
+                                                    <strong style="color:#367A45;">1. Activa tu disponibilidad:</strong> Revisa las rutas y envíos asignados en tu panel logístico.
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:6px 0;font-size:14px;line-height:1.55;color:#30372D;">
+                                                    <strong style="color:#367A45;">2. Actualiza estados en ruta:</strong> Informa recogidas y entregas con código de verificación.
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:6px 0;font-size:14px;line-height:1.55;color:#30372D;">
+                                                    <strong style="color:#367A45;">3. Gestiona tu billetera:</strong> Consulta el saldo acumulado por tus fletes completados.
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                        <!-- Si es COMPRADOR (por defecto) -->
+                                        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+                                               th:if="${rol != 'VENDEDOR' and rol != 'TRANSPORTISTA'}">
+                                            <tr>
+                                                <td style="padding:6px 0;font-size:14px;line-height:1.55;color:#30372D;">
+                                                    <strong style="color:#367A45;">1. Cosechas frescas de origen:</strong> Compra frutas, verduras, lácteos, café y miel directo al productor.
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:6px 0;font-size:14px;line-height:1.55;color:#30372D;">
+                                                    <strong style="color:#367A45;">2. Pago protegido con Wompi:</strong> Paga con PSE, Nequi, Bancolombia o tarjetas con total respaldo.
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:6px 0;font-size:14px;line-height:1.55;color:#30372D;">
+                                                    <strong style="color:#367A45;">3. Seguimiento y reseñas:</strong> Sigue el estado de tu pedido en línea y califica la tienda al recibirlo.
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <!-- BOTONES DE ACCIÓN (CTA) -->
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0"
+                                   style="margin-bottom:24px;">
+                                <tr>
+                                    <td align="center">
+                                        <a th:href="${loginUrl != null ? loginUrl : 'https://cultivus-co.onrender.com/usuario/login'}"
+                                           style="display:inline-block;background-color:#367A45;color:#FFFFFF;text-decoration:none;font-size:15px;font-weight:700;padding:14px 30px;border-radius:12px;box-shadow:0 4px 14px rgba(54,122,69,0.25);">
+                                            Ingresar a mi cuenta
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr th:if="${catalogoUrl != null and rol != 'VENDEDOR' and rol != 'TRANSPORTISTA'}">
+                                    <td align="center" style="padding-top:12px;">
+                                        <a th:href="${catalogoUrl}"
+                                           style="display:inline-block;color:#367A45;text-decoration:none;font-size:13.5px;font-weight:600;">
+                                            Explorar cosechas disponibles →
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <p style="margin:0;font-size:13px;line-height:1.6;color:#795548;text-align:center;">
+                                Gracias por impulsar el trabajo honesto de nuestros campesinos.
+                            </p>
+
+                        </td>
+                    </tr>
+
+                    <!-- PIE DE PÁGINA INSTITUCIONAL -->
+                    <tr>
+                        <td style="padding:22px 36px;background-color:#FAF6EB;border-top:1px solid #EAE1CC;text-align:center;">
+                            <div style="font-size:12px;font-weight:700;color:#30372D;margin-bottom:4px;">
+                                Cultivus · Del campo de Bolívar directo a tu mesa
+                            </div>
+                            <div style="font-size:11.5px;color:#795548;line-height:1.5;">
+                                Comercio agrícola justo, pagos protegidos con Wompi y logística regional.<br>
+                                ¿Necesitas ayuda? Escríbenos a <a href="mailto:Soporte.Cultivus@gmail.com" style="color:#367A45;text-decoration:none;font-weight:600;">Soporte.Cultivus@gmail.com</a>
+                            </div>
+                        </td>
+                    </tr>
+
+                </table>
+
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>

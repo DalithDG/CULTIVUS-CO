@@ -42,7 +42,10 @@ public class RoutesController {
     }
 
     @GetMapping("/login")
-    public String login(Model model) {
+    public String login(HttpSession session, Model model) {
+        if (session.getAttribute("usuarioLogueado") != null) {
+            return "redirect:/usuario/inicio";
+        }
         model.addAttribute("usuario", new Usuario());
         return "auth/login";
     }

@@ -17,6 +17,8 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring6.SpringTemplateEngine;
 
 @Service
 public class RegistroMailService {
@@ -24,21 +26,29 @@ public class RegistroMailService {
     private static final Logger log = LoggerFactory.getLogger(RegistroMailService.class);
 
     private final ObjectProvider<JavaMailSender> mailSenderProvider;
+    private final SpringTemplateEngine templateEngine;
     private final String host;
     private final String username;
     private final String password;
     private final String remitente;
+
+    private static final String PUBLIC_FALLBACK_URL = "https://cultivus-co.onrender.com";
+
+    @Value("${app.base-url:https://cultivus-co.onrender.com}")
+    private String baseUrl;
 
     @Value("${cultivus.mail.webhook-url:}")
     private String webhookUrl;
 
     public RegistroMailService(
             ObjectProvider<JavaMailSender> mailSenderProvider,
+            SpringTemplateEngine templateEngine,
             @Value("${spring.mail.host:}") String host,
             @Value("${spring.mail.username:}") String username,
             @Value("${spring.mail.password:}") String password,
             @Value("${cultivus.mail.from:}") String remitente) {
         this.mailSenderProvider = mailSenderProvider;
+        this.templateEngine = templateEngine;
         this.host = host;
         this.username = username;
         this.password = password;
@@ -46,21 +56,78 @@ public class RegistroMailService {
                 : (StringUtils.hasText(username) ? username.trim() : "no-reply@cultivus.co");
     }
 
+    /**
+     * Los clientes de correo (Gmail, Outlook, Apple Mail) no pueden cargar imágenes desde localhost.
+     * Si baseUrl apunta a localhost, usamos el dominio público para el logo.
+     */
+    private String resolverLogoUrl() {
+        String base = resolverBaseUrl();
+        if (base.contains("localhost") || base.contains("127.0.0.1")) {
+            return PUBLIC_FALLBACK_URL + "/images/imagotipo_transparente.png";
+        }
+        return base + "/images/imagotipo_transparente.png";
+    }
+
+    private String resolverBaseUrl() {
+        if (!StringUtils.hasText(baseUrl)) {
+            return PUBLIC_FALLBACK_URL;
+        }
+        String limpia = baseUrl.trim();
+        while (limpia.endsWith("/")) {
+            limpia = limpia.substring(0, limpia.length() - 1);
+        }
+        return limpia;
+    }
+
     @Async
     public void enviarBienvenida(String destinatario, String nombre, String rol) {
-        String asunto = "Bienvenido a Cultivus";
+        String asunto = "Bienvenido a Cultivus · Tu cuenta está lista";
         String texto = "Hola " + nombre + ",\n\nTu registro como " + rol
-                + " en Cultivus fue exitoso.\n\nEquipo Cultivus";
-        String html = "<p>Hola " + nombre + ",</p><p>Tu registro como <b>" + rol + "</b> en Cultivus fue exitoso.</p>";
+                + " en Cultivus fue exitoso.\n\nIngresa a tu cuenta en: "
+                + resolverBaseUrl() + "/usuario/login\n\nEquipo Cultivus";
+
+        String html;
+        try {
+            String base = resolverBaseUrl();
+            Context context = new Context();
+            context.setVariable("nombre", StringUtils.hasText(nombre) ? nombre.trim() : "Usuario");
+            context.setVariable("rol", StringUtils.hasText(rol) ? rol.trim().toUpperCase() : "COMPRADOR");
+            context.setVariable("baseUrl", base);
+            context.setVariable("logoUrl", resolverLogoUrl());
+            context.setVariable("loginUrl", base + "/usuario/login");
+            context.setVariable("catalogoUrl", base + "/ofertas");
+            html = templateEngine.process("mail/bienvenida", context);
+        } catch (Exception e) {
+            log.error("Error procesando plantilla de bienvenida: {}", e.getMessage());
+            html = "<p>Hola " + nombre + ",</p><p>Tu registro como <b>" + rol + "</b> en Cultivus fue exitoso.</p>";
+        }
+
         enviar(destinatario, asunto, texto, html);
     }
 
     @Async
     public void enviarCodigoVerificacion(String destinatario, String nombre, String codigo) {
         log.warn("[DEV] Código de verificación para {}: {}", destinatario, codigo);
-        String asunto = "Código de verificación - Cultivus";
-        String texto = "Hola " + nombre + ",\n\nTu código de verificación es: " + codigo + "\n\nEquipo Cultivus";
-        String html = "<p>Hola " + nombre + ",</p><p>Tu código de verificación es: <b>" + codigo + "</b></p>";
+        String asunto = codigo + " es tu código de verificación de Cultivus";
+        String texto = "Hola " + nombre + ",\n\nTu código de verificación de Cultivus es: " + codigo
+                + "\n\nEste código vence en 15 minutos.\n\nEquipo Cultivus";
+
+        String html;
+        try {
+            String base = resolverBaseUrl();
+            Context context = new Context();
+            context.setVariable("nombre", StringUtils.hasText(nombre) ? nombre.trim() : "Usuario");
+            context.setVariable("codigo", codigo);
+            context.setVariable("email", destinatario);
+            context.setVariable("baseUrl", base);
+            context.setVariable("logoUrl", resolverLogoUrl());
+            context.setVariable("verificarUrl", base + "/usuario/verificar");
+            html = templateEngine.process("mail/verificacion", context);
+        } catch (Exception e) {
+            log.error("Error procesando plantilla de verificación: {}", e.getMessage());
+            html = "<p>Hola " + nombre + ",</p><p>Tu código de verificación es: <b>" + codigo + "</b></p>";
+        }
+
         enviar(destinatario, asunto, texto, html);
     }
 

@@ -262,7 +262,7 @@ public class VendedorController {
 
             Usuario usuarioActualizado;
             if (usuario != null) {
-                // Usuario existente en sesión que solicita rol vendedor
+                // Usuario existente en sesión que solicita rol vendedor (su correo ya está verificado)
                 usuarioActualizado = vendedorService.crearPerfilVendedor(
                         usuario.getId(),
                         razonSocial,
@@ -270,8 +270,11 @@ public class VendedorController {
                         direccionNegocio,
                         descripcionNegocio,
                         tipoProductos);
+                if (registroMailService != null && usuarioActualizado.getEmail() != null) {
+                    registroMailService.enviarBienvenida(usuarioActualizado.getEmail(), usuarioActualizado.getNombre(), "VENDEDOR");
+                }
             } else {
-                // Registro de nuevo usuario directamente como vendedor
+                // Registro de nuevo usuario directamente como vendedor: primero verificar correo
                 if (nombre == null || nombre.trim().isEmpty()) {
                     redirectAttributes.addFlashAttribute("error", "El nombre completo es obligatorio");
                     return "redirect:/vendedor/registro";
@@ -294,9 +297,21 @@ public class VendedorController {
                         direccionNegocio,
                         descripcionNegocio,
                         tipoProductos);
+
+                String codigo = String.format("%06d", new java.util.Random().nextInt(999999));
+                usuarioActualizado.setCodigoVerificacion(codigo);
+                usuarioActualizado.setCodigoVerificacionExpira(java.time.LocalDateTime.now().plusMinutes(10));
+                usuarioActualizado.setEmailVerificado(false);
+                usuarioRepository.save(usuarioActualizado);
+
                 if (registroMailService != null) {
-                    registroMailService.enviarBienvenida(email, nombre, "VENDEDOR");
+                    registroMailService.enviarCodigoVerificacion(usuarioActualizado.getEmail(), usuarioActualizado.getNombre(), codigo);
                 }
+
+                redirectAttributes.addFlashAttribute("mensaje",
+                        "¡Registro recibido! Ingresa el código enviado a tu correo para verificar tu cuenta.");
+                return "redirect:/usuario/verificar?email="
+                        + java.net.URLEncoder.encode(usuarioActualizado.getEmail(), java.nio.charset.StandardCharsets.UTF_8);
             }
 
             // Actualizar sesión con usuario que ya tiene el perfil embebido
