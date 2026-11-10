@@ -32,6 +32,8 @@ import java.util.Map;
 @RequestMapping("/vendedor")
 public class ProductoController {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(ProductoController.class);
+
     /** Las fotos de ofertas solo se aceptan si vienen de nuestra carpeta de Cloudinary. */
     private static final String PREFIJO_IMAGEN_CLOUDINARY = "https://res.cloudinary.com/";
 
@@ -106,7 +108,14 @@ public class ProductoController {
             return noAutorizado;
         }
         List<Map<String, Object>> respuesta = new ArrayList<>();
-        List<ProductoCatalogo> productos = new ArrayList<>(catalogoService.listarPorCategoria(categoriaId));
+        List<ProductoCatalogo> productos;
+        try {
+            productos = new ArrayList<>(catalogoService.listarPorCategoria(categoriaId));
+        } catch (RuntimeException e) {
+            log.error("Error consultando el catálogo de la categoría {}", categoriaId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "No se pudo cargar el catálogo de esta categoría."));
+        }
         Map<String, ProductoCatalogo> unicos = new LinkedHashMap<>();
         for (ProductoCatalogo p : productos) {
             if (p == null || p.getNombre() == null || !p.isActivo() || !p.isAprobado()) {
@@ -118,19 +127,24 @@ public class ProductoController {
         List<ProductoCatalogo> listaOrdenada = new ArrayList<>(unicos.values());
         listaOrdenada.sort((a, b) -> a.getNombre().compareToIgnoreCase(b.getNombre()));
         for (ProductoCatalogo p : listaOrdenada) {
-            List<UnidadMedida> permitidas = unidadesPermitidasDe(p);
-            Map<String, Object> item = new LinkedHashMap<>();
-            item.put("id", p.getId());
-            item.put("nombre", p.getNombre());
-            item.put("imagenUrl", p.getImagenUrl());
-            item.put("unidadPorDefecto", unidadJson(p.getUnidadPorDefecto() != null
-                    ? p.getUnidadPorDefecto() : permitidas.get(0)));
-            List<Map<String, Object>> unidades = new ArrayList<>();
-            for (UnidadMedida u : permitidas) {
-                unidades.add(unidadJson(u));
+            try {
+                List<UnidadMedida> permitidas = unidadesPermitidasDe(p);
+                Map<String, Object> item = new LinkedHashMap<>();
+                item.put("id", p.getId());
+                item.put("nombre", p.getNombre());
+                item.put("imagenUrl", p.getImagenUrl());
+                item.put("unidadPorDefecto", unidadJson(p.getUnidadPorDefecto() != null
+                        ? p.getUnidadPorDefecto() : permitidas.get(0)));
+                List<Map<String, Object>> unidades = new ArrayList<>();
+                for (UnidadMedida u : permitidas) {
+                    unidades.add(unidadJson(u));
+                }
+                item.put("unidadesPermitidas", unidades);
+                respuesta.add(item);
+            } catch (RuntimeException e) {
+                // Un producto con datos dañados no debe tumbar todo el desplegable.
+                log.warn("Producto de catálogo {} omitido por datos inválidos: {}", p.getId(), e.toString());
             }
-            item.put("unidadesPermitidas", unidades);
-            respuesta.add(item);
         }
         return ResponseEntity.ok(respuesta);
     }
@@ -598,8 +612,15 @@ public class ProductoController {
 
     /** Unidades permitidas del producto; para productos aún sin migrar se deriva de la unidad legacy. */
     private List<UnidadMedida> unidadesPermitidasDe(ProductoCatalogo p) {
-        List<UnidadMedida> permitidas = p.getUnidadesPermitidas();
-        if (permitidas != null && !permitidas.isEmpty()) {
+        List<UnidadMedida> permitidas = new ArrayList<>();
+        if (p.getUnidadesPermitidas() != null) {
+            for (UnidadMedida u : p.getUnidadesPermitidas()) {
+                if (u != null) {
+                    permitidas.add(u);
+                }
+            }
+        }
+        if (!permitidas.isEmpty()) {
             return permitidas;
         }
         List<UnidadMedida> lista = new ArrayList<>();

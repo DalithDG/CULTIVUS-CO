@@ -436,10 +436,21 @@
                     return;
                 }
 
-                fetch('/vendedor/productos/catalogo?categoriaId=' + encodeURIComponent(catId))
-                    .then(res => {
-                        if (!res.ok) throw new Error('Error al cargar productos');
-                        return res.json();
+                fetch('/vendedor/productos/catalogo?categoriaId=' + encodeURIComponent(catId), {
+                    headers: { 'Accept': 'application/json' },
+                    credentials: 'same-origin'
+                })
+                    .then(async res => {
+                        const tipo = res.headers.get('content-type') || '';
+                        // Si la sesión expiró, Spring redirige al login (HTML) en vez de devolver JSON.
+                        if (res.redirected || !tipo.includes('application/json')) {
+                            throw new Error('SESION');
+                        }
+                        const cuerpo = await res.json();
+                        if (!res.ok) {
+                            throw new Error((cuerpo && cuerpo.error) || ('HTTP ' + res.status));
+                        }
+                        return Array.isArray(cuerpo) ? cuerpo : [];
                     })
                     .then(data => {
                         productosActuales = data;
@@ -452,8 +463,11 @@
                         prodSelect.disabled = false;
                     })
                     .catch(err => {
-                        prodSelect.innerHTML = '<option value="">Error cargando catálogo</option>';
-                        console.error(err);
+                        const msg = err && err.message === 'SESION'
+                            ? 'Tu sesión expiró, recarga la página'
+                            : 'Error cargando catálogo';
+                        prodSelect.innerHTML = '<option value="">' + msg + '</option>';
+                        console.error('Error cargando catálogo:', err);
                     });
             });
 
