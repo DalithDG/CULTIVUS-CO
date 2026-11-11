@@ -317,6 +317,8 @@ public class CarritoController {
                     .filter(i -> ofertaId.equals(i.getOfertaId()))
                     .findFirst();
 
+            boolean yaEnCarrito = itemExistente.isPresent();
+
             double cantidadSolicitada = cantidad != null ? cantidad : 0.0;
             double nuevaCantidad = itemExistente
                     .map(i -> ValidacionCantidad.sumar(i.getCantidad(), cantidadSolicitada))
@@ -344,6 +346,10 @@ public class CarritoController {
             response.put("mensaje", "¡" + oferta.getNombreProducto() + " agregado al carrito!");
             response.put("totalItems", carrito.getTotalArticulos());
             response.put("totalEstimado", carrito.getTotalEstimado());
+            response.put("yaEnCarrito", yaEnCarrito);
+            response.put("cantidadEnCarrito", nuevaCantidad);
+            response.put("unidad", oferta.unidadEfectiva().getAbreviatura());
+            response.put("nombreProducto", oferta.getNombreProducto());
 
         } catch (IllegalArgumentException e) {
             response.put("success", false);

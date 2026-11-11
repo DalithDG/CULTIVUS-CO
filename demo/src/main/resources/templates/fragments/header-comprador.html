@@ -191,9 +191,9 @@
                 <!-- Carrito de compras con badge dinámico (solo si puede comprar) -->
                 <a th:if="${session.usuarioLogueado == null or session.usuarioLogueado.puedeComprar()}"
                    th:href="@{/carrito}" class="btn-icon btn-cart" title="Carrito de compras"
-                    aria-label="Ver carrito de compras">
+                     th:aria-label="'Carrito, ' + ${carritoCount != null ? carritoCount : 0} + ' productos'">
                     <i class="fas fa-shopping-cart"></i>
-                    <span class="cart-badge" th:text="${carritoCount != null ? carritoCount : 0}">0</span>
+                    <span class="cart-badge" th:if="${carritoCount != null and carritoCount > 0}" th:text="${carritoCount}">0</span>
                 </a>
             </div>
 
