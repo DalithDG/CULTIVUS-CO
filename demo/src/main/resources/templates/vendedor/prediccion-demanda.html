@@ -798,9 +798,12 @@
         function renderizarDatos(data) {
             const semana = data.semana || 'Semana siguiente';
             const predicciones = data.predicciones || [];
+            const top20 = predicciones.slice(0, 20);
 
             document.getElementById('kpiSemana').textContent = semana;
-            document.getElementById('badgeCount').textContent = `${predicciones.length} resultado(s)`;
+            document.getElementById('badgeCount').textContent = predicciones.length > 20
+                ? `Top 20 de ${predicciones.length} registros`
+                : `${predicciones.length} resultado(s)`;
 
             const tbody = document.getElementById('tablaPredicciones');
 
@@ -838,13 +841,16 @@
             document.getElementById('kpiCategorias').textContent = categoriasSet.size;
             document.getElementById('kpiCiudades').textContent = ciudadesSet.size;
 
-            // Generar filas
-            const rowsHtml = predicciones.map(p => {
+            // Generar filas (solo los 20 primeros)
+            const rowsHtml = top20.map((p, idx) => {
                 const porcentaje = maxKg > 0 ? Math.min(100, Math.round((p.demandaEsperadaKg / maxKg) * 100)) : 0;
                 return `
                     <tr>
                         <td>
-                            <span class="pred-badge-cat">${escapeHtml(p.categoria)}</span>
+                            <span class="pred-badge-cat">
+                                <span style="font-weight: 800; color: #166534; margin-right: 4px;">#${idx + 1}</span>
+                                ${escapeHtml(p.categoria)}
+                            </span>
                         </td>
                         <td>
                             <span class="pred-badge-ciudad">

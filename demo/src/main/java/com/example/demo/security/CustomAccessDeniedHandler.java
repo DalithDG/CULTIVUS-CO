@@ -53,14 +53,55 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
         String requestUri = request.getRequestURI() != null ? request.getRequestURI() : "";
         String ruta = requestUri.startsWith(contexto) ? requestUri.substring(contexto.length()) : requestUri;
 
+        boolean esAjax = "XMLHttpRequest".equalsIgnoreCase(request.getHeader("X-Requested-With"))
+                || (request.getHeader("Accept") != null && request.getHeader("Accept").contains("application/json"));
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean autenticado = auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken);
+
         if (accessDeniedException instanceof org.springframework.security.web.csrf.CsrfException) {
-            response.sendError(HttpServletResponse.SC_FORBIDDEN, "Acceso denegado: token CSRF inválido o ausente.");
+            if (esAjax) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"success\":false,\"ok\":false,\"error\":\"Tu sesión expiró o fue actualizada. Recarga la página e intenta de nuevo.\"}");
+                return;
+            }
+            if (!autenticado || ruta.startsWith("/usuario/login") || ruta.startsWith("/comprador/login")) {
+                response.sendRedirect(contexto + "/usuario/login?sesionExpirada=true");
+                return;
+            }
+            HttpSession csrfSession = request.getSession(true);
+            csrfSession.setAttribute("error", "El formulario expiró por inactividad. Se recargó la página, por favor intenta de nuevo.");
+            String referer = request.getHeader("Referer");
+            if (referer != null && !referer.isBlank() && !referer.contains("/login")) {
+                response.sendRedirect(referer);
+                return;
+            }
+            String rolActual = SecurityConfig.rolPrincipal(auth);
+            String panelFallback = panelDe(rolActual);
+            response.sendRedirect(contexto + (panelFallback != null ? panelFallback : "/usuario/inicio"));
             return;
         }
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated() || auth instanceof AnonymousAuthenticationToken) {
+        if (!autenticado) {
+            if (esAjax) {
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write("{\"success\":false,\"ok\":false,\"redirectLogin\":true,\"error\":\"Inicia sesión para continuar.\"}");
+                return;
+            }
             response.sendRedirect(contexto + "/usuario/login");
+            return;
+        }
+
+        if (esAjax) {
+            String rolAjax = SecurityConfig.rolPrincipal(auth);
+            String msgAjax = "VENDEDOR".equals(rolAjax) && ruta.startsWith("/carrito")
+                    ? Usuario.MENSAJE_VENDEDOR_NO_PUEDE_COMPRAR
+                    : "No tienes permisos para realizar esta acción con tu rol actual (" + (rolAjax != null ? rolAjax : "sin rol") + ").";
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write("{\"success\":false,\"ok\":false,\"error\":\"" + msgAjax.replace("\"", "\\\"") + "\"}");
             return;
         }
 

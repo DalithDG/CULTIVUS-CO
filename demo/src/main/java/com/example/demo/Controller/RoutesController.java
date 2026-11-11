@@ -95,4 +95,12 @@ public class RoutesController {
     public String prediccionDemanda() {
         return "redirect:/vendedor/prediccion-demanda";
     }
+
+    @GetMapping("/oauth2/authorization/{provider}")
+    public String oauthFallback(@org.springframework.web.bind.annotation.PathVariable String provider) {
+        if ("facebook".equalsIgnoreCase(provider)) {
+            return "redirect:/usuario/login?error=facebook_no_configurado";
+        }
+        return "redirect:/usuario/login?error=google_no_configurado";
+    }
 }

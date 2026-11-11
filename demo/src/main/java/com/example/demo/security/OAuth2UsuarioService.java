@@ -50,11 +50,11 @@ public class OAuth2UsuarioService extends DefaultOAuth2UserService {
      * Busca el usuario por email. Si no existe, lo crea con rol COMPRADOR.
      * Si ya existe, actualiza su nombre si cambió en el proveedor.
      */
-    private Usuario procesarUsuarioOAuth2(OAuth2User oAuth2User) {
+    public Usuario procesarUsuarioOAuth2(OAuth2User oAuth2User) {
         String email = oAuth2User.getAttribute("email");
         String nombre = oAuth2User.getAttribute("name");
 
-        if (email == null) {
+        if (email == null || email.isBlank()) {
             throw new OAuth2AuthenticationException("El proveedor no proporcionó un email válido");
         }
 
@@ -65,9 +65,13 @@ public class OAuth2UsuarioService extends DefaultOAuth2UserService {
         if (usuarioExistente.isPresent()) {
             // Usuario ya registrado — actualizar nombre si cambió en el proveedor
             Usuario usuario = usuarioExistente.get();
-            if (nombre != null && !nombre.equals(usuario.getNombre())) {
+            if (nombre != null && !nombre.isBlank() && !nombre.equals(usuario.getNombre())) {
                 usuario.setNombre(nombre);
             }
+            if (usuario.getRoles() == null || usuario.getRoles().isEmpty()) {
+                usuario.setRol(Role.COMPRADOR);
+            }
+            usuario.setEmailVerificado(true);
             usuario.setUltimaConexion(java.time.LocalDateTime.now());
             usuarioRepository.save(usuario);
             return usuario;
@@ -75,10 +79,11 @@ public class OAuth2UsuarioService extends DefaultOAuth2UserService {
             // Primera vez con OAuth2 → crear cuenta automáticamente
             Usuario nuevoUsuario = new Usuario();
             nuevoUsuario.setEmail(emailLimpio);
-            nuevoUsuario.setNombre(nombre != null ? nombre : emailLimpio);
-            // Sin contraseña: este usuario solo puede autenticarse vía OAuth2
-            nuevoUsuario.setContrasena(null);
+            nuevoUsuario.setNombre(nombre != null && !nombre.isBlank() ? nombre : emailLimpio);
+            // Sin contraseña manual: este usuario se autentica vía OAuth2
+            nuevoUsuario.setContrasena("");
             nuevoUsuario.setRol(Role.COMPRADOR);
+            nuevoUsuario.setEmailVerificado(true);
             nuevoUsuario.setUltimaConexion(java.time.LocalDateTime.now());
 
             usuarioRepository.save(nuevoUsuario);

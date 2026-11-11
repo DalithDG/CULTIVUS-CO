@@ -139,7 +139,9 @@ public class SecurityConfig {
                         // evento.
                         .ignoringRequestMatchers("/api/wompi/webhook")
                         .ignoringRequestMatchers("/api/**")
-                        .ignoringRequestMatchers("/vendedor/imagenes/**"))
+                        .ignoringRequestMatchers("/vendedor/imagenes/**")
+                        .ignoringRequestMatchers("/carrito/agregar-ajax")
+                        .ignoringRequestMatchers("/usuario/login", "/comprador/login", "/transportista/login", "/usuario/logout", "/logout"))
                 .authorizeHttpRequests(authz -> authz
                         // NO QUITAR: webhook de Wompi, publico a proposito (ver comentario en csrf).
                         .requestMatchers(HttpMethod.POST, "/api/wompi/webhook").permitAll()
@@ -226,10 +228,13 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/usuario/inicio",
                                 "/usuario/perfil",
-                                "/usuario/perfil/actualizar",
+                                "/usuario/perfil/**",
                                 "/usuario/billetera",
-                                "/usuario/notificaciones")
-                        .access(soloRol("COMPRADOR", "VENDEDOR", "TRANSPORTISTA"))
+                                "/usuario/billetera/**",
+                                "/usuario/notificaciones",
+                                "/usuario/notificaciones/**",
+                                "/usuario/cambiar-contrasena")
+                        .access(soloRol("COMPRADOR", "VENDEDOR", "TRANSPORTISTA", "ADMIN"))
 
                         // ── Comprador: compras, carrito y pedidos ────────────────────
                         .requestMatchers("/usuario/**").access(soloRol("COMPRADOR"))
@@ -303,11 +308,14 @@ public class SecurityConfig {
         // OAuth2 solo se activa si las credenciales de Google o Facebook están
         // presentes y los beans necesarios existen.
         boolean googleHabilitado = StringUtils.hasText(googleClientId)
-                && StringUtils.hasText(googleClientSecret);
+                && StringUtils.hasText(googleClientSecret)
+                && !"disabled".equalsIgnoreCase(googleClientId)
+                && !"disabled".equalsIgnoreCase(googleClientSecret);
 
         boolean facebookHabilitado = StringUtils.hasText(facebookClientId)
                 && StringUtils.hasText(facebookClientSecret)
-                && !"disabled".equalsIgnoreCase(facebookClientId);
+                && !"disabled".equalsIgnoreCase(facebookClientId)
+                && !"disabled".equalsIgnoreCase(facebookClientSecret);
 
         boolean oauthHabilitado = (googleHabilitado || facebookHabilitado)
                 && clientRegistrationRepository != null

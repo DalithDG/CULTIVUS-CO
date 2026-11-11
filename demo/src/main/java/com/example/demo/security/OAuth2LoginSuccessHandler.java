@@ -30,6 +30,12 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    @Autowired
+    private OAuth2UsuarioService oAuth2UsuarioService;
+
+    @Autowired
+    private SecurityContextRefreshService securityContextRefreshService;
+
     private boolean esRutaSegura(String url) {
         if (url == null || url.isBlank()) return false;
         if (!url.startsWith("/") || url.startsWith("//")) return false;
@@ -46,21 +52,30 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         String email = oAuth2User.getAttribute("email");
 
-        if (email == null) {
+        if (email == null || email.isBlank()) {
             response.sendRedirect("/usuario/login?error=oauth_email");
             return;
         }
 
         String emailLimpio = email.trim().toLowerCase();
 
-        // Buscar el usuario en MongoDB (ya fue creado por OAuth2UsuarioService)
-        Usuario usuario = usuarioRepository.findByEmail(emailLimpio).orElse(null);
+        // Asegurar que el usuario exista y esté actualizado en MongoDB
+        // (importante cuando Google usa OIDC y no pasa por DefaultOAuth2UserService)
+        Usuario usuario;
+        try {
+            usuario = oAuth2UsuarioService.procesarUsuarioOAuth2(oAuth2User);
+        } catch (Exception e) {
+            usuario = usuarioRepository.findByEmail(emailLimpio).orElse(null);
+        }
 
         if (usuario == null) {
-            // Esto no debería ocurrir, pero como seguridad redirigimos al login
             response.sendRedirect("/usuario/login?error=usuario_no_encontrado");
             return;
         }
+
+        // Sincronizar los roles reales de MongoDB (ROLE_COMPRADOR, ROLE_VENDEDOR, etc.)
+        // en el SecurityContext y la sesión para evitar errores 403 tras el login OAuth2/OIDC
+        securityContextRefreshService.refrescarAutenticacion(emailLimpio);
 
         // Guardar el Usuario en la sesión (mismo mecanismo que el login manual)
         HttpSession session = request.getSession();

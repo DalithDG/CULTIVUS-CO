@@ -99,13 +99,18 @@
     }
 
     var formData = new FormData(form);
+    var headers = {
+      'X-Requested-With': 'XMLHttpRequest'
+    };
+    var csrfToken = formData.get('_csrf');
+    if (csrfToken) {
+      headers['X-CSRF-TOKEN'] = csrfToken;
+    }
 
     fetch('/carrito/agregar-ajax', {
       method: 'POST',
       body: formData,
-      headers: {
-        'X-Requested-With': 'XMLHttpRequest'
-      }
+      headers: headers
     })
       .then(async function (res) {
         var data;
