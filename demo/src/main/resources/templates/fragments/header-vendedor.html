@@ -129,6 +129,12 @@
                 <span class="vs-nav-item__icon"><i class="fas fa-plus-circle" aria-hidden="true"></i></span>
                 <span>Agregar Producto</span>
             </a>
+
+            <a th:href="@{/vendedor/prediccion-demanda}" class="vs-nav-item" data-vs-nav="prediccion-demanda"
+                th:classappend="${currentPath != null and (currentPath.contains('/prediccion-demanda') or currentPath.contains('/vendedor/prediccion-demanda')) ? ' is-active' : ''}">
+                <span class="vs-nav-item__icon"><i class="fas fa-chart-line" aria-hidden="true"></i></span>
+                <span>Predicción Demanda</span>
+            </a>
         </nav>
 
         <div class="vs-sidebar__sep"></div>
@@ -190,6 +196,8 @@
             var bc = document.getElementById('vsBreadcrumbCurrent');
 
             var routeMap = [
+                { match: '/vendedor/prediccion-demanda', key: 'prediccion-demanda', label: 'Predicción de Demanda' },
+                { match: '/prediccion-demanda', key: 'prediccion-demanda', label: 'Predicción de Demanda' },
                 { match: '/usuario/notificaciones', key: 'notificaciones', label: 'Notificaciones' },
                 { match: '/vendedor/productos/nuevo', key: 'nuevo-producto', label: 'Publicar Producto' },
                 { match: '/vendedor/productos/editar', key: 'mis-productos', label: 'Editar Oferta' },

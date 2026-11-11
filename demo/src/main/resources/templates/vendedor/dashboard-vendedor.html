@@ -6,7 +6,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Panel del Vendedor | Cultivus</title>
-    <meta name="description" content="Resumen de ventas, pedidos activos, productos publicados y billetera de tu tienda en Cultivus.">
+    <meta name="description"
+        content="Resumen de ventas, pedidos activos, modelo predictivo de cosechas y billetera de tu tienda en Cultivus.">
     <link rel="stylesheet" th:href="@{/header.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
     <link rel="stylesheet" th:href="@{/vendedor-panel.css}">
@@ -17,34 +18,32 @@
     <header th:replace="~{fragments/header-vendedor :: siteHeader}"></header>
 
     <main class="vs-main">
+        <!-- ══════════════════════════════════════════════════════════
+             HERO / CABECERA DE LA TIENDA
+             ══════════════════════════════════════════════════════════ -->
         <section class="vp-hero">
             <div class="vp-hero__content">
                 <div class="vp-hero__top">
                     <span class="vp-kicker">
                         <i class="fa-solid fa-seedling" aria-hidden="true"></i>
-                        <span th:text="${perfilVendedor != null and perfilVendedor.verificado ? 'Tienda verificada' : 'Verificación pendiente'}">Mi tienda</span>
+                        <span
+                            th:text="${perfilVendedor != null and perfilVendedor.verificado ? 'Tienda Verificada' : 'Verificación en proceso'}">Mi
+                            tienda</span>
                     </span>
-
-                    <div class="vp-mode-switch" role="group" aria-label="Modo de visualización">
-                        <button type="button" class="vp-mode-btn is-active" data-vista="facil" aria-pressed="true">
-                            <i class="fa-solid fa-hand-pointer" aria-hidden="true"></i> Vista fácil
-                        </button>
-                        <button type="button" class="vp-mode-btn" data-vista="avanzada" aria-pressed="false">
-                            <i class="fa-solid fa-sliders" aria-hidden="true"></i> Vista avanzada
-                        </button>
-                    </div>
                 </div>
 
-                <h1 th:text="${perfilVendedor != null and perfilVendedor.razonSocial != null ? perfilVendedor.razonSocial : 'Hola, ' + usuario.nombre}">
+                <h1
+                    th:text="${perfilVendedor != null and perfilVendedor.razonSocial != null ? perfilVendedor.razonSocial : 'Hola, ' + usuario.nombre}">
                     Mi tienda
                 </h1>
                 <p>
-                    Aquí ves qué debes alistar hoy, cuántos productos tienes a la venta y cuánto dinero llevas ganado.
+                    Centro de gestión agrícola: monitorea tus ventas, atiende pedidos y anticipa la demanda con el
+                    modelo predictivo en tiempo real.
                 </p>
 
                 <div class="vp-hero__actions">
                     <a th:href="@{/vendedor/productos/nuevo}" class="vp-btn vp-btn--light">
-                        <i class="fa-solid fa-plus" aria-hidden="true"></i> Publicar producto
+                        <i class="fa-solid fa-plus" aria-hidden="true"></i> Publicar cosecha
                     </a>
                     <a th:href="@{/vendedor/ventas}" class="vp-btn vp-btn--ghost">
                         <i class="fa-solid fa-receipt" aria-hidden="true"></i> Ver mis ventas
@@ -52,10 +51,14 @@
                     <a th:href="@{/vendedor/mis-productos}" class="vp-btn vp-btn--ghost">
                         <i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i> Mi inventario
                     </a>
+                    <a th:href="@{/vendedor/billetera}" class="vp-btn vp-btn--ghost">
+                        <i class="fa-solid fa-wallet" aria-hidden="true"></i> Mi billetera
+                    </a>
                 </div>
             </div>
         </section>
 
+        <!-- Alertas de estado -->
         <div th:if="${mensaje}" class="vp-alert vp-alert--success">
             <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
             <span th:text="${mensaje}"></span>
@@ -73,7 +76,7 @@
             <i class="fa-solid fa-hourglass-half" aria-hidden="true"></i>
             <div>
                 <strong>Tu tienda está en revisión.</strong>
-                Cuando un administrador valide tu perfil, tus ofertas tendrán sello de vendedor verificado.
+                Cuando un administrador valide tu perfil, tus ofertas tendrán el sello oficial de vendedor verificado.
             </div>
         </div>
 
@@ -85,102 +88,93 @@
             </div>
         </div>
 
-        <!-- Resumen simple para uso cotidiano -->
-        <section class="vp-easy" aria-label="Resumen rápido">
-            <div class="vp-easy-numbers">
-                <div class="vp-easy-number">
-                    <span class="vp-easy-number__value" th:text="${tareasPendientes != null ? tareasPendientes : 0}">0</span>
-                    <span class="vp-easy-number__label">Pedidos por atender</span>
+        <!-- ══════════════════════════════════════════════════════════
+             1. TARJETAS PRINCIPALES ORGANIZADAS (KPI CARDS)
+             ══════════════════════════════════════════════════════════ -->
+        <section class="vp-kpi-grid" aria-label="Indicadores clave">
+            <!-- Tarjeta 1: Ventas Totales -->
+            <a th:href="@{/vendedor/ventas}" class="vp-kpi-card">
+                <div>
+                    <div class="vp-kpi-card__top">
+                        <span class="vp-kpi-card__icon"><i class="fa-solid fa-sack-dollar"
+                                aria-hidden="true"></i></span>
+                        <span class="vp-kpi-card__tag">Acumulado</span>
+                    </div>
+                    <p class="vp-kpi-card__label">Total en Ventas</p>
+                    <p class="vp-kpi-card__val"
+                        th:text="${'$' + #numbers.formatDecimal(totalVentas != null ? totalVentas : 0, 1, 'POINT', 0, 'COMMA')}">
+                        $0</p>
+                    <p class="vp-kpi-card__hint"
+                        th:text="${(totalPedidosVenta != null ? totalPedidosVenta : 0) + ' pedidos pagados con éxito'}">
+                        0 pedidos pagados</p>
                 </div>
-                <div class="vp-easy-number">
-                    <span class="vp-easy-number__value" th:text="${ofertasActivas != null ? ofertasActivas : 0}">0</span>
-                    <span class="vp-easy-number__label">Productos publicados</span>
+                <span class="vp-kpi-card__link">Ver historial de ventas <i class="fa-solid fa-arrow-right"
+                        aria-hidden="true"></i></span>
+            </a>
+
+            <!-- Tarjeta 2: Pedidos por Atender -->
+            <a th:href="@{/vendedor/ventas}" class="vp-kpi-card">
+                <div>
+                    <div class="vp-kpi-card__top">
+                        <span class="vp-kpi-card__icon vp-kpi-card__icon--amber"><i class="fa-solid fa-box-open"
+                                aria-hidden="true"></i></span>
+                        <span class="vp-kpi-card__tag"
+                            th:text="${tareasPendientes != null and tareasPendientes > 0 ? 'Acción requerida' : 'Al día'}">Estado</span>
+                    </div>
+                    <p class="vp-kpi-card__label">Pedidos por Atender</p>
+                    <p class="vp-kpi-card__val" th:text="${tareasPendientes != null ? tareasPendientes : 0}">0</p>
+                    <p class="vp-kpi-card__hint"
+                        th:text="${(porPreparar != null ? porPreparar : 0) + ' confirmados · ' + (enProceso != null ? enProceso : 0) + ' preparando'}">
+                        0 pendientes</p>
                 </div>
-                <div class="vp-easy-number">
-                    <span class="vp-easy-number__value"
-                          th:text="${'$' + #numbers.formatDecimal(totalVentas != null ? totalVentas : 0, 1, 'POINT', 0, 'COMMA')}">$0</span>
-                    <span class="vp-easy-number__label">Total vendido</span>
+                <span class="vp-kpi-card__link">Alistar pedidos <i class="fa-solid fa-arrow-right"
+                        aria-hidden="true"></i></span>
+            </a>
+
+            <!-- Tarjeta 3: Saldo Disponible Billetera -->
+            <a th:href="@{/vendedor/billetera}" class="vp-kpi-card">
+                <div>
+                    <div class="vp-kpi-card__top">
+                        <span class="vp-kpi-card__icon vp-kpi-card__icon--blue"><i class="fa-solid fa-wallet"
+                                aria-hidden="true"></i></span>
+                        <span class="vp-kpi-card__tag">Billetera</span>
+                    </div>
+                    <p class="vp-kpi-card__label">Saldo Disponible</p>
+                    <p class="vp-kpi-card__val"
+                        th:text="${'$' + #numbers.formatInteger((billetera != null ? billetera.saldoDisponibleCentavos : 0) / 100, 1, 'POINT')}">
+                        $0</p>
+                    <p class="vp-kpi-card__hint">
+                        En retención: <strong
+                            th:text="${'$' + #numbers.formatInteger((billetera != null ? billetera.saldoRetencionCentavos : 0) / 100, 1, 'POINT')}">$0</strong>
+                    </p>
                 </div>
-            </div>
+                <span class="vp-kpi-card__link">Retirar fondos <i class="fa-solid fa-arrow-right"
+                        aria-hidden="true"></i></span>
+            </a>
 
-            <div class="vp-quick-actions">
-                <a th:href="@{/vendedor/productos/nuevo}" class="vp-quick-action">
-                    <span class="vp-quick-action__icon"><i class="fa-solid fa-plus" aria-hidden="true"></i></span>
-                    <span class="vp-quick-action__text">
-                        <strong>Publicar producto</strong>
-                        <small>Subir precio y cantidad disponible</small>
-                    </span>
-                    <i class="fa-solid fa-chevron-right vp-quick-action__arrow" aria-hidden="true"></i>
-                </a>
-
-                <a th:href="@{/vendedor/ventas}" class="vp-quick-action">
-                    <span class="vp-quick-action__icon"><i class="fa-solid fa-truck-ramp-box" aria-hidden="true"></i></span>
-                    <span class="vp-quick-action__text">
-                        <strong>Alistar pedidos</strong>
-                        <small th:text="${tareasPendientes != null and tareasPendientes > 0 ? tareasPendientes + ' pendientes por preparar o entregar' : 'No tienes pedidos pendientes hoy'}">Revisar entregas</small>
-                    </span>
-                    <i class="fa-solid fa-chevron-right vp-quick-action__arrow" aria-hidden="true"></i>
-                </a>
-
-                <a th:href="@{/vendedor/mis-productos}" class="vp-quick-action">
-                    <span class="vp-quick-action__icon"><i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i></span>
-                    <span class="vp-quick-action__text">
-                        <strong>Cambiar precio o stock</strong>
-                        <small th:text="${agotadas != null and agotadas > 0 ? agotadas + ' productos agotados' : 'Ver productos publicados'}">Inventario</small>
-                    </span>
-                    <i class="fa-solid fa-chevron-right vp-quick-action__arrow" aria-hidden="true"></i>
-                </a>
-
-                <a th:href="@{/vendedor/billetera}" class="vp-quick-action">
-                    <span class="vp-quick-action__icon"><i class="fa-solid fa-wallet" aria-hidden="true"></i></span>
-                    <span class="vp-quick-action__text">
-                        <strong>Ver mi dinero</strong>
-                        <small th:text="${billetera != null ? '$' + #numbers.formatInteger(billetera.saldoDisponibleCentavos / 100, 1, 'POINT') + ' disponible' : 'Consultar pagos y retenciones'}">Billetera</small>
-                    </span>
-                    <i class="fa-solid fa-chevron-right vp-quick-action__arrow" aria-hidden="true"></i>
-                </a>
-            </div>
+            <!-- Tarjeta 4: Cosechas e Inventario -->
+            <a th:href="@{/vendedor/mis-productos}" class="vp-kpi-card">
+                <div>
+                    <div class="vp-kpi-card__top">
+                        <span class="vp-kpi-card__icon vp-kpi-card__icon--purple"><i class="fa-solid fa-seedling"
+                                aria-hidden="true"></i></span>
+                        <span class="vp-kpi-card__tag"
+                            th:text="${(ofertasActivas != null ? ofertasActivas : 0) + ' activas'}">Cosechas</span>
+                    </div>
+                    <p class="vp-kpi-card__label">Cosechas Publicadas</p>
+                    <p class="vp-kpi-card__val" th:text="${(ofertasActivas != null ? ofertasActivas : 0)}">0</p>
+                    <p class="vp-kpi-card__hint"
+                        th:text="${(stockBajo != null ? stockBajo : 0) + ' con stock bajo · ' + (agotadas != null ? agotadas : 0) + ' agotadas'}">
+                        Estado de inventario</p>
+                </div>
+                <span class="vp-kpi-card__link">Administrar inventario <i class="fa-solid fa-arrow-right"
+                        aria-hidden="true"></i></span>
+            </a>
         </section>
 
-        <!-- Indicadores completos para vista detallada -->
-        <section class="vp-stats vp-advanced" aria-label="Indicadores de la tienda">
-            <article class="vp-stat">
-                <div class="vp-stat__icon"><i class="fa-solid fa-sack-dollar" aria-hidden="true"></i></div>
-                <p class="vp-stat__label">Ventas cobradas</p>
-                <p class="vp-stat__value"
-                   th:text="${'$' + #numbers.formatDecimal(totalVentas != null ? totalVentas : 0, 1, 'POINT', 0, 'COMMA')}">$0</p>
-                <p class="vp-stat__hint" th:text="${(totalPedidosVenta != null ? totalPedidosVenta : 0) + ' pedidos pagados'}">0 pedidos pagados</p>
-            </article>
-
-            <article class="vp-stat vp-stat--amber">
-                <div class="vp-stat__icon"><i class="fa-solid fa-box-open" aria-hidden="true"></i></div>
-                <p class="vp-stat__label">Por alistar</p>
-                <p class="vp-stat__value" th:text="${(porPreparar != null ? porPreparar : 0) + (enProceso != null ? enProceso : 0)}">0</p>
-                <p class="vp-stat__hint" th:text="${(porPreparar != null ? porPreparar : 0) + ' confirmados · ' + (enProceso != null ? enProceso : 0) + ' en preparación'}">0 pendientes</p>
-            </article>
-
-            <article class="vp-stat vp-stat--featured">
-                <div class="vp-stat__icon"><i class="fa-solid fa-box-archive" aria-hidden="true"></i></div>
-                <p class="vp-stat__label">Listos para recoger</p>
-                <p class="vp-stat__value" th:text="${listosParaRecoger != null ? listosParaRecoger : 0}">0</p>
-                <p class="vp-stat__hint">Esperando transportista</p>
-            </article>
-
-            <article class="vp-stat vp-stat--blue">
-                <div class="vp-stat__icon"><i class="fa-solid fa-truck-fast" aria-hidden="true"></i></div>
-                <p class="vp-stat__label">En camino / entregados</p>
-                <p class="vp-stat__value" th:text="${(enCamino != null ? enCamino : 0) + ' / ' + (entregados != null ? entregados : 0)}">0 / 0</p>
-                <p class="vp-stat__hint">En ruta hacia el comprador</p>
-            </article>
-
-            <article class="vp-stat" th:classappend="${agotadas != null and agotadas > 0} ? 'vp-stat--red' : ''">
-                <div class="vp-stat__icon"><i class="fa-solid fa-seedling" aria-hidden="true"></i></div>
-                <p class="vp-stat__label">Ofertas activas</p>
-                <p class="vp-stat__value" th:text="${(ofertasActivas != null ? ofertasActivas : 0) + ' / ' + (ofertas != null ? #lists.size(ofertas) : 0)}">0 / 0</p>
-                <p class="vp-stat__hint" th:text="${(stockBajo != null ? stockBajo : 0) + ' con stock bajo · ' + (agotadas != null ? agotadas : 0) + ' agotadas'}">Estado del inventario</p>
-            </article>
-        </section>
-
+        <!-- ══════════════════════════════════════════════════════════
+             2. OPERACIÓN Y GESTIÓN DE PEDIDOS
+             ══════════════════════════════════════════════════════════ -->
         <section class="vp-grid">
             <div class="vp-stack">
                 <!-- Pedidos que requieren acción -->
@@ -202,46 +196,49 @@
                     </div>
 
                     <div th:if="${pedidosAtencion != null and !#lists.isEmpty(pedidosAtencion)}" class="vp-order-list">
-                        <a th:each="p : ${pedidosAtencion}"
-                           th:href="@{/vendedor/ventas/pedido/{id}(id=${p.id})}"
-                           class="vp-order-row">
+                        <a th:each="p : ${pedidosAtencion}" th:href="@{/vendedor/ventas/pedido/{id}(id=${p.id})}"
+                            class="vp-order-row">
                             <div class="vp-order-row__main">
                                 <span class="vp-invoice"
-                                      th:text="${p.numeroFactura != null ? p.numeroFactura : '#' + #strings.substring(p.id, 0, 8)}">CLT-000000</span>
+                                    th:text="${p.numeroFactura != null ? p.numeroFactura : '#' + #strings.substring(p.id, 0, 8)}">CLT-000000</span>
                                 <span class="vp-order-row__meta"
-                                      th:text="${p.comprador != null and p.comprador.nombre != null ? p.comprador.nombre : 'Comprador'}">Comprador</span>
+                                    th:text="${p.comprador != null and p.comprador.nombre != null ? p.comprador.nombre : 'Comprador'}">Comprador</span>
                             </div>
 
                             <div class="vp-order-row__meta">
-                                <div th:text="${p.direccionEntrega != null and p.direccionEntrega.ciudad != null ? p.direccionEntrega.ciudad : 'Envío a domicilio'}">Ciudad</div>
-                                <div th:text="${p.fechaPedido != null ? #temporals.format(p.fechaPedido, 'dd/MM/yyyy HH:mm') : '-'}">01/01/2026</div>
+                                <div
+                                    th:text="${p.direccionEntrega != null and p.direccionEntrega.ciudad != null ? p.direccionEntrega.ciudad : 'Envío a domicilio'}">
+                                    Ciudad</div>
+                                <div
+                                    th:text="${p.fechaPedido != null ? #temporals.format(p.fechaPedido, 'dd/MM/yyyy HH:mm') : '-'}">
+                                    01/01/2026</div>
                             </div>
 
-                            <span class="vp-badge"
-                                  th:classappend="'vp-badge--' + ${p.estadoCss}"
-                                  th:text="${p.estadoEtiqueta}">
+                            <span class="vp-badge" th:classappend="'vp-badge--' + ${p.estadoCss}"
+                                th:text="${p.estadoEtiqueta}">
                                 Confirmado
                             </span>
 
                             <span class="vp-amount"
-                                  th:text="${'$' + #numbers.formatDecimal(p.total != null ? p.total : 0, 1, 'POINT', 0, 'COMMA')}">$0</span>
+                                th:text="${'$' + #numbers.formatDecimal(p.total != null ? p.total : 0, 1, 'POINT', 0, 'COMMA')}">$0</span>
                         </a>
                     </div>
                 </article>
 
                 <!-- Últimas ventas -->
-                <article class="vp-card vp-advanced">
+                <article class="vp-card">
                     <div class="vp-card__head">
                         <h2 class="vp-card__title">
-                            <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Últimas ventas
+                            <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Últimas ventas registradas
                         </h2>
                         <a th:href="@{/vendedor/ventas}" class="vp-link">Ir a mis ventas</a>
                     </div>
 
                     <div th:if="${ultimosPedidos == null or #lists.isEmpty(ultimosPedidos)}" class="vp-empty">
                         <i class="fa-solid fa-basket-shopping" aria-hidden="true"></i>
-                        <h3>Aún no tienes ventas pagadas</h3>
-                        <p>Publica productos con buen stock y precio competitivo para aparecer primero en el mercado.</p>
+                        <h3>Aún no tienes ventas registradas</h3>
+                        <p>Publica cosechas con buen stock y precio competitivo para aparecer primero en el mercado
+                            campesino.</p>
                         <a th:href="@{/vendedor/productos/nuevo}" class="vp-btn vp-btn--sm">
                             <i class="fa-solid fa-plus" aria-hidden="true"></i> Publicar oferta
                         </a>
@@ -255,30 +252,32 @@
                                     <th>Comprador</th>
                                     <th>Estado</th>
                                     <th>Total</th>
-                                    <th></th>
+                                    <th>Acción</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr th:each="p : ${ultimosPedidos}">
                                     <td>
-                                        <a th:href="@{/vendedor/ventas/pedido/{id}(id=${p.id})}"
-                                           class="vp-invoice"
-                                           th:text="${p.numeroFactura != null ? p.numeroFactura : '#' + #strings.substring(p.id, 0, 8)}">CLT-000000</a>
+                                        <a th:href="@{/vendedor/ventas/pedido/{id}(id=${p.id})}" class="vp-invoice"
+                                            th:text="${p.numeroFactura != null ? p.numeroFactura : '#' + #strings.substring(p.id, 0, 8)}">CLT-000000</a>
                                         <span class="vp-muted"
-                                              th:text="${p.fechaPedido != null ? #temporals.format(p.fechaPedido, 'dd/MM/yyyy') : '-'}">01/01/2026</span>
+                                            th:text="${p.fechaPedido != null ? #temporals.format(p.fechaPedido, 'dd/MM/yyyy') : '-'}">01/01/2026</span>
                                     </td>
-                                    <td th:text="${p.comprador != null and p.comprador.nombre != null ? p.comprador.nombre : 'Comprador'}">Comprador</td>
+                                    <td
+                                        th:text="${p.comprador != null and p.comprador.nombre != null ? p.comprador.nombre : 'Comprador'}">
+                                        Comprador</td>
                                     <td>
-                                        <span class="vp-badge"
-                                              th:classappend="'vp-badge--' + ${p.estadoCss}"
-                                              th:text="${p.estadoEtiqueta}">
+                                        <span class="vp-badge" th:classappend="'vp-badge--' + ${p.estadoCss}"
+                                            th:text="${p.estadoEtiqueta}">
                                             Estado
                                         </span>
                                     </td>
                                     <td class="vp-amount"
-                                        th:text="${'$' + #numbers.formatDecimal(p.total != null ? p.total : 0, 1, 'POINT', 0, 'COMMA')}">$0</td>
+                                        th:text="${'$' + #numbers.formatDecimal(p.total != null ? p.total : 0, 1, 'POINT', 0, 'COMMA')}">
+                                        $0</td>
                                     <td class="vp-nowrap">
-                                        <a th:href="@{/vendedor/ventas/pedido/{id}(id=${p.id})}" class="vp-btn vp-btn--outline vp-btn--sm">
+                                        <a th:href="@{/vendedor/ventas/pedido/{id}(id=${p.id})}"
+                                            class="vp-btn vp-btn--outline vp-btn--sm">
                                             Gestionar
                                         </a>
                                     </td>
@@ -289,80 +288,47 @@
                 </article>
             </div>
 
-            <!-- Columna lateral -->
+            <!-- Columna lateral: Accesos Rápidos y Billetera -->
             <aside class="vp-stack">
-                <article class="vp-card vp-help-card vp-easy">
-                    <div class="vp-card__body vp-help-card__body">
-                        <div class="vp-help-card__icon">
-                            <i class="fa-solid fa-person-chalkboard" aria-hidden="true"></i>
-                        </div>
-                        <div>
-                            <h2>¿Cómo funciona?</h2>
-                            <p>
-                                1. Publicas tu producto.<br>
-                                2. Cuando un cliente paga, aparece en <strong>Pedidos por atender</strong>.<br>
-                                3. Lo alistas y marcas el envío.
-                            </p>
-                            <button type="button" class="vp-btn vp-btn--outline vp-btn--sm" onclick="activarVista('avanzada')">
-                                Ver más detalles y estadísticas
-                            </button>
-                        </div>
-                    </div>
-                </article>
-
-                <article class="vp-card vp-advanced">
+                <article class="vp-card">
                     <div class="vp-card__head">
-                        <h2 class="vp-card__title"><i class="fa-solid fa-wallet" aria-hidden="true"></i> Mi billetera</h2>
+                        <h2 class="vp-card__title"><i class="fa-solid fa-wallet" aria-hidden="true"></i> Mi billetera
+                        </h2>
                         <a th:href="@{/vendedor/billetera}" class="vp-link">Ver movimientos</a>
                     </div>
                     <div class="vp-card__body">
-                        <p class="vp-muted">Disponible para retiro</p>
-                        <p class="vp-stat__value"
-                           th:text="${'$' + #numbers.formatInteger((billetera != null ? billetera.saldoDisponibleCentavos : 0) / 100, 1, 'POINT') + ' COP'}">
+                        <p class="vp-muted" style="margin: 0;">Disponible para retiro:</p>
+                        <p class="vp-stat__value" style="font-size: 1.7rem; margin: 4px 0 10px;"
+                            th:text="${'$' + #numbers.formatInteger((billetera != null ? billetera.saldoDisponibleCentavos : 0) / 100, 1, 'POINT') + ' COP'}">
                             $0 COP
                         </p>
                         <p class="vp-stat__hint">
-                            En retención:
-                            <strong th:text="${'$' + #numbers.formatInteger((billetera != null ? billetera.saldoRetencionCentavos : 0) / 100, 1, 'POINT') + ' COP'}">$0 COP</strong>
+                            En retención temporal:
+                            <strong
+                                th:text="${'$' + #numbers.formatInteger((billetera != null ? billetera.saldoRetencionCentavos : 0) / 100, 1, 'POINT') + ' COP'}">$0
+                                COP</strong>
                         </p>
+                        <a th:href="@{/vendedor/billetera}" class="vp-btn vp-btn--outline vp-btn--sm"
+                            style="width: 100%; margin-top: 14px;">
+                            Solicitar retiro
+                        </a>
                     </div>
                 </article>
 
-                <article class="vp-card vp-advanced">
+                <article class="vp-card">
                     <div class="vp-card__head">
-                        <h2 class="vp-card__title"><i class="fa-solid fa-warehouse" aria-hidden="true"></i> Estado del inventario</h2>
-                        <a th:href="@{/vendedor/mis-productos}" class="vp-link">Administrar</a>
-                    </div>
-                    <div class="vp-card__body">
-                        <div class="vp-inventory">
-                            <div class="vp-inventory__item">
-                                <span class="vp-inventory__value" th:text="${ofertasActivas != null ? ofertasActivas : 0}">0</span>
-                                <span class="vp-inventory__label">Activas</span>
-                            </div>
-                            <div class="vp-inventory__item">
-                                <span class="vp-inventory__value" th:text="${stockBajo != null ? stockBajo : 0}">0</span>
-                                <span class="vp-inventory__label">Stock bajo</span>
-                            </div>
-                            <div class="vp-inventory__item">
-                                <span class="vp-inventory__value" th:text="${agotadas != null ? agotadas : 0}">0</span>
-                                <span class="vp-inventory__label">Agotadas</span>
-                            </div>
-                        </div>
-                    </div>
-                </article>
-
-                <article class="vp-card vp-advanced">
-                    <div class="vp-card__head">
-                        <h2 class="vp-card__title"><i class="fa-solid fa-bolt" aria-hidden="true"></i> Accesos rápidos</h2>
+                        <h2 class="vp-card__title"><i class="fa-solid fa-bolt" aria-hidden="true"></i> Accesos rápidos
+                        </h2>
                     </div>
                     <div class="vp-card__body">
                         <div class="vp-quick-links">
                             <a th:href="@{/vendedor/productos/nuevo}" class="vp-quick-link">
-                                <span><i class="fa-solid fa-plus" aria-hidden="true"></i> Publicar nueva oferta</span>
+                                <span><i class="fa-solid fa-plus" aria-hidden="true"></i> Publicar nueva cosecha</span>
                                 <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
                             </a>
                             <a th:href="@{/vendedor/mis-productos}" class="vp-quick-link">
-                                <span><i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i> Actualizar stock y precios</span>
+                                <span><i class="fa-solid fa-boxes-stacked" aria-hidden="true"></i> Actualizar stock y
+                                    precios</span>
                                 <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
                             </a>
                             <a th:href="@{/vendedor/perfil}" class="vp-quick-link">
@@ -370,8 +336,9 @@
                                 <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
                             </a>
                             <a th:href="@{/pedido/mis-pedidos}" class="vp-quick-link"
-                               th:if="${totalPedidosComprador != null and totalPedidosComprador > 0}">
-                                <span><i class="fa-solid fa-bag-shopping" aria-hidden="true"></i> Mis compras personales (<span th:text="${totalPedidosComprador}">0</span>)</span>
+                                th:if="${totalPedidosComprador != null and totalPedidosComprador > 0}">
+                                <span><i class="fa-solid fa-bag-shopping" aria-hidden="true"></i> Mis compras personales
+                                    (<span th:text="${totalPedidosComprador}">0</span>)</span>
                                 <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
                             </a>
                         </div>
@@ -380,154 +347,17 @@
             </aside>
         </section>
 
-        <!-- Predicción de ventas de la semana (ejemplo orientativo) -->
-        <section class="vp-card vp-prediccion vp-advanced" aria-labelledby="prediccion-titulo">
-            <div class="vp-card__head">
-                <h2 class="vp-card__title" id="prediccion-titulo">
-                    <i class="fa-solid fa-chart-line" aria-hidden="true"></i> Lo que más se puede vender esta semana
-                </h2>
-                <span class="vp-badge vp-badge--confirmado">Estimación de ejemplo</span>
-            </div>
-            <div class="vp-card__body">
-                <p class="vp-prediccion__intro">
-                    Selecciona una categoría para ver los 5 productos con mayor salida estimada esta semana y preparar tu inventario.
-                </p>
-
-                <div class="vp-prediccion__toolbar">
-                    <label for="categoriaPrediccion">Categoría:</label>
-                    <select id="categoriaPrediccion" class="vp-select">
-                        <option value="verduras">Verduras y hortalizas</option>
-                        <option value="frutas">Frutas frescas</option>
-                        <option value="tuberculos">Tubérculos y plátanos</option>
-                        <option value="granos">Granos y leguminosas</option>
-                        <option value="lacteos">Lácteos y huevos</option>
-                        <option value="hierbas">Hierbas y aromáticas</option>
-                    </select>
-                </div>
-
-                <div id="listaPrediccion" class="vp-prediccion__list" aria-live="polite"></div>
-
-                <div class="vp-note">
-                    <i class="fa-solid fa-lightbulb" aria-hidden="true"></i>
-                    <span>Consejo: si cultivas alguno de estos productos, publícalo con fotos claras y cantidad actualizada.</span>
-                </div>
-            </div>
-        </section>
-
+        <!-- Pie de página del panel -->
         <footer class="vs-footer">
             <div class="vs-footer__brand">
                 <i class="fas fa-seedling" aria-hidden="true"></i>
                 <span>Cultivus Colombia · Panel de Gestión Agrícola</span>
             </div>
             <div class="vs-footer__links">
-                <span>&copy; 2025 Cultivus. Todos los derechos reservados.</span>
+                <span>&copy; 2026 Cultivus. Todos los derechos reservados.</span>
             </div>
         </footer>
     </main>
-
-    <script>
-        var PREDICCIONES_SEMANA = {
-            verduras: [
-                { nombre: "Tomate chonto", demanda: "Muy alta · ~48 pedidos", cambio: "+18%", icono: "fa-apple-whole" },
-                { nombre: "Cebolla cabezona blanca", demanda: "Alta · ~41 pedidos", cambio: "+14%", icono: "fa-seedling" },
-                { nombre: "Zanahoria fresca", demanda: "Alta · ~36 pedidos", cambio: "+11%", icono: "fa-carrot" },
-                { nombre: "Lechuga batavia", demanda: "Media-alta · ~29 pedidos", cambio: "+9%", icono: "fa-leaf" },
-                { nombre: "Pimentón rojo", demanda: "Media · ~24 pedidos", cambio: "+7%", icono: "fa-pepper-hot" }
-            ],
-            frutas: [
-                { nombre: "Aguacate Hass", demanda: "Muy alta · ~52 pedidos", cambio: "+22%", icono: "fa-lemon" },
-                { nombre: "Banano criollo", demanda: "Alta · ~44 pedidos", cambio: "+15%", icono: "fa-apple-whole" },
-                { nombre: "Mora de Castilla", demanda: "Alta · ~38 pedidos", cambio: "+13%", icono: "fa-seedling" },
-                { nombre: "Lulo fresco", demanda: "Media-alta · ~31 pedidos", cambio: "+10%", icono: "fa-lemon" },
-                { nombre: "Papaya común", demanda: "Media · ~26 pedidos", cambio: "+8%", icono: "fa-apple-whole" }
-            ],
-            tuberculos: [
-                { nombre: "Papa pastusa", demanda: "Muy alta · ~58 pedidos", cambio: "+20%", icono: "fa-bowl-food" },
-                { nombre: "Papa criolla", demanda: "Alta · ~45 pedidos", cambio: "+16%", icono: "fa-bowl-food" },
-                { nombre: "Plátano hartón verde", demanda: "Alta · ~42 pedidos", cambio: "+12%", icono: "fa-seedling" },
-                { nombre: "Yuca fresca", demanda: "Media-alta · ~33 pedidos", cambio: "+9%", icono: "fa-carrot" },
-                { nombre: "Arracacha amarilla", demanda: "Media · ~21 pedidos", cambio: "+6%", icono: "fa-seedling" }
-            ],
-            granos: [
-                { nombre: "Fríjol cargamanto", demanda: "Alta · ~39 pedidos", cambio: "+15%", icono: "fa-jar" },
-                { nombre: "Arveja verde desgranada", demanda: "Alta · ~34 pedidos", cambio: "+12%", icono: "fa-seedling" },
-                { nombre: "Maíz tierno", demanda: "Media-alta · ~28 pedidos", cambio: "+10%", icono: "fa-wheat-awn" },
-                { nombre: "Lenteja seleccionada", demanda: "Media · ~22 pedidos", cambio: "+7%", icono: "fa-jar" },
-                { nombre: "Garbanzo seco", demanda: "Media · ~18 pedidos", cambio: "+5%", icono: "fa-jar" }
-            ],
-            lacteos: [
-                { nombre: "Huevos campesinos x30", demanda: "Muy alta · ~55 pedidos", cambio: "+24%", icono: "fa-egg" },
-                { nombre: "Queso campesino fresco", demanda: "Alta · ~40 pedidos", cambio: "+15%", icono: "fa-cheese" },
-                { nombre: "Cuajada fresca", demanda: "Media-alta · ~27 pedidos", cambio: "+10%", icono: "fa-cheese" },
-                { nombre: "Leche entera de finca", demanda: "Media · ~25 pedidos", cambio: "+8%", icono: "fa-bottle-droplet" },
-                { nombre: "Yogur artesanal", demanda: "Media · ~19 pedidos", cambio: "+6%", icono: "fa-mug-hot" }
-            ],
-            hierbas: [
-                { nombre: "Cilantro fresco", demanda: "Muy alta · ~46 pedidos", cambio: "+19%", icono: "fa-leaf" },
-                { nombre: "Cebolla larga", demanda: "Alta · ~43 pedidos", cambio: "+16%", icono: "fa-seedling" },
-                { nombre: "Perejil liso", demanda: "Media-alta · ~27 pedidos", cambio: "+9%", icono: "fa-leaf" },
-                { nombre: "Hierbabuena", demanda: "Media · ~22 pedidos", cambio: "+7%", icono: "fa-spa" },
-                { nombre: "Albahaca fresca", demanda: "Media · ~18 pedidos", cambio: "+6%", icono: "fa-leaf" }
-            ]
-        };
-
-        var CLAVE_VISTA = 'cultivus-vista-vendedor';
-
-        function activarVista(modo) {
-            var avanzada = modo === 'avanzada';
-            document.body.classList.toggle('vista-avanzada', avanzada);
-            document.querySelectorAll('.vp-mode-btn').forEach(function (btn) {
-                var activo = btn.getAttribute('data-vista') === modo;
-                btn.classList.toggle('is-active', activo);
-                btn.setAttribute('aria-pressed', String(activo));
-            });
-            try {
-                localStorage.setItem(CLAVE_VISTA, modo);
-            } catch (e) {}
-
-            var bc = document.getElementById('vsBreadcrumbCurrent');
-            if (bc) bc.textContent = avanzada ? 'Vista avanzada' : 'Vista fácil';
-        }
-
-        function renderizarPrediccion(categoria) {
-            var contenedor = document.getElementById('listaPrediccion');
-            if (!contenedor) return;
-            var items = PREDICCIONES_SEMANA[categoria] || PREDICCIONES_SEMANA.verduras;
-            contenedor.innerHTML = items.map(function (item, idx) {
-                return '<div class="vp-prediccion__item">' +
-                    '<span class="vp-prediccion__rank">' + (idx + 1) + '</span>' +
-                    '<span class="vp-prediccion__icon"><i class="fa-solid ' + item.icono + '"></i></span>' +
-                    '<div class="vp-prediccion__info">' +
-                        '<strong>' + item.nombre + '</strong>' +
-                        '<span>' + item.demanda + '</span>' +
-                    '</div>' +
-                    '<span class="vp-prediccion__trend"><i class="fa-solid fa-arrow-trend-up"></i> ' + item.cambio + '</span>' +
-                '</div>';
-            }).join('');
-        }
-
-        document.addEventListener('DOMContentLoaded', function () {
-            document.querySelectorAll('.vp-mode-btn').forEach(function (btn) {
-                btn.addEventListener('click', function () {
-                    activarVista(btn.getAttribute('data-vista'));
-                });
-            });
-
-            var guardada = 'facil';
-            try {
-                guardada = localStorage.getItem(CLAVE_VISTA) || 'facil';
-            } catch (e) {}
-            activarVista(guardada === 'avanzada' ? 'avanzada' : 'facil');
-
-            var selector = document.getElementById('categoriaPrediccion');
-            if (selector) {
-                renderizarPrediccion(selector.value);
-                selector.addEventListener('change', function () {
-                    renderizarPrediccion(selector.value);
-                });
-            }
-        });
-    </script>
 </body>
 
 </html>

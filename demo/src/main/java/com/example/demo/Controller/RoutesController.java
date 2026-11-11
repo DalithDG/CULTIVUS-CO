@@ -90,4 +90,9 @@ public class RoutesController {
     public String registroVendedor() {
         return "redirect:/vendedor/registro";
     }
+
+    @GetMapping("/prediccion-demanda")
+    public String prediccionDemanda() {
+        return "redirect:/vendedor/prediccion-demanda";
+    }
 }

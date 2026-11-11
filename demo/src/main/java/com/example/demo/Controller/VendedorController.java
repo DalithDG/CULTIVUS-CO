@@ -22,7 +22,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-
 import java.util.List;
 import java.util.Objects;
 
@@ -61,7 +60,8 @@ public class VendedorController {
     private com.example.demo.services.RegistroMailService registroMailService;
 
     /**
-     * US-22 / US-24: saldos por estado, retiros y movimientos de la billetera del vendedor.
+     * US-22 / US-24: saldos por estado, retiros y movimientos de la billetera del
+     * vendedor.
      * Solo lectura: no hay endpoints para editar ni borrar movimientos.
      */
     @GetMapping("/billetera")
@@ -127,7 +127,8 @@ public class VendedorController {
     }
 
     /**
-     * US-24 / Fase 5: Solicita un retiro simulado desde el saldo disponible del vendedor.
+     * US-24 / Fase 5: Solicita un retiro simulado desde el saldo disponible del
+     * vendedor.
      */
     @PostMapping("/retiros/solicitar")
     public String solicitarRetiro(
@@ -165,14 +166,16 @@ public class VendedorController {
         } catch (IllegalArgumentException | IllegalStateException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "No se pudo procesar tu solicitud de retiro: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error",
+                    "No se pudo procesar tu solicitud de retiro: " + e.getMessage());
         }
 
         return "redirect:/vendedor/billetera";
     }
 
     /**
-     * US-24 / Fase 5 y 7: Muestra el comprobante imprimible de un retiro aprobado del vendedor.
+     * US-24 / Fase 5 y 7: Muestra el comprobante imprimible de un retiro aprobado
+     * del vendedor.
      */
     @GetMapping("/retiros/{id}/comprobante")
     public String verComprobanteRetiro(
@@ -262,7 +265,8 @@ public class VendedorController {
 
             Usuario usuarioActualizado;
             if (usuario != null) {
-                // Usuario existente en sesión que solicita rol vendedor (su correo ya está verificado)
+                // Usuario existente en sesión que solicita rol vendedor (su correo ya está
+                // verificado)
                 usuarioActualizado = vendedorService.crearPerfilVendedor(
                         usuario.getId(),
                         razonSocial,
@@ -271,10 +275,12 @@ public class VendedorController {
                         descripcionNegocio,
                         tipoProductos);
                 if (registroMailService != null && usuarioActualizado.getEmail() != null) {
-                    registroMailService.enviarBienvenida(usuarioActualizado.getEmail(), usuarioActualizado.getNombre(), "VENDEDOR");
+                    registroMailService.enviarBienvenida(usuarioActualizado.getEmail(), usuarioActualizado.getNombre(),
+                            "VENDEDOR");
                 }
             } else {
-                // Registro de nuevo usuario directamente como vendedor: primero verificar correo
+                // Registro de nuevo usuario directamente como vendedor: primero verificar
+                // correo
                 if (nombre == null || nombre.trim().isEmpty()) {
                     redirectAttributes.addFlashAttribute("error", "El nombre completo es obligatorio");
                     return "redirect:/vendedor/registro";
@@ -305,13 +311,15 @@ public class VendedorController {
                 usuarioRepository.save(usuarioActualizado);
 
                 if (registroMailService != null) {
-                    registroMailService.enviarCodigoVerificacion(usuarioActualizado.getEmail(), usuarioActualizado.getNombre(), codigo);
+                    registroMailService.enviarCodigoVerificacion(usuarioActualizado.getEmail(),
+                            usuarioActualizado.getNombre(), codigo);
                 }
 
                 redirectAttributes.addFlashAttribute("mensaje",
                         "¡Registro recibido! Ingresa el código enviado a tu correo para verificar tu cuenta.");
                 return "redirect:/usuario/verificar?email="
-                        + java.net.URLEncoder.encode(usuarioActualizado.getEmail(), java.nio.charset.StandardCharsets.UTF_8);
+                        + java.net.URLEncoder.encode(usuarioActualizado.getEmail(),
+                                java.nio.charset.StandardCharsets.UTF_8);
             }
 
             // Actualizar sesión con usuario que ya tiene el perfil embebido
@@ -320,15 +328,16 @@ public class VendedorController {
             // Iniciar o refrescar la Authentication en Spring Security
             if (customUserDetailsService != null) {
                 try {
-                    org.springframework.security.core.userdetails.UserDetails userDetails =
-                            customUserDetailsService.loadUserByUsername(usuarioActualizado.getEmail());
-                    org.springframework.security.authentication.UsernamePasswordAuthenticationToken auth =
-                            new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
-                                    userDetails, null, userDetails.getAuthorities());
-                    org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(auth);
+                    org.springframework.security.core.userdetails.UserDetails userDetails = customUserDetailsService
+                            .loadUserByUsername(usuarioActualizado.getEmail());
+                    org.springframework.security.authentication.UsernamePasswordAuthenticationToken auth = new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
+                    org.springframework.security.core.context.SecurityContextHolder.getContext()
+                            .setAuthentication(auth);
                     session.setAttribute("SPRING_SECURITY_CONTEXT",
                             org.springframework.security.core.context.SecurityContextHolder.getContext());
-                } catch (Exception ignored) {}
+                } catch (Exception ignored) {
+                }
             }
 
             redirectAttributes.addFlashAttribute("mensaje",
@@ -436,6 +445,33 @@ public class VendedorController {
     }
 
     /**
+     * Vista de predicción de demanda semanal de cosechas y productos
+     */
+    @GetMapping("/prediccion-demanda")
+    public String mostrarPrediccionDemanda(HttpSession session, Model model,
+            RedirectAttributes redirectAttributes) {
+
+        Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
+        if (usuario == null) {
+            redirectAttributes.addFlashAttribute("error", "Debe iniciar sesión primero");
+            return "redirect:/usuario/login";
+        }
+        if (!vendedorService.esVendedor(usuario.getId())) {
+            redirectAttributes.addFlashAttribute("error", "Debe registrarse como vendedor primero");
+            return "redirect:/vendedor/registro";
+        }
+
+        if (usuarioRepository != null && usuario.getId() != null) {
+            usuario = usuarioRepository.findById(usuario.getId()).orElse(usuario);
+        }
+
+        model.addAttribute("usuario", usuario);
+        model.addAttribute("perfilVendedor", usuario.getPerfilVendedor());
+
+        return "vendedor/prediccion-demanda";
+    }
+
+    /**
      * Perfil del vendedor (vista integral con datos de tienda + cuenta personal)
      */
     @GetMapping("/perfil")
@@ -517,7 +553,8 @@ public class VendedorController {
 
     private PerfilVendedor inicializarPerfilPorDefecto(Usuario usuario) {
         PerfilVendedor perfil = new PerfilVendedor();
-        perfil.setRazonSocial(usuario.getNombre() != null && !usuario.getNombre().isBlank() ? usuario.getNombre() : "Mi Tienda");
+        perfil.setRazonSocial(
+                usuario.getNombre() != null && !usuario.getNombre().isBlank() ? usuario.getNombre() : "Mi Tienda");
         perfil.setTelefonoContacto("");
         perfil.setDireccionNegocio("");
         perfil.setDescripcionNegocio("");
@@ -578,7 +615,8 @@ public class VendedorController {
 
     /**
      * US-24 / Fase 2: Pantalla "Mi cuenta bancaria" del vendedor.
-     * Muestra la cuenta actual enmascarada y preselecciona el banco desde el texto legado si solo hay ese dato.
+     * Muestra la cuenta actual enmascarada y preselecciona el banco desde el texto
+     * legado si solo hay ese dato.
      */
     @GetMapping("/cuenta-bancaria")
     public String mostrarCuentaBancaria(HttpSession session, Model model,
@@ -614,12 +652,15 @@ public class VendedorController {
             if (cuentaActual != null && cuentaActual.getBanco() != null) {
                 model.addAttribute("bancoSeleccionado", cuentaActual.getBanco().name());
                 model.addAttribute("bancoOtroNombre", cuentaActual.getBancoOtroNombre());
-                model.addAttribute("tipoSeleccionado", cuentaActual.getTipo() != null ? cuentaActual.getTipo().name() : null);
+                model.addAttribute("tipoSeleccionado",
+                        cuentaActual.getTipo() != null ? cuentaActual.getTipo().name() : null);
                 model.addAttribute("titular", cuentaActual.getTitular());
-                model.addAttribute("tipoDocumentoSeleccionado", cuentaActual.getTipoDocumento() != null ? cuentaActual.getTipoDocumento().name() : null);
+                model.addAttribute("tipoDocumentoSeleccionado",
+                        cuentaActual.getTipoDocumento() != null ? cuentaActual.getTipoDocumento().name() : null);
                 model.addAttribute("numeroDocumento", cuentaActual.getNumeroDocumento());
             } else if (perfil != null && perfil.getBanco() != null && !perfil.getBanco().isBlank()) {
-                com.example.demo.Model.Banco.ResultadoMapeo mapeo = com.example.demo.Model.Banco.mapearTextoLibre(perfil.getBanco());
+                com.example.demo.Model.Banco.ResultadoMapeo mapeo = com.example.demo.Model.Banco
+                        .mapearTextoLibre(perfil.getBanco());
                 if (mapeo != null) {
                     model.addAttribute("bancoSeleccionado", mapeo.getBanco().name());
                     model.addAttribute("bancoOtroNombre", mapeo.getBancoOtroNombre());
@@ -634,7 +675,8 @@ public class VendedorController {
     }
 
     /**
-     * US-24 / Fase 2: Guarda la cuenta bancaria del vendedor y vuelve a la billetera.
+     * US-24 / Fase 2: Guarda la cuenta bancaria del vendedor y vuelve a la
+     * billetera.
      */
     @PostMapping("/cuenta-bancaria")
     public String guardarCuentaBancaria(
@@ -686,7 +728,8 @@ public class VendedorController {
     }
 
     private com.example.demo.Model.Banco parseBanco(String valor) {
-        if (valor == null || valor.isBlank()) return null;
+        if (valor == null || valor.isBlank())
+            return null;
         try {
             return com.example.demo.Model.Banco.valueOf(valor.trim());
         } catch (IllegalArgumentException e) {
@@ -695,7 +738,8 @@ public class VendedorController {
     }
 
     private com.example.demo.Model.TipoCuenta parseTipoCuenta(String valor) {
-        if (valor == null || valor.isBlank()) return null;
+        if (valor == null || valor.isBlank())
+            return null;
         try {
             return com.example.demo.Model.TipoCuenta.valueOf(valor.trim());
         } catch (IllegalArgumentException e) {
@@ -704,7 +748,8 @@ public class VendedorController {
     }
 
     private com.example.demo.Model.TipoDocumento parseTipoDocumento(String valor) {
-        if (valor == null || valor.isBlank()) return null;
+        if (valor == null || valor.isBlank())
+            return null;
         try {
             return com.example.demo.Model.TipoDocumento.valueOf(valor.trim());
         } catch (IllegalArgumentException e) {

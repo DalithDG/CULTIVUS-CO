@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Predicción de Demanda | Cultivus</title>
+    <meta name="description" content="Modelo predictivo de demanda semanal de cosechas y productos por ciudad y categoría en Cultivus.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/header.css}">
+    <link rel="stylesheet" th:href="@{/footer.css}">
+    <link rel="stylesheet" th:href="@{/vendedor-panel.css}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+    <style>
+        .pred-hero {
+            background: linear-gradient(135deg, #1e4620 0%, #2e7d32 50%, #43a047 100%);
+            border-radius: 20px;
+            padding: 32px 36px;
+            color: #ffffff;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(46, 125, 50, 0.18);
+            position: relative;
+            overflow: hidden;
+        }
+        .pred-hero::after {
+            content: "";
+            position: absolute;
+            right: -60px;
+            bottom: -60px;
+            width: 220px;
+            height: 220px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        .pred-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.18);
+            padding: 6px 14px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+            backdrop-filter: blur(4px);
+        }
+        .pred-hero h1 {
+            font-size: 1.85rem;
+            margin: 0 0 8px;
+            font-weight: 800;
+            color: #ffffff;
+        }
+        .pred-hero p {
+            margin: 0;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.98rem;
+            max-width: 650px;
+            line-height: 1.5;
+        }
+
+        .pred-grid-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .pred-stat-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px 22px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .pred-stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+        .pred-stat-icon--green { background: #e8f5e9; color: #2e7d32; }
+        .pred-stat-icon--blue { background: #e3f2fd; color: #1976d2; }
+        .pred-stat-icon--amber { background: #fff8e1; color: #f57f17; }
+        .pred-stat-icon--purple { background: #f3e5f5; color: #7b1fa2; }
+        .pred-stat-info h4 {
+            margin: 0;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+        }
+        .pred-stat-info .pred-stat-value {
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-top: 4px;
+        }
+
+        .pred-filter-bar {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 18px 24px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            margin-bottom: 24px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .pred-filter-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            flex: 1;
+        }
+        .pred-input-wrap {
+            position: relative;
+            min-width: 200px;
+            flex: 1;
+        }
+        .pred-input-wrap i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+        .pred-input {
+            width: 100%;
+            padding: 10px 14px 10px 38px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 0.92rem;
+            color: #1e293b;
+            background: #f8fafc;
+            transition: all 0.2s ease;
+        }
+        .pred-input:focus {
+            outline: none;
+            border-color: #2e7d32;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
+        }
+        .pred-btn-filter {
+            background: #2e7d32;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.92rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s ease;
+        }
+        .pred-btn-filter:hover { background: #256628; }
+        .pred-btn-clean {
+            background: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            padding: 10px 16px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 0.92rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+        .pred-btn-clean:hover { background: #e2e8f0; color: #1e293b; }
+
+        .pred-layout-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            align-items: start;
+        }
+        @media (max-width: 992px) {
+            .pred-layout-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .pred-card {
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 24px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+        }
+        .pred-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .pred-card-header h3 {
+            margin: 0;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .pred-card-header h3 i {
+            color: #2e7d32;
+        }
+
+        .pred-table-wrap {
+            overflow-x: auto;
+            border-radius: 12px;
+        }
+        .pred-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.92rem;
+        }
+        .pred-table th {
+            background: #f8fafc;
+            color: #475569;
+            font-weight: 600;
+            padding: 12px 16px;
+            border-bottom: 2px solid #e2e8f0;
+            text-transform: uppercase;
+            font-size: 0.78rem;
+            letter-spacing: 0.5px;
+        }
+        .pred-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #334155;
+            vertical-align: middle;
+        }
+        .pred-table tr:hover td {
+            background: #fafaf9;
+        }
+        .pred-badge-cat {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .pred-badge-ciudad {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            color: #475569;
+        }
+        .pred-kg-val {
+            font-weight: 700;
+            font-size: 1rem;
+            color: #0f172a;
+        }
+        .pred-progress-bar {
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 6px;
+            width: 100%;
+            min-width: 80px;
+        }
+        .pred-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #43a047, #2e7d32);
+            border-radius: 4px;
+        }
+
+        .pred-state-box {
+            text-align: center;
+            padding: 48px 24px;
+            color: #64748b;
+        }
+        .pred-state-box i {
+            font-size: 2.8rem;
+            margin-bottom: 14px;
+            display: block;
+        }
+        .pred-state-box h4 {
+            margin: 0 0 8px;
+            color: #1e293b;
+            font-size: 1.15rem;
+        }
+        .pred-state-box p {
+            margin: 0 auto 16px;
+            max-width: 480px;
+            font-size: 0.92rem;
+            line-height: 1.5;
+        }
+        .pred-error-box {
+            background: #fff5f5;
+            border: 1px solid #feb2b2;
+            border-radius: 12px;
+            padding: 20px;
+            color: #9b2c2c;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .pred-error-box strong {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 0.98rem;
+        }
+    </style>
+</head>
+
+<body class="vp-page vs-layout">
+    <header th:replace="~{fragments/header-vendedor :: siteHeader}"></header>
+
+    <main class="vs-main">
+        <div class="vp-container">
+
+            <!-- Banner / Hero de la sección -->
+            <section class="pred-hero">
+                <span class="pred-kicker">
+                    <i class="fa-solid fa-brain" aria-hidden="true"></i> Inteligencia Agrícola · Machine Learning
+                </span>
+                <h1>Predicción de Demanda Semanal</h1>
+                <p>
+                    Proyección de cosechas y demanda calculada por el modelo de regresión lineal en Python a partir de órdenes históricas. Organiza tu producción con antelación.
+                </p>
+            </section>
+
+            <!-- Alerta de error si el microservicio está caído -->
+            <div id="errorAlert" class="pred-error-box">
+                <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+                <div>
+                    <strong id="errorTitle">Microservicio de predicción no disponible (HTTP 503)</strong>
+                    <span id="errorMsg">Verifica que el servicio en Python (FastAPI) esté corriendo en http://localhost:8000.</span>
+                </div>
+            </div>
+
+            <!-- Resumen de Métricas -->
+            <section class="pred-grid-summary">
+                <div class="pred-stat-card">
+                    <div class="pred-stat-icon pred-stat-icon--green">
+                        <i class="fa-solid fa-calendar-week" aria-hidden="true"></i>
+                    </div>
+                    <div class="pred-stat-info">
+                        <h4>Semana Proyectada</h4>
+                        <div class="pred-stat-value" id="kpiSemana">--</div>
+                    </div>
+                </div>
+
+                <div class="pred-stat-card">
+                    <div class="pred-stat-icon pred-stat-icon--blue">
+                        <i class="fa-solid fa-weight-hanging" aria-hidden="true"></i>
+                    </div>
+                    <div class="pred-stat-info">
+                        <h4>Demanda Total Esperada</h4>
+                        <div class="pred-stat-value" id="kpiTotalKg">0 kg</div>
+                    </div>
+                </div>
+
+                <div class="pred-stat-card">
+                    <div class="pred-stat-icon pred-stat-icon--amber">
+                        <i class="fa-solid fa-tags" aria-hidden="true"></i>
+                    </div>
+                    <div class="pred-stat-info">
+                        <h4>Categorías</h4>
+                        <div class="pred-stat-value" id="kpiCategorias">0</div>
+                    </div>
+                </div>
+
+                <div class="pred-stat-card">
+                    <div class="pred-stat-icon pred-stat-icon--purple">
+                        <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
+                    </div>
+                    <div class="pred-stat-info">
+                        <h4>Ciudades Destino</h4>
+                        <div class="pred-stat-value" id="kpiCiudades">0</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Barra de Filtros -->
+            <section class="pred-filter-bar">
+                <div class="pred-filter-group">
+                    <div class="pred-input-wrap">
+                        <i class="fa-solid fa-city" aria-hidden="true"></i>
+                        <input type="text" id="filtroCiudad" class="pred-input" placeholder="Filtrar por ciudad (ej. Cartagena)">
+                    </div>
+                    <div class="pred-input-wrap">
+                        <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
+                        <input type="text" id="filtroCategoria" class="pred-input" placeholder="Filtrar por categoría (ej. Frutas)">
+                    </div>
+                    <button type="button" class="pred-btn-filter" onclick="cargarPredicciones()">
+                        <i class="fa-solid fa-filter" aria-hidden="true"></i> Aplicar Filtros
+                    </button>
+                    <button type="button" class="pred-btn-clean" onclick="limpiarFiltros()">
+                        <i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Limpiar
+                    </button>
+                </div>
+                <div>
+                    <button type="button" class="pred-btn-clean" onclick="cargarPredicciones()" title="Actualizar datos">
+                        <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i> Refrescar
+                    </button>
+                </div>
+            </section>
+
+            <!-- Layout 2 Columnas: Tabla y Gráfico -->
+            <div class="pred-layout-row">
+                <!-- Columna Izquierda: Tabla -->
+                <div class="pred-card">
+                    <div class="pred-card-header">
+                        <h3><i class="fa-solid fa-table-list" aria-hidden="true"></i> Demanda por Categoría y Ciudad</h3>
+                        <span id="badgeCount" style="font-size: 0.85rem; font-weight: 600; color: #64748b;">0 registros</span>
+                    </div>
+
+                    <div class="pred-table-wrap">
+                        <table class="pred-table">
+                            <thead>
+                                <tr>
+                                    <th>Categoría</th>
+                                    <th>Ciudad</th>
+                                    <th>Demanda Esperada</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaPredicciones">
+                                <tr>
+                                    <td colspan="3" class="pred-state-box">
+                                        <i class="fa-solid fa-spinner fa-spin" style="color: #2e7d32;"></i>
+                                        <p>Consultando modelo predictivo...</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Columna Derecha: Gráfico -->
+                <div class="pred-card">
+                    <div class="pred-card-header">
+                        <h3><i class="fa-solid fa-chart-column" aria-hidden="true"></i> Demanda por Categoría (kg)</h3>
+                    </div>
+
+                    <div style="position: relative; min-height: 350px;">
+                        <canvas id="graficoDemanda"></canvas>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
+
+    <!-- Script de Integración con /api/predicciones y Chart.js -->
+    <script>
+        let chartInstance = null;
+
+        async function cargarPredicciones() {
+            const ciudad = document.getElementById('filtroCiudad').value.trim();
+            const categoria = document.getElementById('filtroCategoria').value.trim();
+            const errorAlert = document.getElementById('errorAlert');
+            const errorMsg = document.getElementById('errorMsg');
+            const tbody = document.getElementById('tablaPredicciones');
+
+            errorAlert.style.display = 'none';
+
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="3" class="pred-state-box">
+                        <i class="fa-solid fa-spinner fa-spin" style="color: #2e7d32; font-size: 2rem;"></i>
+                        <p style="margin-top: 10px;">Consultando modelo predictivo...</p>
+                    </td>
+                </tr>
+            `;
+
+            const params = new URLSearchParams();
+            if (ciudad) params.set('ciudad', ciudad);
+            if (categoria) params.set('categoria', categoria);
+
+            try {
+                const response = await fetch('/api/predicciones?' + params.toString(), {
+                    method: 'GET',
+                    headers: { 'Accept': 'application/json' }
+                });
+
+                if (!response.ok) {
+                    let errMsg = 'El microservicio en Python (FastAPI) no está respondiendo en el puerto 8000.';
+                    try {
+                        const errJson = await response.json();
+                        if (errJson && errJson.error) errMsg = errJson.error;
+                        if (errJson && errJson.detalle) errMsg += ' (' + errJson.detalle + ')';
+                    } catch (e) {}
+
+                    errorMsg.textContent = errMsg;
+                    errorAlert.style.display = 'flex';
+                    errorAlert.style.alignItems = 'center';
+                    errorAlert.style.gap = '12px';
+
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="3" class="pred-state-box">
+                                <i class="fa-solid fa-circle-exclamation" style="color: #e53e3e;"></i>
+                                <h4>Microservicio de predicción no disponible (HTTP 503)</h4>
+                                <p style="margin-bottom: 14px;">El microservicio en Python (FastAPI) no está iniciado en <code>http://localhost:8000</code>.</p>
+                                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 14px; font-family: monospace; font-size: 0.88rem; color: #334155; margin: 0 auto 16px; max-width: 440px;">
+                                    python microservicio_prediccion.py
+                                </div>
+                                <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+                                    <button type="button" class="pred-btn-filter" onclick="cargarPredicciones()">
+                                        <i class="fa-solid fa-arrows-rotate"></i> Reintentar conexión en vivo
+                                    </button>
+                                    <button type="button" class="pred-btn-clean" onclick="cargarDatosDemo()">
+                                        <i class="fa-solid fa-wand-magic-sparkles"></i> Ver con datos de prueba
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    actualizarGrafico([]);
+                    return;
+                }
+
+                const data = await response.json();
+                renderizarDatos(data);
+
+            } catch (err) {
+                errorMsg.textContent = 'No fue posible conectarse con el servidor backend de Spring Boot.';
+                errorAlert.style.display = 'flex';
+                errorAlert.style.alignItems = 'center';
+                errorAlert.style.gap = '12px';
+
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="pred-state-box">
+                            <i class="fa-solid fa-wifi" style="color: #e53e3e;"></i>
+                            <h4>Error de conexión</h4>
+                            <p>${err.message}</p>
+                        </td>
+                    </tr>
+                `;
+                actualizarGrafico([]);
+            }
+        }
+
+        function renderizarDatos(data) {
+            const semana = data.semana || 'Semana siguiente';
+            const predicciones = data.predicciones || [];
+
+            document.getElementById('kpiSemana').textContent = semana;
+            document.getElementById('badgeCount').textContent = `${predicciones.length} resultado(s)`;
+
+            const tbody = document.getElementById('tablaPredicciones');
+
+            if (predicciones.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="pred-state-box">
+                            <i class="fa-solid fa-inbox" style="color: #94a3b8;"></i>
+                            <h4>Sin datos de predicción</h4>
+                            <p>No se encontraron registros con los filtros seleccionados.</p>
+                        </td>
+                    </tr>
+                `;
+                document.getElementById('kpiTotalKg').textContent = '0 kg';
+                document.getElementById('kpiCategorias').textContent = '0';
+                document.getElementById('kpiCiudades').textContent = '0';
+                actualizarGrafico([]);
+                return;
+            }
+
+            // Calcular métricas
+            let totalKg = 0;
+            let maxKg = 0;
+            const categoriasSet = new Set();
+            const ciudadesSet = new Set();
+
+            predicciones.forEach(p => {
+                totalKg += p.demandaEsperadaKg;
+                if (p.demandaEsperadaKg > maxKg) maxKg = p.demandaEsperadaKg;
+                if (p.categoria) categoriasSet.add(p.categoria);
+                if (p.ciudad) ciudadesSet.add(p.ciudad);
+            });
+
+            document.getElementById('kpiTotalKg').textContent = totalKg.toLocaleString('es-CO', { maximumFractionDigits: 1 }) + ' kg';
+            document.getElementById('kpiCategorias').textContent = categoriasSet.size;
+            document.getElementById('kpiCiudades').textContent = ciudadesSet.size;
+
+            // Generar filas
+            const rowsHtml = predicciones.map(p => {
+                const porcentaje = maxKg > 0 ? Math.min(100, Math.round((p.demandaEsperadaKg / maxKg) * 100)) : 0;
+                return `
+                    <tr>
+                        <td>
+                            <span class="pred-badge-cat">${escapeHtml(p.categoria)}</span>
+                        </td>
+                        <td>
+                            <span class="pred-badge-ciudad">
+                                <i class="fa-solid fa-location-dot" style="color: #64748b;"></i>
+                                ${escapeHtml(p.ciudad)}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="pred-kg-val">${p.demandaEsperadaKg.toLocaleString('es-CO', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} kg</div>
+                            <div class="pred-progress-bar" title="${porcentaje}% de la demanda máxima">
+                                <div class="pred-progress-fill" style="width: ${porcentaje}%;"></div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            tbody.innerHTML = rowsHtml;
+
+            // Actualizar Gráfico
+            actualizarGrafico(predicciones);
+        }
+
+        function actualizarGrafico(predicciones) {
+            const ctx = document.getElementById('graficoDemanda').getContext('2d');
+
+            // Agrupar por categoría
+            const porCategoria = {};
+            predicciones.forEach(p => {
+                const cat = p.categoria || 'Sin categoría';
+                porCategoria[cat] = (porCategoria[cat] || 0) + (p.demandaEsperadaKg || 0);
+            });
+
+            const labels = Object.keys(porCategoria);
+            const values = Object.values(porCategoria).map(v => Math.round(v * 10) / 10);
+
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+
+            if (labels.length === 0) {
+                return;
+            }
+
+            chartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Demanda Proyectada (kg)',
+                        data: values,
+                        backgroundColor: 'rgba(46, 125, 50, 0.75)',
+                        borderColor: '#2e7d32',
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        hoverBackgroundColor: '#2e7d32'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            titleColor: '#ffffff',
+                            bodyColor: '#e2e8f0',
+                            padding: 12,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    return ` Demanda: ${context.parsed.y.toLocaleString('es-CO')} kg`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#f1f5f9'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value + ' kg';
+                                },
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 12,
+                                    weight: '600'
+                                },
+                                color: '#475569'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function cargarDatosDemo() {
+            document.getElementById('errorAlert').style.display = 'none';
+            const ciudad = document.getElementById('filtroCiudad').value.trim();
+            const categoria = document.getElementById('filtroCategoria').value.trim();
+
+            const demoData = {
+                semana: "2026-11-16 (Simulado)",
+                predicciones: [
+                    { categoria: "Frutas", ciudad: "Cartagena", demandaEsperadaKg: 142.5 },
+                    { categoria: "Verduras", ciudad: "Cartagena", demandaEsperadaKg: 118.0 },
+                    { categoria: "Frutas", ciudad: "Barranquilla", demandaEsperadaKg: 95.4 },
+                    { categoria: "Tubérculos", ciudad: "Cartagena", demandaEsperadaKg: 86.2 },
+                    { categoria: "Lácteos", ciudad: "Santa Marta", demandaEsperadaKg: 74.8 },
+                    { categoria: "Verduras", ciudad: "Barranquilla", demandaEsperadaKg: 68.3 },
+                    { categoria: "Granos", ciudad: "Cartagena", demandaEsperadaKg: 52.1 },
+                    { categoria: "Café y Cacao", ciudad: "Cartagena", demandaEsperadaKg: 41.0 }
+                ].filter(p => (!ciudad || p.ciudad.toLowerCase().includes(ciudad.toLowerCase())) &&
+                              (!categoria || p.categoria.toLowerCase().includes(categoria.toLowerCase())))
+                 .sort((a, b) => b.demandaEsperadaKg - a.demandaEsperadaKg)
+            };
+
+            renderizarDatos(demoData);
+        }
+
+        function limpiarFiltros() {
+            document.getElementById('filtroCiudad').value = '';
+            document.getElementById('filtroCategoria').value = '';
+            cargarPredicciones();
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Cargar datos al iniciar
+        document.addEventListener('DOMContentLoaded', () => {
+            cargarPredicciones();
+        });
+    </script>
+</body>
+</html>

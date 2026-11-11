@@ -143,6 +143,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authz -> authz
                         // NO QUITAR: webhook de Wompi, publico a proposito (ver comentario en csrf).
                         .requestMatchers(HttpMethod.POST, "/api/wompi/webhook").permitAll()
+                        // Modelo predictivo: disponible para vendedores y administradores
+                        .requestMatchers("/api/predicciones/**").access(soloRol("VENDEDOR", "ADMIN"))
                         .requestMatchers(
                                 "/",
                                 "/login",
@@ -213,6 +215,7 @@ public class SecurityConfig {
                         // Reseñas de vendedor: solo compradores (se valida además un pedido entregado).
                         .requestMatchers(HttpMethod.POST, "/vendedor/*/resena").access(soloRol("COMPRADOR"))
                         .requestMatchers("/vendedor/**").access(soloRol("VENDEDOR"))
+                        .requestMatchers("/prediccion-demanda").access(soloRol("VENDEDOR"))
 
                         // ── Transportista ───────────────────────────────────────────
                         .requestMatchers("/transportista/registro", "/transportista/guardar", "/transportista/login")
