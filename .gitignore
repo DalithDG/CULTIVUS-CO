@@ -2,3 +2,6 @@
 demo/.env
 demo/src/main/resources/application-local.properties
 run-local.ps1
+
+__pycache__/
+*.pyc

@@ -173,7 +173,101 @@
         </section>
 
         <!-- ══════════════════════════════════════════════════════════
-             2. OPERACIÓN Y GESTIÓN DE PEDIDOS
+             2. MODELO PREDICTIVO · INTELIGENCIA AGRÍCOLA (2 TARJETAS)
+             ══════════════════════════════════════════════════════════ -->
+        <section class="vp-dash-predictive-row" aria-label="Modelo predictivo de demanda">
+            <!-- Tarjeta 1: Proyección de Demanda Semanal -->
+            <article class="vp-dash-pred-card">
+                <div>
+                    <div class="vp-dash-pred-card__top">
+                        <span class="vp-chip-ai">
+                            <i class="fa-solid fa-brain" aria-hidden="true"></i> IA Predictiva · Bolívar
+                        </span>
+                        <span class="vp-live-tag">
+                            <span class="vp-pulse-dot"></span> <span id="dashLiveWeekTag">Próxima Semana</span>
+                        </span>
+                    </div>
+
+                    <p class="vp-kpi-card__label">Mayor Demanda Estimada</p>
+                    <p class="vp-dash-pred-val" id="dashTopDemandVal">245 kg</p>
+                    <p class="vp-dash-pred-sub" id="dashTopDemandSub">
+                        Liderado por <strong>Tubérculos y Frutas</strong> en Cartagena, Montes de María y Magangué.
+                    </p>
+
+                    <!-- Mini barras de las principales categorías en Bolívar -->
+                    <div class="vp-dash-mini-bars" id="dashMiniBars">
+                        <div class="vp-dash-mini-bar-item">
+                            <span class="vp-dash-mini-bar-label"><i class="fa-solid fa-carrot" style="color: #10b981; margin-right: 4px;"></i> Tubérculos (Ñame/Yuca)</span>
+                            <div class="vp-dash-mini-bar-track">
+                                <div class="vp-dash-mini-bar-fill" style="width: 95%;"></div>
+                            </div>
+                            <span class="vp-dash-mini-bar-val">245 kg</span>
+                        </div>
+                        <div class="vp-dash-mini-bar-item">
+                            <span class="vp-dash-mini-bar-label"><i class="fa-solid fa-apple-whole" style="color: #059669; margin-right: 4px;"></i> Frutas (Aguacate/Papaya)</span>
+                            <div class="vp-dash-mini-bar-track">
+                                <div class="vp-dash-mini-bar-fill" style="width: 82%;"></div>
+                            </div>
+                            <span class="vp-dash-mini-bar-val">210 kg</span>
+                        </div>
+                        <div class="vp-dash-mini-bar-item">
+                            <span class="vp-dash-mini-bar-label"><i class="fa-solid fa-wheat-awn" style="color: #f59e0b; margin-right: 4px;"></i> Granos (Maíz/Arroz)</span>
+                            <div class="vp-dash-mini-bar-track">
+                                <div class="vp-dash-mini-bar-fill vp-dash-mini-bar-fill--amber" style="width: 62%;"></div>
+                            </div>
+                            <span class="vp-dash-mini-bar-val">150 kg</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="vp-dash-pred-footer">
+                    <a th:href="@{/vendedor/prediccion-demanda}" class="vp-dash-pred-link">
+                        Ver análisis completo por municipio <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                    </a>
+                </div>
+            </article>
+
+            <!-- Tarjeta 2: Oportunidades de Siembra y Mercado -->
+            <article class="vp-dash-pred-card vp-dash-pred-card--opportunity">
+                <div>
+                    <div class="vp-dash-pred-card__top">
+                        <span class="vp-chip-ai vp-chip-ai--amber">
+                            <i class="fa-solid fa-lightbulb" aria-hidden="true"></i> Oportunidad de Mercado
+                        </span>
+                        <span class="vp-kpi-card__tag">6 Zonas Calibradas</span>
+                    </div>
+
+                    <p class="vp-kpi-card__label">Recomendación para tu Tienda</p>
+                    <p class="vp-dash-pred-val" style="font-size: 1.45rem; color: #1e3a8a;">
+                        Alta demanda de cosecha
+                    </p>
+                    <p class="vp-dash-pred-sub">
+                        El modelo proyecta escasez de oferta en <strong>Montes de María</strong> y <strong>Zona Dique</strong> para la próxima semana. Es el momento ideal para publicar cosechas activas y captar compradores primero.
+                    </p>
+
+                    <!-- Mini etiquetas de zonas clave -->
+                    <div class="vp-dash-zone-tags">
+                        <span class="vp-dash-zone-tag"><i class="fa-solid fa-location-dot" style="color: #16a34a;"></i> Cartagena</span>
+                        <span class="vp-dash-zone-tag"><i class="fa-solid fa-location-dot" style="color: #2563eb;"></i> El Carmen</span>
+                        <span class="vp-dash-zone-tag"><i class="fa-solid fa-location-dot" style="color: #f59e0b;"></i> Magangué</span>
+                        <span class="vp-dash-zone-tag"><i class="fa-solid fa-location-dot" style="color: #7c3aed;"></i> Mompox</span>
+                        <span class="vp-dash-zone-tag"><i class="fa-solid fa-location-dot" style="color: #059669;"></i> Turbaco</span>
+                    </div>
+                </div>
+
+                <div class="vp-dash-pred-footer">
+                    <a th:href="@{/vendedor/productos/nuevo}" class="vp-dash-pred-link vp-dash-pred-link--blue">
+                        <i class="fa-solid fa-plus-circle" aria-hidden="true"></i> Publicar cosecha ahora
+                    </a>
+                    <a th:href="@{/vendedor/prediccion-demanda}" class="vp-dash-pred-link">
+                        Consultar mapa <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                    </a>
+                </div>
+            </article>
+        </section>
+
+        <!-- ══════════════════════════════════════════════════════════
+             3. OPERACIÓN Y GESTIÓN DE PEDIDOS
              ══════════════════════════════════════════════════════════ -->
         <section class="vp-grid">
             <div class="vp-stack">
@@ -358,6 +452,67 @@
             </div>
         </footer>
     </main>
+
+    <!-- Sincronización asíncrona del modelo predictivo en el dashboard -->
+    <script>
+        (async function () {
+            try {
+                const res = await fetch('/api/predicciones');
+                if (!res.ok) return;
+                const data = await res.json();
+                if (!data || !data.predicciones || data.predicciones.length === 0) return;
+
+                if (data.semana) {
+                    const tag = document.getElementById('dashLiveWeekTag');
+                    if (tag) tag.textContent = 'Sem. ' + data.semana;
+                }
+
+                // Agrupar por categoría
+                const agrupado = {};
+                data.predicciones.forEach(p => {
+                    agrupado[p.categoria] = (agrupado[p.categoria] || 0) + p.demandaEsperadaKg;
+                });
+
+                const sorted = Object.entries(agrupado).sort((a, b) => b[1] - a[1]);
+                if (sorted.length > 0) {
+                    const top = sorted[0];
+                    const valEl = document.getElementById('dashTopDemandVal');
+                    const subEl = document.getElementById('dashTopDemandSub');
+                    if (valEl) valEl.textContent = Math.round(top[1]) + ' kg';
+                    if (subEl) subEl.innerHTML = `Liderado por <strong>${top[0]}</strong> en municipios de Bolívar.`;
+
+                    // Actualizar las 3 mini barras
+                    const top3 = sorted.slice(0, 3);
+                    const maxVal = top3[0][1];
+                    const container = document.getElementById('dashMiniBars');
+                    if (container && top3.length > 0) {
+                        const iconMap = {
+                            'Tubérculos': 'fa-carrot',
+                            'Frutas': 'fa-apple-whole',
+                            'Granos y Cereales': 'fa-wheat-awn',
+                            'Verduras': 'fa-seedling',
+                            'Lácteos': 'fa-bottle-water',
+                            'Café y Cacao': 'fa-mug-hot'
+                        };
+                        container.innerHTML = top3.map((item, idx) => {
+                            const pct = maxVal > 0 ? Math.round((item[1] / maxVal) * 100) : 50;
+                            const icon = iconMap[item[0]] || 'fa-leaf';
+                            const fillClass = idx === 1 ? 'vp-dash-mini-bar-fill--blue' : (idx === 2 ? 'vp-dash-mini-bar-fill--amber' : '');
+                            return `
+                                <div class="vp-dash-mini-bar-item">
+                                    <span class="vp-dash-mini-bar-label"><i class="fa-solid ${icon}" style="margin-right: 4px;"></i> ${item[0]}</span>
+                                    <div class="vp-dash-mini-bar-track">
+                                        <div class="vp-dash-mini-bar-fill ${fillClass}" style="width: ${pct}%;"></div>
+                                    </div>
+                                    <span class="vp-dash-mini-bar-val">${Math.round(item[1])} kg</span>
+                                </div>
+                            `;
+                        }).join('');
+                    }
+                }
+            } catch (ignored) {}
+        })();
+    </script>
 </body>
 
 </html>

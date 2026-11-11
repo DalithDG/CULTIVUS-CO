@@ -11,6 +11,8 @@
     <link rel="stylesheet" th:href="@{/header.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
     <link rel="stylesheet" th:href="@{/vendedor-panel.css}">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
     <style>
@@ -324,6 +326,55 @@
             margin-bottom: 4px;
             font-size: 0.98rem;
         }
+
+        /* Estilos del Mapa Geoespacial */
+        .pred-map-card {
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 24px;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+            margin-bottom: 24px;
+        }
+        .pred-map-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .pred-map-container {
+            height: 440px;
+            border-radius: 14px;
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+            position: relative;
+            z-index: 1;
+        }
+        .pred-map-legend {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 16px;
+            margin-top: 14px;
+            font-size: 0.8rem;
+            color: #475569;
+        }
+        .pred-map-legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+        }
+        .pred-map-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .pred-map-dot--high { background: #15803d; }
+        .pred-map-dot--med { background: #22c55e; }
+        .pred-map-dot--low { background: #f59e0b; }
     </style>
 </head>
 
@@ -336,11 +387,11 @@
             <!-- Banner / Hero de la sección -->
             <section class="pred-hero">
                 <span class="pred-kicker">
-                    <i class="fa-solid fa-brain" aria-hidden="true"></i> Inteligencia Agrícola · Machine Learning
+                    <i class="fa-solid fa-map-location-dot" aria-hidden="true"></i> Cobertura Exclusiva · Departamento de Bolívar
                 </span>
-                <h1>Predicción de Demanda Semanal</h1>
+                <h1>Predicción de Demanda Semanal · Región Bolívar</h1>
                 <p>
-                    Proyección de cosechas y demanda calculada por el modelo de regresión lineal en Python a partir de órdenes históricas. Organiza tu producción con antelación.
+                    Proyección de cosechas y demanda calculada para los municipios y subregiones de Bolívar (Dique, Montes de María, Mojana, Depresión Momposina, Loba y Magdalena Medio). Organiza tu producción con antelación.
                 </p>
             </section>
 
@@ -401,7 +452,7 @@
                 <div class="pred-filter-group">
                     <div class="pred-input-wrap">
                         <i class="fa-solid fa-city" aria-hidden="true"></i>
-                        <input type="text" id="filtroCiudad" class="pred-input" placeholder="Filtrar por ciudad (ej. Cartagena)">
+                        <input type="text" id="filtroCiudad" class="pred-input" placeholder="Filtrar por municipio de Bolívar (ej. Cartagena, Carmen de Bolívar, Magangué, Mompox, Turbaco)">
                     </div>
                     <div class="pred-input-wrap">
                         <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
@@ -418,6 +469,44 @@
                     <button type="button" class="pred-btn-clean" onclick="cargarPredicciones()" title="Actualizar datos">
                         <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i> Refrescar
                     </button>
+                </div>
+            </section>
+
+            <!-- Mapa Geoespacial de Demanda en Bolívar -->
+            <section class="pred-map-card">
+                <div class="pred-map-header">
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 10px;">
+                            <i class="fa-solid fa-map-location-dot" style="color: #2e7d32;"></i>
+                            Mapa Geoespacial de Demanda · Departamento de Bolívar
+                        </h3>
+                        <p style="margin: 4px 0 0; font-size: 0.86rem; color: #64748b;">
+                            Haz clic en un municipio para ver el detalle de pedidos proyectados o filtrarlo en la tabla.
+                        </p>
+                    </div>
+                    <div>
+                        <button type="button" class="pred-btn-clean" onclick="resetearVistaMapa()" title="Centrar mapa en Bolívar">
+                            <i class="fa-solid fa-crosshairs"></i> Centrar Bolívar
+                        </button>
+                    </div>
+                </div>
+
+                <div id="mapaDemandaBolivar" class="pred-map-container"></div>
+
+                <div class="pred-map-legend">
+                    <span style="font-weight: 700; color: #334155;">Intensidad de Demanda:</span>
+                    <span class="pred-map-legend-item">
+                        <span class="pred-map-dot pred-map-dot--high"></span> Alta (&gt; 180 kg)
+                    </span>
+                    <span class="pred-map-legend-item">
+                        <span class="pred-map-dot pred-map-dot--med"></span> Media (100 - 180 kg)
+                    </span>
+                    <span class="pred-map-legend-item">
+                        <span class="pred-map-dot pred-map-dot--low"></span> Moderada (&lt; 100 kg)
+                    </span>
+                    <span style="margin-left: auto; font-size: 0.76rem; color: #94a3b8;">
+                        *El tamaño del círculo representa el volumen total en kg proyectado por el modelo.
+                    </span>
                 </div>
             </section>
 
@@ -471,6 +560,153 @@
     <!-- Script de Integración con /api/predicciones y Chart.js -->
     <script>
         let chartInstance = null;
+        let mapInstance = null;
+        let mapMarkersLayer = null;
+
+        const COORDENADAS_BOLIVAR = {
+            "Cartagena": [10.3997, -75.5144],
+            "Turbaco": [10.3292, -75.4136],
+            "Arjona": [10.2592, -75.3444],
+            "Santa Rosa": [10.4439, -75.3672],
+            "Mahates": [10.2394, -75.1878],
+            "San Estanislao": [10.3986, -75.1583],
+            "Calamar": [10.2514, -74.9136],
+            "El Carmen de Bolívar": [9.7175, -75.1214],
+            "San Jacinto": [9.8278, -75.1239],
+            "San Juan Nepomuceno": [9.9511, -75.0819],
+            "María la Baja": [9.9822, -75.3081],
+            "Magangué": [9.2422, -74.7547],
+            "Achí": [8.5686, -74.5539],
+            "Pinillos": [8.9167, -74.4667],
+            "Mompox": [9.2417, -74.4258],
+            "Cicuco": [9.2714, -74.6592],
+            "Margarita": [9.1558, -74.2981],
+            "Barranco de Loba": [8.9481, -74.1081],
+            "San Martín de Loba": [8.9056, -74.0411],
+            "Santa Rosa del Sur": [7.9625, -74.0536],
+            "San Pablo": [7.4764, -73.9244],
+            "Simití": [7.9575, -73.9472],
+            "Morales": [8.2756, -73.8697]
+        };
+
+        function inicializarMapa() {
+            if (mapInstance) {
+                mapInstance.invalidateSize();
+                return;
+            }
+            const mapEl = document.getElementById('mapaDemandaBolivar');
+            if (!mapEl) return;
+
+            mapInstance = L.map('mapaDemandaBolivar', {
+                scrollWheelZoom: false
+            }).setView([9.25, -74.7], 8);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap · Cultivus Bolívar',
+                maxZoom: 18
+            }).addTo(mapInstance);
+
+            mapMarkersLayer = L.layerGroup().addTo(mapInstance);
+        }
+
+        function resetearVistaMapa() {
+            if (mapInstance) {
+                mapInstance.setView([9.25, -74.7], 8);
+            }
+        }
+
+        function filtrarDesdeMapa(municipio) {
+            document.getElementById('filtroCiudad').value = municipio;
+            cargarPredicciones();
+            const filterBar = document.querySelector('.pred-filter-bar');
+            if (filterBar) {
+                window.scrollTo({ top: filterBar.offsetTop - 20, behavior: 'smooth' });
+            }
+        }
+
+        function actualizarMapa(predicciones) {
+            inicializarMapa();
+            if (!mapMarkersLayer) return;
+
+            mapMarkersLayer.clearLayers();
+
+            const porMuni = {};
+            predicciones.forEach(p => {
+                const ciudad = p.ciudad || '';
+                let matchedMuni = null;
+                for (const k in COORDENADAS_BOLIVAR) {
+                    if (ciudad.toLowerCase().includes(k.toLowerCase()) || k.toLowerCase().includes(ciudad.toLowerCase())) {
+                        matchedMuni = k;
+                        break;
+                    }
+                }
+                if (!matchedMuni) matchedMuni = ciudad;
+
+                if (!porMuni[matchedMuni]) {
+                    porMuni[matchedMuni] = { totalKg: 0, categorias: {} };
+                }
+                porMuni[matchedMuni].totalKg += p.demandaEsperadaKg;
+                porMuni[matchedMuni].categorias[p.categoria] = (porMuni[matchedMuni].categorias[p.categoria] || 0) + p.demandaEsperadaKg;
+            });
+
+            for (const muni in porMuni) {
+                const coords = COORDENADAS_BOLIVAR[muni];
+                if (!coords) continue;
+
+                const data = porMuni[muni];
+                const total = Math.round(data.totalKg * 10) / 10;
+
+                let color = '#d97706';
+                let fillColor = '#f59e0b';
+                if (total > 180) {
+                    color = '#14532d';
+                    fillColor = '#15803d';
+                } else if (total >= 100) {
+                    color = '#15803d';
+                    fillColor = '#22c55e';
+                }
+
+                const radius = Math.max(10, Math.min(26, Math.round(total / 12)));
+
+                const marker = L.circleMarker(coords, {
+                    radius: radius,
+                    color: color,
+                    weight: 2,
+                    fillColor: fillColor,
+                    fillOpacity: 0.8
+                });
+
+                const catHtml = Object.entries(data.categorias)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([cat, kg]) => `<div>• <strong>${escapeHtml(cat)}:</strong> ${kg.toFixed(1)} kg</div>`)
+                    .join('');
+
+                const popupContent = `
+                    <div style="font-family: inherit; font-size: 13px; min-width: 190px;">
+                        <h4 style="margin: 0 0 4px; color: #1e293b; font-size: 14px; font-weight: 800;">${escapeHtml(muni)}</h4>
+                        <span style="font-size: 11px; color: #64748b; font-weight: 600;">Región Bolívar</span>
+                        <div style="margin: 8px 0; padding: 6px 8px; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0;">
+                            <div style="font-size: 11px; color: #64748b;">Demanda Proyectada:</div>
+                            <div style="font-size: 15px; font-weight: 800; color: ${fillColor};">${total} kg</div>
+                        </div>
+                        <div style="margin-bottom: 8px; font-size: 11px; color: #475569; line-height: 1.4;">
+                            ${catHtml}
+                        </div>
+                        <button type="button" onclick="filtrarDesdeMapa('${escapeHtml(muni)}')"
+                            style="width: 100%; background: #2e7d32; color: #ffffff; border: none; padding: 6px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer;">
+                            <i class="fa-solid fa-filter"></i> Filtrar este municipio
+                        </button>
+                    </div>
+                `;
+
+                marker.bindPopup(popupContent);
+                marker.addTo(mapMarkersLayer);
+            }
+
+            setTimeout(() => {
+                if (mapInstance) mapInstance.invalidateSize();
+            }, 150);
+        }
 
         async function cargarPredicciones() {
             const ciudad = document.getElementById('filtroCiudad').value.trim();
@@ -628,8 +864,9 @@
 
             tbody.innerHTML = rowsHtml;
 
-            // Actualizar Gráfico
+            // Actualizar Gráfico y Mapa
             actualizarGrafico(predicciones);
+            actualizarMapa(predicciones);
         }
 
         function actualizarGrafico(predicciones) {
@@ -725,16 +962,25 @@
             const categoria = document.getElementById('filtroCategoria').value.trim();
 
             const demoData = {
-                semana: "2026-11-16 (Simulado)",
+                semana: "2026-11-16 (Región Bolívar)",
                 predicciones: [
-                    { categoria: "Frutas", ciudad: "Cartagena", demandaEsperadaKg: 142.5 },
-                    { categoria: "Verduras", ciudad: "Cartagena", demandaEsperadaKg: 118.0 },
-                    { categoria: "Frutas", ciudad: "Barranquilla", demandaEsperadaKg: 95.4 },
-                    { categoria: "Tubérculos", ciudad: "Cartagena", demandaEsperadaKg: 86.2 },
-                    { categoria: "Lácteos", ciudad: "Santa Marta", demandaEsperadaKg: 74.8 },
-                    { categoria: "Verduras", ciudad: "Barranquilla", demandaEsperadaKg: 68.3 },
-                    { categoria: "Granos", ciudad: "Cartagena", demandaEsperadaKg: 52.1 },
-                    { categoria: "Café y Cacao", ciudad: "Cartagena", demandaEsperadaKg: 41.0 }
+                    { categoria: "Frutas", ciudad: "Cartagena", demandaEsperadaKg: 245.0 },
+                    { categoria: "Tubérculos", ciudad: "El Carmen de Bolívar", demandaEsperadaKg: 230.0 },
+                    { categoria: "Granos y Cereales", ciudad: "Magangué", demandaEsperadaKg: 210.0 },
+                    { categoria: "Verduras", ciudad: "Cartagena", demandaEsperadaKg: 210.5 },
+                    { categoria: "Tubérculos", ciudad: "Cartagena", demandaEsperadaKg: 195.0 },
+                    { categoria: "Lácteos", ciudad: "Magangué", demandaEsperadaKg: 190.0 },
+                    { categoria: "Café y Cacao", ciudad: "Santa Rosa del Sur", demandaEsperadaKg: 185.0 },
+                    { categoria: "Carnes y Aves", ciudad: "Magangué", demandaEsperadaKg: 175.0 },
+                    { categoria: "Frutas", ciudad: "El Carmen de Bolívar", demandaEsperadaKg: 165.0 },
+                    { categoria: "Café y Cacao", ciudad: "San Pablo", demandaEsperadaKg: 160.0 },
+                    { categoria: "Tubérculos", ciudad: "San Jacinto", demandaEsperadaKg: 155.0 },
+                    { categoria: "Granos y Cereales", ciudad: "María la Baja", demandaEsperadaKg: 150.0 },
+                    { categoria: "Lácteos", ciudad: "Mompox", demandaEsperadaKg: 145.0 },
+                    { categoria: "Frutas", ciudad: "Turbaco", demandaEsperadaKg: 120.0 },
+                    { categoria: "Tubérculos", ciudad: "Arjona", demandaEsperadaKg: 115.0 },
+                    { categoria: "Lácteos", ciudad: "Simití", demandaEsperadaKg: 120.0 },
+                    { categoria: "Lácteos", ciudad: "Barranco de Loba", demandaEsperadaKg: 110.0 }
                 ].filter(p => (!ciudad || p.ciudad.toLowerCase().includes(ciudad.toLowerCase())) &&
                               (!categoria || p.categoria.toLowerCase().includes(categoria.toLowerCase())))
                  .sort((a, b) => b.demandaEsperadaKg - a.demandaEsperadaKg)
