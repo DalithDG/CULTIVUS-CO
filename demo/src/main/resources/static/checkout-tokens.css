@@ -14,7 +14,8 @@
 .profile-page,
 .notif-page,
 .about-page,
-.order-detail-page {
+.order-detail-page,
+.vp-reg-page {
   /* Paleta Cultivus */
   --c-green: #367A45;          /* acciones principales (blanco sobre él: 5.3:1) */
   --c-green-dark: #2B6337;     /* hover / active */

@@ -18,6 +18,8 @@
     <link rel="stylesheet" th:href="@{/cultivus-ui.css}">
     <link rel="stylesheet" th:href="@{/product-apple.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
+    <link rel="stylesheet" th:href="@{/animaciones/peek-rating.css}">
+    <script defer th:src="@{/animaciones/peek-rating.js}"></script>
 
     <style>
         .vendor-hero {
@@ -565,18 +567,8 @@
                     <form th:action="@{/vendedor/{id}/resena(id=${vendedor.id})}" method="post">
                         <div class="ui-form-group">
                             <label class="ui-form-label">Calificación <span class="req">*</span></label>
-                            <div class="star-picker" role="radiogroup" aria-label="Selecciona de 1 a 5 estrellas">
-                                <input type="radio" id="star5" name="calificacion" value="5" checked>
-                                <label for="star5" title="5 estrellas - Excelente"><i class="fas fa-star"></i></label>
-                                <input type="radio" id="star4" name="calificacion" value="4">
-                                <label for="star4" title="4 estrellas - Muy bueno"><i class="fas fa-star"></i></label>
-                                <input type="radio" id="star3" name="calificacion" value="3">
-                                <label for="star3" title="3 estrellas - Bueno"><i class="fas fa-star"></i></label>
-                                <input type="radio" id="star2" name="calificacion" value="2">
-                                <label for="star2" title="2 estrellas - Regular"><i class="fas fa-star"></i></label>
-                                <input type="radio" id="star1" name="calificacion" value="1">
-                                <label for="star1" title="1 estrella - Malo"><i class="fas fa-star"></i></label>
-                            </div>
+                            <div data-anim="peek-rating" data-pr-name="calificacion" data-pr-value="5" data-pr-count="5" data-pr-clear="true"
+                                 data-pr-labels="Malo,Regular,Bueno,Muy bueno,Excelente"></div>
                         </div>
 
                         <div class="ui-form-group">

@@ -1,0 +1,1 @@
+use('cultivus'); db.usuarios.insertOne({nombre:'Test', email:'testverify@demo.com', roles:['COMPRADOR'], email_verificado:false, codigoVerificacion:'123456', codigoVerificacionExpira:new Date(Date.now()+600000)});

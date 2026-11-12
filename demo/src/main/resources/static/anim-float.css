@@ -1,0 +1,35 @@
+/* Efecto de flotación suave propio de Cultivus (CSS puro) */
+[data-float="image"] {
+    --float-y: 10px;
+    --float-dur: 7s;
+    animation: cultivus-float var(--float-dur) ease-in-out infinite;
+    will-change: transform;
+}
+
+[data-float="card"] {
+    --float-y: 8px;
+    --float-dur: 5.5s;
+    animation: cultivus-float var(--float-dur) ease-in-out infinite;
+    animation-delay: -2s;
+    will-change: transform;
+}
+
+@keyframes cultivus-float {
+    0%, 100% {
+        transform: translate3d(0, 0, 0);
+    }
+    50% {
+        transform: translate3d(0, calc(var(--float-y) * -1), 0);
+    }
+}
+
+[data-float].is-paused {
+    animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    [data-float="image"],
+    [data-float="card"] {
+        animation: none;
+    }
+}

@@ -1,0 +1,36 @@
+/* Inspirado en Fold Text de React Bits (MIT + Commons Clause) */
+[data-fold-text] {
+    perspective: 1200px;
+}
+
+.fold-text-char {
+    display: inline-block;
+    color: inherit;
+    transform-origin: 50% 100%;
+    transform-style: preserve-3d;
+    opacity: 0;
+    transform: rotateX(90deg);
+    will-change: transform, opacity;
+    transition: transform 0.9s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fold-text-char.is-folded-in {
+    opacity: 1;
+    transform: rotateX(0deg);
+}
+
+.home-page .home-hero__title > .fold-text-char {
+    color: var(--c-ink);
+}
+
+.home-page .home-hero__title > span > .fold-text-char {
+    color: var(--c-green);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .fold-text-char {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}

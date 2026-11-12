@@ -16,6 +16,8 @@
     <link rel="stylesheet" th:href="@{/cultivus-ui.css}">
     <link rel="stylesheet" th:href="@{/buyer-apple.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
+    <link rel="stylesheet" th:href="@{/animaciones/animated-list.css}">
+    <script defer th:src="@{/animaciones/animated-list.js}"></script>
 </head>
 
 <body class="notif-page"
@@ -68,7 +70,7 @@
             </div>
 
             <!-- LISTA BANDEJA DE ENTRADA -->
-            <div class="notif-list" th:if="${notificaciones != null and !notificaciones.isEmpty()}">
+            <div class="notif-list" data-anim="list" data-al-stagger="0.05" th:if="${notificaciones != null and !notificaciones.isEmpty()}">
                 <article th:each="n : ${notificaciones}" class="notif-card" th:classappend="${!n.leida ? 'is-unread' : ''}">
                     <!-- Icono tintado según el tipo -->
                     <div class="notif-icon-box"

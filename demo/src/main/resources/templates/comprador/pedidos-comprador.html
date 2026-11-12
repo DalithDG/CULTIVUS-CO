@@ -16,6 +16,8 @@
         crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" th:href="@{/checkout-tokens.css}">
     <link rel="stylesheet" th:href="@{/pedidos-comprador.css}">
+    <link rel="stylesheet" th:href="@{/animaciones/animated-list.css}">
+    <script defer th:src="@{/animaciones/animated-list.js}"></script>
 </head>
 
 <body>
@@ -58,7 +60,7 @@
             </div>
 
             <!-- Order list -->
-            <div class="mp-list" id="orderList" th:if="${(compras != null and !compras.isEmpty()) or (pedidos != null and !pedidos.isEmpty())}">
+            <div class="mp-list" id="orderList" data-anim="list" data-al-stagger="0.05" th:if="${(compras != null and !compras.isEmpty()) or (pedidos != null and !pedidos.isEmpty())}">
 
                 <!-- Compras agrupadas multi-vendedor (US-21 Item 8) -->
                 <th:block th:if="${compras != null and !compras.isEmpty()}">

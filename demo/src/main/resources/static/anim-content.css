@@ -1,0 +1,13 @@
+/* Inspirado en AnimatedContent de React Bits (MIT + Commons Clause) */
+[data-anim-content] {
+    will-change: transform, opacity, filter;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    [data-anim-content],
+    [data-anim-content] > * {
+        opacity: 1 !important;
+        transform: none !important;
+        filter: none !important;
+    }
+}

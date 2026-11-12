@@ -18,6 +18,8 @@
     <link rel="stylesheet" th:href="@{/cultivus-ui.css}">
     <link rel="stylesheet" th:href="@{/catalog-apple.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
+    <th:block th:replace="~{fragments/animaciones :: gsap}"></th:block>
+    <th:block th:replace="~{fragments/animaciones :: animatedContent}"></th:block>
 </head>
 
 <body class="catalog-page">
@@ -156,7 +158,7 @@
                 </div>
 
                 <!-- Grid de ofertas: cada tarjeta es una OFERTA de vendedor (el catálogo es solo lista de referencia) -->
-                <div class="product-grid" id="productosGrid" th:if="${ofertas != null and !ofertas.isEmpty()}">
+                <div class="product-grid" id="productosGrid" th:if="${ofertas != null and !ofertas.isEmpty()}" data-anim-content data-anim-stagger="0.06">
                     <th:block th:each="oferta : ${ofertas}">
                         <th:block th:replace="~{fragments/oferta-card :: card(${oferta})}"></th:block>
                     </th:block>

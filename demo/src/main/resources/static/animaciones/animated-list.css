@@ -1,0 +1,43 @@
+/* Inspirado en React Bits (github.com/DavidHDev/react-bits), licencia MIT + Commons Clause. Reescrito en CSS/JS vanilla para CULTIVUS-CO */
+[data-anim="list"].al-enhanced > * {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    will-change: opacity, transform;
+}
+
+[data-anim="list"].al-enhanced.al-anim-slide > * {
+    transform: translateX(-16px) scale(0.98);
+}
+
+[data-anim="list"].al-enhanced.al-anim-fade > * {
+    transform: none;
+}
+
+[data-anim="list"].al-enhanced > .al-in {
+    opacity: 1;
+    transform: none;
+}
+
+[data-anim="list"].al-fade-top {
+    -webkit-mask-image: linear-gradient(to bottom, transparent, black 24px);
+    mask-image: linear-gradient(to bottom, transparent, black 24px);
+}
+
+[data-anim="list"].al-fade-bottom {
+    -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 24px), transparent);
+    mask-image: linear-gradient(to bottom, black calc(100% - 24px), transparent);
+}
+
+[data-anim="list"].al-fade-top.al-fade-bottom {
+    -webkit-mask-image: linear-gradient(to bottom, transparent, black 24px, black calc(100% - 24px), transparent);
+    mask-image: linear-gradient(to bottom, transparent, black 24px, black calc(100% - 24px), transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    [data-anim="list"].al-enhanced > * {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+}

@@ -17,6 +17,9 @@
     <link rel="stylesheet" th:href="@{/header.css}">
     <link rel="stylesheet" th:href="@{/registro-vendedor-apple.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
+    <script defer th:src="@{/js/municipios-bolivar.js}"></script>
+    <script defer th:src="@{/js/registro-vendedor.js}"></script>
+    <script defer th:src="@{/js/registro-vendedor-pasos.js}"></script>
 </head>
 
 <body class="vp-reg-page">
@@ -25,22 +28,215 @@
     <header th:replace="~{fragments/header :: siteHeader}"></header>
 
     <main>
+        <!-- ENCABEZADO DE PÁGINA -->
+        <header class="vp-reg-hero">
+            <span class="vp-badge">
+                <i class="fas fa-seedling"></i> Red de Productores Agrícolas
+            </span>
+            <h1 class="vp-info-title">
+                Lleva tus cosechas del campo a <span>todo el país</span>
+            </h1>
+            <p class="vp-info-subtitle">
+                Únete a la comunidad de agricultores locales de Colombia. Vende directamente a compradores
+                comprometidos con la frescura, sin intermediarios y con mejores márgenes.
+            </p>
+        </header>
+
         <div class="vp-reg-container">
 
-            <!-- ═══ COLUMNA INFORMATIVA IZQUIERDA ═══ -->
-            <aside class="vp-info-panel" aria-label="Beneficios de vender en Cultivus">
-                <span class="vp-badge">
-                    <i class="fas fa-seedling"></i> Red de Productores Agrícolas
-                </span>
+            <!-- ═══ COLUMNA 1: FORMULARIO ═══ -->
+            <form th:action="@{/vendedor/guardar}" method="POST" id="registroVendedorForm" class="vp-reg-form">
 
-                <h1 class="vp-info-title">
-                    Lleva tus cosechas del campo a <span>todo el país</span>
-                </h1>
+                <!-- Alertas Flash -->
+                <div th:if="${error}" class="ui-alert ui-alert--danger">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span th:text="${error}"></span>
+                </div>
+                <div th:if="${mensaje}" class="ui-alert ui-alert--success">
+                    <i class="fas fa-check-circle"></i>
+                    <span th:text="${mensaje}"></span>
+                </div>
 
-                <p class="vp-info-subtitle">
-                    Únete a la comunidad de agricultores locales de Colombia. Vende directamente a compradores
-                    comprometidos con la frescura, sin intermediarios y con mejores márgenes.
-                </p>
+                    
+                    <!-- Datos de cuenta personal si no ha iniciado sesión -->
+                    <th:block th:if="${session.usuarioLogueado == null}">
+                        <section class="vp-section" aria-labelledby="cuenta-title">
+                            <h2 class="vp-section__title" id="cuenta-title">
+                                <span class="vp-section__num">1</span> Tu cuenta
+                            </h2>
+                            <p class="vp-section__desc">Crea tus datos de acceso a Cultivus.</p>
+                            <div class="ui-form-group">
+                                <label class="ui-form-label" for="nombre">
+                                    Tu Nombre Completo <span class="req">*</span>
+                                </label>
+                                <div class="ui-field-wrap has-icon">
+                                    <i class="fas fa-user"></i>
+                                    <input type="text" id="nombre" name="nombre" class="ui-input"
+                                           placeholder="Ej: Juan Carlos Pérez" required>
+                                </div>
+                            </div>
+
+                            <div class="vp-row">
+                                <div class="ui-form-group">
+                                    <label class="ui-form-label" for="email">
+                                        Correo Electrónico <span class="req">*</span>
+                                    </label>
+                                    <div class="ui-field-wrap has-icon">
+                                        <i class="fas fa-envelope"></i>
+                                        <input type="email" id="email" name="email" class="ui-input"
+                                               placeholder="juan@correo.com" required autocomplete="email">
+                                    </div>
+                                </div>
+
+                                <div class="ui-form-group">
+                                    <label class="ui-form-label" for="contrasena">
+                                        Contraseña <span class="req">*</span>
+                                    </label>
+                                    <div class="ui-field-wrap has-icon">
+                                        <i class="fas fa-lock"></i>
+                                        <input type="password" id="contrasena" name="contrasena" class="ui-input"
+                                               placeholder="Mínimo 6 caracteres" required minlength="6" autocomplete="new-password">
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </th:block>
+
+                    <section class="vp-section" aria-labelledby="negocio-title">
+                        <h2 class="vp-section__title" id="negocio-title">
+                            <span class="vp-section__num">2</span> Tu negocio
+                        </h2>
+                        <p class="vp-section__desc">Cuéntanos dónde produces y cómo te contactan los compradores.</p>
+                        <div class="ui-form-group">
+                            <label class="ui-form-label" for="razonSocial">
+                                Razón Social o Nombre del Predio / Finca <span class="req">*</span>
+                            </label>
+                            <div class="ui-field-wrap has-icon">
+                                <i class="fas fa-store"></i>
+                                <input type="text" id="razonSocial" name="razonSocial" class="ui-input"
+                                       placeholder="Ej: Finca El Porvenir" required>
+                            </div>
+                            <span class="ui-form-hint">Nombre con el que aparecerás ante los compradores</span>
+                        </div>
+
+                        <div class="vp-row">
+                            <div class="ui-form-group">
+                                <label class="ui-form-label" for="departamento">
+                                    Departamento <span class="req">*</span>
+                                </label>
+                                <div class="ui-field-wrap has-icon">
+                                    <i class="fas fa-map"></i>
+                                    <select id="departamento" name="departamento" class="ui-select" required>
+                                        <option value="Bolívar" selected>Bolívar</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="ui-form-group">
+                                <label class="ui-form-label" for="ciudad">
+                                    Municipio <span class="req">*</span>
+                                </label>
+                                <div class="ui-field-wrap has-icon">
+                                    <i class="fas fa-city"></i>
+                                    <select id="ciudad" name="ciudad" class="ui-select" required
+                                            th:data-selected="${ciudadSeleccionada}">
+                                        <option value="">Selecciona tu municipio</option>
+                                        <option th:each="m : ${municipios}" th:value="${m}" th:text="${m}">Municipio</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="vp-row">
+                            <div class="ui-form-group">
+                                <label class="ui-form-label" for="telefonoContacto">
+                                    Teléfono de Contacto <span class="req">*</span>
+                                </label>
+                                <div class="ui-field-wrap has-icon">
+                                    <i class="fas fa-phone"></i>
+                                    <input type="tel" id="telefonoContacto" name="telefonoContacto" class="ui-input"
+                                           placeholder="300 123 4567" required
+                                           inputmode="numeric" autocomplete="tel-national" maxlength="12"
+                                           data-pr-telefono="true">
+                                </div>
+                                <span class="ui-form-error" id="telefonoError" aria-live="polite"></span>
+                            </div>
+
+                            <div class="ui-form-group">
+                                <label class="ui-form-label" for="direccionNegocio">
+                                    Dirección o vereda del predio <span class="req">*</span>
+                                </label>
+                                <div class="ui-field-wrap has-icon">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <input type="text" id="direccionNegocio" name="direccionNegocio" class="ui-input"
+                                           placeholder="Ej: Vereda La Esperanza, Km 5" required minlength="5" maxlength="120">
+                                </div>
+                                <span class="ui-form-hint">El municipio lo eliges arriba</span>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="vp-section" aria-labelledby="productos-title">
+                        <h2 class="vp-section__title" id="productos-title">
+                            <span class="vp-section__num">3</span> Tus productos
+                        </h2>
+                        <p class="vp-section__desc">Elige qué vendes para ubicar tu tienda en las categorías correctas.</p>
+                        <div class="ui-form-group">
+                            <label class="ui-form-label">
+                                ¿Qué tipo de cosechas o productos vendes? <span class="req">*</span>
+                            </label>
+                            <div class="cat-multi" data-cat-multi data-cat-max="4">
+                                <button type="button" class="cat-multi__btn" aria-haspopup="listbox" aria-expanded="false">
+                                    <i class="fas fa-leaf"></i>
+                                    <span class="cat-multi__text">Selecciona tus categorías</span>
+                                    <i class="fas fa-chevron-down cat-multi__arrow"></i>
+                                </button>
+                                <div class="cat-multi__panel" role="group" aria-label="Categorías">
+                                    <div th:each="c, cStat : ${categoriasNombres}" class="cat-multi__item">
+                                        <input type="checkbox" name="tipoProductos" th:value="${c}" th:id="'cat-' + ${cStat.index}" />
+                                        <label th:for="'cat-' + ${cStat.index}" th:text="${c}">Categoría</label>
+                                    </div>
+                                    <div class="cat-multi__footer">
+                                        <span class="cat-multi__count">0 de 4</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="ui-form-hint">Nos ayuda a categorizar tu tienda y mostrar tus cosechas a los clientes</span>
+                            <span class="ui-form-error" id="catError" aria-live="polite"></span>
+                        </div>
+
+                        <div class="ui-form-group">
+                            <label class="ui-form-label" for="descripcionNegocio">
+                                Descripción de tu Producción <span style="font-weight: 400; color: var(--c-earth); font-size: 0.8rem;">(opcional)</span>
+                            </label>
+                            <textarea id="descripcionNegocio" name="descripcionNegocio" class="ui-textarea"
+                                      placeholder="Cuéntanos sobre tus prácticas agrícolas, tus cosechas y qué hace único a tu campo..."></textarea>
+                        </div>
+
+                        <div class="ui-alert ui-alert--warning vp-submit-alert">
+                            <i class="fas fa-info-circle"></i>
+                            <span style="font-size: 0.86rem; line-height: 1.45;">
+                                <strong>Aviso importante:</strong> esta cuenta quedará solo para vender y no podrá comprar. Si quieres comprar, usa otra cuenta.
+                            </span>
+                        </div>
+
+                        <div class="vp-submit-row">
+                            <button type="submit" class="ui-btn ui-btn--primary ui-btn--lg">
+                                <i class="fas fa-check"></i>
+                                <span>Registrarme como Vendedor</span>
+                            </button>
+
+                            <a th:href="@{/}" class="ui-btn ui-btn--secondary ui-btn--lg">
+                                <i class="fas fa-arrow-left"></i> Volver al inicio
+                            </a>
+                        </div>
+                    </section>
+
+                </form>
+
+            <!-- ═══ COLUMNA 2: ASIDE STICKY ═══ -->
+            <aside class="vp-aside" aria-label="Resumen de registro">
+                <h2 class="vp-aside__title">Tu tienda en Cultivus</h2>
 
                 <div class="vp-benefits-list">
                     <div class="vp-benefit-item">
@@ -49,10 +245,9 @@
                         </div>
                         <div class="vp-benefit-body">
                             <h3>Venta Directa y Precios Justos</h3>
-                            <p>Tú fijas los precios de tus productos y recibes pagos puntuales y protegidos por Wompi.</p>
+                            <p>Fija tus precios y recibe pagos puntuales protegidos por Wompi.</p>
                         </div>
                     </div>
-
                     <div class="vp-benefit-item">
                         <div class="vp-benefit-icon">
                             <i class="fas fa-shield-halved"></i>
@@ -62,14 +257,13 @@
                             <p>Transacciones cifradas, soporte continuo y verificación de productores.</p>
                         </div>
                     </div>
-
                     <div class="vp-benefit-item">
                         <div class="vp-benefit-icon">
                             <i class="fas fa-boxes-stacked"></i>
                         </div>
                         <div class="vp-benefit-body">
                             <h3>Gestión Simple de Cosechas</h3>
-                            <p>Controla tus lotes, stock, pedidos y retiros de billetera desde una consola intuitiva.</p>
+                            <p>Controla tus lotes, stock, pedidos y retiros desde una consola intuitiva.</p>
                         </div>
                     </div>
                 </div>
@@ -82,140 +276,6 @@
                     </p>
                 </div>
             </aside>
-
-            <!-- ═══ COLUMNA FORMULARIO DERECHA ═══ -->
-            <section class="vp-form-card" aria-label="Formulario de registro de vendedor">
-                <header class="vp-form-header">
-                    <h2>Formulario de Registro</h2>
-                    <p>Completa los datos de tu producción agrícola para habilitar tu tienda.</p>
-                </header>
-
-                <!-- Alertas Flash -->
-                <div th:if="${error}" class="ui-alert ui-alert--danger">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <span th:text="${error}"></span>
-                </div>
-                <div th:if="${mensaje}" class="ui-alert ui-alert--success">
-                    <i class="fas fa-check-circle"></i>
-                    <span th:text="${mensaje}"></span>
-                </div>
-
-                <form th:action="@{/vendedor/guardar}" method="POST">
-                    
-                    <!-- Datos de cuenta personal si no ha iniciado sesión -->
-                    <th:block th:if="${session.usuarioLogueado == null}">
-                        <div class="ui-form-group">
-                            <label class="ui-form-label" for="nombre">
-                                Tu Nombre Completo <span class="req">*</span>
-                            </label>
-                            <div class="ui-field-wrap has-icon">
-                                <i class="fas fa-user"></i>
-                                <input type="text" id="nombre" name="nombre" class="ui-input"
-                                       placeholder="Ej: Juan Carlos Pérez" required>
-                            </div>
-                        </div>
-
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                            <div class="ui-form-group">
-                                <label class="ui-form-label" for="email">
-                                    Correo Electrónico <span class="req">*</span>
-                                </label>
-                                <div class="ui-field-wrap has-icon">
-                                    <i class="fas fa-envelope"></i>
-                                    <input type="email" id="email" name="email" class="ui-input"
-                                           placeholder="juan@correo.com" required autocomplete="email">
-                                </div>
-                            </div>
-
-                            <div class="ui-form-group">
-                                <label class="ui-form-label" for="contrasena">
-                                    Contraseña <span class="req">*</span>
-                                </label>
-                                <div class="ui-field-wrap has-icon">
-                                    <i class="fas fa-lock"></i>
-                                    <input type="password" id="contrasena" name="contrasena" class="ui-input"
-                                           placeholder="Mínimo 6 caracteres" required minlength="6" autocomplete="new-password">
-                                </div>
-                            </div>
-                        </div>
-                    </th:block>
-
-                    <div class="ui-form-group">
-                        <label class="ui-form-label" for="razonSocial">
-                            Razón Social o Nombre del Predio / Finca <span class="req">*</span>
-                        </label>
-                        <div class="ui-field-wrap has-icon">
-                            <i class="fas fa-store"></i>
-                            <input type="text" id="razonSocial" name="razonSocial" class="ui-input"
-                                   placeholder="Ej: Finca El Porvenir" required>
-                        </div>
-                        <span class="ui-form-hint">Nombre con el que aparecerás ante los compradores</span>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                        <div class="ui-form-group">
-                            <label class="ui-form-label" for="telefonoContacto">
-                                Teléfono de Contacto <span class="req">*</span>
-                            </label>
-                            <div class="ui-field-wrap has-icon">
-                                <i class="fas fa-phone"></i>
-                                <input type="tel" id="telefonoContacto" name="telefonoContacto" class="ui-input"
-                                       placeholder="300 123 4567" required>
-                            </div>
-                        </div>
-
-                        <div class="ui-form-group">
-                            <label class="ui-form-label" for="direccionNegocio">
-                                Ubicación del Predio <span class="req">*</span>
-                            </label>
-                            <div class="ui-field-wrap has-icon">
-                                <i class="fas fa-map-marker-alt"></i>
-                                <input type="text" id="direccionNegocio" name="direccionNegocio" class="ui-input"
-                                       placeholder="Ej: Vereda La Esperanza, Km 5" required>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="ui-form-group">
-                        <label class="ui-form-label" for="tipoProductos">
-                            ¿Qué tipo de cosechas o productos vendes? <span class="req">*</span>
-                        </label>
-                        <div class="ui-field-wrap has-icon">
-                            <i class="fas fa-leaf"></i>
-                            <input type="text" id="tipoProductos" name="tipoProductos" class="ui-input"
-                                   placeholder="Ej: Frutas, Verduras, Café, Miel, Tubérculos..." required>
-                        </div>
-                        <span class="ui-form-hint">Nos ayuda a categorizar tu tienda y mostrar tus cosechas a los clientes</span>
-                    </div>
-
-                    <div class="ui-form-group">
-                        <label class="ui-form-label" for="descripcionNegocio">
-                            Descripción de tu Producción <span style="font-weight: 400; color: var(--c-earth); font-size: 0.8rem;">(opcional)</span>
-                        </label>
-                        <textarea id="descripcionNegocio" name="descripcionNegocio" class="ui-textarea"
-                                  placeholder="Cuéntanos sobre tus prácticas agrícolas, tus cosechas y qué hace único a tu campo..."></textarea>
-                    </div>
-
-                    <!-- Aviso informativo regla de negocio Apple Design -->
-                    <div class="ui-alert ui-alert--warning" style="margin-top: 14px; margin-bottom: 24px;">
-                        <i class="fas fa-info-circle"></i>
-                        <span style="font-size: 0.88rem; line-height: 1.45;">
-                            <strong>Aviso importante:</strong> Al convertirte en vendedor esta cuenta quedará configurada exclusivamente para gestionar cosechas y no podrá comprar. Quien desee comprar y vender debe utilizar cuentas separadas.
-                        </span>
-                    </div>
-
-                    <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
-                        <button type="submit" class="ui-btn ui-btn--primary ui-btn--lg" style="flex: 1; min-width: 220px;">
-                            <i class="fas fa-check"></i>
-                            <span>Registrarme como Vendedor</span>
-                        </button>
-                        <a th:href="@{/}" class="ui-btn ui-btn--secondary ui-btn--lg">
-                            <i class="fas fa-arrow-left"></i> Volver al inicio
-                        </a>
-                    </div>
-
-                </form>
-            </section>
 
         </div>
     </main>

@@ -6,9 +6,11 @@ import com.example.demo.Model.Pedido;
 import com.example.demo.Model.Role;
 import com.example.demo.Model.Usuario;
 import com.example.demo.Model.embebidos.PerfilVendedor;
+import com.example.demo.Model.embebidos.UbicacionUsuario;
 import com.example.demo.repository.EnvioRepository;
 import com.example.demo.repository.PedidoRepository;
 import com.example.demo.repository.UsuarioRepository;
+import com.example.demo.repository.CategoriaRepository;
 import com.example.demo.security.CustomUserDetailsService;
 import com.example.demo.services.BilleteraService;
 import com.example.demo.services.OfertaService;
@@ -49,6 +51,9 @@ public class VendedorController {
 
     @Autowired(required = false)
     private UbicacionService ubicacionService;
+
+    @Autowired(required = false)
+    private CategoriaRepository categoriaRepository;
 
     @Autowired(required = false)
     private RetiroService retiroService;
@@ -225,6 +230,33 @@ public class VendedorController {
         }
 
         model.addAttribute("usuario", usuario != null ? usuario : new Usuario());
+        // categorías para el desplegable
+        java.util.List<String> cats = new java.util.ArrayList<>();
+        try {
+            if (categoriaRepository != null) {
+                for (com.example.demo.Model.Categoria c : categoriaRepository.findAll()) {
+                    if (c.getNombre() != null && !c.getNombre().isBlank()) cats.add(c.getNombre());
+                }
+            }
+        } catch (Exception ignored) { }
+        if (cats.isEmpty()) {
+            cats.addAll(java.util.List.of("Frutas", "Verduras", "Lácteos", "Carnes y Aves", "Granos y Cereales",
+                    "Condimentos", "Café y Cacao", "Miel"));
+        }
+        model.addAttribute("categoriasNombres", cats);
+        try {
+            if (ubicacionService != null) {
+                List<String> municipios = ubicacionService.obtenerCiudadesPorNombreDepartamento("Bolívar")
+                        .stream().map(com.example.demo.Model.embebidos.CiudadUbicacion::getNombre)
+                        .sorted(String.CASE_INSENSITIVE_ORDER).toList();
+                model.addAttribute("municipios", municipios);
+            } else {
+                model.addAttribute("municipios", java.util.List.of());
+            }
+        } catch (Exception e) {
+            model.addAttribute("municipios", java.util.List.of());
+        }
+        model.addAttribute("departamento", "Bolívar");
         return "vendedor/registro-vendedor";
     }
 
@@ -239,10 +271,12 @@ public class VendedorController {
             @RequestParam("razonSocial") String razonSocial,
             @RequestParam("telefonoContacto") String telefonoContacto,
             @RequestParam("direccionNegocio") String direccionNegocio,
+            @RequestParam(value = "departamento", required = false) String departamento,
+            @RequestParam(value = "ciudad", required = false) String ciudad,
             @RequestParam(value = "descripcionNegocio", required = false) String descripcionNegocio,
             @RequestParam(value = "cuentaBancaria", required = false) String cuentaBancaria,
             @RequestParam(value = "banco", required = false) String banco,
-            @RequestParam("tipoProductos") String tipoProductos,
+            @RequestParam(value = "tipoProductos", required = false) String tipoProductos,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
         try {
@@ -253,15 +287,53 @@ public class VendedorController {
                 redirectAttributes.addFlashAttribute("error", "La razón social es obligatoria");
                 return "redirect:/vendedor/registro";
             }
-            if (telefonoContacto == null || !telefonoContacto.matches("\\d{7,}")) {
-                redirectAttributes.addFlashAttribute("error",
-                        "El teléfono debe tener al menos 7 dígitos y solo números");
+            // normalizar teléfono
+            String telNorm = telefonoContacto == null ? "" : telefonoContacto.replaceAll("[\\s\\-()]", "");
+            if (telNorm.startsWith("+57")) telNorm = telNorm.substring(3);
+            if (telNorm.startsWith("57") && telNorm.length() == 12) telNorm = telNorm.substring(2);
+            if (!telNorm.matches("^3\\d{9}$")) {
+                redirectAttributes.addFlashAttribute("error", "El teléfono debe ser un celular válido de 10 dígitos que empiece por 3");
                 return "redirect:/vendedor/registro";
             }
+            telefonoContacto = telNorm;
             if (direccionNegocio == null || direccionNegocio.trim().isEmpty()) {
                 redirectAttributes.addFlashAttribute("error", "La dirección del negocio es obligatoria");
                 return "redirect:/vendedor/registro";
             }
+            if (departamento == null || !departamento.equals("Bolívar")) {
+                redirectAttributes.addFlashAttribute("error", "Departamento inválido");
+                return "redirect:/vendedor/registro";
+            }
+            // validar ciudad en lista de municipios
+            boolean ciudadOk = false;
+            try {
+                if (ubicacionService != null && ciudad != null) {
+                    ciudadOk = ubicacionService.obtenerCiudadesPorNombreDepartamento("Bolívar")
+                            .stream().anyMatch(c -> c.getNombre().equalsIgnoreCase(ciudad));
+                }
+            } catch (Exception ignored) { }
+            if (!ciudadOk) {
+                redirectAttributes.addFlashAttribute("error", "Municipio inválido");
+                return "redirect:/vendedor/registro";
+            }
+            // normalizar categorías
+            String catsNorm = "";
+            if (tipoProductos != null && !tipoProductos.trim().isEmpty()) {
+                java.util.LinkedHashSet<String> set = new java.util.LinkedHashSet<>();
+                for (String c : tipoProductos.split(",")) {
+                    String t = c.trim();
+                    if (!t.isEmpty()) set.add(t);
+                }
+                if (set.size() < 1 || set.size() > 4) {
+                    redirectAttributes.addFlashAttribute("error", "Elige entre 1 y 4 categorías");
+                    return "redirect:/vendedor/registro";
+                }
+                catsNorm = String.join(", ", set);
+            } else {
+                redirectAttributes.addFlashAttribute("error", "Elige al menos una categoría");
+                return "redirect:/vendedor/registro";
+            }
+            tipoProductos = catsNorm;
 
             Usuario usuarioActualizado;
             if (usuario != null) {
@@ -322,6 +394,14 @@ public class VendedorController {
                                 java.nio.charset.StandardCharsets.UTF_8);
             }
 
+            // Guardar ubicación (ciudad/departamento) en el usuario
+            if (usuarioActualizado != null) {
+                UbicacionUsuario ub = new UbicacionUsuario();
+                ub.setDepartamento(departamento);
+                ub.setCiudad(ciudad);
+                usuarioActualizado.setUbicacion(ub);
+                usuarioRepository.save(usuarioActualizado);
+            }
             // Actualizar sesión con usuario que ya tiene el perfil embebido
             session.setAttribute("usuarioLogueado", usuarioActualizado);
 

@@ -47,7 +47,7 @@
   margin: 0 0 16px;
 }
 
-.home-page .home-hero__title span {
+.home-page .home-hero__title > span {
   color: var(--c-green);
 }
 
@@ -996,5 +996,122 @@
   .home-page .home-hero__float-card,
   .home-hero__float-card {
     display: none;
+  }
+}
+
+/* ── 9. Ajustes móviles de la página principal (Entrega 1) ───────────────────── */
+/* El margen de 8px del body recortaba el ancho útil y desplazaba el header fijo. */
+@media (max-width: 1024px) {
+  body.home-page {
+    margin: 0;
+  }
+
+  .home-page .home-hero__content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .home-page .home-hero__badge {
+    align-self: center;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .home-page .home-hero__title {
+    text-wrap: balance;
+    max-width: 100%;
+  }
+
+  .home-page .home-hero__subtitle {
+    margin: 0 auto 28px;
+    max-width: 34ch;
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Los tres CTAs comparten eje, ancho completo (máx. 360px) y altura táctil. */
+  .home-page .home-hero__actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    max-width: 360px;
+    margin: 0 auto;
+  }
+
+  .home-page .home-hero__actions .ui-btn {
+    width: 100%;
+    min-height: 48px;
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+/* El JS de fold-text convierte cada carácter en un <span> inline-block, lo que
+   permite cortes de línea en mitad de palabra. En móvil los hacemos inline para
+   que solo se pueda partir entre palabras ("Campo" nunca se divide). */
+@media (max-width: 480px) {
+  .home-page .home-hero__title {
+    font-size: clamp(1.9rem, 8.6vw, 2.4rem);
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    overflow-wrap: normal;
+    word-break: normal;
+    hyphens: manual;
+    text-wrap: balance;
+  }
+
+  .home-page .home-hero__title .fold-text-char,
+  .home-page .home-hero__title > span > .fold-text-char {
+    display: inline;
+    vertical-align: baseline;
+    will-change: opacity;
+  }
+}
+
+/* Cabeceras de sección: en móvil el enlace "Ver todas..." se salía del viewport.
+   Se apilan y el enlace puede envolver en lugar de recortarse. */
+@media (max-width: 640px) {
+  .home-page .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .home-page .section-header > div {
+    min-width: 0;
+  }
+
+  .home-page .section-header__link {
+    white-space: normal;
+    flex-wrap: wrap;
+    max-width: 100%;
+    min-height: 44px;
+  }
+
+  /* Evita el doble padding lateral: el contenedor ya aporta 16px. */
+  .home-page .cta-duo {
+    padding: 0 0 36px;
+  }
+
+  .home-page .cta-box {
+    min-width: 0;
+  }
+
+  .home-page .cta-box__title,
+  .home-page .cta-box__desc {
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+
+  .home-page .cat-tile {
+    min-width: 0;
   }
 }

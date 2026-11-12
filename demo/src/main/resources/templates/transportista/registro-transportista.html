@@ -25,22 +25,291 @@
     <header th:replace="~{fragments/header :: siteHeader}"></header>
 
     <main>
+        <!-- ENCABEZADO DE PÁGINA -->
+        <header class="tp-reg-hero">
+            <span class="tp-badge">
+                <i class="fas fa-truck-fast"></i> Red Logística Agrícola
+            </span>
+
+            <h1 class="tp-info-title">
+                Conecta el campo con la ciudad y <span>genera ingresos</span>
+            </h1>
+
+            <p class="tp-info-subtitle">
+                Transporta cosechas frescas directamente desde las fincas campesinas de Bolívar hacia los
+                hogares y compradores urbanos e institucionales.
+            </p>
+        </header>
+
+        <!-- INDICADOR DE PASOS -->
+        <nav class="tp-steps" aria-label="Progreso de registro">
+            <ol class="checkout-steps">
+                <li class="checkout-steps__item">
+                    <span class="checkout-steps__num">1</span>
+                    <span class="tp-step-name">Modalidad y cuenta</span>
+                </li>
+                <li class="checkout-steps__item">
+                    <span class="checkout-steps__num">2</span>
+                    <span class="tp-step-name">Tu vehículo</span>
+                </li>
+                <li class="checkout-steps__item">
+                    <span class="checkout-steps__num">3</span>
+                    <span class="tp-step-name">Zonas de cobertura</span>
+                </li>
+            </ol>
+        </nav>
+
         <div class="tp-reg-container">
 
-            <!-- ═══ COLUMNA INFORMATIVA IZQUIERDA ═══ -->
-            <aside class="tp-info-panel" aria-label="Beneficios de unirse como transportista">
-                <span class="tp-badge">
-                    <i class="fas fa-truck-fast"></i> Red Logística Agrícola
-                </span>
+            <!-- ═══ COLUMNA 1: FORMULARIO ═══ -->
+            <form th:action="@{/transportista/guardar}" method="post" id="formRegistroTransportista" class="tp-reg-form">
 
-                <h1 class="tp-info-title">
-                    Conecta el campo con la ciudad y <span>genera ingresos</span>
-                </h1>
+                <!-- Alertas del Servidor -->
+                <div th:if="${error}" class="ui-alert ui-alert--danger">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span th:text="${error}"></span>
+                </div>
 
-                <p class="tp-info-subtitle">
-                    Transporta cosechas frescas directamente desde las fincas campesinas de Bolívar hacia los
-                    hogares y compradores urbanos e institucionales.
-                </p>
+                <div th:if="${mensaje}" class="ui-alert ui-alert--success">
+                    <i class="fas fa-check-circle"></i>
+                    <span th:text="${mensaje}"></span>
+                </div>
+
+                <!-- PASO 1: MODALIDAD Y CUENTA -->
+                <section class="tp-section" aria-labelledby="modalidad-title">
+                    <h2 class="tp-section__title" id="modalidad-title">
+                        <span class="tp-section__num">1</span> Modalidad y cuenta
+                    </h2>
+                    <p class="tp-section__desc">
+                        Elige cómo operarás y crea tus datos de acceso a Cultivus.
+                    </p>
+
+                    <div class="tipo-selector">
+                        <div>
+                            <input type="radio" id="tipoIndependiente" name="tipo" value="INDEPENDIENTE"
+                                   checked style="display:none;" onchange="toggleTipoTransportista()">
+                            <label for="tipoIndependiente" class="tipo-option-label">
+                                <i class="fas fa-truck-pickup"></i>
+                                <div>
+                                    <div class="tipo-option-title">Independiente</div>
+                                    <div class="tipo-option-desc">Vehículo propio / Conductor</div>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div>
+                            <input type="radio" id="tipoEmpresa" name="tipo" value="EMPRESA"
+                                   style="display:none;" onchange="toggleTipoTransportista()">
+                            <label for="tipoEmpresa" class="tipo-option-label">
+                                <i class="fas fa-building"></i>
+                                <div>
+                                    <div class="tipo-option-title">Empresa Logística</div>
+                                    <div class="tipo-option-desc">Razón Social / NIT / Flota</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Datos de acceso solo si no hay sesión -->
+                    <th:block th:if="${session.usuarioLogueado == null}">
+                        <div class="tp-subsection">
+                            <h3 class="tp-subsection__title">Datos de acceso</h3>
+
+                            <div class="input-group">
+                                <label for="nombre">Nombre completo del representante o conductor:</label>
+                                <input type="text" id="nombre" name="nombre" placeholder="Ej. Carlos Mendoza" required>
+                            </div>
+
+                            <div class="form-grid-2">
+                                <div class="input-group">
+                                    <label for="email">Correo electrónico:</label>
+                                    <input type="email" id="email" name="email" placeholder="carlos@correo.com" required>
+                                </div>
+                                <div class="input-group">
+                                    <label for="contrasena">Contraseña:</label>
+                                    <input type="password" id="contrasena" name="contrasena" placeholder="Mínimo 6 caracteres" required minlength="6">
+                                </div>
+                            </div>
+                        </div>
+                    </th:block>
+                </section>
+
+                <!-- PASO 2: VEHÍCULO -->
+                <section class="tp-section" aria-labelledby="vehiculo-title">
+                    <h2 class="tp-section__title" id="vehiculo-title">
+                        <span class="tp-section__num">2</span> Tu vehículo
+                    </h2>
+                    <p class="tp-section__desc">
+                        Cuéntanos qué vehículo usarás y cómo te contactan para las rutas.
+                    </p>
+
+                    <!-- Bloque exclusivo Empresa (NIT y Razón Social) -->
+                    <div id="seccionEmpresa" style="display: none;" class="tp-corporate-block">
+                        <h3 class="tp-subsection__title">
+                            <i class="fas fa-building"></i> Información corporativa
+                        </h3>
+
+                        <div class="form-grid-2">
+                            <div class="input-group">
+                                <label for="nit">NIT de la Empresa:</label>
+                                <input type="text" id="nit" name="nit" placeholder="Ej. 901.234.567-8">
+                            </div>
+                            <div class="input-group">
+                                <label for="razonSocial">Razón Social:</label>
+                                <input type="text" id="razonSocial" name="razonSocial" placeholder="Ej. Logística y Envíos del Caribe S.A.S.">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="tp-field-block">
+                        <label class="tp-field-label">
+                            Tipo de Vehículo Principal / Flota:
+                        </label>
+                        <div class="vehicle-type-select">
+                            <div>
+                                <input type="radio" id="vehiculoCamioneta" name="tipoVehiculo"
+                                       value="Camioneta Pick-up" checked style="display:none;">
+                                <label for="vehiculoCamioneta" class="vehicle-radio-label">
+                                    <i class="fas fa-truck-pickup"></i>
+                                    <span>Pick-up</span>
+                                </label>
+                            </div>
+                            <div>
+                                <input type="radio" id="vehiculoTurbo" name="tipoVehiculo"
+                                       value="Furgón Turbo" style="display:none;">
+                                <label for="vehiculoTurbo" class="vehicle-radio-label">
+                                    <i class="fas fa-truck"></i>
+                                    <span>Turbo / Furgón</span>
+                                </label>
+                            </div>
+                            <div>
+                                <input type="radio" id="vehiculoCamion" name="tipoVehiculo"
+                                       value="Camión Pesado" style="display:none;">
+                                <label for="vehiculoCamion" class="vehicle-radio-label">
+                                    <i class="fas fa-truck-moving"></i>
+                                    <span>Camión C2/C3</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <!-- Campos para Independiente -->
+                        <div class="input-group" id="grupoPlaca">
+                            <label for="placa">Placa del vehículo:</label>
+                            <input type="text" id="placa" name="placa" placeholder="Ej. ABC-123" style="text-transform: uppercase;">
+                        </div>
+                        <div class="input-group" id="grupoLicencia">
+                            <label for="licenciaConduccion">Licencia de Conducción:</label>
+                            <input type="text" id="licenciaConduccion" name="licenciaConduccion" placeholder="Categoría C1, C2 o C3">
+                        </div>
+                    </div>
+
+                    <div class="form-grid-2">
+                        <div class="input-group">
+                            <label for="capacidadCargaKg">Capacidad de carga (Kg):</label>
+                            <input type="number" id="capacidadCargaKg" name="capacidadCargaKg" placeholder="Ej. 1500" required min="50" step="50" value="1000">
+                        </div>
+                        <div class="input-group">
+                            <label for="telefonoContacto">Teléfono / WhatsApp de Ruta:</label>
+                            <input type="tel" id="telefonoContacto" name="telefonoContacto" placeholder="Ej. 3001234567" required>
+                        </div>
+                    </div>
+
+                    <label class="custom-checkbox-row">
+                        <input type="checkbox" name="refrigerado" value="true">
+                        <span style="font-size: 0.9rem; font-weight: 600; color: var(--c-ink);">
+                            <i class="fas fa-snowflake" style="color: var(--c-green); margin-right: 6px;"></i>
+                            Cuenta con sistema de refrigeración / Cadena de frío
+                        </span>
+                    </label>
+                </section>
+
+                <!-- PASO 3: ZONAS DE COBERTURA -->
+                <section class="tp-section" aria-labelledby="zonas-title">
+                    <h2 class="tp-section__title" id="zonas-title">
+                        <span class="tp-section__num">3</span> Zonas de cobertura
+                    </h2>
+                    <p class="tp-section__desc">
+                        Selecciona las subregiones de Bolívar donde operarás para recolecciones y entregas.
+                    </p>
+
+                    <!-- Banner en línea para validación de zonas -->
+                    <div id="errorZonasBanner" class="ui-alert ui-alert--danger" style="display: none;">
+                        <i class="fas fa-triangle-exclamation"></i>
+                        <span>Debes seleccionar al menos una zona de cobertura en Bolívar para continuar.</span>
+                    </div>
+
+                    <div class="zonas-heading">
+                        <button type="button" onclick="abrirModalZonas()" class="ui-btn ui-btn--tertiary ui-btn--sm" style="padding: 0 4px;">
+                            <i class="fas fa-circle-question"></i> ¿No conoces tus zonas?
+                        </button>
+                    </div>
+
+                    <div class="zonas-container-box">
+                        <p style="font-size: 0.85rem; color: var(--c-earth); margin: 0 0 14px;">
+                            Selecciona las subregiones de Bolívar donde operarás para recolecciones y entregas:
+                        </p>
+
+                        <!-- Checkbox Maestro: Todas las Zonas -->
+                        <label class="custom-checkbox-row" style="background: var(--c-green-soft); border-color: rgba(54, 122, 69, 0.28); margin-top: 0; margin-bottom: 14px;">
+                            <input type="checkbox" id="todasLasZonas" name="todasLasZonas" value="true" onchange="toggleTodasLasZonas(this)">
+                            <div>
+                                <strong style="color: var(--c-green-dark); font-size: 0.92rem; display: block;">
+                                    Todas las zonas de Bolívar
+                                </strong>
+                                <span style="font-size: 0.78rem; color: var(--c-earth);">
+                                    Cubre los 46 municipios (Dique, Montes de María, Mojana, Momposina, Loba y Magdalena Medio)
+                                </span>
+                            </div>
+                        </label>
+
+                        <!-- Listado de 6 Zonas con Acordeón -->
+                        <div class="zonas-list" id="zonasList">
+                            <div th:each="zona : ${zonasCatalogo}" class="zone-card">
+                                <div class="zone-card-header">
+                                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; flex: 1;">
+                                        <input type="checkbox" name="zonasCoberturaIds" th:value="${zona.id}"
+                                               class="zona-checkbox" onchange="onZonaIndividualChange()" style="width: 18px; height: 18px; accent-color: var(--c-green);">
+                                        <span style="font-size: 0.9rem; font-weight: 600; color: var(--c-ink);">
+                                            Zona <span th:text="${zona.id}">1</span>: <span th:text="${zona.nombre}">Dique</span>
+                                        </span>
+                                        <span class="ui-chip ui-chip--wheat" style="font-size: 0.72rem; padding: 2px 8px;">
+                                            <span th:text="${zona.municipios.size()}">13</span> municipios
+                                        </span>
+                                    </label>
+                                    <button type="button" class="municipios-toggle-btn"
+                                            th:data-target="'#muni-collapse-' + ${zona.id}"
+                                            onclick="toggleMunicipios(this)">
+                                        <span>Ver municipios</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </button>
+                                </div>
+                                <div th:id="'muni-collapse-' + ${zona.id}" class="municipios-collapse">
+                                    <span th:each="muni : ${zona.municipios}" class="muni-tag" th:text="${muni}">Cartagena</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ACCIONES FINALES -->
+                    <div class="tp-submit-row">
+                        <button type="submit" class="ui-btn ui-btn--primary ui-btn--lg" id="btnSubmitTransportista">
+                            <i class="fas fa-truck-fast"></i>
+                            <span>Registrarme como Transportista</span>
+                        </button>
+
+                        <a th:href="@{/}" class="ui-btn ui-btn--secondary ui-btn--lg">
+                            <i class="fas fa-arrow-left"></i> Volver al inicio
+                        </a>
+                    </div>
+                </section>
+
+            </form>
+
+            <!-- ═══ COLUMNA 2: ASIDE STICKY ═══ -->
+            <aside class="tp-aside" aria-label="Beneficios de unirse como transportista">
+                <h2 class="tp-aside__title">Tu ruta con Cultivus</h2>
 
                 <div class="tp-benefits-list">
                     <div class="tp-benefit-item">
@@ -83,250 +352,6 @@
                 </div>
             </aside>
 
-            <!-- ═══ COLUMNA FORMULARIO DERECHA ═══ -->
-            <section class="tp-form-card" aria-label="Formulario de registro">
-                <header class="tp-form-header">
-                    <h2>Registro de Transportista</h2>
-                    <p>Elige tu modalidad, datos del vehículo y selecciona tus zonas de cobertura en Bolívar.</p>
-                </header>
-
-                <!-- Alertas del Servidor -->
-                <div th:if="${error}" class="ui-alert ui-alert--danger">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <span th:text="${error}"></span>
-                </div>
-
-                <div th:if="${mensaje}" class="ui-alert ui-alert--success">
-                    <i class="fas fa-check-circle"></i>
-                    <span th:text="${mensaje}"></span>
-                </div>
-
-                <!-- Banner en línea para validación de zonas -->
-                <div id="errorZonasBanner" class="ui-alert ui-alert--danger" style="display: none;">
-                    <i class="fas fa-triangle-exclamation"></i>
-                    <span>Debes seleccionar al menos una zona de cobertura en Bolívar para continuar.</span>
-                </div>
-
-                <form th:action="@{/transportista/guardar}" method="post" id="formRegistroTransportista">
-
-                    <!-- SECCIÓN 1: MODALIDAD -->
-                    <div class="tp-form-section">
-                        <div class="tp-section-heading">
-                            <span class="tp-section-num">1</span>
-                            <h3 class="tp-section-title">Modalidad de Transporte</h3>
-                        </div>
-
-                        <div class="tipo-selector">
-                            <div>
-                                <input type="radio" id="tipoIndependiente" name="tipo" value="INDEPENDIENTE"
-                                       checked style="display:none;" onchange="toggleTipoTransportista()">
-                                <label for="tipoIndependiente" class="tipo-option-label">
-                                    <i class="fas fa-truck-pickup"></i>
-                                    <div>
-                                        <div class="tipo-option-title">Independiente</div>
-                                        <div class="tipo-option-desc">Vehículo propio / Conductor</div>
-                                    </div>
-                                </label>
-                            </div>
-
-                            <div>
-                                <input type="radio" id="tipoEmpresa" name="tipo" value="EMPRESA"
-                                       style="display:none;" onchange="toggleTipoTransportista()">
-                                <label for="tipoEmpresa" class="tipo-option-label">
-                                    <i class="fas fa-building"></i>
-                                    <div>
-                                        <div class="tipo-option-title">Empresa Logística</div>
-                                        <div class="tipo-option-desc">Razón Social / NIT / Flota</div>
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- SECCIÓN 2: DATOS DE ACCESO Y CONTACTO (si no está logueado) -->
-                    <th:block th:if="${session.usuarioLogueado == null}">
-                        <div class="tp-form-section">
-                            <div class="tp-section-heading">
-                                <span class="tp-section-num">2</span>
-                                <h3 class="tp-section-title">Datos de Acceso y Contacto</h3>
-                            </div>
-
-                            <div class="input-group">
-                                <label for="nombre">Nombre completo del representante o conductor:</label>
-                                <input type="text" id="nombre" name="nombre" placeholder="Ej. Carlos Mendoza" required>
-                            </div>
-
-                            <div class="form-grid-2">
-                                <div class="input-group">
-                                    <label for="email">Correo electrónico:</label>
-                                    <input type="email" id="email" name="email" placeholder="carlos@correo.com" required>
-                                </div>
-                                <div class="input-group">
-                                    <label for="contrasena">Contraseña:</label>
-                                    <input type="password" id="contrasena" name="contrasena" placeholder="Mínimo 6 caracteres" required minlength="6">
-                                </div>
-                            </div>
-                        </div>
-                    </th:block>
-
-                    <!-- SECCIÓN EXCLUSIVA EMPRESA (NIT y Razón Social) -->
-                    <div id="seccionEmpresa" style="display: none;" class="tp-form-section">
-                        <div class="tp-section-heading">
-                            <span class="tp-section-num"><i class="fas fa-building"></i></span>
-                            <h3 class="tp-section-title">Información Corporativa</h3>
-                        </div>
-
-                        <div class="form-grid-2">
-                            <div class="input-group">
-                                <label for="nit">NIT de la Empresa:</label>
-                                <input type="text" id="nit" name="nit" placeholder="Ej. 901.234.567-8">
-                            </div>
-                            <div class="input-group">
-                                <label for="razonSocial">Razón Social:</label>
-                                <input type="text" id="razonSocial" name="razonSocial" placeholder="Ej. Logística y Envíos del Caribe S.A.S.">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- SECCIÓN 3: VEHÍCULO Y CAPACIDAD -->
-                    <div class="tp-form-section">
-                        <div class="tp-section-heading">
-                            <span class="tp-section-num">3</span>
-                            <h3 class="tp-section-title">Vehículo y Capacidad</h3>
-                        </div>
-
-                        <div style="margin-bottom: 16px;">
-                            <label style="font-size: 0.85rem; font-weight: 600; color: var(--c-ink); display: block; margin-bottom: 8px;">
-                                Tipo de Vehículo Principal / Flota:
-                            </label>
-                            <div class="vehicle-type-select">
-                                <div>
-                                    <input type="radio" id="vehiculoCamioneta" name="tipoVehiculo"
-                                           value="Camioneta Pick-up" checked style="display:none;">
-                                    <label for="vehiculoCamioneta" class="vehicle-radio-label">
-                                        <i class="fas fa-truck-pickup"></i>
-                                        <span>Pick-up</span>
-                                    </label>
-                                </div>
-                                <div>
-                                    <input type="radio" id="vehiculoTurbo" name="tipoVehiculo"
-                                           value="Furgón Turbo" style="display:none;">
-                                    <label for="vehiculoTurbo" class="vehicle-radio-label">
-                                        <i class="fas fa-truck"></i>
-                                        <span>Turbo / Furgón</span>
-                                    </label>
-                                </div>
-                                <div>
-                                    <input type="radio" id="vehiculoCamion" name="tipoVehiculo"
-                                           value="Camión Pesado" style="display:none;">
-                                    <label for="vehiculoCamion" class="vehicle-radio-label">
-                                        <i class="fas fa-truck-moving"></i>
-                                        <span>Camión C2/C3</span>
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-grid-2">
-                            <!-- Campos para Independiente -->
-                            <div class="input-group" id="grupoPlaca">
-                                <label for="placa">Placa del vehículo:</label>
-                                <input type="text" id="placa" name="placa" placeholder="Ej. ABC-123" style="text-transform: uppercase;">
-                            </div>
-                            <div class="input-group" id="grupoLicencia">
-                                <label for="licenciaConduccion">Licencia de Conducción:</label>
-                                <input type="text" id="licenciaConduccion" name="licenciaConduccion" placeholder="Categoría C1, C2 o C3">
-                            </div>
-                        </div>
-
-                        <div class="form-grid-2">
-                            <div class="input-group">
-                                <label for="capacidadCargaKg">Capacidad de carga (Kg):</label>
-                                <input type="number" id="capacidadCargaKg" name="capacidadCargaKg" placeholder="Ej. 1500" required min="50" step="50" value="1000">
-                            </div>
-                            <div class="input-group">
-                                <label for="telefonoContacto">Teléfono / WhatsApp de Ruta:</label>
-                                <input type="tel" id="telefonoContacto" name="telefonoContacto" placeholder="Ej. 3001234567" required>
-                            </div>
-                        </div>
-
-                        <label class="custom-checkbox-row">
-                            <input type="checkbox" name="refrigerado" value="true">
-                            <span style="font-size: 0.9rem; font-weight: 600; color: var(--c-ink);">
-                                <i class="fas fa-snowflake" style="color: var(--c-green); margin-right: 6px;"></i>
-                                Cuenta con sistema de refrigeración / Cadena de frío
-                            </span>
-                        </label>
-                    </div>
-
-                    <!-- SECCIÓN 4: ZONAS DE COBERTURA EN BOLÍVAR -->
-                    <div class="tp-form-section">
-                        <div class="tp-section-heading">
-                            <span class="tp-section-num">4</span>
-                            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; flex-wrap: wrap; gap: 8px;">
-                                <h3 class="tp-section-title">Zonas de Cobertura en Bolívar</h3>
-                                <button type="button" onclick="abrirModalZonas()" class="ui-btn ui-btn--tertiary ui-btn--sm" style="padding: 0 4px;">
-                                    <i class="fas fa-circle-question"></i> ¿No conoces tus zonas?
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="zonas-container-box">
-                            <p style="font-size: 0.85rem; color: var(--c-earth); margin: 0 0 14px;">
-                                Selecciona las subregiones de Bolívar donde operarás para recolecciones y entregas:
-                            </p>
-
-                            <!-- Checkbox Maestro: Todas las Zonas -->
-                            <label class="custom-checkbox-row" style="background: var(--c-green-soft); border-color: rgba(54, 122, 69, 0.28); margin-top: 0; margin-bottom: 14px;">
-                                <input type="checkbox" id="todasLasZonas" name="todasLasZonas" value="true" onchange="toggleTodasLasZonas(this)">
-                                <div>
-                                    <strong style="color: var(--c-green-dark); font-size: 0.92rem; display: block;">
-                                        Todas las zonas de Bolívar
-                                    </strong>
-                                    <span style="font-size: 0.78rem; color: var(--c-earth);">
-                                        Cubre los 46 municipios (Dique, Montes de María, Mojana, Momposina, Loba y Magdalena Medio)
-                                    </span>
-                                </div>
-                            </label>
-
-                            <!-- Listado de 6 Zonas con Acordeón -->
-                            <div class="zonas-list" id="zonasList">
-                                <div th:each="zona : ${zonasCatalogo}" class="zone-card">
-                                    <div class="zone-card-header">
-                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; flex: 1;">
-                                            <input type="checkbox" name="zonasCoberturaIds" th:value="${zona.id}"
-                                                   class="zona-checkbox" onchange="onZonaIndividualChange()" style="width: 18px; height: 18px; accent-color: var(--c-green);">
-                                            <span style="font-size: 0.9rem; font-weight: 600; color: var(--c-ink);">
-                                                Zona <span th:text="${zona.id}">1</span>: <span th:text="${zona.nombre}">Dique</span>
-                                            </span>
-                                            <span class="ui-chip ui-chip--wheat" style="font-size: 0.72rem; padding: 2px 8px;">
-                                                <span th:text="${zona.municipios.size()}">13</span> municipios
-                                            </span>
-                                        </label>
-                                        <button type="button" class="municipios-toggle-btn"
-                                                th:data-target="'#muni-collapse-' + ${zona.id}"
-                                                onclick="toggleMunicipios(this)">
-                                            <span>Ver municipios</span>
-                                            <i class="fas fa-chevron-down"></i>
-                                        </button>
-                                    </div>
-                                    <div th:id="'muni-collapse-' + ${zona.id}" class="municipios-collapse">
-                                        <span th:each="muni : ${zona.municipios}" class="muni-tag" th:text="${muni}">Cartagena</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- BOTÓN DE ENVÍO -->
-                    <button type="submit" class="ui-btn ui-btn--primary ui-btn--full ui-btn--lg" id="btnSubmitTransportista">
-                        <i class="fas fa-truck-fast"></i>
-                        <span>Registrarme como Transportista</span>
-                    </button>
-
-                </form>
-            </section>
-
         </div>
     </main>
 
@@ -364,7 +389,7 @@
                                 Zona <span th:text="${zona.id}">1</span>: <span th:text="${zona.nombre}">Dique</span>
                             </strong>
                             <span class="ui-chip ui-chip--wheat" style="font-size: 0.72rem; padding: 2px 6px;"
-                                  th:text="${zona.municipios.size()} + ' municipios'">13</span>
+                                  th:text="${zona.municipios.size()} + ' municipios'">13 municipios</span>
                         </div>
                         <div class="modal-zona-munis" style="display: flex; flex-wrap: wrap; gap: 4px;">
                             <span th:each="muni : ${zona.municipios}" class="muni-tag modal-muni-item"
@@ -514,6 +539,7 @@
             toggleTipoTransportista();
         });
     </script>
+    <script th:src="@{/js/registro-transportista-pasos.js}" defer></script>
 </body>
 
 </html>

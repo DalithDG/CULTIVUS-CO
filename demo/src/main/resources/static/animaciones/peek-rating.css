@@ -1,0 +1,76 @@
+/* Inspirado en React Bits (github.com/DavidHDev/react-bits), licencia MIT + Commons Clause. Reescrito en CSS/JS vanilla para CULTIVUS-CO */
+.pr-wrap {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    gap: 4px;
+}
+
+.pr-stars {
+    display: flex;
+    gap: 6px;
+    position: relative;
+}
+
+.pr-star {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: #9ca3af;
+    transition: transform 0.18s ease, color 0.18s ease;
+    line-height: 1;
+}
+
+.pr-star svg {
+    width: 28px;
+    height: 28px;
+    display: block;
+}
+
+.pr-star.pr-active {
+    color: #f5b400;
+}
+
+.pr-star.is-lifted {
+    transform: translateY(-6px);
+}
+
+.pr-star.is-hover {
+    transform: translateY(-6px) scale(1.15);
+}
+
+.pr-star:disabled {
+    cursor: default;
+}
+
+.pr-label {
+    position: absolute;
+    top: -30px;
+    transform: translateX(-50%);
+    background: var(--c-ink, #30372D);
+    color: #fff;
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+    z-index: 2;
+}
+
+.pr-label.is-visible {
+    opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pr-star {
+        transition: color 0.18s ease;
+    }
+    .pr-star.is-lifted,
+    .pr-star.is-hover {
+        transform: none;
+    }
+}

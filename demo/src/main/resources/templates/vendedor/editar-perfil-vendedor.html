@@ -48,7 +48,7 @@
                         <!-- Teléfono -->
                         <div class="field">
                             <label for="telefonoContacto">Teléfono de Contacto *</label>
-                            <input type="tel" id="telefonoContacto" name="telefonoContacto" th:value="${perfilVendedor != null ? perfilVendedor.telefonoContacto : ''}" required>
+                            <input type="tel" id="telefonoContacto" name="telefonoContacto" th:value="${perfilVendedor != null ? perfilVendedor.telefonoContacto : ''}" required inputmode="numeric" autocomplete="tel-national" maxlength="12">
                         </div>
 
                         <!-- Dirección -->
@@ -124,6 +124,8 @@
         </footer>
     </main>
 
+    <script defer th:src="@{/js/municipios-bolivar.js}"></script>
+    <script defer th:src="@{/js/registro-vendedor.js}"></script>
     <script th:src="@{/js/header.js}"></script>
 </body>
 
