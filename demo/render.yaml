@@ -44,6 +44,15 @@ services:
         sync: false
       - key: CLOUDINARY_API_SECRET
         sync: false
+      # Datos de demostración para la expo. Por defecto están apagados (sin valor = false).
+      # SEED_DEMO_DATA=true siembra; SEED_DEMO_CLEANUP=true borra solo datos con marcadores DEMO.
+      # SEED_DEMO_PASSWORD es la clave de las cuentas demo: no se versiona ni se registra en logs.
+      - key: SEED_DEMO_DATA
+        sync: false
+      - key: SEED_DEMO_CLEANUP
+        sync: false
+      - key: SEED_DEMO_PASSWORD
+        sync: false
       #- key: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID
       #  sync: false
       #- key: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET
