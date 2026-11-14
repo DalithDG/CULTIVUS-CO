@@ -21,7 +21,7 @@ services:
       - key: APP_BASE_URL
         sync: false
       - key: MAIL_WEBHOOK_URL
-        value: https://script.google.com/macros/s/AKfycbwj7liB3oi7bq0Dgwr_ytQ41mgEPe4Rd2_HTpF5lMiTlD9Y8ORT0-A5O9XPYWbeE7NJ2A/exec
+        sync: false
       # SMTP Gmail. MAIL_PASSWORD es una contraseña de aplicación, nunca la del correo.
       - key: MAIL_HOST
         value: smtp.gmail.com
@@ -43,6 +43,25 @@ services:
       - key: CLOUDINARY_API_KEY
         sync: false
       - key: CLOUDINARY_API_SECRET
+        sync: false
+      # Datos de demostración para la expo. Por defecto están apagados (sin valor = false).
+      # SEED_DEMO_DATA=true siembra; SEED_DEMO_CLEANUP=true borra solo datos con marcadores DEMO.
+      # SEED_DEMO_PASSWORD es la clave de las cuentas demo: no se versiona ni se registra en logs.
+      - key: SEED_DEMO_DATA
+        sync: false
+      - key: SEED_DEMO_CLEANUP
+        sync: false
+      - key: SEED_DEMO_PASSWORD
+        sync: false
+      # Cuentas iniciales de DataLoader. Sin valor no se crean y no hay clave por defecto.
+      # *_FORCE_RESET=true restablece la contraseña una sola vez; luego se desactiva.
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_PASSWORD_FORCE_RESET
+        sync: false
+      - key: TRANSPORTISTA_DEMO_PASSWORD
+        sync: false
+      - key: TRANSPORTISTA_DEMO_PASSWORD_FORCE_RESET
         sync: false
       #- key: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID
       #  sync: false

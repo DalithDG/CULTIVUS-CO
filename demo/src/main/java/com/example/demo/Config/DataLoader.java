@@ -14,19 +14,22 @@ import com.example.demo.repository.UsuarioRepository;
 import com.example.demo.repository.ZonaMunicipioRepository;
 import com.example.demo.services.AppConfigService;
 import com.example.demo.services.CatalogoInicializador;
+import com.example.demo.services.PasswordPolicy;
 import com.example.demo.services.ZonasLogistica;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.env.Environment;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Component
 @Order(1)
@@ -41,10 +44,12 @@ public class DataLoader implements CommandLineRunner {
     private final TarifaEnvioRepository tarifaEnvioRepository;
     private final UbicacionRepository ubicacionRepository;
     private final CatalogoInicializador catalogoInicializador;
+    private final Environment environment;
 
     public DataLoader(UsuarioRepository usuarioRepository, PasswordEncoder passwordEncoder,
             AppConfigService configService, ZonaMunicipioRepository zonaMunicipioRepository,
             TarifaEnvioRepository tarifaEnvioRepository, UbicacionRepository ubicacionRepository,
+            Environment environment,
             @Autowired(required = false) CatalogoInicializador catalogoInicializador) {
         this.usuarioRepository = usuarioRepository;
         this.passwordEncoder = passwordEncoder;
@@ -52,20 +57,28 @@ public class DataLoader implements CommandLineRunner {
         this.zonaMunicipioRepository = zonaMunicipioRepository;
         this.tarifaEnvioRepository = tarifaEnvioRepository;
         this.ubicacionRepository = ubicacionRepository;
+        this.environment = environment;
         this.catalogoInicializador = catalogoInicializador;
     }
 
     private static final String ADMIN_EMAIL = "admin1@demo.com";
-    private static final String ADMIN_PASSWORD = "Admin1234!";
+    private static final String ADMIN_PASSWORD_VAR = "ADMIN_PASSWORD";
+    private static final String ADMIN_FORCE_RESET_VAR = "ADMIN_PASSWORD_FORCE_RESET";
+    private static final String TRANSPORTISTA_EMAIL = "transportista@demo.com";
+    private static final String TRANSPORTISTA_PASSWORD_VAR = "TRANSPORTISTA_DEMO_PASSWORD";
+    private static final String TRANSPORTISTA_FORCE_RESET_VAR = "TRANSPORTISTA_DEMO_PASSWORD_FORCE_RESET";
 
     @Override
     public void run(String... args) {
         try {
             logger.info("🚀 Iniciando DataLoader...");
 
+            String adminPassword = leerVariable(ADMIN_PASSWORD_VAR);
+            boolean adminForceReset = "true".equalsIgnoreCase(leerVariable(ADMIN_FORCE_RESET_VAR));
+
             usuarioRepository.findByEmail(ADMIN_EMAIL).ifPresentOrElse(
-                    admin -> migrarAdminSiEsNecesario(admin),
-                    () -> crearAdmin());
+                    admin -> procesarAdminExistente(admin, adminPassword, adminForceReset),
+                    () -> crearAdmin(adminPassword));
 
             crearTransportistaDemoSiNoExiste();
 
@@ -86,98 +99,173 @@ public class DataLoader implements CommandLineRunner {
     }
 
     /**
-     * Si el admin ya existe pero su contraseña no está hasheada con BCrypt,
-     * se actualiza automáticamente para no dejar contraseñas en texto plano.
+     * Procesa un admin que ya existe sin restablecer su contraseña en cada
+     * arranque. Solo la actualiza si {@code ADMIN_PASSWORD_FORCE_RESET=true},
+     * {@code ADMIN_PASSWORD} está definida y cumple la política. La comparación
+     * con el hash actual hace que el restablecimiento sea idempotente: una vez
+     * aplicado, dejar la variable activa no vuelve a cambiarla.
      */
-    private void migrarAdminSiEsNecesario(Usuario admin) {
+    private void procesarAdminExistente(Usuario admin, String adminPassword, boolean forceReset) {
         if (!admin.isEmailVerificado()) {
             admin.setEmailVerificado(true);
             usuarioRepository.save(admin);
         }
+
         String contrasenaActual = admin.getContrasena();
 
-        // BCrypt siempre empieza con "$2a$", "$2b$" o "$2y$"
-        boolean yaEstaHasheada = contrasenaActual != null &&
-                contrasenaActual.startsWith("$2");
+        // BCrypt siempre empieza con "$2a$", "$2b$" o "$2y$".
+        boolean yaEstaHasheada = contrasenaActual != null && contrasenaActual.startsWith("$2");
 
-        if (!yaEstaHasheada) {
-            logger.warn("⚠️  Admin encontrado con contraseña en texto plano. Migrando a BCrypt...");
+        if (!yaEstaHasheada && contrasenaActual != null) {
+            // No cambia la contraseña: solo protege el mismo valor con BCrypt.
+            logger.warn("Admin existente con contraseña sin BCrypt. Migrando el hash sin cambiar la contraseña.");
             admin.setContrasena(passwordEncoder.encode(contrasenaActual));
             usuarioRepository.save(admin);
-            logger.info("✅ Contraseña del admin migrada a BCrypt correctamente");
-        } else {
-            if (!passwordEncoder.matches(ADMIN_PASSWORD, contrasenaActual)) {
-                logger.info("⚠️  La contraseña en BD no coincide con ADMIN_PASSWORD. Actualizando...");
-                admin.setContrasena(passwordEncoder.encode(ADMIN_PASSWORD));
-                usuarioRepository.save(admin);
-                logger.info("✅ Contraseña del admin actualizada a la definida en código.");
-            } else {
-                logger.info("ℹ️  Usuario ADMIN ya existe con contraseña hasheada y es correcta. Sin cambios.");
-            }
+            contrasenaActual = admin.getContrasena();
         }
+
+        if (!forceReset) {
+            logger.info("Admin existente: contraseña sin cambios. "
+                    + "Define {} = true solo para restablecerla una vez.", ADMIN_FORCE_RESET_VAR);
+            return;
+        }
+
+        restablecerContrasenaSiCorresponde(admin, "admin " + ADMIN_EMAIL, ADMIN_PASSWORD_VAR,
+                ADMIN_FORCE_RESET_VAR, adminPassword, contrasenaActual);
     }
 
-    private void crearAdmin() {
+    private void crearAdmin(String adminPassword) {
+        if (adminPassword == null) {
+            logger.error("No se crea el admin {}: falta la variable {}. "
+                    + "Defínela y vuelve a desplegar.", ADMIN_EMAIL, ADMIN_PASSWORD_VAR);
+            return;
+        }
+        String errorPolitica = PasswordPolicy.validar(adminPassword);
+        if (errorPolitica != null) {
+            logger.error("No se crea el admin {}: {} no cumple PasswordPolicy: {}",
+                    ADMIN_EMAIL, ADMIN_PASSWORD_VAR, errorPolitica);
+            return;
+        }
+
         PerfilAdmin perfilAdmin = new PerfilAdmin("SUPER_ADMIN");
         perfilAdmin.setActivo(true);
 
         Usuario admin = new Usuario();
         admin.setNombre("Administrador");
         admin.setEmail(ADMIN_EMAIL);
-        admin.setContrasena(passwordEncoder.encode(ADMIN_PASSWORD));
+        admin.setContrasena(passwordEncoder.encode(adminPassword));
         admin.setRol(Role.ADMIN);
         admin.setPerfilAdmin(perfilAdmin);
         admin.setEmailVerificado(true);
 
         usuarioRepository.save(admin);
 
-        logger.info("✅ Usuario ADMIN creado:");
-        logger.info("   📧 Email: {}", ADMIN_EMAIL);
-        logger.info("   🔑 Contraseña: {}", ADMIN_PASSWORD);
-        System.out.println("✅ Usuario ADMIN creado:");
-        System.out.println("   📧 Email: " + ADMIN_EMAIL);
-        System.out.println("   🔑 Contraseña: " + ADMIN_PASSWORD);
+        logger.info("Usuario ADMIN creado: {}. La contraseña se tomó de {} y no se imprime.",
+                ADMIN_EMAIL, ADMIN_PASSWORD_VAR);
     }
 
     private void crearTransportistaDemoSiNoExiste() {
-        String transportistaEmail = "transportista@demo.com";
-        String transportistaPass = "Trans1234!";
+        String transportistaPass = leerVariable(TRANSPORTISTA_PASSWORD_VAR);
+        boolean forceReset = "true".equalsIgnoreCase(leerVariable(TRANSPORTISTA_FORCE_RESET_VAR));
 
-        if (usuarioRepository.findByEmail(transportistaEmail).isEmpty()) {
-            PerfilTransportista perfil = new PerfilTransportista(
-                    "Camioneta Pick-up",
-                    "TRA-789",
-                    1500.0,
-                    "C2",
-                    "3101234567",
-                    "Cartagena",
-                    "Bolívar",
-                    "Dique, Montes de María",
-                    true,
-                    "Transportes del Campo S.A.S.",
-                    "Bancolombia",
-                    "123-456789-00"
-            );
-            perfil.setTipo(PerfilTransportista.TIPO_INDEPENDIENTE);
-            perfil.setZonasCoberturaIds(List.of(1, 2));
-            perfil.setTodasLasZonas(false);
-            perfil.setVerificado(true);
-            perfil.setDisponible(true);
-
-            Usuario transportista = new Usuario();
-            transportista.setNombre("Carlos Mendoza (Conductor)");
-            transportista.setEmail(transportistaEmail);
-            transportista.setContrasena(passwordEncoder.encode(transportistaPass));
-            transportista.addRole(Role.TRANSPORTISTA);
-            transportista.addRole(Role.COMPRADOR);
-            transportista.setPerfilTransportista(perfil);
-            transportista.setEmailVerificado(true);
-
-            usuarioRepository.save(transportista);
-            logger.info("✅ Usuario TRANSPORTISTA demo creado:");
-            logger.info("   📧 Email: {}", transportistaEmail);
-            logger.info("   🔑 Contraseña: {}", transportistaPass);
+        Optional<Usuario> existente = usuarioRepository.findByEmail(TRANSPORTISTA_EMAIL);
+        if (existente.isPresent()) {
+            Usuario transportista = existente.get();
+            if (!forceReset) {
+                logger.info("Transportista demo existente: contraseña sin cambios. "
+                        + "Define {} = true solo para restablecerla una vez.",
+                        TRANSPORTISTA_FORCE_RESET_VAR);
+                return;
+            }
+            restablecerContrasenaSiCorresponde(transportista,
+                    "transportista demo " + TRANSPORTISTA_EMAIL, TRANSPORTISTA_PASSWORD_VAR,
+                    TRANSPORTISTA_FORCE_RESET_VAR, transportistaPass,
+                    transportista.getContrasena());
+            return;
         }
+
+        if (transportistaPass == null) {
+            logger.warn("No se crea el transportista demo {}: falta la variable {}.",
+                    TRANSPORTISTA_EMAIL, TRANSPORTISTA_PASSWORD_VAR);
+            return;
+        }
+        String errorPolitica = PasswordPolicy.validar(transportistaPass);
+        if (errorPolitica != null) {
+            logger.error("No se crea el transportista demo {}: {} no cumple PasswordPolicy: {}",
+                    TRANSPORTISTA_EMAIL, TRANSPORTISTA_PASSWORD_VAR, errorPolitica);
+            return;
+        }
+
+        PerfilTransportista perfil = new PerfilTransportista(
+                "Camioneta Pick-up",
+                "TRA-789",
+                1500.0,
+                "C2",
+                "3101234567",
+                "Cartagena",
+                "Bolívar",
+                "Dique, Montes de María",
+                true,
+                "Transportes del Campo S.A.S.",
+                "Bancolombia",
+                "123-456789-00"
+        );
+        perfil.setTipo(PerfilTransportista.TIPO_INDEPENDIENTE);
+        perfil.setZonasCoberturaIds(List.of(1, 2));
+        perfil.setTodasLasZonas(false);
+        perfil.setVerificado(true);
+        perfil.setDisponible(true);
+
+        Usuario transportista = new Usuario();
+        transportista.setNombre("Carlos Mendoza (Conductor)");
+        transportista.setEmail(TRANSPORTISTA_EMAIL);
+        transportista.setContrasena(passwordEncoder.encode(transportistaPass));
+        transportista.addRole(Role.TRANSPORTISTA);
+        transportista.addRole(Role.COMPRADOR);
+        transportista.setPerfilTransportista(perfil);
+        transportista.setEmailVerificado(true);
+
+        usuarioRepository.save(transportista);
+        logger.info("Usuario TRANSPORTISTA demo creado: {}. La contraseña se tomó de {} y no se imprime.",
+                TRANSPORTISTA_EMAIL, TRANSPORTISTA_PASSWORD_VAR);
+    }
+
+    /**
+     * Restablece la contraseña de un usuario existente solo si la variable de
+     * fuerza está activa, la contraseña está definida, cumple PasswordPolicy y
+     * todavía no coincide con el hash guardado.
+     */
+    private void restablecerContrasenaSiCorresponde(Usuario usuario, String etiqueta,
+            String variablePassword, String variableForceReset, String password, String hashActual) {
+        if (password == null) {
+            logger.warn("{}: {} = true pero {} no está definida. No se restablece la contraseña.",
+                    etiqueta, variableForceReset, variablePassword);
+            return;
+        }
+        String errorPolitica = PasswordPolicy.validar(password);
+        if (errorPolitica != null) {
+            logger.warn("{}: {} no cumple PasswordPolicy: {}. No se restablece la contraseña.",
+                    etiqueta, variablePassword, errorPolitica);
+            return;
+        }
+        if (hashActual != null && passwordEncoder.matches(password, hashActual)) {
+            logger.info("{}: la contraseña ya coincide con {}. No se restablece.", etiqueta, variablePassword);
+            return;
+        }
+
+        usuario.setContrasena(passwordEncoder.encode(password));
+        usuarioRepository.save(usuario);
+        logger.warn("Contraseña de {} restablecida una vez por {} = true. "
+                + "Desactiva esa variable después de este despliegue.", etiqueta, variableForceReset);
+    }
+
+    /** Lee una variable de entorno/propiedad sin imprimir su valor. */
+    private String leerVariable(String nombre) {
+        String valor = environment.getProperty(nombre);
+        if (valor == null || valor.trim().isEmpty()) {
+            return null;
+        }
+        return valor;
     }
 
     private void inicializarConfiguracion() {
