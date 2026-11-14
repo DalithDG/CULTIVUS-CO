@@ -53,6 +53,16 @@ services:
         sync: false
       - key: SEED_DEMO_PASSWORD
         sync: false
+      # Cuentas iniciales de DataLoader. Sin valor no se crean y no hay clave por defecto.
+      # *_FORCE_RESET=true restablece la contraseña una sola vez; luego se desactiva.
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_PASSWORD_FORCE_RESET
+        sync: false
+      - key: TRANSPORTISTA_DEMO_PASSWORD
+        sync: false
+      - key: TRANSPORTISTA_DEMO_PASSWORD_FORCE_RESET
+        sync: false
       #- key: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_ID
       #  sync: false
       #- key: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_GOOGLE_CLIENT_SECRET

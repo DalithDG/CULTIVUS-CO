@@ -86,6 +86,38 @@ Cuentas regulares:
 Las cuentas `admin1@demo.com` y `transportista@demo.com` creadas por `DataLoader`
 **no se tocan**.
 
+## Cuentas de `DataLoader` (admin y transportista)
+
+`DataLoader` ya no lleva contraseñas fijas en el código:
+
+| Cuenta | Contraseña | Restablecimiento opcional |
+|---|---|---|
+| `admin1@demo.com` | `ADMIN_PASSWORD` | `ADMIN_PASSWORD_FORCE_RESET=true` |
+| `transportista@demo.com` | `TRANSPORTISTA_DEMO_PASSWORD` | `TRANSPORTISTA_DEMO_PASSWORD_FORCE_RESET=true` |
+
+Reglas:
+
+- Solo se usan al **crear** la cuenta. Si la variable falta, la creación se omite
+  con un log claro; no hay contraseña por defecto.
+- La contraseña se valida con `PasswordPolicy` (8+ caracteres, mayúscula, minúscula,
+  número y carácter especial; máximo 72 bytes UTF-8).
+- Las cuentas existentes **no cambian** en cada arranque, aunque la variable esté
+  definida.
+- Si `*_FORCE_RESET=true`, la contraseña se restablece **una vez** (BCrypt) y se
+  registra el evento sin imprimirla. Al quedar el hash igual a la variable, volver
+  a arrancar con la bandera activa no la cambia otra vez.
+- Las contraseñas nunca se escriben en logs ni en `System.out`.
+
+### Restablecer en Render (una sola vez)
+
+1. Render → Environment: define `ADMIN_PASSWORD` (y/o `TRANSPORTISTA_DEMO_PASSWORD`)
+   con una contraseña que cumpla `PasswordPolicy`.
+2. Añade `ADMIN_PASSWORD_FORCE_RESET=true` (y/o `TRANSPORTISTA_DEMO_PASSWORD_FORCE_RESET=true`).
+3. Despliega y verifica el inicio de sesión. El log debe decir que la contraseña se
+   restableció, sin mostrarla.
+4. Vuelve a `false` o elimina la variable `*_FORCE_RESET` y despliega de nuevo.
+   `ADMIN_PASSWORD` puede quedarse definida: solo se usa al crear la cuenta.
+
 ## Qué genera
 
 - 94 usuarios demo: 41 vendedores, 31 compradores, 21 transportistas y 1 administrador.
