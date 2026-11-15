@@ -21,11 +21,18 @@
         <div class="checkout-page__inner">
             <div class="checkout-header">
                 <ol class="checkout-steps" aria-label="Progreso de compra">
-                    <li class="checkout-steps__item is-done"><span class="checkout-steps__num"><i
-                                class="fa-solid fa-check" aria-hidden="true"></i></span> Carrito</li>
-                    <li class="checkout-steps__item is-current" aria-current="step"><span
-                            class="checkout-steps__num">2</span> Entrega y pago</li>
-                    <li class="checkout-steps__item"><span class="checkout-steps__num">3</span> Confirmación</li>
+                    <li class="checkout-steps__item is-done">
+                        <span class="checkout-steps__num"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+                        <span class="checkout-steps__label">Carrito</span>
+                    </li>
+                    <li class="checkout-steps__item is-current" aria-current="step">
+                        <span class="checkout-steps__num">2</span>
+                        <span class="checkout-steps__label">Entrega y pago</span>
+                    </li>
+                    <li class="checkout-steps__item">
+                        <span class="checkout-steps__num">3</span>
+                        <span class="checkout-steps__label">Confirmación</span>
+                    </li>
                 </ol>
                 <a th:href="@{/carrito}" class="checkout-back">
                     <i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Volver al carrito

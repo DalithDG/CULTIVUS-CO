@@ -188,16 +188,23 @@
                             <div class="cat-multi" data-cat-multi data-cat-max="4">
                                 <button type="button" class="cat-multi__btn" aria-haspopup="listbox" aria-expanded="false">
                                     <i class="fas fa-leaf"></i>
-                                    <span class="cat-multi__text">Selecciona tus categorías</span>
+                                    <span class="cat-multi__text">Selecciona hasta 4 categorías</span>
+                                    <span class="cat-multi__badge" data-cat-badge>0 / 4</span>
                                     <i class="fas fa-chevron-down cat-multi__arrow"></i>
                                 </button>
+                                <div class="cat-multi__chips" data-cat-chips></div>
                                 <div class="cat-multi__panel" role="group" aria-label="Categorías">
-                                    <div th:each="c, cStat : ${categoriasNombres}" class="cat-multi__item">
-                                        <input type="checkbox" name="tipoProductos" th:value="${c}" th:id="'cat-' + ${cStat.index}" />
-                                        <label th:for="'cat-' + ${cStat.index}" th:text="${c}">Categoría</label>
+                                    <div class="cat-multi__grid">
+                                        <div th:each="c, cStat : ${categoriasNombres}" class="cat-multi__item">
+                                            <input type="checkbox" name="tipoProductos" th:value="${c}" th:id="'cat-' + ${cStat.index}" />
+                                            <label th:for="'cat-' + ${cStat.index}" th:text="${c}">Categoría</label>
+                                        </div>
                                     </div>
                                     <div class="cat-multi__footer">
-                                        <span class="cat-multi__count">0 de 4</span>
+                                        <span class="cat-multi__count">0 de 4 seleccionadas</span>
+                                        <button type="button" class="cat-multi__done" data-cat-done>
+                                            <i class="fas fa-check"></i> Listo
+                                        </button>
                                     </div>
                                 </div>
                             </div>

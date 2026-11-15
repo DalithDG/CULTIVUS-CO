@@ -350,11 +350,12 @@
 
 .tp-reg-page .tipo-option-label,
 .tipo-option-label {
+  position: relative;
   border: 1.5px solid var(--field-border);
-  border-radius: 14px;
-  padding: 16px;
+  border-radius: 16px;
+  padding: 16px 18px;
   cursor: pointer;
-  transition: all var(--t-duration) var(--ease-apple);
+  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
   display: flex;
   align-items: center;
   gap: 14px;
@@ -364,7 +365,7 @@
 
 .tp-reg-page .tipo-option-label:hover,
 .tipo-option-label:hover {
-  border-color: rgba(54, 122, 69, 0.4);
+  border-color: rgba(54, 122, 69, 0.45);
   background: var(--c-wheat-soft);
 }
 
@@ -372,27 +373,96 @@
 input[name="tipo"]:checked + .tipo-option-label {
   border-color: var(--c-green);
   background: var(--c-green-soft);
-  box-shadow: 0 0 0 3px rgba(54, 122, 69, 0.18);
+  box-shadow: 0 4px 14px rgba(54, 122, 69, 0.14);
+}
+
+.tp-reg-page .tipo-option-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--c-wheat-soft);
+  border: 1px solid rgba(48, 55, 45, 0.08);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.tp-reg-page input[name="tipo"]:checked + .tipo-option-label .tipo-option-icon {
+  background: var(--c-green);
+  border-color: var(--c-green);
 }
 
 .tp-reg-page .tipo-option-label i,
 .tipo-option-label i {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   color: var(--c-green);
   flex-shrink: 0;
+  transition: color 0.2s ease;
+}
+
+.tp-reg-page input[name="tipo"]:checked + .tipo-option-label .tipo-option-icon i {
+  color: #fff;
+}
+
+.tp-reg-page .tipo-option-body {
+  flex: 1;
+  min-width: 0;
 }
 
 .tp-reg-page .tipo-option-title,
 .tipo-option-title {
-  font-size: 0.92rem;
+  font-size: 0.94rem;
   font-weight: 700;
   color: var(--c-ink);
+  margin-bottom: 2px;
 }
 
 .tp-reg-page .tipo-option-desc,
 .tipo-option-desc {
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   color: var(--c-earth);
+}
+
+.tp-reg-page .tipo-option-check {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1.5px solid var(--field-border);
+  background: var(--c-surface);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.tp-reg-page .tipo-option-check i {
+  font-size: 0.72rem;
+  color: transparent;
+}
+
+.tp-reg-page input[name="tipo"]:checked + .tipo-option-label .tipo-option-check {
+  background: var(--c-green);
+  border-color: var(--c-green);
+}
+
+.tp-reg-page input[name="tipo"]:checked + .tipo-option-label .tipo-option-check i {
+  color: #fff;
+}
+
+.tp-reg-page .input-group label .req,
+.tp-reg-page .tp-field-label .req {
+  color: var(--c-danger);
+  margin-left: 2px;
+}
+
+.tp-reg-page .input-group label .opt-tag {
+  font-weight: 500;
+  font-size: 0.76rem;
+  color: var(--c-earth);
+  margin-left: 4px;
 }
 
 /* ── Selector de vehículo ────────────────────────────────────────────────── */
@@ -401,38 +471,83 @@ input[name="tipo"]:checked + .tipo-option-label {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 }
 
 .tp-reg-page .vehicle-radio-label,
 .vehicle-radio-label {
+  position: relative;
   border: 1.5px solid var(--field-border);
-  border-radius: 12px;
-  padding: 14px 10px;
+  border-radius: 16px;
+  padding: 18px 12px 14px;
   text-align: center;
   cursor: pointer;
-  transition: all var(--t-duration) var(--ease-apple);
-  font-size: 0.85rem;
+  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  font-size: 0.88rem;
   font-weight: 600;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   color: var(--c-ink);
   background: var(--c-surface);
   min-width: 0;
 }
 
+.tp-reg-page .vehicle-check {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.5px solid var(--field-border);
+  background: var(--c-surface);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.tp-reg-page .vehicle-check i {
+  font-size: 0.65rem !important;
+  color: transparent !important;
+}
+
+.tp-reg-page .vehicle-icon-box {
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: var(--c-wheat-soft);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2px;
+  transition: all 0.2s ease;
+}
+
 .tp-reg-page .vehicle-radio-label i,
 .vehicle-radio-label i {
-  font-size: 1.4rem;
+  font-size: 1.35rem;
   color: var(--c-earth);
-  transition: color var(--t-duration) var(--ease-apple);
+  transition: color 0.2s ease;
+}
+
+.tp-reg-page .vehicle-name {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--c-ink);
+}
+
+.tp-reg-page .vehicle-hint {
+  font-size: 0.74rem;
+  font-weight: 500;
+  color: var(--c-earth);
 }
 
 .tp-reg-page .vehicle-radio-label:hover,
 .vehicle-radio-label:hover {
-  border-color: rgba(54, 122, 69, 0.35);
+  border-color: rgba(54, 122, 69, 0.4);
   background: var(--c-wheat-soft);
 }
 
@@ -441,41 +556,99 @@ input[name="tipoVehiculo"]:checked + .vehicle-radio-label {
   border-color: var(--c-green);
   background: var(--c-green-soft);
   color: var(--c-green-dark);
-  box-shadow: 0 0 0 3px rgba(54, 122, 69, 0.18);
+  box-shadow: 0 4px 14px rgba(54, 122, 69, 0.14);
 }
 
-.tp-reg-page input[name="tipoVehiculo"]:checked + .vehicle-radio-label i,
-input[name="tipoVehiculo"]:checked + .vehicle-radio-label i {
-  color: var(--c-green);
+.tp-reg-page input[name="tipoVehiculo"]:checked + .vehicle-radio-label .vehicle-icon-box {
+  background: var(--c-green);
 }
 
-/* ── Checkbox personalizado ──────────────────────────────────────────────── */
+.tp-reg-page input[name="tipoVehiculo"]:checked + .vehicle-radio-label .vehicle-icon-box i {
+  color: #fff;
+}
+
+.tp-reg-page input[name="tipoVehiculo"]:checked + .vehicle-radio-label .vehicle-check {
+  background: var(--c-green);
+  border-color: var(--c-green);
+}
+
+.tp-reg-page input[name="tipoVehiculo"]:checked + .vehicle-radio-label .vehicle-check i {
+  color: #fff !important;
+}
+
+/* ── Checkbox personalizado (Refrigeración y Maestro de Zonas) ──────────── */
 .tp-reg-page .custom-checkbox-row,
 .custom-checkbox-row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   background: var(--c-wheat-soft);
-  padding: 14px 16px;
-  border-radius: 12px;
-  border: 1px solid var(--field-border);
-  margin: 14px 0;
+  padding: 14px 18px;
+  border-radius: 14px;
+  border: 1.5px solid var(--field-border);
+  margin: 14px 0 0;
   cursor: pointer;
-  transition: background var(--t-duration) var(--ease-apple);
+  transition: all 0.2s ease;
 }
 
 .tp-reg-page .custom-checkbox-row:hover,
 .custom-checkbox-row:hover {
-  background: #F5EEDD;
+  border-color: rgba(54, 122, 69, 0.4);
+  background: #f5f9f6;
+}
+
+.tp-reg-page .custom-checkbox-row:has(input:checked) {
+  background: var(--c-green-soft);
+  border-color: var(--c-green);
+  box-shadow: 0 2px 10px rgba(54, 122, 69, 0.1);
 }
 
 .tp-reg-page .custom-checkbox-row input[type="checkbox"],
 .custom-checkbox-row input[type="checkbox"] {
-  width: 20px;
-  height: 20px;
+  width: 20px !important;
+  height: 20px !important;
   flex: 0 0 20px;
   accent-color: var(--c-green);
   cursor: pointer;
+}
+
+.tp-reg-page .tp-feature-check__icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: var(--c-surface);
+  border: 1px solid rgba(54, 122, 69, 0.2);
+  color: var(--c-green);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+  flex-shrink: 0;
+}
+
+.tp-reg-page .tp-feature-check__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.tp-reg-page .tp-feature-check__body strong {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--c-ink);
+}
+
+.tp-reg-page .tp-feature-check__body span {
+  font-size: 0.78rem;
+  color: var(--c-earth);
+  line-height: 1.35;
+}
+
+.tp-reg-page .tp-master-zone-row {
+  margin-top: 0;
+  margin-bottom: 14px;
+  background: var(--c-surface);
 }
 
 /* ── Aside sticky ────────────────────────────────────────────────────────── */
@@ -483,6 +656,7 @@ input[name="tipoVehiculo"]:checked + .vehicle-radio-label i {
   position: sticky;
   top: var(--header-offset, 96px);
   background: var(--c-surface);
+  border: 1px solid var(--c-line);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   padding: 28px;
@@ -582,39 +756,90 @@ input[name="tipoVehiculo"]:checked + .vehicle-radio-label i {
 }
 
 /* ── Zonas de cobertura ──────────────────────────────────────────────────── */
-.tp-reg-page .zonas-heading {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 10px;
-}
-
 .tp-reg-page .zonas-container-box,
 .zonas-container-box {
   background: var(--c-wheat-soft);
   border: 1px solid var(--field-border);
-  border-radius: 16px;
-  padding: 20px;
+  border-radius: 18px;
+  padding: 18px;
   margin-bottom: 24px;
+}
+
+.tp-reg-page .zonas-box-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.tp-reg-page .zonas-selected-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: var(--c-wheat);
+  color: var(--c-earth);
+  font-size: 0.8rem;
+  font-weight: 700;
+  transition: all 0.2s ease;
+}
+
+.tp-reg-page .zonas-selected-badge.is-active {
+  background: var(--c-green-soft);
+  color: var(--c-green-dark);
+  border: 1px solid rgba(54, 122, 69, 0.25);
+}
+
+.tp-reg-page .zonas-help-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(54, 122, 69, 0.24);
+  background: var(--c-surface);
+  color: var(--c-green-dark);
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.tp-reg-page .zonas-help-btn:hover {
+  background: var(--c-green-soft);
+  border-color: var(--c-green);
+}
+
+.tp-reg-page .zonas-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
 }
 
 .tp-reg-page .zone-card,
 .zone-card {
   background: var(--c-surface);
-  border: 1px solid var(--c-line);
-  border-radius: 12px;
-  padding: 12px 16px;
-  margin-bottom: 10px;
-  transition: border-color var(--t-duration) var(--ease-apple);
-}
-
-.tp-reg-page .zone-card:last-child,
-.zone-card:last-child {
+  border: 1.5px solid var(--c-line);
+  border-radius: 14px;
+  padding: 13px 16px;
   margin-bottom: 0;
+  transition: all 0.2s ease;
 }
 
 .tp-reg-page .zone-card:hover,
 .zone-card:hover {
-  border-color: rgba(54, 122, 69, 0.35);
+  border-color: rgba(54, 122, 69, 0.4);
+}
+
+.tp-reg-page .zone-card.is-selected,
+.tp-reg-page .zone-card:has(.zona-checkbox:checked) {
+  border-color: var(--c-green);
+  background: #f5faf6;
+  box-shadow: 0 2px 10px rgba(54, 122, 69, 0.08);
 }
 
 .tp-reg-page .zone-card-header,
@@ -625,38 +850,70 @@ input[name="tipoVehiculo"]:checked + .vehicle-radio-label i {
   gap: 12px;
 }
 
-.tp-reg-page .zone-card-header label,
-.zone-card-header label {
+.tp-reg-page .zone-card-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  flex: 1;
   flex-wrap: wrap;
   min-width: 0;
 }
 
+.tp-reg-page .zone-card-label .zona-checkbox {
+  width: 19px !important;
+  height: 19px !important;
+  flex: 0 0 19px;
+  accent-color: var(--c-green);
+  cursor: pointer;
+}
+
+.tp-reg-page .zone-card-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--c-ink);
+}
+
+.tp-reg-page .zone-card-chip {
+  font-size: 0.72rem;
+  padding: 2px 9px;
+}
+
+.tp-reg-page .zone-card.is-selected .zone-card-chip,
+.tp-reg-page .zone-card:has(.zona-checkbox:checked) .zone-card-chip {
+  background: var(--c-green-soft);
+  color: var(--c-green-dark);
+  border-color: rgba(54, 122, 69, 0.25);
+}
+
 .tp-reg-page .municipios-toggle-btn,
 .municipios-toggle-btn {
-  background: none;
-  border: none;
-  color: var(--c-green);
-  font-size: 0.82rem;
+  background: var(--c-wheat-soft);
+  border: 1px solid rgba(121, 85, 72, 0.15);
+  color: var(--c-green-dark);
+  font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 8px;
-  border-radius: 6px;
-  transition: background var(--t-duration) var(--ease-apple);
+  padding: 5px 10px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  transition: all 0.18s ease;
 }
 
 .tp-reg-page .municipios-toggle-btn:hover,
 .municipios-toggle-btn:hover {
   background: var(--c-green-soft);
+  border-color: rgba(54, 122, 69, 0.3);
 }
 
 .tp-reg-page .municipios-collapse,
 .municipios-collapse {
   display: none;
-  margin-top: 10px;
-  padding-top: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
   border-top: 1px dashed var(--c-line);
   font-size: 0.8rem;
   color: var(--c-earth);
@@ -665,18 +922,20 @@ input[name="tipoVehiculo"]:checked + .vehicle-radio-label i {
 
 .tp-reg-page .municipios-collapse.show,
 .municipios-collapse.show {
-  display: block;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
 }
 
 .tp-reg-page .muni-tag,
 .muni-tag {
   display: inline-block;
   background: var(--c-wheat-soft);
+  border: 1px solid rgba(121, 85, 72, 0.12);
   color: var(--c-ink);
-  padding: 3px 8px;
-  border-radius: 6px;
-  margin: 2px 4px 2px 0;
-  font-size: 0.78rem;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.76rem;
   font-weight: 500;
 }
 
@@ -685,14 +944,15 @@ input[name="tipoVehiculo"]:checked + .vehicle-radio-label i {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 12px;
   margin-top: 24px;
   padding-top: 20px;
   border-top: 1px solid var(--c-line);
 }
 
-.tp-reg-page .tp-submit-row .ui-btn {
-  flex: 0 0 auto;
+.tp-reg-page .tp-submit-row button[type="submit"] {
+  flex: 1 1 auto;
 }
 
 /* ── Modal de zonas ──────────────────────────────────────────────────────── */
@@ -799,11 +1059,33 @@ input[name="tipoVehiculo"]:checked + .vehicle-radio-label i {
 
   .tp-reg-page .form-grid-2,
   .tp-reg-page .tipo-selector,
-  .tp-reg-page .vehicle-type-select,
   .form-grid-2,
-  .tipo-selector,
-  .vehicle-type-select {
+  .tipo-selector {
     grid-template-columns: 1fr;
+  }
+
+  .tp-reg-page .vehicle-type-select,
+  .vehicle-type-select {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .tp-reg-page .vehicle-radio-label,
+  .vehicle-radio-label {
+    padding: 12px 6px 10px;
+  }
+
+  .tp-reg-page .vehicle-icon-box {
+    width: 38px;
+    height: 38px;
+  }
+
+  .tp-reg-page .vehicle-name {
+    font-size: 0.78rem;
+  }
+
+  .tp-reg-page .vehicle-hint {
+    font-size: 0.68rem;
   }
 
   .tp-reg-page .tp-corporate-block {
@@ -842,14 +1124,18 @@ input[name="tipoVehiculo"]:checked + .vehicle-radio-label i {
   }
 }
 
+@media (max-width: 400px) {
+  .tp-reg-page .vehicle-type-select,
+  .vehicle-type-select {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* iOS Safari auto-zoom prevention */
 @media (max-width: 768px) {
-  .tp-reg-page input,
+  .tp-reg-page input:not([type="checkbox"]):not([type="radio"]),
   .tp-reg-page select,
   .tp-reg-page textarea,
-  input,
-  select,
-  textarea,
   .rt-input,
   .rt-select {
     font-size: 16px !important;
@@ -899,26 +1185,106 @@ input[name="tipoVehiculo"]:checked + .vehicle-radio-label i {
    Sin JS no se oculta nada y el envío nativo sigue funcionando.
    ========================================================================== */
 
-.tp-reg-page .checkout-steps__item {
+.tp-reg-page .tp-steps {
+  max-width: 1120px;
+  margin: 0 auto 20px;
+}
+
+.tp-reg-page .tp-steps .checkout-steps {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  width: 100%;
+  max-width: 720px;
+  gap: 6px;
+  padding: 6px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid var(--c-line);
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(48, 55, 45, 0.05);
+}
+
+.tp-reg-page .tp-steps .checkout-steps__item {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
   color: var(--c-earth);
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.tp-reg-page .tp-steps .checkout-steps__item::before {
+  display: none !important;
 }
 
 .tp-reg-page .tp-step-btn {
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
   gap: 8px;
-  padding: 0;
-  border: 0;
-  background: none;
+  padding: 9px 12px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: transparent;
   color: inherit;
   font: inherit;
-  font-weight: inherit;
-  letter-spacing: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
   cursor: default;
+  transition: all 0.2s ease;
+}
+
+.tp-reg-page .tp-step-btn .checkout-steps__num {
+  width: 24px;
+  height: 24px;
+  font-size: 0.75rem;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.tp-reg-page .tp-step-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tp-reg-page .checkout-steps__item.is-current .tp-step-btn {
+  background: var(--c-green-soft);
+  border-color: rgba(54, 122, 69, 0.28);
+  color: var(--c-green-dark);
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(54, 122, 69, 0.08);
+}
+
+.tp-reg-page .checkout-steps__item.is-current .checkout-steps__num {
+  background: var(--c-green);
+  color: #fff;
+  box-shadow: 0 2px 6px rgba(54, 122, 69, 0.28);
+}
+
+.tp-reg-page .checkout-steps__item.is-done .tp-step-btn {
+  color: var(--c-green-dark);
+  background: rgba(54, 122, 69, 0.05);
+  border-color: rgba(54, 122, 69, 0.14);
+}
+
+.tp-reg-page .checkout-steps__item.is-done .checkout-steps__num {
+  background: var(--c-green);
+  color: #fff;
 }
 
 .tp-reg-page .tp-step-btn:not(:disabled) {
   cursor: pointer;
+}
+
+.tp-reg-page .tp-step-btn:not(:disabled):hover {
+  background: var(--c-green-soft);
+  border-color: rgba(54, 122, 69, 0.3);
 }
 
 .tp-reg-page .tp-step-btn:disabled {
@@ -927,17 +1293,8 @@ input[name="tipoVehiculo"]:checked + .vehicle-radio-label i {
 
 .tp-reg-page .tp-step-btn:focus-visible {
   outline: 3px solid rgba(54, 122, 69, 0.35);
-  outline-offset: 4px;
-  border-radius: var(--radius-full);
-}
-
-.tp-reg-page .tp-step-btn:not(:disabled):hover .tp-step-name {
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.tp-reg-page .checkout-steps__item.is-done .tp-step-name {
-  color: var(--c-earth);
+  outline-offset: 2px;
+  border-radius: 12px;
 }
 
 .tp-reg-page .tp-step-live {
@@ -953,278 +1310,77 @@ input[name="tipoVehiculo"]:checked + .vehicle-radio-label i {
   border: 0;
 }
 
-.tp-reg-page .tp-steps-enabled .tp-section[data-state="pending"] {
-  display: none;
+.tp-reg-page .tp-section {
+  border: 1px solid var(--c-line);
+}
+
+.tp-reg-page .tp-steps-enabled .tp-section[data-state="pending"],
+.tp-reg-page .tp-steps-enabled .tp-section[data-state="done"] {
+  display: none !important;
 }
 
 .tp-reg-page .tp-steps-enabled .tp-section[data-state="active"] {
   box-shadow: var(--shadow-md);
+  border-color: rgba(54, 122, 69, 0.22);
 }
 
-.tp-reg-page .tp-step-summary {
-  display: none;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.tp-reg-page .tp-steps-enabled .tp-section[data-state="done"] {
-  padding: 18px 24px;
-}
-
-.tp-reg-page .tp-steps-enabled .tp-section[data-state="done"] > :not(.tp-step-summary) {
-  display: none !important;
-}
-
-.tp-reg-page .tp-steps-enabled .tp-section[data-state="done"] > .tp-step-summary {
-  display: flex;
-}
-
-.tp-reg-page .tp-step-summary__main {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-}
-
-.tp-reg-page .tp-step-summary__title {
+/* ── Botón superior para regresar al paso anterior ───────────────────────── */
+.tp-reg-page .tp-step-back-top {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--c-green-dark, var(--c-green));
-}
-
-.tp-reg-page .tp-step-summary__title i {
-  color: var(--c-green);
-  font-size: 0.9rem;
-}
-
-.tp-reg-page .tp-step-summary__values {
-  font-size: 0.92rem;
-  color: var(--c-ink);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.tp-reg-page .tp-step-edit {
-  flex: 0 0 auto;
-}
-
-.tp-reg-page .tp-step-actions {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 24px;
-  padding-top: 20px;
-  border-top: 1px solid var(--c-line);
-}
-
-.tp-reg-page .tp-step-actions .ui-btn i {
-  font-size: 0.8rem;
-}
-
-.tp-reg-page .tp-section {
-  transition: none;
-}
-
-@media (max-width: 640px) {
-  .tp-reg-page .tp-steps {
-    margin-bottom: 14px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .tp-reg-page .tp-steps .checkout-steps {
-    flex-wrap: nowrap;
-    gap: 6px;
-    font-size: 0.8rem;
-  }
-
-  .tp-reg-page .tp-steps--enhanced .tp-step-name {
-    display: none;
-  }
-
-  .tp-reg-page .tp-steps--enhanced .checkout-steps__item.is-current .tp-step-name {
-    display: inline;
-  }
-
-  .tp-reg-page .checkout-steps__item + .checkout-steps__item::before {
-    width: 10px;
-  }
-
-  .tp-reg-page .tp-step-btn {
-    gap: 6px;
-  }
-
-  .tp-reg-page .tp-steps-enabled .tp-section[data-state="done"] {
-    padding: 16px 18px;
-  }
-
-  .tp-reg-page .tp-step-summary__values {
-    max-width: 52vw;
-    font-size: 0.85rem;
-  }
-
-  .tp-reg-page .tp-step-actions {
-    margin-top: 20px;
-    padding-top: 16px;
-  }
-
-  .tp-reg-page .tp-step-actions .ui-btn {
-    width: 100%;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .tp-reg-page .modal-content,
-  .tp-reg-page .tp-section,
-  .tp-reg-page .tp-step-summary,
-  .tp-reg-page .tp-step-actions,
-  .tp-reg-page .tipo-option-label,
-  .tp-reg-page .vehicle-radio-label,
-  .tp-reg-page .custom-checkbox-row {
-    animation: none !important;
-    transition: none !important;
-  }
-}
-
-
-/* ==========================================================================
-   ASISTENTE PROGRESIVO
-   Solo se activa cuando el JS añade .tp-steps-enabled al formulario.
-   Sin JS no se oculta nada y el envío nativo sigue funcionando.
-   ========================================================================== */
-
-.tp-reg-page .checkout-steps__item {
-  color: var(--c-earth);
-}
-
-.tp-reg-page .tp-step-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 0;
-  border: 0;
-  background: none;
-  color: inherit;
-  font: inherit;
-  font-weight: inherit;
-  letter-spacing: inherit;
-  cursor: default;
-}
-
-.tp-reg-page .tp-step-btn:not(:disabled) {
+  width: auto !important;
+  min-height: 36px;
+  padding: 6px 14px;
+  margin: 0 0 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(54, 122, 69, 0.22);
+  background: var(--c-wheat-soft);
+  color: var(--c-green-dark);
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
   cursor: pointer;
+  transition: all 0.18s ease;
 }
 
-.tp-reg-page .tp-step-btn:disabled {
-  opacity: 1;
-}
-
-.tp-reg-page .tp-step-btn:focus-visible {
-  outline: 3px solid rgba(54, 122, 69, 0.35);
-  outline-offset: 4px;
-  border-radius: var(--radius-full);
-}
-
-.tp-reg-page .tp-step-btn:not(:disabled):hover .tp-step-name {
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
-.tp-reg-page .checkout-steps__item.is-done .tp-step-name {
-  color: var(--c-earth);
-}
-
-.tp-reg-page .tp-step-live {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  clip-path: inset(50%);
-  white-space: nowrap;
-  border: 0;
-}
-
-.tp-reg-page .tp-steps-enabled .tp-section[data-state="pending"] {
-  display: none;
-}
-
-.tp-reg-page .tp-steps-enabled .tp-section[data-state="active"] {
-  box-shadow: var(--shadow-md);
-}
-
-.tp-reg-page .tp-step-summary {
-  display: none;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.tp-reg-page .tp-steps-enabled .tp-section[data-state="done"] {
-  padding: 18px 24px;
-}
-
-.tp-reg-page .tp-steps-enabled .tp-section[data-state="done"] > :not(.tp-step-summary) {
-  display: none !important;
-}
-
-.tp-reg-page .tp-steps-enabled .tp-section[data-state="done"] > .tp-step-summary {
-  display: flex;
-}
-
-.tp-reg-page .tp-step-summary__main {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-}
-
-.tp-reg-page .tp-step-summary__title {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+.tp-reg-page .tp-step-back-top i {
   font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--c-green-dark, var(--c-green));
+  transition: transform 0.18s ease;
 }
 
-.tp-reg-page .tp-step-summary__title i {
-  color: var(--c-green);
-  font-size: 0.9rem;
+.tp-reg-page .tp-step-back-top:hover {
+  background: var(--c-green-soft);
+  border-color: var(--c-green);
 }
 
-.tp-reg-page .tp-step-summary__values {
-  font-size: 0.92rem;
-  color: var(--c-ink);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.tp-reg-page .tp-step-edit {
-  flex: 0 0 auto;
+.tp-reg-page .tp-step-back-top:hover i {
+  transform: translateX(-2px);
 }
 
 .tp-reg-page .tp-step-actions {
   display: flex;
-  justify-content: flex-end;
-  margin-top: 24px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 26px;
   padding-top: 20px;
   border-top: 1px solid var(--c-line);
 }
 
+.tp-reg-page .tp-step-actions .tp-step-prev {
+  width: auto;
+  flex: 0 0 auto;
+}
+
+.tp-reg-page .tp-step-actions .tp-step-continue {
+  width: auto;
+  margin-left: auto;
+  flex: 0 0 auto;
+}
+
 .tp-reg-page .tp-step-actions .ui-btn i {
-  font-size: 0.8rem;
+  font-size: 0.82rem;
 }
 
 .tp-reg-page .tp-section {
@@ -1234,55 +1390,60 @@ input[name="tipoVehiculo"]:checked + .vehicle-radio-label i {
 @media (max-width: 640px) {
   .tp-reg-page .tp-steps {
     margin-bottom: 14px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
   }
 
   .tp-reg-page .tp-steps .checkout-steps {
-    flex-wrap: nowrap;
-    gap: 6px;
-    font-size: 0.8rem;
-  }
-
-  .tp-reg-page .tp-steps--enhanced .tp-step-name {
-    display: none;
-  }
-
-  .tp-reg-page .tp-steps--enhanced .checkout-steps__item.is-current .tp-step-name {
-    display: inline;
-  }
-
-  .tp-reg-page .checkout-steps__item + .checkout-steps__item::before {
-    width: 10px;
+    gap: 4px;
+    padding: 5px;
+    border-radius: 14px;
   }
 
   .tp-reg-page .tp-step-btn {
-    gap: 6px;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 6px;
+    border-radius: 10px;
+    font-size: 0.74rem;
+    text-align: center;
   }
 
-  .tp-reg-page .tp-steps-enabled .tp-section[data-state="done"] {
-    padding: 16px 18px;
+  .tp-reg-page .tp-step-btn .checkout-steps__num {
+    width: 22px;
+    height: 22px;
+    font-size: 0.72rem;
   }
 
-  .tp-reg-page .tp-step-summary__values {
-    max-width: 52vw;
-    font-size: 0.85rem;
+  .tp-reg-page .tp-steps--enhanced .tp-step-name,
+  .tp-reg-page .tp-step-name {
+    display: block;
+    max-width: 100%;
+    line-height: 1.15;
   }
 
   .tp-reg-page .tp-step-actions {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
     margin-top: 20px;
     padding-top: 16px;
   }
 
-  .tp-reg-page .tp-step-actions .ui-btn {
-    width: 100%;
+  .tp-reg-page .tp-step-actions .tp-step-prev {
+    flex: 0 0 auto;
+    width: auto !important;
+    padding: 0 16px;
+  }
+
+  .tp-reg-page .tp-step-actions .tp-step-continue {
+    flex: 1 1 auto;
+    width: auto !important;
+    margin-left: auto;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .tp-reg-page .modal-content,
   .tp-reg-page .tp-section,
-  .tp-reg-page .tp-step-summary,
   .tp-reg-page .tp-step-actions,
   .tp-reg-page .tipo-option-label,
   .tp-reg-page .vehicle-radio-label,

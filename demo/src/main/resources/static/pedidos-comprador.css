@@ -737,14 +737,29 @@
 
 /* ---------- Estado Vacío (Igual que Carrito) ---------- */
 .mp-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   text-align: center;
-  padding: 64px 32px;
+  padding: 56px 28px;
   background: var(--c-surface);
   border-radius: var(--radius-lg);
   border: 1px solid var(--field-border);
   box-shadow: var(--shadow-sm);
   max-width: 520px;
   margin: 24px auto;
+}
+
+.mp-empty .ui-empty__illustration {
+  display: block;
+  width: min(260px, 76%);
+  max-width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  margin: 0 auto 14px !important;
+  align-self: center;
+  object-fit: contain;
 }
 
 .mp-empty-icon {

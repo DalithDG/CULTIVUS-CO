@@ -248,6 +248,21 @@
   padding-left: 44px;
 }
 
+.ui-select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 42px !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23795548' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 14px;
+  cursor: pointer;
+}
+
+.ui-form-error:empty {
+  display: none;
+}
+
 .ui-input,
 .ui-select,
 .ui-textarea {
@@ -1166,12 +1181,34 @@ body {
 
 .ui-empty--illustrated {
   padding-top: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .ui-empty__illustration {
-  width: min(320px, 78%);
+  display: block;
+  width: min(280px, 78%);
+  max-width: 100%;
   height: auto;
   aspect-ratio: 4 / 3;
+  margin-left: auto;
+  margin-right: auto;
+  align-self: center;
+  object-fit: contain;
+}
+
+@media (max-width: 640px) {
+  .ui-empty--illustrated {
+    padding: 32px 18px;
+  }
+
+  .ui-empty__illustration {
+    width: min(220px, 75%);
+    margin: 0 auto 8px;
+  }
 }
 
 /* ── Subida de foto del vendedor ── */

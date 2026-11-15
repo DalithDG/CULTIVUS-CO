@@ -51,7 +51,7 @@
 
             <!-- Empty state -->
             <div th:if="${pedidos == null || pedidos.isEmpty()}" class="mp-empty">
-                <img th:src="@{/images/ilustraciones/pedidos-vacios.svg}" alt="Sin pedidos" width="400" height="300" class="ui-empty__illustration" loading="lazy" decoding="async" style="margin: 0 auto 12px; display: block;">
+                <img th:src="@{/images/ilustraciones/pedidos-vacios.svg}" alt="Sin pedidos" width="400" height="300" class="ui-empty__illustration" loading="lazy" decoding="async" style="margin: 0 auto 14px; display: block; width: min(260px, 76%); max-width: 100%; height: auto;">
                 <h3>No tienes pedidos a�n</h3>
                 <p>Explora la tienda y comienza a comprar los mejores productos frescos.</p>
                 <a th:href="@{/}" class="mp-btn mp-btn--primary">

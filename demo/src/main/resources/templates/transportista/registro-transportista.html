@@ -89,11 +89,12 @@
                             <input type="radio" id="tipoIndependiente" name="tipo" value="INDEPENDIENTE"
                                    checked style="display:none;" onchange="toggleTipoTransportista()">
                             <label for="tipoIndependiente" class="tipo-option-label">
-                                <i class="fas fa-truck-pickup"></i>
-                                <div>
+                                <span class="tipo-option-icon"><i class="fas fa-truck-pickup"></i></span>
+                                <div class="tipo-option-body">
                                     <div class="tipo-option-title">Independiente</div>
                                     <div class="tipo-option-desc">Vehículo propio / Conductor</div>
                                 </div>
+                                <span class="tipo-option-check"><i class="fas fa-check"></i></span>
                             </label>
                         </div>
 
@@ -101,11 +102,12 @@
                             <input type="radio" id="tipoEmpresa" name="tipo" value="EMPRESA"
                                    style="display:none;" onchange="toggleTipoTransportista()">
                             <label for="tipoEmpresa" class="tipo-option-label">
-                                <i class="fas fa-building"></i>
-                                <div>
+                                <span class="tipo-option-icon"><i class="fas fa-building"></i></span>
+                                <div class="tipo-option-body">
                                     <div class="tipo-option-title">Empresa Logística</div>
                                     <div class="tipo-option-desc">Razón Social / NIT / Flota</div>
                                 </div>
+                                <span class="tipo-option-check"><i class="fas fa-check"></i></span>
                             </label>
                         </div>
                     </div>
@@ -113,21 +115,32 @@
                     <!-- Datos de acceso solo si no hay sesión -->
                     <th:block th:if="${session.usuarioLogueado == null}">
                         <div class="tp-subsection">
-                            <h3 class="tp-subsection__title">Datos de acceso</h3>
+                            <h3 class="tp-subsection__title">
+                                <i class="fas fa-user-shield"></i> Datos de acceso
+                            </h3>
 
                             <div class="input-group">
-                                <label for="nombre">Nombre completo del representante o conductor:</label>
-                                <input type="text" id="nombre" name="nombre" placeholder="Ej. Carlos Mendoza" required>
+                                <label for="nombre">Nombre completo del representante o conductor <span class="req">*</span></label>
+                                <div class="ui-field-wrap has-icon">
+                                    <i class="fas fa-user"></i>
+                                    <input type="text" id="nombre" name="nombre" class="ui-input" placeholder="Ej. Carlos Mendoza" required>
+                                </div>
                             </div>
 
                             <div class="form-grid-2">
                                 <div class="input-group">
-                                    <label for="email">Correo electrónico:</label>
-                                    <input type="email" id="email" name="email" placeholder="carlos@correo.com" required>
+                                    <label for="email">Correo electrónico <span class="req">*</span></label>
+                                    <div class="ui-field-wrap has-icon">
+                                        <i class="fas fa-envelope"></i>
+                                        <input type="email" id="email" name="email" class="ui-input" placeholder="carlos@correo.com" required>
+                                    </div>
                                 </div>
                                 <div class="input-group">
-                                    <label for="contrasena">Contraseña:</label>
-                                    <input type="password" id="contrasena" name="contrasena" placeholder="Mínimo 6 caracteres" required minlength="6">
+                                    <label for="contrasena">Contraseña <span class="req">*</span></label>
+                                    <div class="ui-field-wrap has-icon">
+                                        <i class="fas fa-lock"></i>
+                                        <input type="password" id="contrasena" name="contrasena" class="ui-input" placeholder="Mínimo 6 caracteres" required minlength="6">
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -151,77 +164,104 @@
 
                         <div class="form-grid-2">
                             <div class="input-group">
-                                <label for="nit">NIT de la Empresa:</label>
-                                <input type="text" id="nit" name="nit" placeholder="Ej. 901.234.567-8">
+                                <label for="nit">NIT de la Empresa <span class="req">*</span></label>
+                                <div class="ui-field-wrap has-icon">
+                                    <i class="fas fa-id-card"></i>
+                                    <input type="text" id="nit" name="nit" class="ui-input" placeholder="Ej. 901.234.567-8">
+                                </div>
                             </div>
                             <div class="input-group">
-                                <label for="razonSocial">Razón Social:</label>
-                                <input type="text" id="razonSocial" name="razonSocial" placeholder="Ej. Logística y Envíos del Caribe S.A.S.">
+                                <label for="razonSocial">Razón Social <span class="req">*</span></label>
+                                <div class="ui-field-wrap has-icon">
+                                    <i class="fas fa-briefcase"></i>
+                                    <input type="text" id="razonSocial" name="razonSocial" class="ui-input" placeholder="Ej. Logística del Caribe S.A.S.">
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <div class="tp-field-block">
                         <label class="tp-field-label">
-                            Tipo de Vehículo Principal / Flota:
+                            Tipo de Vehículo Principal / Flota <span class="req">*</span>
                         </label>
                         <div class="vehicle-type-select">
                             <div>
                                 <input type="radio" id="vehiculoCamioneta" name="tipoVehiculo"
                                        value="Camioneta Pick-up" checked style="display:none;">
                                 <label for="vehiculoCamioneta" class="vehicle-radio-label">
-                                    <i class="fas fa-truck-pickup"></i>
-                                    <span>Pick-up</span>
+                                    <span class="vehicle-check"><i class="fas fa-check"></i></span>
+                                    <span class="vehicle-icon-box"><i class="fas fa-truck-pickup"></i></span>
+                                    <span class="vehicle-name">Pick-up</span>
+                                    <span class="vehicle-hint">Hasta 1.5 Ton</span>
                                 </label>
                             </div>
                             <div>
                                 <input type="radio" id="vehiculoTurbo" name="tipoVehiculo"
                                        value="Furgón Turbo" style="display:none;">
                                 <label for="vehiculoTurbo" class="vehicle-radio-label">
-                                    <i class="fas fa-truck"></i>
-                                    <span>Turbo / Furgón</span>
+                                    <span class="vehicle-check"><i class="fas fa-check"></i></span>
+                                    <span class="vehicle-icon-box"><i class="fas fa-truck"></i></span>
+                                    <span class="vehicle-name">Turbo / Furgón</span>
+                                    <span class="vehicle-hint">1.5 a 5 Ton</span>
                                 </label>
                             </div>
                             <div>
                                 <input type="radio" id="vehiculoCamion" name="tipoVehiculo"
                                        value="Camión Pesado" style="display:none;">
                                 <label for="vehiculoCamion" class="vehicle-radio-label">
-                                    <i class="fas fa-truck-moving"></i>
-                                    <span>Camión C2/C3</span>
+                                    <span class="vehicle-check"><i class="fas fa-check"></i></span>
+                                    <span class="vehicle-icon-box"><i class="fas fa-truck-moving"></i></span>
+                                    <span class="vehicle-name">Camión C2/C3</span>
+                                    <span class="vehicle-hint">Más de 5 Ton</span>
                                 </label>
                             </div>
                         </div>
                     </div>
 
-                    <div class="form-grid-2">
-                        <!-- Campos para Independiente -->
+                    <div class="form-grid-2" id="filaDatosConductor">
+                        <!-- Campos para Independiente / Vehículo principal -->
                         <div class="input-group" id="grupoPlaca">
-                            <label for="placa">Placa del vehículo:</label>
-                            <input type="text" id="placa" name="placa" placeholder="Ej. ABC-123" style="text-transform: uppercase;">
+                            <label for="placa" id="labelPlaca">Placa del vehículo <span class="req">*</span></label>
+                            <div class="ui-field-wrap has-icon">
+                                <i class="fas fa-hashtag"></i>
+                                <input type="text" id="placa" name="placa" class="ui-input" placeholder="Ej. ABC-123" style="text-transform: uppercase;">
+                            </div>
                         </div>
                         <div class="input-group" id="grupoLicencia">
-                            <label for="licenciaConduccion">Licencia de Conducción:</label>
-                            <input type="text" id="licenciaConduccion" name="licenciaConduccion" placeholder="Categoría C1, C2 o C3">
+                            <label for="licenciaConduccion" id="labelLicencia">Licencia de Conducción <span class="req">*</span></label>
+                            <div class="ui-field-wrap has-icon">
+                                <i class="fas fa-address-card"></i>
+                                <input type="text" id="licenciaConduccion" name="licenciaConduccion" class="ui-input" placeholder="Categoría C1, C2 o C3">
+                            </div>
                         </div>
                     </div>
 
                     <div class="form-grid-2">
                         <div class="input-group">
-                            <label for="capacidadCargaKg">Capacidad de carga (Kg):</label>
-                            <input type="number" id="capacidadCargaKg" name="capacidadCargaKg" placeholder="Ej. 1500" required min="50" step="50" value="1000">
+                            <label for="capacidadCargaKg">Capacidad de carga (Kg) <span class="req">*</span></label>
+                            <div class="ui-field-wrap has-icon">
+                                <i class="fas fa-weight-hanging"></i>
+                                <input type="number" id="capacidadCargaKg" name="capacidadCargaKg" class="ui-input" placeholder="Ej. 1500" required min="50" step="50" value="1000">
+                            </div>
                         </div>
                         <div class="input-group">
-                            <label for="telefonoContacto">Teléfono / WhatsApp de Ruta:</label>
-                            <input type="tel" id="telefonoContacto" name="telefonoContacto" placeholder="Ej. 3001234567" required>
+                            <label for="telefonoContacto">Teléfono / WhatsApp de Ruta <span class="req">*</span></label>
+                            <div class="ui-field-wrap has-icon">
+                                <i class="fas fa-phone"></i>
+                                <input type="tel" id="telefonoContacto" name="telefonoContacto" class="ui-input" placeholder="Ej. 3001234567" required>
+                            </div>
                         </div>
                     </div>
 
-                    <label class="custom-checkbox-row">
+                    <label class="custom-checkbox-row tp-feature-check">
                         <input type="checkbox" name="refrigerado" value="true">
-                        <span style="font-size: 0.9rem; font-weight: 600; color: var(--c-ink);">
-                            <i class="fas fa-snowflake" style="color: var(--c-green); margin-right: 6px;"></i>
-                            Cuenta con sistema de refrigeración / Cadena de frío
+                        <span class="tp-feature-check__icon">
+                            <i class="fas fa-snowflake"></i>
                         </span>
+                        <div class="tp-feature-check__body">
+                            <strong>Cuenta con sistema de refrigeración / Cadena de frío</strong>
+                            <span>Apto para transportar lácteos, carnes, pescados y cosechas delicadas</span>
+                        </div>
                     </label>
                 </section>
 
@@ -240,27 +280,25 @@
                         <span>Debes seleccionar al menos una zona de cobertura en Bolívar para continuar.</span>
                     </div>
 
-                    <div class="zonas-heading">
-                        <button type="button" onclick="abrirModalZonas()" class="ui-btn ui-btn--tertiary ui-btn--sm" style="padding: 0 4px;">
-                            <i class="fas fa-circle-question"></i> ¿No conoces tus zonas?
-                        </button>
-                    </div>
-
                     <div class="zonas-container-box">
-                        <p style="font-size: 0.85rem; color: var(--c-earth); margin: 0 0 14px;">
-                            Selecciona las subregiones de Bolívar donde operarás para recolecciones y entregas:
-                        </p>
+                        <div class="zonas-box-header">
+                            <span class="zonas-selected-badge" id="zonasCountBadge">
+                                <i class="fas fa-map-pin"></i> 0 zonas seleccionadas
+                            </span>
+                            <button type="button" onclick="abrirModalZonas()" class="zonas-help-btn">
+                                <i class="fas fa-circle-question"></i> ¿No conoces tus zonas?
+                            </button>
+                        </div>
 
                         <!-- Checkbox Maestro: Todas las Zonas -->
-                        <label class="custom-checkbox-row" style="background: var(--c-green-soft); border-color: rgba(54, 122, 69, 0.28); margin-top: 0; margin-bottom: 14px;">
+                        <label class="custom-checkbox-row tp-master-zone-row">
                             <input type="checkbox" id="todasLasZonas" name="todasLasZonas" value="true" onchange="toggleTodasLasZonas(this)">
-                            <div>
-                                <strong style="color: var(--c-green-dark); font-size: 0.92rem; display: block;">
-                                    Todas las zonas de Bolívar
-                                </strong>
-                                <span style="font-size: 0.78rem; color: var(--c-earth);">
-                                    Cubre los 46 municipios (Dique, Montes de María, Mojana, Momposina, Loba y Magdalena Medio)
-                                </span>
+                            <span class="tp-feature-check__icon tp-feature-check__icon--green">
+                                <i class="fas fa-globe-americas"></i>
+                            </span>
+                            <div class="tp-feature-check__body">
+                                <strong>Todas las zonas de Bolívar (Cobertura total)</strong>
+                                <span>Cubre los 46 municipios (Dique, Montes de María, Mojana, Momposina, Loba y Magdalena Medio)</span>
                             </div>
                         </label>
 
@@ -268,13 +306,13 @@
                         <div class="zonas-list" id="zonasList">
                             <div th:each="zona : ${zonasCatalogo}" class="zone-card">
                                 <div class="zone-card-header">
-                                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; flex: 1; flex-wrap: wrap;">
+                                    <label class="zone-card-label">
                                         <input type="checkbox" name="zonasCoberturaIds" th:value="${zona.id}"
-                                               class="zona-checkbox" onchange="onZonaIndividualChange()" style="width: 18px; height: 18px; accent-color: var(--c-green);">
-                                        <span style="font-size: 0.9rem; font-weight: 600; color: var(--c-ink);">
+                                               class="zona-checkbox" onchange="onZonaIndividualChange()">
+                                        <span class="zone-card-title">
                                             Zona <span th:text="${zona.id}">1</span>: <span th:text="${zona.nombre}">Dique</span>
                                         </span>
-                                        <span class="ui-chip ui-chip--wheat" style="font-size: 0.72rem; padding: 2px 8px;">
+                                        <span class="ui-chip ui-chip--wheat zone-card-chip">
                                             <span th:text="${zona.municipios.size()}">13</span> municipios
                                         </span>
                                     </label>
@@ -419,6 +457,8 @@
             const razonSocial = document.getElementById('razonSocial');
             const placa = document.getElementById('placa');
             const licencia = document.getElementById('licenciaConduccion');
+            const labelPlaca = document.getElementById('labelPlaca');
+            const labelLicencia = document.getElementById('labelLicencia');
 
             if (esEmpresa) {
                 seccionEmpresa.style.display = 'block';
@@ -426,12 +466,42 @@
                 if (razonSocial) razonSocial.required = true;
                 if (placa) placa.required = false;
                 if (licencia) licencia.required = false;
+                if (labelPlaca) labelPlaca.innerHTML = 'Placa principal <span class="opt-tag">(opcional)</span>';
+                if (labelLicencia) labelLicencia.innerHTML = 'Licencia principal <span class="opt-tag">(opcional)</span>';
             } else {
                 seccionEmpresa.style.display = 'none';
                 if (nit) nit.required = false;
                 if (razonSocial) razonSocial.required = false;
                 if (placa) placa.required = true;
                 if (licencia) licencia.required = true;
+                if (labelPlaca) labelPlaca.innerHTML = 'Placa del vehículo <span class="req">*</span>';
+                if (labelLicencia) labelLicencia.innerHTML = 'Licencia de Conducción <span class="req">*</span>';
+            }
+        }
+
+        function updateZonasUI() {
+            const checkboxes = Array.from(document.querySelectorAll('.zona-checkbox'));
+            const masterCheckbox = document.getElementById('todasLasZonas');
+            const badge = document.getElementById('zonasCountBadge');
+            let checkedCount = 0;
+
+            checkboxes.forEach(cb => {
+                if (cb.checked) checkedCount++;
+                const card = cb.closest('.zone-card');
+                if (card) card.classList.toggle('is-selected', cb.checked);
+            });
+
+            if (badge) {
+                if ((masterCheckbox && masterCheckbox.checked) || (checkboxes.length > 0 && checkedCount === checkboxes.length)) {
+                    badge.innerHTML = '<i class="fas fa-circle-check"></i> Todas las zonas (' + checkboxes.length + ')';
+                    badge.classList.add('is-active');
+                } else if (checkedCount > 0) {
+                    badge.innerHTML = '<i class="fas fa-circle-check"></i> ' + checkedCount + (checkedCount === 1 ? ' zona seleccionada' : ' zonas seleccionadas');
+                    badge.classList.add('is-active');
+                } else {
+                    badge.innerHTML = '<i class="fas fa-map-pin"></i> 0 zonas seleccionadas';
+                    badge.classList.remove('is-active');
+                }
             }
         }
 
@@ -442,6 +512,7 @@
             });
             const banner = document.getElementById('errorZonasBanner');
             if (banner && masterCheckbox.checked) banner.style.display = 'none';
+            updateZonasUI();
         }
 
         function onZonaIndividualChange() {
@@ -453,6 +524,7 @@
             const anyChecked = checkboxes.some(cb => cb.checked);
             const banner = document.getElementById('errorZonasBanner');
             if (banner && anyChecked) banner.style.display = 'none';
+            updateZonasUI();
         }
 
         function toggleMunicipios(btn) {
