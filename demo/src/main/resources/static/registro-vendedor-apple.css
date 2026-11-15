@@ -397,6 +397,19 @@
 }
 
 @media (max-width: 640px) {
+  .vp-reg-page .vp-reg-container,
+  .vp-reg-page .vp-reg-form,
+  .vp-reg-page .vp-section,
+  .vp-reg-page .vp-aside {
+    min-width: 0;
+  }
+
+  .vp-reg-page .vp-reg-form input,
+  .vp-reg-page .vp-reg-form select,
+  .vp-reg-page .vp-reg-form textarea {
+    max-width: 100%;
+  }
+
   .vp-reg-page main {
     padding: 20px 14px 60px;
   }

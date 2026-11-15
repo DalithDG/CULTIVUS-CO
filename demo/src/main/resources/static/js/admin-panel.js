@@ -1,8 +1,10 @@
 /**
  * Panel de administración de Cultivus.
  *
- * Cada sección es una página independiente: este script solo gestiona el
- * sidebar, los submenús, el menú de usuario y el estado colapsado.
+ * Cada sección es una página independiente: este script gestiona el
+ * sidebar (drawer móvil a la izquierda y modo colapsado en escritorio),
+ * los submenús, el menú de usuario y la adaptación responsiva de tablas
+ * a tarjetas estructuradas en móvil.
  */
 (function () {
     "use strict";
@@ -11,6 +13,7 @@
     var sidebar = document.getElementById("adminSidebar");
     var overlay = document.getElementById("adminOverlay");
     var toggle = document.getElementById("adminMenuToggle") || document.getElementById("admSidebarToggle");
+    var closeBtn = document.getElementById("adminSidebarClose");
 
     function esMovil() {
         return window.innerWidth <= 1024;
@@ -57,6 +60,10 @@
 
     if (toggle) {
         toggle.addEventListener("click", alternarSidebar);
+    }
+
+    if (closeBtn) {
+        closeBtn.addEventListener("click", cerrarSidebar);
     }
 
     if (overlay) {
@@ -130,4 +137,56 @@
             }
         }
     });
+
+    // Adaptación inteligente de tablas (.data-table) para tarjetas móviles.
+    function enriquecerTablasResponsivas() {
+        document.querySelectorAll(".data-table").forEach(function (tabla) {
+            var cabeceras = Array.prototype.map.call(
+                tabla.querySelectorAll("thead th"),
+                function (th) {
+                    return (th.textContent || "").replace(/\s+/g, " ").trim();
+                }
+            );
+
+            tabla.querySelectorAll("tbody tr").forEach(function (fila) {
+                var celdas = fila.querySelectorAll("td");
+                if (celdas.length === 1 && celdas[0].hasAttribute("colspan")) {
+                    fila.classList.add("adm-tr-empty");
+                    celdas[0].classList.add("adm-td-empty");
+                    return;
+                }
+
+                celdas.forEach(function (td, indice) {
+                    var etiqueta = td.getAttribute("data-label") || cabeceras[indice] || "";
+                    if (etiqueta) {
+                        td.setAttribute("data-label", etiqueta);
+                    }
+
+                    var etiquetaLower = etiqueta.toLowerCase();
+
+                    if (
+                        etiquetaLower.indexOf("acci") !== -1 ||
+                        td.querySelector(".adm-actions, .adm-role-form, .adm-sug-actions, form")
+                    ) {
+                        td.classList.add("adm-td-actions");
+                    } else if (
+                        td.querySelector(".adm-detail-list, .adm-seller-offer-card") ||
+                        etiquetaLower === "detalle" ||
+                        etiquetaLower === "comentario" ||
+                        etiquetaLower === "contenido" ||
+                        etiquetaLower === "mensaje" ||
+                        etiquetaLower.indexOf("oferta") !== -1
+                    ) {
+                        td.classList.add("adm-td-block");
+                    }
+                });
+            });
+        });
+    }
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", enriquecerTablasResponsivas);
+    } else {
+        enriquecerTablasResponsivas();
+    }
 })();

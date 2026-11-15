@@ -380,6 +380,17 @@
 
   .order-detail-page .voucher-total-box {
     width: 100%;
+    min-width: 0;
+  }
+
+  .order-detail-page .table-container {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .order-detail-page .voucher-table {
+    min-width: 480px;
   }
 
   .notif-page .ui-container {
@@ -406,6 +417,31 @@
 }
 
 @media (max-width: 480px) {
+  .profile-page .profile-header-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .profile-page .profile-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .profile-page .profile-actions .ui-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .order-detail-page .voucher-meta-row {
+    grid-template-columns: 1fr;
+  }
+
+  .order-detail-page .voucher-code {
+    font-size: 1.3rem;
+    word-break: break-word;
+  }
+
   .notif-page .notif-header__actions {
     width: 100%;
   }

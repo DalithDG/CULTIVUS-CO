@@ -363,15 +363,63 @@
   padding: 32px 0 20px;
 }
 
-.cat-pills-strip {
+.cat-pills-bar {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 10px;
-  overflow-x: auto;
-  padding: 8px 4px 16px;
+  gap: 8px;
   margin-bottom: 24px;
+  width: 100%;
+  max-width: 100%;
+}
+
+.cat-pills-nav {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  color: var(--c-ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(48, 55, 45, 0.08);
+  transition: all var(--t-duration) var(--ease-apple);
+  z-index: 2;
+}
+
+.cat-pills-nav:hover {
+  background: var(--c-green-soft);
+  color: var(--c-green);
+  border-color: rgba(54, 122, 69, 0.3);
+}
+
+.cat-pills-nav.is-hidden {
+  display: none;
+}
+
+.cat-pills-strip {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 6px 4px;
+  margin-bottom: 0;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  scroll-snap-type: x proximity;
+  cursor: grab;
+}
+
+.cat-pills-strip.is-dragging {
+  cursor: grabbing;
+  scroll-behavior: auto;
 }
 
 .cat-pills-strip::-webkit-scrollbar {
@@ -379,6 +427,8 @@
 }
 
 .cat-pill-btn {
+  flex-shrink: 0;
+  scroll-snap-align: start;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -387,10 +437,12 @@
   background: var(--c-surface);
   border: 1px solid var(--c-line);
   color: var(--c-ink);
-  font-size: 0.88rem;
+  font-size: 0.86rem;
   font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
+  user-select: none;
+  -webkit-user-drag: none;
   transition: all var(--t-duration) var(--ease-apple);
 }
 
@@ -408,9 +460,13 @@
 
 .catalog-layout {
   display: grid;
-  grid-template-columns: 260px 1fr;
+  grid-template-columns: minmax(220px, 260px) minmax(0, 1fr);
   gap: 32px;
   align-items: start;
+}
+
+.catalog-results {
+  min-width: 0;
 }
 
 /* Sidebar Filtros */
@@ -471,24 +527,45 @@
 .filter-checkbox-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
+}
+
+.filter-checkbox-list:not(.is-expanded) .filter-checkbox-item.cat-item-extra {
+  display: none;
 }
 
 .filter-checkbox-item {
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 0.92rem;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-size: 0.9rem;
   color: var(--c-ink);
   cursor: pointer;
   user-select: none;
+  transition: all var(--t-duration) var(--ease-apple);
+}
+
+.filter-checkbox-item:hover {
+  background: rgba(54, 122, 69, 0.05);
+}
+
+.filter-checkbox-item.is-checked,
+.filter-checkbox-item:has(input:checked) {
+  background: var(--c-green-soft);
+  border-color: rgba(54, 122, 69, 0.25);
+  color: var(--c-green-dark);
+  font-weight: 600;
 }
 
 .filter-checkbox-item input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
+  width: 17px;
+  height: 17px;
   accent-color: var(--c-green);
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .filter-slider-box {
@@ -810,13 +887,7 @@
 
 
 /* Responsive Category Chips & Mobile Layout */
-@media (max-width: 768px) {
-  .catalog-sidebar {
-    padding: 16px;
-    margin-bottom: 20px;
-    border-radius: 16px;
-  }
-
+@media (max-width: 1024px) {
   .filter-group {
     margin-bottom: 16px;
   }
@@ -824,37 +895,39 @@
   .filter-checkbox-list {
     display: flex;
     flex-direction: row;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+    flex-wrap: wrap;
     gap: 8px;
-    padding-bottom: 6px;
-    margin: 0 -4px;
-    padding-left: 4px;
-    padding-right: 4px;
-  }
-
-  .filter-checkbox-list::-webkit-scrollbar {
-    display: none;
+    padding: 0;
+    margin: 0;
+    overflow: visible;
   }
 
   .filter-checkbox-item {
-    flex: 0 0 auto;
-    background: var(--c-surface-secondary, rgba(54, 122, 69, 0.06));
+    flex: 0 1 auto;
+    background: rgba(48, 55, 45, 0.035);
     border: 1px solid var(--c-line, rgba(0, 0, 0, 0.08));
     border-radius: 999px;
-    padding: 8px 14px;
-    font-size: 0.85rem;
+    padding: 7px 13px;
+    font-size: 0.83rem;
     cursor: pointer;
     white-space: nowrap;
-    min-height: 44px;
+    min-height: 36px;
     box-sizing: border-box;
+    gap: 7px;
+  }
+
+  .filter-checkbox-item.is-checked,
+  .filter-checkbox-item:has(input:checked) {
+    background: var(--c-green-soft);
+    border-color: var(--c-green);
+    color: var(--c-green-dark);
+    font-weight: 600;
   }
 
   .filter-checkbox-item input[type="checkbox"] {
-    margin-right: 6px;
+    width: 15px;
+    height: 15px;
+    margin: 0;
     accent-color: var(--c-green);
   }
 
@@ -1113,5 +1186,187 @@
 
   .home-page .cat-tile {
     min-width: 0;
+  }
+}
+
+/* ── 10. Responsividad integral de la vista de Categorías, Ofertas y Búsqueda ── */
+
+.catalog-mobile-filter-toggle {
+  display: none;
+}
+
+.ui-pagination__status {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--c-earth);
+  padding: 0 8px;
+  border: none !important;
+  background: transparent !important;
+  min-width: auto !important;
+  height: auto !important;
+}
+
+@media (max-width: 1024px) {
+  .catalog-page .catalog-header {
+    padding: 20px 0 14px;
+  }
+
+  .catalog-page .cat-pills-bar {
+    margin-bottom: 16px;
+    gap: 6px;
+  }
+
+  .catalog-page .cat-pills-strip {
+    padding: 4px 2px;
+    margin: 0;
+  }
+
+  .catalog-page .cat-pill-btn {
+    min-height: 36px;
+    padding: 7px 14px;
+    font-size: 0.82rem;
+    flex-shrink: 0;
+  }
+
+  .catalog-page .cat-pills-nav {
+    width: 32px;
+    height: 32px;
+    font-size: 0.75rem;
+  }
+
+  .catalog-page .catalog-layout,
+  .catalog-layout {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+
+  .catalog-page .catalog-sidebar,
+  .catalog-sidebar {
+    position: static;
+    padding: 0;
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 4px;
+  }
+
+  .catalog-mobile-filter-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 14px 18px;
+    background: var(--c-surface);
+    border: none;
+    color: var(--c-ink);
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-align: left;
+    gap: 12px;
+  }
+
+  .catalog-mobile-filter-toggle__left {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .catalog-mobile-filter-toggle__left > i {
+    color: var(--c-green);
+  }
+
+  .catalog-mobile-filter-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: var(--c-green);
+    color: #ffffff;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  .catalog-mobile-filter-toggle__chevron {
+    color: var(--c-earth);
+    font-size: 0.85rem;
+    transition: transform 0.2s ease;
+  }
+
+  .catalog-sidebar.is-open-mobile .catalog-mobile-filter-toggle__chevron {
+    transform: rotate(180deg);
+  }
+
+  .catalog-sidebar .catalog-sidebar__form {
+    display: none;
+    padding: 16px 18px 18px;
+    border-top: 1px solid var(--c-line);
+  }
+
+  .catalog-sidebar.is-open-mobile .catalog-sidebar__form {
+    display: block;
+  }
+
+  /* En móvil el botón superior ya actúa como cabecera del panel */
+  .catalog-sidebar .catalog-sidebar__form .sidebar-header {
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+  }
+
+  /* Mostrar todas las categorías en la tira horizontal de filtros en móvil */
+  .catalog-sidebar .filter-checkbox-item.cat-item-extra {
+    display: flex !important;
+  }
+
+  #toggleMoreCatsBtn {
+    display: none !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .catalog-page .catalog-header .ui-title-1 {
+    font-size: clamp(1.65rem, 6.5vw, 2.15rem);
+  }
+
+  .catalog-page .catalog-header .ui-subtitle {
+    font-size: 0.92rem;
+  }
+
+  .catalog-page .catalog-toolbar,
+  .catalog-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+  }
+
+  .catalog-toolbar__count {
+    font-size: 0.88rem;
+  }
+
+  .catalog-toolbar__sort {
+    width: 100%;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .catalog-toolbar__sort label {
+    white-space: nowrap;
+    font-size: 0.85rem;
+  }
+
+  .catalog-toolbar__sort select {
+    flex: 1;
+    min-width: 0;
+    min-height: 44px;
+  }
+
+  .catalog-toolbar > div:last-child .ui-btn {
+    width: 100%;
+    justify-content: center;
   }
 }

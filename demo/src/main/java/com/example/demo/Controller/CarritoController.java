@@ -58,7 +58,7 @@ public class CarritoController {
      */
     private Carrito obtenerOCrearCarrito(HttpSession session, Usuario usuario) {
         if (usuario != null && usuario.getId() != null) {
-            Carrito carrito = carritoRepository.findByUsuarioId(usuario.getId())
+            Carrito carrito = carritoRepository.findFirstByUsuarioId(usuario.getId())
                     .orElseGet(() -> {
                         Carrito nuevo = new Carrito(usuario.getId());
                         return carritoRepository.save(nuevo);
@@ -466,3 +466,4 @@ public class CarritoController {
         return "redirect:/carrito";
     }
 }
+

@@ -14,7 +14,7 @@
          ═══════════════════════════════════════════════ -->
     <div class="vs-topbar" id="vsTopbar">
         <!-- Botón hamburguesa para móvil -->
-        <button class="vs-menu-toggle" id="vsMenuToggle" aria-label="Abrir menú" aria-expanded="false">
+        <button class="vs-menu-toggle" id="vsMenuToggle" type="button" aria-label="Abrir menú lateral" aria-expanded="false">
             <span></span>
             <span></span>
             <span></span>
@@ -33,7 +33,7 @@
             <i class="fas fa-seedling" aria-hidden="true"></i>
             <span>Panel de Vendedor</span>
             <i class="fas fa-chevron-right" aria-hidden="true"></i>
-            <span id="vsBreadcrumbCurrent">Gestión de Ventas</span>
+            <span id="vsBreadcrumbCurrent">Panel Principal</span>
         </div>
 
         <!-- Acciones derechas -->
@@ -89,11 +89,20 @@
                 </div>
                 <div class="vs-sidebar__vendor-role">Vendedor · Cultivus</div>
             </div>
+            <button type="button" class="vs-sidebar__close" id="vsSidebarClose" aria-label="Cerrar menú lateral">
+                <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
         </div>
 
         <!-- Grupo Principal: Gestión de Tienda -->
         <nav class="vs-nav-group">
             <div class="vs-nav-group__label">Principal</div>
+
+            <a th:href="@{/vendedor/dashboard}" class="vs-nav-item" data-vs-nav="dashboard"
+                th:classappend="${currentPath != null and (currentPath == '/vendedor' or currentPath.contains('/vendedor/dashboard')) ? ' is-active' : ''}">
+                <span class="vs-nav-item__icon"><i class="fas fa-chart-pie" aria-hidden="true"></i></span>
+                <span>Panel Principal</span>
+            </a>
 
             <a th:href="@{/vendedor/ventas}" class="vs-nav-item" data-vs-nav="ventas"
                 th:classappend="${currentPath != null and currentPath.contains('/ventas') ? ' is-active' : ''}">
@@ -175,8 +184,12 @@
             </a>
         </nav>
 
-        <!-- Pie de Sidebar: Cerrar Sesión -->
+        <!-- Pie de Sidebar: Ir al Mercado + Cerrar Sesión -->
         <div class="vs-sidebar__bottom">
+            <a th:href="@{/}" class="vs-nav-item">
+                <span class="vs-nav-item__icon"><i class="fas fa-storefront" aria-hidden="true"></i></span>
+                <span>Ir al Mercado</span>
+            </a>
             <a th:href="@{/usuario/logout}" class="vs-nav-item vs-nav-item--logout">
                 <span class="vs-nav-item__icon"><i class="fas fa-arrow-right-from-bracket"
                         aria-hidden="true"></i></span>
@@ -185,14 +198,14 @@
         </div>
     </aside>
 
-    <!-- Script de control del Sidebar, ruta activa y modo de letra grande -->
+    <!-- Script de control del Sidebar, ruta activa, tablas responsive y modo de letra grande -->
     <script>
         (function () {
             document.body.classList.add('vs-layout');
 
-            // 1. Marcar ítem activo según URL actual
+            // 1. Marcar ítem activo según URL actual (Sidebar + Topbar Nav + Subnav Móvil)
             var path = window.location.pathname;
-            var navItems = document.querySelectorAll('.vs-sidebar .vs-nav-item[data-vs-nav]');
+            var navItems = document.querySelectorAll('[data-vs-nav]');
             var bc = document.getElementById('vsBreadcrumbCurrent');
 
             var routeMap = [
@@ -234,10 +247,16 @@
                 bc.textContent = activeText;
             }
 
-            // 2. Toggle menú lateral en móvil
+            // 2. Toggle menú lateral en móvil (<= 900px)
             var toggleBtn = document.getElementById('vsMenuToggle');
+            var closeBtn = document.getElementById('vsSidebarClose');
             var sidebar = document.getElementById('vsSidebar');
             var overlay = document.getElementById('vsOverlay');
+
+            document.body.classList.remove('vs-sidebar-collapsed');
+            try {
+                localStorage.removeItem('cultivus-vs-sidebar-collapsed');
+            } catch (e) { }
 
             function closeMobileMenu() {
                 if (sidebar) sidebar.classList.remove('is-open');
@@ -257,10 +276,20 @@
                     toggleBtn.classList.toggle('is-active', isOpen);
                     toggleBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
                 });
+
                 overlay.addEventListener('click', closeMobileMenu);
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', closeMobileMenu);
+                }
 
                 document.addEventListener('keydown', function (e) {
                     if (e.key === 'Escape' && sidebar.classList.contains('is-open')) {
+                        closeMobileMenu();
+                    }
+                });
+
+                window.addEventListener('resize', function () {
+                    if (window.innerWidth > 900 && sidebar.classList.contains('is-open')) {
                         closeMobileMenu();
                     }
                 });
@@ -274,7 +303,33 @@
                 });
             }
 
-            // 3. Accesibilidad: texto grande (compatible con 'cultivus-texto-grande')
+            // 3. Enriquecer tablas del vendedor con data-label para vista de tarjetas en móvil
+            function enhanceVendorTables() {
+                var tables = document.querySelectorAll('.vp-table, .vp-items, .bw-table, .pred-table');
+                tables.forEach(function (table) {
+                    var headers = Array.from(table.querySelectorAll('thead th')).map(function (th) {
+                        return th.textContent.replace(/\s+/g, ' ').trim();
+                    });
+                    if (!headers.length) return;
+                    table.querySelectorAll('tbody tr').forEach(function (tr) {
+                        var cells = tr.querySelectorAll('td');
+                        if (cells.length === 1 && cells[0].hasAttribute('colspan')) return;
+                        cells.forEach(function (td, idx) {
+                            if (!td.hasAttribute('data-label') && headers[idx]) {
+                                td.setAttribute('data-label', headers[idx]);
+                            }
+                        });
+                    });
+                });
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', enhanceVendorTables);
+            } else {
+                enhanceVendorTables();
+            }
+
+            // 4. Accesibilidad: texto grande (compatible con 'cultivus-texto-grande')
             var CLAVE = 'cultivus-texto-grande';
 
             function aplicarTextoGrande(activo) {

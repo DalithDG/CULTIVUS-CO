@@ -167,7 +167,7 @@ public class VendedorService {
         // US-VENDEDOR: Eliminar carrito activo para no dejar ítems huérfanos al convertirse en vendedor
         if (carritoRepository != null) {
             try {
-                carritoRepository.findByUsuarioId(usuarioId).ifPresent(carritoRepository::delete);
+                carritoRepository.findFirstByUsuarioId(usuarioId).ifPresent(carritoRepository::delete);
             } catch (Exception ignored) {}
         }
 
@@ -627,3 +627,4 @@ public class VendedorService {
         };
     }
 }
+

@@ -1,6 +1,8 @@
 /* ==========================================================================
    CULTIVUS - REGISTRO DE TRANSPORTISTA (Apple Design)
    Acotado estrictamente a: .tp-reg-page
+   Compatible tanto con el asistente progresivo (.tp-section / .tp-aside)
+   como con el diseño clásico (.tp-info-panel / .tp-form-card).
    ========================================================================== */
 
 @import url('/checkout-tokens.css');
@@ -31,7 +33,8 @@
   margin: 0 auto 28px;
 }
 
-.tp-reg-page .tp-badge {
+.tp-reg-page .tp-badge,
+.tp-badge {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -47,7 +50,8 @@
   margin-bottom: 16px;
 }
 
-.tp-reg-page .tp-info-title {
+.tp-reg-page .tp-info-title,
+.tp-info-title {
   font-size: clamp(1.75rem, 2.8vw, 2.4rem);
   font-weight: 800;
   line-height: 1.15;
@@ -56,16 +60,22 @@
   margin: 0 0 12px;
 }
 
-.tp-reg-page .tp-info-title span {
+.tp-reg-page .tp-info-title span,
+.tp-info-title span {
   color: var(--c-green);
 }
 
-.tp-reg-page .tp-info-subtitle {
+.tp-reg-page .tp-info-subtitle,
+.tp-info-subtitle {
   font-size: 1rem;
   color: var(--c-earth);
   line-height: 1.55;
-  margin: 0;
+  margin: 0 0 28px;
   max-width: 640px;
+}
+
+.tp-reg-page .tp-reg-hero .tp-info-subtitle {
+  margin-bottom: 0;
 }
 
 /* ── Indicador de pasos ──────────────────────────────────────────────────── */
@@ -79,7 +89,8 @@
 }
 
 /* ── Grilla de dos columnas ──────────────────────────────────────────────── */
-.tp-reg-page .tp-reg-container {
+.tp-reg-page .tp-reg-container,
+.tp-reg-container {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 360px;
   gap: 32px;
@@ -88,12 +99,95 @@
   margin: 0 auto;
 }
 
+.tp-reg-page .tp-reg-container:has(> .tp-info-panel) {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
+  max-width: 1200px;
+  gap: 48px;
+}
+
 .tp-reg-page .tp-reg-form {
   min-width: 0;
   margin: 0;
 }
 
-/* ── Tarjetas de sección ─────────────────────────────────────────────────── */
+/* ── Panel Informativo Izquierdo Clásico (Compatibilidad) ────────────────── */
+.tp-info-panel {
+  position: sticky;
+  top: 96px;
+  padding: 8px 0;
+  min-width: 0;
+}
+
+.tp-form-card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-line);
+  border-radius: var(--radius-lg);
+  padding: 36px;
+  box-shadow: var(--shadow-md);
+  min-width: 0;
+}
+
+.tp-form-header {
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--c-line);
+}
+
+.tp-form-header h2 {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--c-ink);
+  margin: 0 0 6px;
+}
+
+.tp-form-header p {
+  font-size: 0.92rem;
+  color: var(--c-earth);
+  margin: 0;
+}
+
+.tp-form-section {
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--c-line);
+}
+
+.tp-form-section:last-of-type {
+  border-bottom: none;
+  margin-bottom: 24px;
+  padding-bottom: 0;
+}
+
+.tp-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.tp-section-num {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--c-green-soft);
+  color: var(--c-green);
+  font-size: 0.85rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.tp-section-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--c-ink);
+  margin: 0;
+}
+
+/* ── Tarjetas de sección (Asistente Progresivo) ──────────────────────────── */
 .tp-reg-page .tp-section {
   background: var(--c-surface);
   border-radius: var(--radius-lg);
@@ -188,18 +282,21 @@
 }
 
 /* ── Filas de dos columnas dentro de las tarjetas ────────────────────────── */
-.tp-reg-page .form-grid-2 {
+.tp-reg-page .form-grid-2,
+.form-grid-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
 
-.tp-reg-page .form-grid-2 > .input-group {
+.tp-reg-page .form-grid-2 > .input-group,
+.form-grid-2 > .input-group {
   min-width: 0;
 }
 
 /* ── Campos ──────────────────────────────────────────────────────────────── */
-.tp-reg-page .input-group {
+.tp-reg-page .input-group,
+.input-group {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -207,7 +304,8 @@
   min-width: 0;
 }
 
-.tp-reg-page .input-group label {
+.tp-reg-page .input-group label,
+.input-group label {
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--c-ink);
@@ -217,7 +315,12 @@
 .tp-reg-page .input-group input[type="email"],
 .tp-reg-page .input-group input[type="password"],
 .tp-reg-page .input-group input[type="number"],
-.tp-reg-page .input-group input[type="tel"] {
+.tp-reg-page .input-group input[type="tel"],
+.input-group input[type="text"],
+.input-group input[type="email"],
+.input-group input[type="password"],
+.input-group input[type="number"],
+.input-group input[type="tel"] {
   width: 100%;
   height: 48px;
   padding: 0 16px;
@@ -230,20 +333,23 @@
   transition: all var(--t-duration) var(--ease-apple);
 }
 
-.tp-reg-page .input-group input:focus {
+.tp-reg-page .input-group input:focus,
+.input-group input:focus {
   outline: none;
   border-color: var(--c-green);
   box-shadow: 0 0 0 4px rgba(54, 122, 69, 0.18);
 }
 
 /* ── Selector de modalidad ───────────────────────────────────────────────── */
-.tp-reg-page .tipo-selector {
+.tp-reg-page .tipo-selector,
+.tipo-selector {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 14px;
 }
 
-.tp-reg-page .tipo-option-label {
+.tp-reg-page .tipo-option-label,
+.tipo-option-label {
   border: 1.5px solid var(--field-border);
   border-radius: 14px;
   padding: 16px;
@@ -253,43 +359,53 @@
   align-items: center;
   gap: 14px;
   background: var(--c-surface);
+  min-width: 0;
 }
 
-.tp-reg-page .tipo-option-label:hover {
+.tp-reg-page .tipo-option-label:hover,
+.tipo-option-label:hover {
   border-color: rgba(54, 122, 69, 0.4);
   background: var(--c-wheat-soft);
 }
 
-.tp-reg-page input[name="tipo"]:checked + .tipo-option-label {
+.tp-reg-page input[name="tipo"]:checked + .tipo-option-label,
+input[name="tipo"]:checked + .tipo-option-label {
   border-color: var(--c-green);
   background: var(--c-green-soft);
   box-shadow: 0 0 0 3px rgba(54, 122, 69, 0.18);
 }
 
-.tp-reg-page .tipo-option-label i {
+.tp-reg-page .tipo-option-label i,
+.tipo-option-label i {
   font-size: 1.5rem;
   color: var(--c-green);
+  flex-shrink: 0;
 }
 
-.tp-reg-page .tipo-option-title {
+.tp-reg-page .tipo-option-title,
+.tipo-option-title {
   font-size: 0.92rem;
   font-weight: 700;
   color: var(--c-ink);
 }
 
-.tp-reg-page .tipo-option-desc {
+.tp-reg-page .tipo-option-desc,
+.tipo-option-desc {
   font-size: 0.78rem;
   color: var(--c-earth);
 }
 
 /* ── Selector de vehículo ────────────────────────────────────────────────── */
-.tp-reg-page .vehicle-type-select {
+.tp-reg-page .vehicle-type-select,
+.vehicle-type-select {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
+  margin-bottom: 18px;
 }
 
-.tp-reg-page .vehicle-radio-label {
+.tp-reg-page .vehicle-radio-label,
+.vehicle-radio-label {
   border: 1.5px solid var(--field-border);
   border-radius: 12px;
   padding: 14px 10px;
@@ -304,32 +420,38 @@
   gap: 8px;
   color: var(--c-ink);
   background: var(--c-surface);
+  min-width: 0;
 }
 
-.tp-reg-page .vehicle-radio-label i {
+.tp-reg-page .vehicle-radio-label i,
+.vehicle-radio-label i {
   font-size: 1.4rem;
   color: var(--c-earth);
   transition: color var(--t-duration) var(--ease-apple);
 }
 
-.tp-reg-page .vehicle-radio-label:hover {
+.tp-reg-page .vehicle-radio-label:hover,
+.vehicle-radio-label:hover {
   border-color: rgba(54, 122, 69, 0.35);
   background: var(--c-wheat-soft);
 }
 
-.tp-reg-page input[name="tipoVehiculo"]:checked + .vehicle-radio-label {
+.tp-reg-page input[name="tipoVehiculo"]:checked + .vehicle-radio-label,
+input[name="tipoVehiculo"]:checked + .vehicle-radio-label {
   border-color: var(--c-green);
   background: var(--c-green-soft);
   color: var(--c-green-dark);
   box-shadow: 0 0 0 3px rgba(54, 122, 69, 0.18);
 }
 
-.tp-reg-page input[name="tipoVehiculo"]:checked + .vehicle-radio-label i {
+.tp-reg-page input[name="tipoVehiculo"]:checked + .vehicle-radio-label i,
+input[name="tipoVehiculo"]:checked + .vehicle-radio-label i {
   color: var(--c-green);
 }
 
 /* ── Checkbox personalizado ──────────────────────────────────────────────── */
-.tp-reg-page .custom-checkbox-row {
+.tp-reg-page .custom-checkbox-row,
+.custom-checkbox-row {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -342,11 +464,13 @@
   transition: background var(--t-duration) var(--ease-apple);
 }
 
-.tp-reg-page .custom-checkbox-row:hover {
+.tp-reg-page .custom-checkbox-row:hover,
+.custom-checkbox-row:hover {
   background: #F5EEDD;
 }
 
-.tp-reg-page .custom-checkbox-row input[type="checkbox"] {
+.tp-reg-page .custom-checkbox-row input[type="checkbox"],
+.custom-checkbox-row input[type="checkbox"] {
   width: 20px;
   height: 20px;
   flex: 0 0 20px;
@@ -374,20 +498,27 @@
   margin: 0 0 20px;
 }
 
-.tp-reg-page .tp-benefits-list {
+.tp-reg-page .tp-benefits-list,
+.tp-benefits-list {
   display: flex;
   flex-direction: column;
   gap: 18px;
   margin-bottom: 0;
 }
 
-.tp-reg-page .tp-benefit-item {
+.tp-info-panel .tp-benefits-list {
+  margin-bottom: 32px;
+}
+
+.tp-reg-page .tp-benefit-item,
+.tp-benefit-item {
   display: flex;
   align-items: flex-start;
   gap: 14px;
 }
 
-.tp-reg-page .tp-benefit-icon {
+.tp-reg-page .tp-benefit-icon,
+.tp-benefit-icon {
   width: 40px;
   height: 40px;
   border-radius: 12px;
@@ -401,21 +532,24 @@
   border: 1px solid rgba(54, 122, 69, 0.18);
 }
 
-.tp-reg-page .tp-benefit-body h3 {
+.tp-reg-page .tp-benefit-body h3,
+.tp-benefit-body h3 {
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--c-ink);
   margin: 0 0 3px;
 }
 
-.tp-reg-page .tp-benefit-body p {
+.tp-reg-page .tp-benefit-body p,
+.tp-benefit-body p {
   font-size: 0.83rem;
   color: var(--c-earth);
   line-height: 1.45;
   margin: 0;
 }
 
-.tp-reg-page .tp-login-box {
+.tp-reg-page .tp-login-box,
+.tp-login-box {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -426,21 +560,24 @@
   margin-top: 24px;
 }
 
-.tp-reg-page .tp-login-box p {
+.tp-reg-page .tp-login-box p,
+.tp-login-box p {
   margin: 0;
   font-size: 0.86rem;
   color: var(--c-earth);
   line-height: 1.4;
 }
 
-.tp-reg-page .tp-login-box a {
+.tp-reg-page .tp-login-box a,
+.tp-login-box a {
   color: var(--c-green);
   font-weight: 700;
   text-decoration: none;
   margin-left: 4px;
 }
 
-.tp-reg-page .tp-login-box a:hover {
+.tp-reg-page .tp-login-box a:hover,
+.tp-login-box a:hover {
   text-decoration: underline;
 }
 
@@ -451,14 +588,17 @@
   margin-bottom: 10px;
 }
 
-.tp-reg-page .zonas-container-box {
+.tp-reg-page .zonas-container-box,
+.zonas-container-box {
   background: var(--c-wheat-soft);
   border: 1px solid var(--field-border);
   border-radius: 16px;
   padding: 20px;
+  margin-bottom: 24px;
 }
 
-.tp-reg-page .zone-card {
+.tp-reg-page .zone-card,
+.zone-card {
   background: var(--c-surface);
   border: 1px solid var(--c-line);
   border-radius: 12px;
@@ -467,22 +607,32 @@
   transition: border-color var(--t-duration) var(--ease-apple);
 }
 
-.tp-reg-page .zone-card:last-child {
+.tp-reg-page .zone-card:last-child,
+.zone-card:last-child {
   margin-bottom: 0;
 }
 
-.tp-reg-page .zone-card:hover {
+.tp-reg-page .zone-card:hover,
+.zone-card:hover {
   border-color: rgba(54, 122, 69, 0.35);
 }
 
-.tp-reg-page .zone-card-header {
+.tp-reg-page .zone-card-header,
+.zone-card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
 }
 
-.tp-reg-page .municipios-toggle-btn {
+.tp-reg-page .zone-card-header label,
+.zone-card-header label {
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.tp-reg-page .municipios-toggle-btn,
+.municipios-toggle-btn {
   background: none;
   border: none;
   color: var(--c-green);
@@ -497,11 +647,13 @@
   transition: background var(--t-duration) var(--ease-apple);
 }
 
-.tp-reg-page .municipios-toggle-btn:hover {
+.tp-reg-page .municipios-toggle-btn:hover,
+.municipios-toggle-btn:hover {
   background: var(--c-green-soft);
 }
 
-.tp-reg-page .municipios-collapse {
+.tp-reg-page .municipios-collapse,
+.municipios-collapse {
   display: none;
   margin-top: 10px;
   padding-top: 10px;
@@ -511,11 +663,13 @@
   line-height: 1.6;
 }
 
-.tp-reg-page .municipios-collapse.show {
+.tp-reg-page .municipios-collapse.show,
+.municipios-collapse.show {
   display: block;
 }
 
-.tp-reg-page .muni-tag {
+.tp-reg-page .muni-tag,
+.muni-tag {
   display: inline-block;
   background: var(--c-wheat-soft);
   color: var(--c-ink);
@@ -542,7 +696,8 @@
 }
 
 /* ── Modal de zonas ──────────────────────────────────────────────────────── */
-.tp-reg-page .modal-overlay {
+.tp-reg-page .modal-overlay,
+.modal-overlay {
   position: fixed;
   inset: 0;
   background: rgba(48, 55, 45, 0.55);
@@ -555,11 +710,13 @@
   padding: 20px;
 }
 
-.tp-reg-page .modal-overlay.active {
+.tp-reg-page .modal-overlay.active,
+.modal-overlay.active {
   display: flex;
 }
 
-.tp-reg-page .modal-content {
+.tp-reg-page .modal-content,
+.modal-content {
   background: var(--c-surface);
   border: 1px solid var(--c-line);
   border-radius: 24px;
@@ -578,20 +735,24 @@
   to { opacity: 1; transform: scale(1); }
 }
 
-.tp-reg-page .modal-header {
+.tp-reg-page .modal-header,
+.modal-header {
   padding: 20px 28px;
   border-bottom: 1px solid var(--c-line);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
 }
 
-.tp-reg-page .modal-body {
+.tp-reg-page .modal-body,
+.modal-body {
   padding: 24px 28px;
   overflow-y: auto;
 }
 
-.tp-reg-page .modal-footer {
+.tp-reg-page .modal-footer,
+.modal-footer {
   padding: 16px 28px;
   border-top: 1px solid var(--c-line);
   display: flex;
@@ -600,13 +761,16 @@
 }
 
 /* ── Responsive ──────────────────────────────────────────────────────────── */
-@media (max-width: 960px) {
-  .tp-reg-page .tp-reg-container {
+@media (max-width: 1024px) {
+  .tp-reg-page .tp-reg-container,
+  .tp-reg-page .tp-reg-container:has(> .tp-info-panel),
+  .tp-reg-container {
     grid-template-columns: 1fr;
-    gap: 24px;
+    gap: 28px;
   }
 
-  .tp-reg-page .tp-aside {
+  .tp-reg-page .tp-aside,
+  .tp-info-panel {
     position: static;
     top: auto;
   }
@@ -621,11 +785,13 @@
     margin-bottom: 22px;
   }
 
-  .tp-reg-page .tp-info-title {
+  .tp-reg-page .tp-info-title,
+  .tp-info-title {
     font-size: 1.7rem;
   }
 
-  .tp-reg-page .tp-section {
+  .tp-reg-page .tp-section,
+  .tp-form-card {
     padding: 20px;
     border-radius: 18px;
     margin-bottom: 16px;
@@ -633,7 +799,10 @@
 
   .tp-reg-page .form-grid-2,
   .tp-reg-page .tipo-selector,
-  .tp-reg-page .vehicle-type-select {
+  .tp-reg-page .vehicle-type-select,
+  .form-grid-2,
+  .tipo-selector,
+  .vehicle-type-select {
     grid-template-columns: 1fr;
   }
 
@@ -654,14 +823,22 @@
     width: 100%;
   }
 
-  .tp-reg-page .zone-card-header {
+  .tp-reg-page .zone-card-header,
+  .zone-card-header {
     flex-direction: column;
     align-items: stretch;
     flex-wrap: nowrap;
+    gap: 8px;
   }
 
-  .tp-reg-page .municipios-toggle-btn {
+  .tp-reg-page .municipios-toggle-btn,
+  .municipios-toggle-btn {
     align-self: flex-end;
+  }
+
+  .tp-reg-page .zonas-container-box,
+  .zonas-container-box {
+    padding: 14px;
   }
 }
 
@@ -669,19 +846,26 @@
 @media (max-width: 768px) {
   .tp-reg-page input,
   .tp-reg-page select,
-  .tp-reg-page textarea {
+  .tp-reg-page textarea,
+  input,
+  select,
+  textarea,
+  .rt-input,
+  .rt-select {
     font-size: 16px !important;
   }
 }
 
 /* Modal Bottom-Sheet for Mobile */
 @media (max-width: 640px) {
-  .tp-reg-page .modal-overlay {
+  .tp-reg-page .modal-overlay,
+  .modal-overlay {
     align-items: flex-end;
     padding: 0;
   }
 
-  .tp-reg-page .modal-content {
+  .tp-reg-page .modal-content,
+  .modal-content {
     width: 100%;
     max-width: 100%;
     max-height: 94dvh;
@@ -691,12 +875,21 @@
 
   .tp-reg-page .modal-header,
   .tp-reg-page .modal-body,
-  .tp-reg-page .modal-footer {
+  .tp-reg-page .modal-footer,
+  .modal-header,
+  .modal-body,
+  .modal-footer {
     padding: 16px 20px;
   }
 
-  .tp-reg-page .modal-footer {
+  .tp-reg-page .modal-footer,
+  .modal-footer {
     padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  }
+
+  .tp-reg-page .modal-footer .ui-btn,
+  .modal-footer .ui-btn {
+    width: 100%;
   }
 }
 
@@ -705,16 +898,6 @@
    Solo se activa cuando el JS añade .tp-steps-enabled al formulario.
    Sin JS no se oculta nada y el envío nativo sigue funcionando.
    ========================================================================== */
-
-/* ── Indicador de pasos ──────────────────────────────────────────────────── */
-.tp-reg-page .tp-steps {
-  max-width: 1120px;
-  margin: 0 auto 20px;
-}
-
-.tp-reg-page .tp-steps .checkout-steps {
-  margin: 0;
-}
 
 .tp-reg-page .checkout-steps__item {
   color: var(--c-earth);
@@ -757,7 +940,6 @@
   color: var(--c-earth);
 }
 
-/* Región aria-live: visible para lectores, invisible en pantalla */
 .tp-reg-page .tp-step-live {
   position: absolute;
   width: 1px;
@@ -771,7 +953,6 @@
   border: 0;
 }
 
-/* ── Estados de sección ──────────────────────────────────────────────────── */
 .tp-reg-page .tp-steps-enabled .tp-section[data-state="pending"] {
   display: none;
 }
@@ -780,7 +961,6 @@
   box-shadow: var(--shadow-md);
 }
 
-/* ── Resumen de sección completada ───────────────────────────────────────── */
 .tp-reg-page .tp-step-summary {
   display: none;
   align-items: center;
@@ -835,7 +1015,6 @@
   flex: 0 0 auto;
 }
 
-/* ── Acciones de paso (Continuar) ────────────────────────────────────────── */
 .tp-reg-page .tp-step-actions {
   display: flex;
   justify-content: flex-end;
@@ -848,21 +1027,10 @@
   font-size: 0.8rem;
 }
 
-/* ── Animación y accesibilidad ───────────────────────────────────────────── */
 .tp-reg-page .tp-section {
   transition: none;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .tp-reg-page .tp-section,
-  .tp-reg-page .tp-step-summary,
-  .tp-reg-page .tp-step-actions {
-    animation: none !important;
-    transition: none !important;
-  }
-}
-
-/* ── Móvil: fila compacta (números + paso actual) ────────────────────────── */
 @media (max-width: 640px) {
   .tp-reg-page .tp-steps {
     margin-bottom: 14px;
@@ -911,16 +1079,215 @@
   }
 }
 
-/* Accesibilidad: movimiento reducido */
 @media (prefers-reduced-motion: reduce) {
-  .tp-reg-page .modal-content {
-    animation: none;
-  }
-
+  .tp-reg-page .modal-content,
   .tp-reg-page .tp-section,
+  .tp-reg-page .tp-step-summary,
+  .tp-reg-page .tp-step-actions,
   .tp-reg-page .tipo-option-label,
   .tp-reg-page .vehicle-radio-label,
   .tp-reg-page .custom-checkbox-row {
-    transition: none;
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+
+/* ==========================================================================
+   ASISTENTE PROGRESIVO
+   Solo se activa cuando el JS añade .tp-steps-enabled al formulario.
+   Sin JS no se oculta nada y el envío nativo sigue funcionando.
+   ========================================================================== */
+
+.tp-reg-page .checkout-steps__item {
+  color: var(--c-earth);
+}
+
+.tp-reg-page .tp-step-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  cursor: default;
+}
+
+.tp-reg-page .tp-step-btn:not(:disabled) {
+  cursor: pointer;
+}
+
+.tp-reg-page .tp-step-btn:disabled {
+  opacity: 1;
+}
+
+.tp-reg-page .tp-step-btn:focus-visible {
+  outline: 3px solid rgba(54, 122, 69, 0.35);
+  outline-offset: 4px;
+  border-radius: var(--radius-full);
+}
+
+.tp-reg-page .tp-step-btn:not(:disabled):hover .tp-step-name {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.tp-reg-page .checkout-steps__item.is-done .tp-step-name {
+  color: var(--c-earth);
+}
+
+.tp-reg-page .tp-step-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.tp-reg-page .tp-steps-enabled .tp-section[data-state="pending"] {
+  display: none;
+}
+
+.tp-reg-page .tp-steps-enabled .tp-section[data-state="active"] {
+  box-shadow: var(--shadow-md);
+}
+
+.tp-reg-page .tp-step-summary {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.tp-reg-page .tp-steps-enabled .tp-section[data-state="done"] {
+  padding: 18px 24px;
+}
+
+.tp-reg-page .tp-steps-enabled .tp-section[data-state="done"] > :not(.tp-step-summary) {
+  display: none !important;
+}
+
+.tp-reg-page .tp-steps-enabled .tp-section[data-state="done"] > .tp-step-summary {
+  display: flex;
+}
+
+.tp-reg-page .tp-step-summary__main {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.tp-reg-page .tp-step-summary__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--c-green-dark, var(--c-green));
+}
+
+.tp-reg-page .tp-step-summary__title i {
+  color: var(--c-green);
+  font-size: 0.9rem;
+}
+
+.tp-reg-page .tp-step-summary__values {
+  font-size: 0.92rem;
+  color: var(--c-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tp-reg-page .tp-step-edit {
+  flex: 0 0 auto;
+}
+
+.tp-reg-page .tp-step-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--c-line);
+}
+
+.tp-reg-page .tp-step-actions .ui-btn i {
+  font-size: 0.8rem;
+}
+
+.tp-reg-page .tp-section {
+  transition: none;
+}
+
+@media (max-width: 640px) {
+  .tp-reg-page .tp-steps {
+    margin-bottom: 14px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .tp-reg-page .tp-steps .checkout-steps {
+    flex-wrap: nowrap;
+    gap: 6px;
+    font-size: 0.8rem;
+  }
+
+  .tp-reg-page .tp-steps--enhanced .tp-step-name {
+    display: none;
+  }
+
+  .tp-reg-page .tp-steps--enhanced .checkout-steps__item.is-current .tp-step-name {
+    display: inline;
+  }
+
+  .tp-reg-page .checkout-steps__item + .checkout-steps__item::before {
+    width: 10px;
+  }
+
+  .tp-reg-page .tp-step-btn {
+    gap: 6px;
+  }
+
+  .tp-reg-page .tp-steps-enabled .tp-section[data-state="done"] {
+    padding: 16px 18px;
+  }
+
+  .tp-reg-page .tp-step-summary__values {
+    max-width: 52vw;
+    font-size: 0.85rem;
+  }
+
+  .tp-reg-page .tp-step-actions {
+    margin-top: 20px;
+    padding-top: 16px;
+  }
+
+  .tp-reg-page .tp-step-actions .ui-btn {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tp-reg-page .modal-content,
+  .tp-reg-page .tp-section,
+  .tp-reg-page .tp-step-summary,
+  .tp-reg-page .tp-step-actions,
+  .tp-reg-page .tipo-option-label,
+  .tp-reg-page .vehicle-radio-label,
+  .tp-reg-page .custom-checkbox-row {
+    animation: none !important;
+    transition: none !important;
   }
 }

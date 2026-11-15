@@ -42,8 +42,18 @@
         <div class="catalog-layout">
 
             <!-- SIDEBAR DE FILTROS -->
-            <aside class="catalog-sidebar" aria-label="Filtros de búsqueda">
-                <form th:action="@{/buscar}" method="get" id="filterForm">
+            <aside class="catalog-sidebar" aria-label="Filtros de búsqueda"
+                   th:classappend="${(categoriaSeleccionada != null and !categoriaSeleccionada.isEmpty()) or precioMin != null or precioMax != null} ? 'is-open-mobile' : ''">
+                <button type="button" class="catalog-mobile-filter-toggle"
+                        onclick="this.closest('.catalog-sidebar').classList.toggle('is-open-mobile')">
+                    <span class="catalog-mobile-filter-toggle__left">
+                        <i class="fas fa-sliders"></i>
+                        <span>Refinar búsqueda y filtros</span>
+                    </span>
+                    <i class="fas fa-chevron-down catalog-mobile-filter-toggle__chevron"></i>
+                </button>
+
+                <form th:action="@{/buscar}" method="get" id="filterForm" class="catalog-sidebar__form">
                     <input type="hidden" name="q" th:value="${query}">
 
                     <div class="sidebar-header">

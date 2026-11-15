@@ -15,7 +15,8 @@
 .profile-page,
 .notif-page,
 .about-page,
-.order-detail-page {
+.order-detail-page,
+.error-page {
   font-family: var(--font-system);
   color: var(--c-ink);
   background-color: var(--c-wheat-soft);
@@ -30,7 +31,8 @@
 .profile-page *,
 .notif-page *,
 .about-page *,
-.order-detail-page * {
+.order-detail-page *,
+.error-page * {
   box-sizing: border-box;
 }
 
@@ -454,6 +456,7 @@
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 
@@ -702,39 +705,124 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  margin-top: 40px;
+  flex-direction: row !important;
+  flex-wrap: nowrap;
+  gap: 4px;
+  width: fit-content;
+  max-width: 100%;
+  margin: 36px auto 8px;
+  padding: 5px 6px;
+  background: var(--c-surface, #FFFFFF);
+  border: 1px solid rgba(48, 55, 45, 0.1);
+  border-radius: 999px;
+  box-shadow: 0 4px 18px rgba(48, 55, 45, 0.06);
 }
 
-.ui-pagination a,
-.ui-pagination span {
+.ui-pagination__pages {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  min-width: 40px;
-  height: 40px;
-  padding: 0 10px;
-  border-radius: 10px;
-  border: 1px solid var(--c-line);
-  background: var(--c-surface);
-  color: var(--c-ink-muted);
-  font-size: 0.9rem;
-  font-weight: 600;
+  gap: 3px;
+}
+
+.ui-pagination > a,
+.ui-pagination .ui-pagination__nav,
+.ui-pagination .ui-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  width: auto !important;
+  min-width: 34px !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  padding: 0 12px !important;
+  border-radius: 999px !important;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  color: var(--c-ink) !important;
+  font-family: inherit;
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
   font-variant-numeric: tabular-nums;
-  text-decoration: none;
+  text-decoration: none !important;
+  box-shadow: none !important;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--t-duration) var(--ease-apple),
+              color var(--t-duration) var(--ease-apple),
+              transform var(--t-duration) var(--ease-apple);
+}
+
+.ui-pagination__page,
+.ui-pagination > div > a.ui-btn {
+  width: 34px !important;
+  min-width: 34px !important;
+  height: 34px !important;
+  min-height: 34px !important;
+  padding: 0 !important;
+  border-radius: 999px !important;
+  border: none !important;
+  background: transparent !important;
+  color: var(--c-ink-muted) !important;
+  font-size: 0.82rem !important;
+  font-weight: 600 !important;
+  font-variant-numeric: tabular-nums;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer;
   transition: all var(--t-duration) var(--ease-apple);
 }
 
-.ui-pagination a:hover {
-  border-color: rgba(54, 122, 69, 0.3);
-  color: var(--c-green);
-  background: var(--c-green-soft);
+.ui-pagination > a:hover:not(.ui-btn--disabled),
+.ui-pagination .ui-pagination__nav:hover:not(:disabled),
+.ui-pagination .ui-btn:hover:not(:disabled):not(.ui-btn--disabled):not(.ui-btn--primary),
+.ui-pagination__page:hover:not(.is-active) {
+  background: var(--c-green-soft) !important;
+  color: var(--c-green) !important;
+  border-color: transparent !important;
+  transform: none !important;
 }
 
-.ui-pagination .is-active {
+.ui-pagination .is-active,
+.ui-pagination .ui-btn--primary {
   background: var(--c-green) !important;
   color: #FFFFFF !important;
   border-color: var(--c-green) !important;
+  box-shadow: 0 2px 8px rgba(54, 122, 69, 0.28) !important;
+}
+
+.ui-pagination .ui-pagination__nav:disabled,
+.ui-pagination .ui-btn:disabled,
+.ui-pagination .ui-btn--disabled {
+  opacity: 0.35 !important;
+  pointer-events: none !important;
+  cursor: not-allowed !important;
+}
+
+.ui-pagination > span,
+.ui-pagination__status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px !important;
+  min-width: auto !important;
+  width: auto !important;
+  padding: 0 10px !important;
+  border-radius: 999px !important;
+  border: none !important;
+  background: rgba(48, 55, 45, 0.045) !important;
+  color: var(--c-earth) !important;
+  font-size: 0.78rem !important;
+  font-weight: 600 !important;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+@media (min-width: 641px) {
+  .ui-pagination__pages + .ui-pagination__status {
+    display: none !important;
+  }
 }
 
 /* ── 13. Responsive ─────────────────────────────────────────────────────────── */
@@ -754,14 +842,85 @@
   .product-card {
     padding: 10px;
     border-radius: 14px;
+    min-width: 0;
+  }
+
+  .product-card__badge,
+  .product-card__ref-label {
+    font-size: 0.68rem;
+    padding: 3px 8px;
+    max-width: calc(100% - 16px);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .product-card__title {
     font-size: 0.9rem;
   }
 
+  .product-card__price-row {
+    flex-wrap: wrap;
+    gap: 2px 6px;
+  }
+
   .product-card__price {
-    font-size: 1.1rem;
+    font-size: 1.08rem;
+  }
+
+  .product-card__actions .ui-btn {
+    min-height: 40px;
+    padding: 8px 10px;
+    font-size: 0.84rem;
+  }
+
+  .ui-pagination {
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-wrap: nowrap !important;
+    gap: 4px;
+    padding: 4px 5px;
+    margin-top: 28px;
+  }
+
+  .ui-pagination > a,
+  .ui-pagination .ui-pagination__nav,
+  .ui-pagination .ui-btn {
+    width: auto !important;
+    min-height: 32px !important;
+    height: 32px !important;
+    padding: 0 10px !important;
+    font-size: 0.78rem !important;
+  }
+
+  .ui-pagination__page,
+  .ui-pagination > div > a.ui-btn {
+    width: 32px !important;
+    min-width: 32px !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    padding: 0 !important;
+    font-size: 0.78rem !important;
+  }
+
+  .ui-pagination > span,
+  .ui-pagination__status {
+    width: auto !important;
+    height: 28px !important;
+    padding: 0 8px !important;
+    font-size: 0.75rem !important;
+  }
+
+  @media (max-width: 420px) {
+    .ui-pagination__nav-label {
+      display: none;
+    }
+
+    .ui-pagination .ui-pagination__nav {
+      width: 32px !important;
+      padding: 0 !important;
+    }
   }
 
   .ui-container {

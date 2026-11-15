@@ -5,13 +5,14 @@
     <link rel="icon" type="image/png" th:href="@{/images/isotipo_transparente.png}">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title th:text="${producto != null ? producto.nombre + ' | Cultivus' : 'Detalle Producto | Cultivus'}">Detalle Producto | Cultivus</title>
+    <title th:text="${producto != null ? producto.nombre + ' | Cultivus' : 'Detalle Producto | Cultivus'}">Detalle
+        Producto | Cultivus</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
+
     <link rel="stylesheet" th:href="@{/checkout-tokens.css}">
     <link rel="stylesheet" th:href="@{/cultivus-ui.css}">
     <link rel="stylesheet" th:href="@{/product-apple.css}">
@@ -31,9 +32,8 @@
             <span class="sep">/</span>
             <a th:href="@{/category}">Catálogo</a>
             <span class="sep" th:if="${producto.categoria != null}">/</span>
-            <a th:if="${producto.categoria != null}"
-               th:href="@{/category(categoria=${producto.categoria.id})}"
-               th:text="${producto.categoria.nombre}">Categoría</a>
+            <a th:if="${producto.categoria != null}" th:href="@{/category(categoria=${producto.categoria.id})}"
+                th:text="${producto.categoria.nombre}">Categoría</a>
             <span class="sep">/</span>
             <span class="current" th:text="${producto.nombre}">Nombre Producto</span>
         </nav>
@@ -45,18 +45,18 @@
             <div class="product-gallery">
                 <div class="product-gallery__card">
                     <div class="product-gallery__actions">
-                        <button type="button" class="action-circle-btn" onclick="toggleFavorito(this)" title="Añadir a favoritos" aria-label="Favorito">
+                        <button type="button" class="action-circle-btn" onclick="toggleFavorito(this)"
+                            title="Añadir a favoritos" aria-label="Favorito">
                             <i class="far fa-heart"></i>
                         </button>
-                        <button type="button" class="action-circle-btn" onclick="compartirProducto()" title="Compartir producto" aria-label="Compartir">
+                        <button type="button" class="action-circle-btn" onclick="compartirProducto()"
+                            title="Compartir producto" aria-label="Compartir">
                             <i class="fas fa-share-alt"></i>
                         </button>
                     </div>
 
-                    <img th:src="${producto.imagenUrl}"
-                         th:alt="${producto.nombre}"
-                         class="product-gallery__img"
-                         onerror="this.src='/images/placeholders/sin-foto.svg'">
+                    <img th:src="${producto.imagenUrl}" th:alt="${producto.nombre}" class="product-gallery__img"
+                        onerror="this.src='/images/placeholders/sin-foto.svg'">
                 </div>
             </div>
 
@@ -67,7 +67,7 @@
                         <i class="fas fa-leaf"></i> 100% Colombiano
                     </span>
                     <span class="ui-chip ui-chip--wheat"
-                          th:text="'PLU: #' + ${#strings.substring(producto.id, producto.id.length() > 6 ? producto.id.length() - 6 : 0)}">
+                        th:text="'PLU: #' + ${#strings.substring(producto.id, producto.id.length() > 6 ? producto.id.length() - 6 : 0)}">
                         PLU: #869437
                     </span>
                 </div>
@@ -84,32 +84,37 @@
                 <div class="price-card">
                     <div class="price-card__row">
                         <span class="price-card__main" th:if="${producto.precioMinimo != null}"
-                              th:text="'Desde $' + ${#numbers.formatInteger(producto.precioMinimo, 1, 'POINT')}">
+                            th:text="'Desde $' + ${#numbers.formatInteger(producto.precioMinimo, 1, 'POINT')}">
                             Desde $0
                         </span>
                         <span class="price-card__unit" th:if="${producto.precioMinimo != null}"
-                              th:text="'/ ' + ${producto.abreviaturaUnidad}">
+                            th:text="'/ ' + ${producto.abreviaturaUnidad}">
                             / kg
                         </span>
-                        <span class="price-card__main" th:if="${producto.precioMinimo == null}" style="font-size: 1.3rem; color: var(--c-earth);">
+                        <span class="price-card__main" th:if="${producto.precioMinimo == null}"
+                            style="font-size: 1.3rem; color: var(--c-earth);">
                             Sin ofertas activas
                         </span>
                     </div>
 
-                    <p class="price-card__seller" th:if="${producto.totalVendedores != null and producto.totalVendedores > 0}">
+                    <p class="price-card__seller"
+                        th:if="${producto.totalVendedores != null and producto.totalVendedores > 0}">
                         <i class="fas fa-store" style="color: var(--c-green);"></i>
-                        <span><strong th:text="${producto.totalVendedores}">0</strong> productores tienen cosechas disponibles de este producto</span>
+                        <span><strong th:text="${producto.totalVendedores}">0</strong> productores tienen cosechas
+                            disponibles de este producto</span>
                     </p>
 
-                    <p th:if="${producto.descripcion != null}" style="margin: 14px 0 0; font-size: 0.95rem; line-height: 1.5; color: var(--c-ink);"
-                       th:text="${producto.descripcion}">
+                    <p th:if="${producto.descripcion != null}"
+                        style="margin: 14px 0 0; font-size: 0.95rem; line-height: 1.5; color: var(--c-ink);"
+                        th:text="${producto.descripcion}">
                         Descripción del producto.
                     </p>
                 </div>
 
                 <!-- Llamado a la Acción hacia las ofertas -->
                 <a href="#productos-disponibles" class="ui-btn ui-btn--primary ui-btn--lg" style="margin-bottom: 20px;">
-                    <i class="fas fa-basket-shopping"></i> Ver ofertas de productores (<span th:text="${totalOfertas != null ? totalOfertas : 0}">0</span>)
+                    <i class="fas fa-basket-shopping"></i> Ver ofertas de productores (<span
+                        th:text="${totalOfertas != null ? totalOfertas : 0}">0</span>)
                 </a>
 
                 <!-- Beneficios y Garantías -->
@@ -163,31 +168,35 @@
             </div>
 
             <!-- Paginación de ofertas si aplica -->
-            <div class="ui-pagination" th:if="${totalPages != null and totalPages > 1}">
-                <a class="ui-btn ui-btn--secondary ui-btn--sm"
-                   th:classappend="${currentPage <= 0 ? 'ui-btn--disabled' : ''}"
-                   th:href="@{/producto/{id}(id=${producto.id}, page=${currentPage - 1}, size=${size})} + '#productos-disponibles'">
-                    <i class="fas fa-chevron-left"></i> Anterior
+            <nav class="ui-pagination" aria-label="Paginación de ofertas del producto"
+                th:if="${totalPages != null and totalPages > 1}">
+                <a class="ui-pagination__nav" th:classappend="${currentPage <= 0 ? 'ui-btn--disabled' : ''}"
+                    th:href="@{/producto/{id}(id=${producto.id}, page=${currentPage - 1}, size=${size})} + '#productos-disponibles'"
+                    aria-label="Página anterior">
+                    <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                    <span class="ui-pagination__nav-label">Anterior</span>
                 </a>
 
-                <span style="font-size: 0.9rem; font-weight: 600; color: var(--c-earth); padding: 0 8px;"
-                      th:text="'Página ' + (${currentPage + 1}) + ' de ' + ${totalPages}">
-                    Página 1 de 1
+                <span class="ui-pagination__status" th:text="(${currentPage + 1}) + ' / ' + ${totalPages}">
+                    1 / 1
                 </span>
 
-                <a class="ui-btn ui-btn--secondary ui-btn--sm"
-                   th:classappend="${currentPage + 1 >= totalPages ? 'ui-btn--disabled' : ''}"
-                   th:href="@{/producto/{id}(id=${producto.id}, page=${currentPage + 1}, size=${size})} + '#productos-disponibles'">
-                    Siguiente <i class="fas fa-chevron-right"></i>
+                <a class="ui-pagination__nav"
+                    th:classappend="${currentPage + 1 >= totalPages ? 'ui-btn--disabled' : ''}"
+                    th:href="@{/producto/{id}(id=${producto.id}, page=${currentPage + 1}, size=${size})} + '#productos-disponibles'"
+                    aria-label="Página siguiente">
+                    <span class="ui-pagination__nav-label">Siguiente</span>
+                    <i class="fas fa-chevron-right" aria-hidden="true"></i>
                 </a>
-            </div>
+            </nav>
 
             <!-- Estado Vacío si no hay ofertas -->
             <div class="ui-empty" th:if="${ofertas == null or ofertas.isEmpty()}">
                 <div class="ui-empty__icon"><i class="fas fa-store-slash"></i></div>
                 <h3 class="ui-empty__title">Sin cosechas disponibles por el momento</h3>
                 <p class="ui-empty__desc">
-                    Ningún agricultor tiene lotes activos de este producto en este momento. Te invitamos a revisar más tarde o explorar productos similares en el catálogo.
+                    Ningún agricultor tiene lotes activos de este producto en este momento. Te invitamos a revisar más
+                    tarde o explorar productos similares en el catálogo.
                 </p>
                 <a th:href="@{/category}" class="ui-btn ui-btn--secondary">
                     Explorar el catálogo
@@ -208,7 +217,8 @@
                 <div class="specs-grid">
                     <div class="spec-pill">
                         <div class="spec-pill__label">Referencia</div>
-                        <div class="spec-pill__value" th:text="'CUL-' + ${#strings.substring(producto.id, producto.id.length() > 8 ? producto.id.length() - 8 : 0)}">
+                        <div class="spec-pill__value"
+                            th:text="'CUL-' + ${#strings.substring(producto.id, producto.id.length() > 8 ? producto.id.length() - 8 : 0)}">
                             CUL-0001
                         </div>
                     </div>
@@ -218,25 +228,29 @@
                     </div>
                     <div class="spec-pill">
                         <div class="spec-pill__label">Categoría</div>
-                        <div class="spec-pill__value" th:text="${producto.categoria != null ? producto.categoria.nombre : 'General'}">
+                        <div class="spec-pill__value"
+                            th:text="${producto.categoria != null ? producto.categoria.nombre : 'General'}">
                             Frutas
                         </div>
                     </div>
                     <div class="spec-pill">
                         <div class="spec-pill__label">Unidad de Medida</div>
-                        <div class="spec-pill__value" th:text="${producto.unidadPorDefecto != null ? producto.unidadPorDefecto.nombre + ' (' + producto.unidadPorDefecto.abreviatura + ')' : (producto.unidadMedida != null ? producto.unidadMedida : 'Unidades')}">
+                        <div class="spec-pill__value"
+                            th:text="${producto.unidadPorDefecto != null ? producto.unidadPorDefecto.nombre + ' (' + producto.unidadPorDefecto.abreviatura + ')' : (producto.unidadMedida != null ? producto.unidadMedida : 'Unidades')}">
                             Kg
                         </div>
                     </div>
                     <div class="spec-pill">
                         <div class="spec-pill__label">Unidades Permitidas</div>
-                        <div class="spec-pill__value" th:text="${producto.unidadesPermitidas != null and !producto.unidadesPermitidas.isEmpty() ? #strings.listJoin(producto.unidadesPermitidas.![abreviatura], ', ') : producto.abreviaturaUnidad}">
+                        <div class="spec-pill__value"
+                            th:text="${producto.unidadesPermitidas != null and !producto.unidadesPermitidas.isEmpty() ? #strings.listJoin(producto.unidadesPermitidas.![abreviatura], ', ') : producto.abreviaturaUnidad}">
                             kg, lb
                         </div>
                     </div>
                     <div class="spec-pill">
                         <div class="spec-pill__label">Stock Disponible</div>
-                        <div class="spec-pill__value" th:text="${producto.stockTotal != null ? ((producto.stockTotal % 1 == 0 ? #numbers.formatDecimal(producto.stockTotal, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(producto.stockTotal, 1, 'POINT', 1, 'COMMA')) + ' ' + producto.abreviaturaUnidad) : '0 ' + producto.abreviaturaUnidad}">
+                        <div class="spec-pill__value"
+                            th:text="${producto.stockTotal != null ? ((producto.stockTotal % 1 == 0 ? #numbers.formatDecimal(producto.stockTotal, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(producto.stockTotal, 1, 'POINT', 1, 'COMMA')) + ' ' + producto.abreviaturaUnidad) : '0 ' + producto.abreviaturaUnidad}">
                             0 unidades
                         </div>
                     </div>
@@ -257,8 +271,10 @@
         </section>
 
         <!-- NAVEGACIÓN ENTRE PRODUCTOS (Anterior / Catálogo / Siguiente) -->
-        <nav class="prod-nav-strip" aria-label="Navegar entre productos" th:if="${productoAnterior != null or productoSiguiente != null}">
-            <a class="prod-nav-btn" th:if="${productoAnterior != null}" th:href="@{/producto/{id}(id=${productoAnterior.id})}">
+        <nav class="prod-nav-strip" aria-label="Navegar entre productos"
+            th:if="${productoAnterior != null or productoSiguiente != null}">
+            <a class="prod-nav-btn" th:if="${productoAnterior != null}"
+                th:href="@{/producto/{id}(id=${productoAnterior.id})}">
                 <i class="fas fa-chevron-left"></i>
                 <span>
                     <small>Producto anterior</small>
@@ -271,7 +287,8 @@
                 <i class="fas fa-border-all"></i> Catálogo completo
             </a>
 
-            <a class="prod-nav-btn" th:if="${productoSiguiente != null}" th:href="@{/producto/{id}(id=${productoSiguiente.id})}">
+            <a class="prod-nav-btn" th:if="${productoSiguiente != null}"
+                th:href="@{/producto/{id}(id=${productoSiguiente.id})}">
                 <span style="text-align: right;">
                     <small>Producto siguiente</small>
                     <strong th:text="${productoSiguiente.nombre}">Nombre</strong>
@@ -323,7 +340,7 @@
                 navigator.share({
                     title: document.title,
                     url: window.location.href
-                }).catch(() => {});
+                }).catch(() => { });
             } else {
                 navigator.clipboard.writeText(window.location.href).then(() => {
                     alert('Enlace copiado al portapapeles');

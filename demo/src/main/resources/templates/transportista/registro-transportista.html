@@ -268,7 +268,7 @@
                         <div class="zonas-list" id="zonasList">
                             <div th:each="zona : ${zonasCatalogo}" class="zone-card">
                                 <div class="zone-card-header">
-                                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; flex: 1;">
+                                    <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; flex: 1; flex-wrap: wrap;">
                                         <input type="checkbox" name="zonasCoberturaIds" th:value="${zona.id}"
                                                class="zona-checkbox" onchange="onZonaIndividualChange()" style="width: 18px; height: 18px; accent-color: var(--c-green);">
                                         <span style="font-size: 0.9rem; font-weight: 600; color: var(--c-ink);">
@@ -381,10 +381,10 @@
                            class="ui-input" style="padding-left: 44px;">
                 </div>
 
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;" id="modalGridZonas">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr)); gap: 14px;" id="modalGridZonas">
                     <div th:each="zona : ${zonasCatalogo}" class="modal-zona-box" th:data-zona-id="${zona.id}"
                          style="background: var(--c-wheat-soft); border: 1px solid var(--field-border); border-radius: 14px; padding: 14px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid var(--c-line); padding-bottom: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; border-bottom: 1px solid var(--c-line); padding-bottom: 8px; gap: 8px; flex-wrap: wrap;">
                             <strong style="color: var(--c-ink); font-size: 0.95rem;">
                                 Zona <span th:text="${zona.id}">1</span>: <span th:text="${zona.nombre}">Dique</span>
                             </strong>

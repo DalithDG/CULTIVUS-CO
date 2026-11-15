@@ -37,31 +37,55 @@
             </nav>
 
             <h1 class="ui-title-1">Explora Nuestras Cosechas</h1>
-            <p class="ui-subtitle">Alimentos frescos cosechados por campesinos colombianos, con trazabilidad y precios justos.</p>
+            <p class="ui-subtitle">Alimentos frescos cosechados por campesinos colombianos, con trazabilidad y precios
+                justos.</p>
         </header>
 
         <!-- 2. TIRA DE PÍLDORAS DESLIZABLES DE CATEGORÍAS -->
-        <nav class="cat-pills-strip" aria-label="Selector rápido de categorías">
-            <a th:href="@{/category}" class="cat-pill-btn"
-               th:classappend="${categoriaSeleccionada == null or categoriaSeleccionada.isEmpty()} ? 'is-active' : ''">
-                <i class="fas fa-border-all"></i> Todas
-            </a>
-            <th:block th:if="${categorias != null and !categorias.isEmpty()}">
-                <a th:each="cat : ${@imagenes.categoriasPublicas(categorias)}"
-                   th:href="@{/category(categoria=${cat.id})}"
-                   class="cat-pill-btn"
-                   th:classappend="${categoriaSeleccionada != null and #lists.contains(categoriaSeleccionada, cat.id)} ? 'is-active' : ''">
-                    <span th:text="${cat.nombre}">Categoría</span>
+        <div class="cat-pills-bar">
+            <button type="button" class="cat-pills-nav cat-pills-nav--prev" id="catPillsPrev"
+                onclick="scrollCatPills(-1)" aria-label="Categorías anteriores">
+                <i class="fas fa-chevron-left" aria-hidden="true"></i>
+            </button>
+            <nav class="cat-pills-strip" id="catPillsStrip" aria-label="Selector rápido de categorías">
+                <a th:href="@{/category}" class="cat-pill-btn"
+                    th:classappend="${categoriaSeleccionada == null or categoriaSeleccionada.isEmpty()} ? 'is-active' : ''">
+                    <i class="fas fa-border-all"></i> Todas
                 </a>
-            </th:block>
-        </nav>
+                <th:block th:if="${categorias != null and !categorias.isEmpty()}">
+                    <a th:each="cat : ${@imagenes.categoriasPublicas(categorias)}"
+                        th:href="@{/category(categoria=${cat.id})}" class="cat-pill-btn"
+                        th:classappend="${categoriaSeleccionada != null and #lists.contains(categoriaSeleccionada, cat.id)} ? 'is-active' : ''">
+                        <span th:text="${cat.nombre}">Categoría</span>
+                    </a>
+                </th:block>
+            </nav>
+            <button type="button" class="cat-pills-nav cat-pills-nav--next" id="catPillsNext"
+                onclick="scrollCatPills(1)" aria-label="Más categorías">
+                <i class="fas fa-chevron-right" aria-hidden="true"></i>
+            </button>
+        </div>
 
         <!-- 3. LAYOUT DEL CATÁLOGO (SIDEBAR + PRODUCTOS) -->
         <div class="catalog-layout">
 
             <!-- SIDEBAR DE FILTROS -->
-            <aside class="catalog-sidebar" aria-label="Filtros del catálogo">
-                <form id="filtrosForm" method="GET" th:action="@{/category}">
+            <aside class="catalog-sidebar" aria-label="Filtros del catálogo"
+                th:classappend="${(categoriaSeleccionada != null and !categoriaSeleccionada.isEmpty()) or precioMax != null} ? 'is-open-mobile' : ''">
+                <button type="button" class="catalog-mobile-filter-toggle" id="mobileFilterToggle"
+                    onclick="toggleFiltrosMobile()"
+                    th:attr="aria-expanded=${(categoriaSeleccionada != null and !categoriaSeleccionada.isEmpty()) or precioMax != null ? 'true' : 'false'}">
+                    <span class="catalog-mobile-filter-toggle__left">
+                        <i class="fas fa-sliders"></i>
+                        <span>Filtrar por categoría y precio</span>
+                        <span class="catalog-mobile-filter-badge"
+                            th:if="${(categoriaSeleccionada != null and !categoriaSeleccionada.isEmpty()) or precioMax != null}"
+                            th:text="${(categoriaSeleccionada != null ? categoriaSeleccionada.size() : 0) + (precioMax != null ? 1 : 0)}">1</span>
+                    </span>
+                    <i class="fas fa-chevron-down catalog-mobile-filter-toggle__chevron" id="mobileFilterChevron"></i>
+                </button>
+
+                <form id="filtrosForm" class="catalog-sidebar__form" method="GET" th:action="@{/category}">
                     <div class="sidebar-header">
                         <h2 class="sidebar-header__title">
                             <i class="fas fa-sliders"></i> Filtros
@@ -76,34 +100,39 @@
                         <h3 class="filter-group__title">Categoría</h3>
                         <div class="filter-checkbox-list" id="catCheckboxList">
                             <th:block th:if="${categorias != null and !categorias.isEmpty()}">
-                                <label class="filter-checkbox-item" th:each="cat, iterStat : ${@imagenes.categoriasPublicas(categorias)}"
-                                       th:classappend="${iterStat.index >= 6} ? 'cat-item-extra' : ''"
-                                       th:style="${iterStat.index >= 6} ? 'display: none;' : ''">
+                                <label class="filter-checkbox-item"
+                                    th:each="cat, iterStat : ${@imagenes.categoriasPublicas(categorias)}"
+                                    th:classappend="${(iterStat.index >= 6 and (categoriaSeleccionada == null or !#lists.contains(categoriaSeleccionada, cat.id))) ? 'cat-item-extra' : ''} + (${categoriaSeleccionada != null and #lists.contains(categoriaSeleccionada, cat.id)} ? ' is-checked' : '')">
                                     <input type="checkbox" name="categoria" th:value="${cat.id}"
-                                           th:checked="${categoriaSeleccionada != null and #lists.contains(categoriaSeleccionada, cat.id)}">
+                                        onchange="onCategoriaCheckboxChange(this)"
+                                        th:checked="${categoriaSeleccionada != null and #lists.contains(categoriaSeleccionada, cat.id)}">
                                     <span th:text="${cat.nombre}">Categoría</span>
                                 </label>
                             </th:block>
 
                             <!-- Respaldo estático -->
                             <th:block th:if="${categorias == null or categorias.isEmpty()}">
-                                <label class="filter-checkbox-item">
-                                    <input type="checkbox" name="categoria" value="frutas" checked>
+                                <label class="filter-checkbox-item is-checked">
+                                    <input type="checkbox" name="categoria" value="frutas" checked
+                                        onchange="onCategoriaCheckboxChange(this)">
                                     <span>Frutas</span>
                                 </label>
                                 <label class="filter-checkbox-item">
-                                    <input type="checkbox" name="categoria" value="verduras">
+                                    <input type="checkbox" name="categoria" value="verduras"
+                                        onchange="onCategoriaCheckboxChange(this)">
                                     <span>Verduras</span>
                                 </label>
                                 <label class="filter-checkbox-item">
-                                    <input type="checkbox" name="categoria" value="lacteos">
+                                    <input type="checkbox" name="categoria" value="lacteos"
+                                        onchange="onCategoriaCheckboxChange(this)">
                                     <span>Lácteos</span>
                                 </label>
                             </th:block>
                         </div>
 
                         <button type="button" class="ui-btn ui-btn--tertiary ui-btn--sm" id="toggleMoreCatsBtn"
-                                onclick="toggleMasCategorias()" style="margin-top: 8px; padding-left: 0;">
+                            th:if="${categorias != null and #lists.size(@imagenes.categoriasPublicas(categorias)) > 6}"
+                            onclick="toggleMasCategorias()" style="margin-top: 8px; padding-left: 0;">
                             <span>Ver más categorías</span> <i class="fas fa-chevron-down" id="toggleMoreCatsIcon"></i>
                         </button>
                     </div>
@@ -115,11 +144,12 @@
                             <div class="filter-slider-labels">
                                 <span id="priceMinDisplay">$ 0</span>
                                 <span id="priceMaxDisplay"
-                                      th:text="'$ ' + ${#numbers.formatInteger(precioMax != null ? precioMax : 100000, 1, 'POINT')}">$ 100.000</span>
+                                    th:text="'$ ' + ${#numbers.formatInteger(precioMax != null ? precioMax : 100000, 1, 'POINT')}">$
+                                    100.000</span>
                             </div>
                             <input type="range" class="filter-slider-input" min="0" max="100000" step="1000"
-                                   th:value="${precioMax != null ? precioMax : 100000}" name="precioMax"
-                                   id="precioSlider" oninput="actualizarPrecio(this.value)">
+                                th:value="${precioMax != null ? precioMax : 100000}" name="precioMax" id="precioSlider"
+                                oninput="actualizarPrecio(this.value)">
                         </div>
                     </div>
 
@@ -140,7 +170,8 @@
                     <div class="catalog-toolbar__count">
                         <i class="fas fa-boxes-stacked"></i>
                         <span>
-                            <strong th:text="${totalItems != null ? totalItems : (ofertas != null ? ofertas.size() : 0)}">0</strong>
+                            <strong
+                                th:text="${totalItems != null ? totalItems : (ofertas != null ? ofertas.size() : 0)}">0</strong>
                             ofertas encontradas
                         </span>
                     </div>
@@ -148,30 +179,37 @@
                     <div class="catalog-toolbar__sort">
                         <label for="ordenarSelect">Ordenar por:</label>
                         <select id="ordenarSelect" onchange="ordenarProductos(this.value)">
-                            <option value="relevancia" th:selected="${ordenSeleccionado == null or ordenSeleccionado == 'relevancia'}">Relevancia</option>
-                            <option value="precio-menor" th:selected="${ordenSeleccionado == 'precio-menor'}">Precio: Menor a Mayor</option>
-                            <option value="precio-mayor" th:selected="${ordenSeleccionado == 'precio-mayor'}">Precio: Mayor a Menor</option>
+                            <option value="relevancia"
+                                th:selected="${ordenSeleccionado == null or ordenSeleccionado == 'relevancia'}">
+                                Relevancia</option>
+                            <option value="precio-menor" th:selected="${ordenSeleccionado == 'precio-menor'}">Precio:
+                                Menor a Mayor</option>
+                            <option value="precio-mayor" th:selected="${ordenSeleccionado == 'precio-mayor'}">Precio:
+                                Mayor a Menor</option>
                             <option value="nombre" th:selected="${ordenSeleccionado == 'nombre'}">Nombre A-Z</option>
-                            <option value="recientes" th:selected="${ordenSeleccionado == 'recientes'}">Más Recientes</option>
+                            <option value="recientes" th:selected="${ordenSeleccionado == 'recientes'}">Más Recientes
+                            </option>
                         </select>
                     </div>
                 </div>
 
                 <!-- Grid de ofertas: cada tarjeta es una OFERTA de vendedor (el catálogo es solo lista de referencia) -->
-                <div class="product-grid" id="productosGrid" th:if="${ofertas != null and !ofertas.isEmpty()}" data-anim-content data-anim-stagger="0.06">
+                <div class="product-grid" id="productosGrid" th:if="${ofertas != null and !ofertas.isEmpty()}"
+                    data-anim-content data-anim-stagger="0.06">
                     <th:block th:each="oferta : ${ofertas}">
                         <th:block th:replace="~{fragments/oferta-card :: card(${oferta})}"></th:block>
                     </th:block>
                 </div>
 
                 <!-- Estado vacío: sin ofertas publicadas en absoluto -->
-                <th:block th:if="${(ofertas == null or ofertas.isEmpty()) and (totalItems == null or totalItems == 0) and (categoriaSeleccionada == null or categoriaSeleccionada.isEmpty()) and precioMax == null}">
+                <th:block
+                    th:if="${(ofertas == null or ofertas.isEmpty()) and (totalItems == null or totalItems == 0) and (categoriaSeleccionada == null or categoriaSeleccionada.isEmpty()) and precioMax == null}">
                     <th:block th:replace="~{fragments/estado-vacio :: sinProductos}"></th:block>
                 </th:block>
 
                 <!-- Estado vacío: hay ofertas, pero ninguna coincide con los filtros -->
                 <div class="ui-empty"
-                     th:if="${(ofertas == null or ofertas.isEmpty()) and ((categoriaSeleccionada != null and !categoriaSeleccionada.isEmpty()) or precioMax != null)}">
+                    th:if="${(ofertas == null or ofertas.isEmpty()) and ((categoriaSeleccionada != null and !categoriaSeleccionada.isEmpty()) or precioMax != null)}">
                     <div class="ui-empty__icon"><i class="fas fa-filter"></i></div>
                     <h3 class="ui-empty__title">No hay productos publicados con estos filtros</h3>
                     <p class="ui-empty__desc">Prueba con otra categoría o un precio máximo mayor.</p>
@@ -180,23 +218,35 @@
                     </a>
                 </div>
 
-                <!-- Paginación Segmentada -->
-                <div class="ui-pagination" th:if="${totalPages != null and totalPages > 1}">
-                    <button type="button" th:onclick="'cambiarPagina(' + (${currentPage} - 1) + ')'"
-                            th:disabled="${currentPage == null or currentPage == 0}" class="ui-btn ui-btn--secondary ui-btn--sm">
-                        <i class="fas fa-chevron-left"></i> Anterior
+                <!-- Paginación Moderna en Cápsula -->
+                <nav class="ui-pagination" aria-label="Paginación de catálogo"
+                    th:if="${totalPages != null and totalPages > 1}" th:with="curr=${currentPage != null ? currentPage : 0},
+                              startP=${T(java.lang.Math).max(0, curr - 2)},
+                              endP=${T(java.lang.Math).min(totalPages - 1, curr + 2)}">
+                    <button type="button" th:onclick="'cambiarPagina(' + (${curr} - 1) + ')'" th:disabled="${curr == 0}"
+                        class="ui-pagination__nav" aria-label="Página anterior">
+                        <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                        <span class="ui-pagination__nav-label">Anterior</span>
                     </button>
 
-                    <span style="font-size: 0.9rem; font-weight: 600; color: var(--c-earth); padding: 0 8px;"
-                          th:text="'Página ' + (${currentPage != null ? currentPage + 1 : 1}) + ' de ' + ${totalPages}">
-                        Página 1 de 5
+                    <div class="ui-pagination__pages">
+                        <button type="button" th:each="p : ${#numbers.sequence(startP, endP)}"
+                            th:onclick="'cambiarPagina(' + ${p} + ')'" class="ui-pagination__page"
+                            th:classappend="${p == curr} ? 'is-active' : ''"
+                            th:attr="aria-current=${p == curr ? 'page' : null}" th:text="${p + 1}">1</button>
+                    </div>
+
+                    <span class="ui-pagination__status" th:text="(${curr + 1}) + ' / ' + ${totalPages}">
+                        1 / 5
                     </span>
 
-                    <button type="button" th:onclick="'cambiarPagina(' + (${currentPage} + 1) + ')'"
-                            th:disabled="${currentPage != null and currentPage + 1 >= totalPages}" class="ui-btn ui-btn--secondary ui-btn--sm">
-                        Siguiente <i class="fas fa-chevron-right"></i>
+                    <button type="button" th:onclick="'cambiarPagina(' + (${curr} + 1) + ')'"
+                        th:disabled="${curr + 1 >= totalPages}" class="ui-pagination__nav"
+                        aria-label="Página siguiente">
+                        <span class="ui-pagination__nav-label">Siguiente</span>
+                        <i class="fas fa-chevron-right" aria-hidden="true"></i>
                     </button>
-                </div>
+                </nav>
             </section>
         </div>
     </main>
@@ -206,6 +256,116 @@
 
     <!-- SCRIPTS INTERACTIVOS -->
     <script>
+        function toggleFiltrosMobile() {
+            const sidebar = document.querySelector('.catalog-sidebar');
+            const toggleBtn = document.getElementById('mobileFilterToggle');
+            if (!sidebar) return;
+            const isOpen = sidebar.classList.toggle('is-open-mobile');
+            if (toggleBtn) {
+                toggleBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            }
+        }
+
+        function onCategoriaCheckboxChange(checkbox) {
+            const label = checkbox.closest('.filter-checkbox-item');
+            if (label) {
+                label.classList.toggle('is-checked', checkbox.checked);
+            }
+            const form = document.getElementById('filtrosForm');
+            if (form) {
+                form.submit();
+            }
+        }
+
+        function scrollCatPills(direction) {
+            const strip = document.getElementById('catPillsStrip');
+            if (!strip) return;
+            const amount = Math.max(strip.clientWidth * 0.65, 180) * direction;
+            strip.scrollBy({ left: amount, behavior: 'smooth' });
+        }
+
+        function initCatPillsNavigation() {
+            const strip = document.getElementById('catPillsStrip');
+            const prevBtn = document.getElementById('catPillsPrev');
+            const nextBtn = document.getElementById('catPillsNext');
+            if (!strip) return;
+
+            function updateArrows() {
+                const maxScroll = strip.scrollWidth - strip.clientWidth;
+                if (prevBtn) {
+                    prevBtn.classList.toggle('is-hidden', strip.scrollLeft <= 4 || maxScroll <= 4);
+                }
+                if (nextBtn) {
+                    nextBtn.classList.toggle('is-hidden', strip.scrollLeft >= maxScroll - 4 || maxScroll <= 4);
+                }
+            }
+
+            strip.addEventListener('scroll', updateArrows, { passive: true });
+            window.addEventListener('resize', updateArrows, { passive: true });
+
+            // Convertir rueda vertical del mouse en desplazamiento horizontal sobre la tira
+            strip.addEventListener('wheel', function (e) {
+                if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && strip.scrollWidth > strip.clientWidth) {
+                    e.preventDefault();
+                    strip.scrollLeft += e.deltaY;
+                }
+            }, { passive: false });
+
+            // Arrastre con mouse (drag-to-scroll) en escritorio
+            let isDown = false;
+            let startX = 0;
+            let scrollStart = 0;
+            let dragged = false;
+
+            strip.addEventListener('mousedown', function (e) {
+                isDown = true;
+                dragged = false;
+                startX = e.pageX - strip.offsetLeft;
+                scrollStart = strip.scrollLeft;
+                strip.classList.add('is-dragging');
+            });
+
+            window.addEventListener('mouseup', function () {
+                if (!isDown) return;
+                isDown = false;
+                strip.classList.remove('is-dragging');
+            });
+
+            strip.addEventListener('mousemove', function (e) {
+                if (!isDown) return;
+                const x = e.pageX - strip.offsetLeft;
+                const walk = x - startX;
+                if (Math.abs(walk) > 5) {
+                    dragged = true;
+                    e.preventDefault();
+                    strip.scrollLeft = scrollStart - walk;
+                }
+            });
+
+            strip.addEventListener('click', function (e) {
+                if (dragged) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    dragged = false;
+                }
+            }, true);
+
+            // Centrar automáticamente la píldora activa al cargar
+            const activePill = strip.querySelector('.cat-pill-btn.is-active');
+            if (activePill && strip.scrollWidth > strip.clientWidth) {
+                const offset = activePill.offsetLeft - (strip.clientWidth / 2) + (activePill.offsetWidth / 2);
+                strip.scrollLeft = Math.max(0, offset);
+            }
+
+            updateArrows();
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initCatPillsNavigation);
+        } else {
+            initCatPillsNavigation();
+        }
+
         function actualizarPrecio(val) {
             const formatted = new Intl.NumberFormat('es-CO', { style: 'currency', currency: 'COP', maximumFractionDigits: 0 }).format(val);
             const label = document.getElementById('priceMaxDisplay');
@@ -236,14 +396,14 @@
 
         let masCategoriasVisible = false;
         function toggleMasCategorias() {
-            const extras = document.querySelectorAll('.cat-item-extra');
+            const list = document.getElementById('catCheckboxList');
             const icon = document.getElementById('toggleMoreCatsIcon');
             const btn = document.getElementById('toggleMoreCatsBtn');
             masCategoriasVisible = !masCategoriasVisible;
 
-            extras.forEach(el => {
-                el.style.display = masCategoriasVisible ? 'flex' : 'none';
-            });
+            if (list) {
+                list.classList.toggle('is-expanded', masCategoriasVisible);
+            }
 
             if (icon) {
                 icon.className = masCategoriasVisible ? 'fas fa-chevron-up' : 'fas fa-chevron-down';

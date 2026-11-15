@@ -10,7 +10,7 @@ import java.util.Optional;
 @Repository
 public interface CarritoRepository extends MongoRepository<Carrito, String> {
 
-    Optional<Carrito> findByUsuarioId(String usuarioId);
+    Optional<Carrito> findFirstByUsuarioId(String usuarioId);
 
     boolean existsByUsuarioId(String usuarioId);
 

@@ -169,7 +169,7 @@ class GuestCartAndCatalogTest {
         session.setAttribute("usuarioLogueado", comprador);
 
         Carrito carritoUsuario = new Carrito("comp-1");
-        when(carritoRepository.findByUsuarioId("comp-1")).thenReturn(Optional.of(carritoUsuario));
+        when(carritoRepository.findFirstByUsuarioId("comp-1")).thenReturn(Optional.of(carritoUsuario));
         when(carritoRepository.save(any(Carrito.class))).thenAnswer(inv -> inv.getArgument(0));
 
         pagoController.mostrarPago(session, new ExtendedModelMap(), new RedirectAttributesModelMap());
@@ -253,3 +253,4 @@ class GuestCartAndCatalogTest {
         assertThrows(IllegalArgumentException.class, () -> com.example.demo.services.ImagenValidador.validar(falsoJpg));
     }
 }
+

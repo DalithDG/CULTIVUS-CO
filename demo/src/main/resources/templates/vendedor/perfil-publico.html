@@ -296,8 +296,34 @@
         }
 
         @media (max-width: 560px) {
+            .vendor-hero {
+                padding: 18px 16px;
+                border-radius: 20px;
+            }
+
             .vendor-hero__main {
                 flex-direction: column;
+                gap: 16px;
+            }
+
+            .vendor-hero__stats {
+                min-width: 0;
+                padding: 18px 16px;
+            }
+
+            .vendor-hero__actions .ui-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .review-card,
+            .review-form-card {
+                padding: 18px 16px;
+            }
+
+            .review-card__top {
+                flex-wrap: wrap;
+                gap: 8px;
             }
         }
     </style>
@@ -522,23 +548,27 @@
                         </article>
 
                         <!-- Paginación -->
-                        <div class="ui-pagination" style="display: flex; align-items: center; gap: 12px; margin-top: 20px;"
+                        <nav class="ui-pagination" style="margin-top: 20px;" aria-label="Paginación de reseñas"
                              th:if="${totalPages > 1}">
-                            <a class="ui-btn ui-btn--secondary ui-btn--sm"
+                            <a class="ui-pagination__nav"
                                th:classappend="${currentPage <= 0 ? 'ui-btn--disabled' : ''}"
-                               th:href="@{/vendedor/{id}/perfil(id=${vendedor.id}, page=${currentPage - 1})} + '#resenas-vendedor'">
-                                <i class="fas fa-chevron-left"></i> Anterior
+                               th:href="@{/vendedor/{id}/perfil(id=${vendedor.id}, page=${currentPage - 1})} + '#resenas-vendedor'"
+                               aria-label="Página anterior">
+                                <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                                <span class="ui-pagination__nav-label">Anterior</span>
                             </a>
-                            <span style="font-size: 0.9rem; font-weight: 600; color: var(--c-earth);"
-                                  th:text="'Página ' + (${currentPage + 1}) + ' de ' + ${totalPages}">
-                                Página 1 de 1
+                            <span class="ui-pagination__status"
+                                  th:text="(${currentPage + 1}) + ' / ' + ${totalPages}">
+                                1 / 1
                             </span>
-                            <a class="ui-btn ui-btn--secondary ui-btn--sm"
+                            <a class="ui-pagination__nav"
                                th:classappend="${currentPage + 1 >= totalPages ? 'ui-btn--disabled' : ''}"
-                               th:href="@{/vendedor/{id}/perfil(id=${vendedor.id}, page=${currentPage + 1})} + '#resenas-vendedor'">
-                                Siguiente <i class="fas fa-chevron-right"></i>
+                               th:href="@{/vendedor/{id}/perfil(id=${vendedor.id}, page=${currentPage + 1})} + '#resenas-vendedor'"
+                               aria-label="Página siguiente">
+                                <span class="ui-pagination__nav-label">Siguiente</span>
+                                <i class="fas fa-chevron-right" aria-hidden="true"></i>
                             </a>
-                        </div>
+                        </nav>
                     </div>
 
                     <!-- Sin reseñas aún -->

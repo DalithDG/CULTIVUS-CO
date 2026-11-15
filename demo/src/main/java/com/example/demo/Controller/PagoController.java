@@ -124,7 +124,7 @@ public class PagoController {
         // Si el usuario tenía un carrito anónimo en sesión antes de identificarse, migrarlo a su carrito en BD
         Carrito anonimo = (Carrito) session.getAttribute("carritoAnonimo");
         if (anonimo != null && anonimo.getItems() != null && !anonimo.getItems().isEmpty()) {
-            Carrito carritoUsuario = carritoRepository.findByUsuarioId(usuario.getId())
+            Carrito carritoUsuario = carritoRepository.findFirstByUsuarioId(usuario.getId())
                     .orElseGet(() -> new Carrito(usuario.getId()));
             for (ProductoCarrito itemAnonimo : anonimo.getItems()) {
                 Optional<ProductoCarrito> existente = carritoUsuario.getItems().stream()
@@ -143,7 +143,7 @@ public class PagoController {
         }
 
         // Obtener carrito del usuario
-        Carrito carrito = carritoRepository.findByUsuarioId(usuario.getId())
+        Carrito carrito = carritoRepository.findFirstByUsuarioId(usuario.getId())
                 .orElse(null);
 
         if (carrito == null || carrito.getItems().isEmpty()) {
@@ -309,7 +309,7 @@ public class PagoController {
                         java.util.Map.of("ok", false, "error", Usuario.MENSAJE_VENDEDOR_NO_PUEDE_COMPRAR));
             }
 
-            Carrito carrito = carritoRepository.findByUsuarioId(usuario.getId())
+            Carrito carrito = carritoRepository.findFirstByUsuarioId(usuario.getId())
                     .orElseThrow(() -> new IllegalArgumentException("Carrito no encontrado"));
 
             if (carrito.getItems().isEmpty()) {
@@ -576,7 +576,7 @@ public class PagoController {
             return org.springframework.http.ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body(
                     java.util.Map.of("ok", false, "error", Usuario.MENSAJE_VENDEDOR_NO_PUEDE_COMPRAR));
         }
-        Carrito carrito = carritoRepository.findByUsuarioId(usuario.getId()).orElse(null);
+        Carrito carrito = carritoRepository.findFirstByUsuarioId(usuario.getId()).orElse(null);
         if (carrito == null) {
             return org.springframework.http.ResponseEntity.badRequest().body(
                     java.util.Map.of("ok", false, "error", "Carrito no encontrado"));
@@ -677,7 +677,7 @@ public class PagoController {
 
         if (todosCompletados) {
             // Pago aprobado: solo ahora se limpia el carrito
-            carritoRepository.findByUsuarioId(usuario.getId()).ifPresent(carritoRepository::delete);
+            carritoRepository.findFirstByUsuarioId(usuario.getId()).ifPresent(carritoRepository::delete);
             redirectAttributes.addFlashAttribute("mensaje",
                     "Pago aprobado. Pedido #" + pedidos.get(0).getId());
             return "redirect:/pago/confirmacion/" + pedidos.get(0).getId();

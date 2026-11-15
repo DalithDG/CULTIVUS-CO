@@ -29,10 +29,10 @@
     <!-- Banner: En Validación -->
     <div th:if="${usuario.perfilVendedor != null and !usuario.perfilVendedor.verificado}"
          style="background:linear-gradient(135deg,#FFF3E0,#FFE0B2);border-left:5px solid #FF9800;
-                padding:18px 28px;display:flex;align-items:center;gap:16px;
+                padding:16px 20px;display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;
                 font-size:15px;color:#E65100;">
-        <i class="fas fa-clock" style="font-size:28px;color:#FF9800;"></i>
-        <div>
+        <i class="fas fa-clock" style="font-size:26px;color:#FF9800;flex-shrink:0;margin-top:2px;"></i>
+        <div style="flex:1;min-width:min(240px,100%);">
             <strong style="font-size:17px;">Tu tienda está en validación</strong><br>
             Nuestro equipo está revisando tu solicitud. Pronto recibirás confirmación.
             Mientras tanto, puedes explorar la plataforma pero tus productos no serán visibles al público.
@@ -66,22 +66,22 @@
     <!-- Sección Multi-Rol: Actividad de Comprador -->
     <section class="buyer-activity-section" style="padding: 40px 0; background: #f9fbf9;">
         <div class="container">
-            <div style="background: white; border-radius: 16px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
-                <div style="display: flex; align-items: center; gap: 20px;">
-                    <div style="width: 60px; height: 60px; background: #e8f5e9; color: #2e7d32; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">
+            <div style="background: white; border-radius: 16px; padding: clamp(18px, 4vw, 30px); box-shadow: 0 4px 20px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 16px; flex: 1 1 260px; min-width: 0;">
+                    <div style="width: 56px; height: 56px; flex-shrink: 0; background: #e8f5e9; color: #2e7d32; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">
                         <i class="fas fa-shopping-basket"></i>
                     </div>
-                    <div>
+                    <div style="min-width: 0;">
                         <h3 style="margin: 0; font-size: 1.2rem; color: #333;">También eres Comprador</h3>
                         <p style="margin: 5px 0 0; color: #666;">Gestiona tus pedidos realizados a otros productores.</p>
                     </div>
                 </div>
-                <div style="display: flex; align-items: center; gap: 30px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; flex: 1 1 auto;">
                     <div style="text-align: center;">
                         <span style="display: block; font-size: 1.5rem; font-weight: bold; color: #2e7d32;" th:text="${totalPedidos}">0</span>
                         <span style="font-size: 0.8rem; color: #999; text-transform: uppercase;">Pedidos Realizados</span>
                     </div>
-                    <a th:href="@{/usuario/pedidos}" class="btn-hero" style="padding: 12px 25px; font-size: 0.9rem; background: #2e7d32;">
+                    <a th:href="@{/usuario/pedidos}" class="btn-hero" style="padding: 12px 25px; font-size: 0.9rem; background: #2e7d32; justify-content: center;">
                         Ver Mis Compras
                     </a>
                 </div>
