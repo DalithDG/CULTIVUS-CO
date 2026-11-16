@@ -311,12 +311,13 @@ public class AdminService {
 
         boolean hasSearch = (search != null && !search.trim().isEmpty());
         boolean hasCategoria = (categoriaId != null && !categoriaId.trim().isEmpty());
+        String busqueda = hasSearch ? escaparRegex(search.trim()) : null;
 
         Page<ProductoCatalogo> productos;
         if (hasSearch && hasCategoria) {
-            productos = catalogoRepository.findBySearchAndCategoria(search.trim(), categoriaId.trim(), pageable);
+            productos = catalogoRepository.findBySearchAndCategoria(busqueda, categoriaId.trim(), pageable);
         } else if (hasSearch) {
-            productos = catalogoRepository.findByNombreContainingIgnoreCaseOrDescripcionContainingIgnoreCase(search.trim(), search.trim(), pageable);
+            productos = catalogoRepository.findByNombreContainingIgnoreCaseOrDescripcionContainingIgnoreCase(busqueda, busqueda, pageable);
         } else if (hasCategoria) {
             productos = catalogoRepository.findByCategoriaId(categoriaId.trim(), pageable);
         } else {
@@ -382,8 +383,9 @@ public class AdminService {
             }
         }
 
-        // Fallback usando ofertaRepository si MongoTemplate no está disponible (ej: pruebas unitarias con mocks)
-        if (metricasMap.isEmpty() && ofertaRepository != null) {
+        // Fallback usando ofertaRepository solo si MongoTemplate no está disponible (ej: pruebas unitarias con mocks).
+        // No se usa cuando la agregación devuelve vacío, para no caer en N+1 consultas.
+        if (mongoTemplate == null && ofertaRepository != null) {
             for (String id : ids) {
                 try {
                     List<OfertaVendedor> ofertas = ofertaRepository.findByProductoCatalogoIdAndDisponibleTrue(id);
@@ -415,6 +417,11 @@ public class AdminService {
                 p.setStockTotal(0.0);
             }
         }
+    }
+
+    /** Escapa metacaracteres de regex para que la búsqueda del admin sea literal. */
+    private static String escaparRegex(String texto) {
+        return texto.replaceAll("([\\\\^$.|?*+()\\[\\]{}])", "\\\\$1");
     }
 
     private static class MetricasOferta {

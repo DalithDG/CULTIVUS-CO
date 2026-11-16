@@ -141,4 +141,43 @@ class AdminServiceCatalogoTest {
         // Se verifica que la agregación se ejecutó exactamente 1 vez para toda la página
         verify(mongoTemplate, times(1)).aggregate(any(Aggregation.class), eq("ofertas"), eq(Document.class));
     }
+
+    @Test
+    @DisplayName("4. La agregación solo cuenta ofertas disponibles, publicadas y con precio mayor a cero")
+    @SuppressWarnings("unchecked")
+    void testAgregacionSoloCuentaOfertasPublicadas() {
+        when(catalogoRepository.findAll(any(Pageable.class))).thenReturn(new PageImpl<>(catalogoMock));
+
+        AggregationResults<Document> vacio = new AggregationResults<>(List.of(), new Document());
+        when(mongoTemplate.aggregate(any(Aggregation.class), eq("ofertas"), eq(Document.class)))
+                .thenReturn(vacio);
+
+        org.mockito.ArgumentCaptor<Aggregation> captor =
+                org.mockito.ArgumentCaptor.forClass(Aggregation.class);
+
+        adminService.obtenerProductosPaginados(0, 50, null, null);
+
+        verify(mongoTemplate).aggregate(captor.capture(), eq("ofertas"), eq(Document.class));
+        List<Document> pipeline = captor.getValue().toPipeline(Aggregation.DEFAULT_CONTEXT);
+        String match = pipeline.get(0).toJson();
+        assertTrue(match.contains("estado_publicacion"), "Debe filtrar por estado de publicación");
+        assertTrue(match.contains("PUBLICADO"), "Debe contar solo ofertas PUBLICADO");
+        assertTrue(match.contains("disponible"), "Debe contar solo ofertas disponibles");
+        assertTrue(match.contains("precio"), "Debe ignorar ofertas sin precio válido");
+        assertTrue(pipeline.get(1).toJson().contains("producto_catalogo_id"),
+                "Debe agrupar por producto_catalogo_id");
+    }
+
+    @Test
+    @DisplayName("5. La búsqueda del admin se escapa para no romper el regex de MongoDB")
+    void testBusquedaEscapaMetacaracteres() {
+        when(catalogoRepository.findByNombreContainingIgnoreCaseOrDescripcionContainingIgnoreCase(
+                anyString(), anyString(), any(Pageable.class)))
+                .thenReturn(Page.empty());
+
+        adminService.obtenerProductosPaginados(0, 50, "(papa", null);
+
+        verify(catalogoRepository).findByNombreContainingIgnoreCaseOrDescripcionContainingIgnoreCase(
+                eq("\\(papa"), eq("\\(papa"), any(Pageable.class));
+    }
 }
