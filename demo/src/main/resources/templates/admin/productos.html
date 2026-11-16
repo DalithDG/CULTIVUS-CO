@@ -89,10 +89,10 @@
                                         <span class="badge badge-category"
                                               th:text="${p.categoria != null and p.categoria.nombre != null ? p.categoria.nombre : 'Sin categoría'}">Cat</span>
                                     </td>
-                                    <td th:text="${p.vendedor != null and p.vendedor.nombre != null ? p.vendedor.nombre : '-'}">Vendedor</td>
+                                    <td th:text="${p.totalVendedores != null ? (p.totalVendedores == 0 ? 'Sin vendedores' : (p.totalVendedores == 1 ? '1 vendedor' : p.totalVendedores + ' vendedores')) : (p.vendedor != null and p.vendedor.nombre != null ? p.vendedor.nombre : 'Sin vendedores')}">Vendedor</td>
                                     <td class="adm-td-right">
                                         <span class="adm-amount"
-                                              th:text="${p.precio != null ? '$' + #numbers.formatDecimal(p.precio, 1, 'POINT', 0, 'COMMA') : '$0'}">$0</span>
+                                              th:text="${p.precio != null and p.precio > 0 ? '$' + #numbers.formatDecimal(p.precio, 1, 'POINT', 0, 'COMMA') : '-'}">$0</span>
                                     </td>
                                     <td class="adm-td-right adm-tabular"
                                         th:text="${p.stock != null ? (p.stock % 1 == 0 ? #numbers.formatDecimal(p.stock, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(p.stock, 1, 'POINT', 2, 'COMMA')) : '0'}">0</td>

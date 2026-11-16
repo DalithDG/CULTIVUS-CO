@@ -407,7 +407,7 @@ public class AdminController {
 
     // ==================== GESTIÓN DE PRODUCTOS ====================
 
-    @GetMapping("/productos")
+    @GetMapping({"/productos", "/catalogo"})
     public String mostrarProductos(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(required = false) String search,
@@ -423,6 +423,7 @@ public class AdminController {
         cargarDatosDashboard(model, admin, "catalogo", page, search, categoriaId);
         model.addAttribute("activePage", "catalogo");
         model.addAttribute("categoriaFilter", categoriaId);
+        model.addAttribute("searchQuery", search);
 
         return "admin/productos";
     }

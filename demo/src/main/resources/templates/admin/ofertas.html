@@ -46,16 +46,16 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr th:each="of : ${ofertas.content}">
+                                <tr th:each="of : ${ofertas != null ? ofertas.content : {}}">
                                     <td><span class="adm-mono" th:text="${of.id}">1</span></td>
                                     <td>
-                                        <img th:if="${of.imagenUrl != null}" th:src="${of.imagenUrl}" alt="img"
+                                        <img th:if="${of.imagenUrl != null and !of.imagenUrl.isEmpty()}" th:src="${of.imagenUrl}" alt="img"
                                              class="adm-thumb"
                                              onerror="this.src='/images/placeholders/sin-foto.svg'">
-                                        <span th:if="${of.imagenUrl == null}" class="adm-muted">-</span>
+                                        <span th:if="${of.imagenUrl == null or of.imagenUrl.isEmpty()}" class="adm-muted">-</span>
                                     </td>
-                                    <td><span class="adm-cell-title" th:text="${of.nombreProducto}">Producto</span></td>
-                                    <td th:text="${of.vendedor != null ? (of.vendedor.razonSocial != null ? of.vendedor.razonSocial : of.vendedor.nombre) : 'Sin vendedor'}">Vendedor</td>
+                                    <td><span class="adm-cell-title" th:text="${of.nombreProducto != null ? of.nombreProducto : 'Sin nombre'}">Producto</span></td>
+                                    <td th:text="${of.vendedor != null ? (of.vendedor.razonSocial != null ? of.vendedor.razonSocial : (of.vendedor.nombre != null ? of.vendedor.nombre : 'Sin nombre')) : 'Sin vendedor'}">Vendedor</td>
                                     <td class="adm-td-right">
                                         <span class="adm-amount" th:text="${of.precio != null ? '$' + #numbers.formatInteger(of.precio, 1, 'POINT') : '-'}">$0</span>
                                     </td>
@@ -66,7 +66,9 @@
                                         <span th:unless="${of.disponible}" class="badge badge-inactive">No</span>
                                     </td>
                                     <td>
-                                        <span class="badge badge-role" th:text="${of.estado != null ? of.estado : 'APROBADO'}">APROBADO</span>
+                                        <span class="badge"
+                                              th:classappend="${of.estadoPublicacion != null ? (of.estadoPublicacion.name() == 'PUBLICADO' ? 'badge-active' : (of.estadoPublicacion.name() == 'PENDIENTE' ? 'badge--warning' : 'badge-inactive')) : 'badge-active'}"
+                                              th:text="${of.estadoPublicacion != null ? of.estadoPublicacion.name() : 'PUBLICADO'}">PUBLICADO</span>
                                     </td>
                                 </tr>
                                 <tr th:if="${ofertas == null or ofertas.empty}">
