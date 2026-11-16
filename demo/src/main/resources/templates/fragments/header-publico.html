@@ -8,6 +8,12 @@
 
     <div class="header-premium header--publico" id="mainHeader">
         <div class="header-container">
+            <!-- Mobile Menu Toggle -->
+            <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Abrir menú de navegación móvil">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
             <!-- Logo con Slogan -->
             <div class="header-logo">
                 <a th:href="@{/}">
@@ -42,18 +48,13 @@
 
                 <!-- Carrito con Badge -->
                 <a th:href="@{/carrito}" class="btn-cart" title="Carrito de compras"
-                   th:aria-label="'Carrito, ' + ${carritoCount != null ? carritoCount : 0} + ' productos'">
+                    th:aria-label="'Carrito, ' + ${carritoCount != null ? carritoCount : 0} + ' productos'">
                     <i class="fas fa-shopping-cart"></i>
-                    <span class="cart-badge" th:if="${carritoCount != null and carritoCount > 0}" th:text="${carritoCount}">0</span>
+                    <span class="cart-badge" th:if="${carritoCount != null and carritoCount > 0}"
+                        th:text="${carritoCount}">0</span>
                 </a>
             </div>
 
-            <!-- Mobile Menu Toggle -->
-            <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Abrir menú de navegación móvil">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
         </div>
     </div>
 
@@ -92,8 +93,8 @@
         <!-- Buscador integrado en móvil -->
         <div class="header-search header-search--mobile">
             <form th:action="@{/buscar}" method="get" role="search">
-                <input type="search" name="q" placeholder="Buscar productos o fincas..."
-                    autocomplete="off" aria-label="Buscar productos" class="header-search__input">
+                <input type="search" name="q" placeholder="Buscar productos o fincas..." autocomplete="off"
+                    aria-label="Buscar productos" class="header-search__input">
                 <button type="submit" aria-label="Buscar" class="header-search__btn">
                     <i class="fas fa-search"></i>
                 </button>
@@ -118,7 +119,8 @@
                 <a th:href="@{/carrito}" class="mobile-quick-card">
                     <i class="fas fa-shopping-cart"></i>
                     <span>Carrito</span>
-                    <em class="mobile-quick-badge" th:if="${carritoCount != null and carritoCount > 0}" th:text="${carritoCount}">0</em>
+                    <em class="mobile-quick-badge" th:if="${carritoCount != null and carritoCount > 0}"
+                        th:text="${carritoCount}">0</em>
                 </a>
             </div>
 

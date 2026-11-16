@@ -99,6 +99,7 @@ public class AdminProductosTemplateTest {
         Context context = new Context();
         context.setVariable("productos", pagina);
         context.setVariable("activePage", "catalogo");
+        context.setVariable("session", sesionAdmin());
 
         String html = templateEngine.process("admin/productos", context);
         assertNotNull(html);
@@ -132,5 +133,17 @@ public class AdminProductosTemplateTest {
         assertTrue(html.contains("Mostrando página <strong>1</strong> de <strong>2</strong>"),
                 "Debe indicar página 1 de 2");
         assertTrue(html.contains("page=1"), "Enlace siguiente debe apuntar a la página 1");
+    }
+
+    /**
+     * El sidebar del admin (versión actual) lee session.usuarioLogueado,
+     * por eso los tests de plantilla necesitan una sesión simulada.
+     */
+    private java.util.Map<String, Object> sesionAdmin() {
+        com.example.demo.Model.Usuario admin = new com.example.demo.Model.Usuario();
+        admin.setNombre("Admin Prueba");
+        java.util.Map<String, Object> sesion = new java.util.HashMap<>();
+        sesion.put("usuarioLogueado", admin);
+        return sesion;
     }
 }

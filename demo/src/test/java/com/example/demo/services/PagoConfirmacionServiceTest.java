@@ -150,7 +150,7 @@ class PagoConfirmacionServiceTest {
 
         when(compraRepository.findByReferenciaPago(REFERENCIA)).thenReturn(Optional.of(compra));
         when(pedidoRepository.findByPago_Referencia(REFERENCIA)).thenReturn(List.of(ped1, ped2));
-        when(carritoRepository.findByUsuarioId(COMPRADOR_ID)).thenReturn(Optional.of(new Carrito(COMPRADOR_ID)));
+        when(carritoRepository.findFirstByUsuarioId(COMPRADOR_ID)).thenReturn(Optional.of(new Carrito(COMPRADOR_ID)));
 
         // When: Pasarela confirma APPROVED
         PagoConfirmacionService.Resultado res = confirmacionService.aplicarResultado(
@@ -392,3 +392,4 @@ class PagoConfirmacionServiceTest {
         assertEquals(Compra.PENDIENTE, compra.getEstado());
     }
 }
+

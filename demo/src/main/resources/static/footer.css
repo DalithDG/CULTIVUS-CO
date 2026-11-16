@@ -396,64 +396,184 @@ img.footer-brand-logo {
   }
 }
 
-@media (max-width: 720px) {
+@media (max-width: 680px) {
+  .site-footer {
+    margin-top: 40px;
+  }
+
+  .site-footer .footer-container {
+    padding: 0 16px calc(20px + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* Beneficios en cuadrícula compacta de 2 columnas estilo tarjeta */
   .footer-benefits {
-    grid-template-columns: repeat(2, 1fr);
+    padding: 20px 0;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
   }
 
-  .footer-payments-bar {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}
-
-@media (max-width: 520px) {
-  .footer-container {
-    padding: 0 16px;
-    padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  .footer-benefit-item {
+    padding: 10px 12px;
+    background: rgba(48, 55, 45, 0.025);
+    border: 1px solid var(--c-line);
+    border-radius: 12px;
+    gap: 10px;
   }
 
-  .footer-benefits {
-    grid-template-columns: 1fr;
-    gap: 14px;
+  .footer-benefit-item:last-child {
+    grid-column: 1 / -1;
+    justify-content: center;
   }
 
-  .footer-benefit-title,
-  .footer-benefit-sub {
+  .footer-benefit-icon {
+    width: 34px;
+    height: 34px;
+    font-size: 14px;
+  }
+
+  .footer-benefit-info {
+    min-width: 0;
+  }
+
+  .footer-benefit-title {
+    font-size: 12.5px;
     white-space: normal;
+    line-height: 1.25;
+  }
+
+  .footer-benefit-sub {
+    font-size: 11px;
+    white-space: normal;
+    line-height: 1.25;
+  }
+
+  /* Grilla principal: Marca arriba, 2 columnas de enlaces al centro, Contacto abajo */
+  .footer-main-grid {
+    padding: 24px 0 20px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px 16px;
+  }
+
+  .footer-col--brand {
+    grid-column: 1 / -1;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--c-line);
+  }
+
+  .footer-brand-desc {
+    font-size: 13px;
+    line-height: 1.5;
+    margin: 0 0 14px;
+    max-width: 100%;
+  }
+
+  .footer-col-title {
+    margin: 0 0 10px;
+    font-size: 11px;
+  }
+
+  .footer-links-list {
+    gap: 6px;
+  }
+
+  .footer-links-list a {
+    font-size: 13px;
+    min-height: 30px;
+    padding: 2px 0;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  .footer-col--contact {
+    grid-column: 1 / -1;
+    padding-top: 16px;
+    border-top: 1px solid var(--c-line);
+  }
+
+  .footer-contact-dept {
+    margin: -4px 0 10px;
+  }
+
+  .footer-contact-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 10px;
+  }
+
+  .footer-contact-item {
+    padding: 10px 12px;
+    background: rgba(54, 122, 69, 0.04);
+    border: 1px solid rgba(54, 122, 69, 0.14);
+    border-radius: 12px;
+    gap: 10px;
+  }
+
+  .footer-contact-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 13px;
+  }
+
+  .footer-contact-link {
+    font-size: 13px;
+  }
+
+  /* Barra de pagos centrada y equilibrada */
+  .footer-payments-bar {
+    padding: 14px 16px;
+    margin: 0 0 18px;
+    border-radius: 14px;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
   }
 
   .footer-payments-intro {
     display: flex;
     align-items: center;
+    justify-content: center;
     flex-wrap: wrap;
-    gap: 8px;
-    font-size: 12.5px;
+    gap: 6px;
+    font-size: 12px;
     line-height: 1.4;
   }
 
   .footer-payment-chips {
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
     gap: 6px;
     width: 100%;
   }
 
-  .footer-main-grid {
-    grid-template-columns: 1fr;
-    gap: 28px;
+  .pay-chip {
+    height: 30px;
+    padding: 0 10px;
+    font-size: 11.5px;
   }
 
+  /* Barra legal centrada con botón volver arriba tipo píldora */
   .footer-legal-bar {
-    flex-direction: column;
-    align-items: flex-start;
+    padding: 16px 0 8px;
+    flex-direction: column-reverse;
+    align-items: center;
+    text-align: center;
     gap: 12px;
+    font-size: 12px;
   }
 
-  .footer-links-list a {
-    min-height: 44px;
-    display: flex;
-    align-items: center;
+  .footer-back-to-top {
+    background: rgba(48, 55, 45, 0.05);
+    border: 1px solid var(--c-line);
+    padding: 6px 14px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .footer-benefits {
+    grid-template-columns: 1fr;
   }
 }
 

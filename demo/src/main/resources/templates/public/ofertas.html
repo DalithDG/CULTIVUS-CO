@@ -56,7 +56,8 @@
         </div>
 
         <!-- GRID DE OFERTAS UNIFICADAS -->
-        <div class="product-grid" th:if="${ofertas != null and !ofertas.isEmpty()}" data-anim-content data-anim-stagger="0.06">
+        <div class="product-grid" th:if="${ofertas != null and !ofertas.isEmpty()}" data-anim-content
+            data-anim-stagger="0.06">
             <th:block th:each="o : ${ofertas}">
                 <th:block th:replace="~{fragments/oferta-card :: card(${o})}"></th:block>
             </th:block>
@@ -68,27 +69,30 @@
         </th:block>
 
         <!-- PAGINACIÓN -->
-        <div class="ui-pagination" th:if="${totalPages != null and totalPages > 1}">
-            <a class="ui-btn ui-btn--secondary ui-btn--sm"
-               th:classappend="${page <= 0 ? 'ui-btn--disabled' : ''}"
-               th:href="@{/ofertas(page=${page - 1}, size=${size})} + '#lista-ofertas'">
-                <i class="fas fa-chevron-left"></i> Anterior
+        <nav class="ui-pagination" aria-label="Paginación de ofertas" th:if="${totalPages != null and totalPages > 1}">
+            <a class="ui-pagination__nav" th:classappend="${page <= 0 ? 'ui-btn--disabled' : ''}"
+                th:href="@{/ofertas(page=${page - 1}, size=${size})} + '#lista-ofertas'" aria-label="Página anterior">
+                <i class="fas fa-chevron-left" aria-hidden="true"></i>
+                <span class="ui-pagination__nav-label">Anterior</span>
             </a>
 
-            <div style="display: flex; gap: 4px;">
+            <div class="ui-pagination__pages">
                 <a th:each="p : ${#numbers.sequence(startPage, endPage)}"
-                   th:href="@{/ofertas(page=${p}, size=${size})} + '#lista-ofertas'"
-                   class="ui-btn ui-btn--sm"
-                   th:classappend="${p == page ? 'ui-btn--primary' : 'ui-btn--secondary'}"
-                   th:text="${p + 1}">1</a>
+                    th:href="@{/ofertas(page=${p}, size=${size})} + '#lista-ofertas'" class="ui-pagination__page"
+                    th:classappend="${p == page ? 'is-active' : ''}" th:attr="aria-current=${p == page ? 'page' : null}"
+                    th:text="${p + 1}">1</a>
             </div>
 
-            <a class="ui-btn ui-btn--secondary ui-btn--sm"
-               th:classappend="${page + 1 >= totalPages ? 'ui-btn--disabled' : ''}"
-               th:href="@{/ofertas(page=${page + 1}, size=${size})} + '#lista-ofertas'">
-                Siguiente <i class="fas fa-chevron-right"></i>
+            <span class="ui-pagination__status" th:text="(${page + 1}) + ' / ' + ${totalPages}">
+                1 / 5
+            </span>
+
+            <a class="ui-pagination__nav" th:classappend="${page + 1 >= totalPages ? 'ui-btn--disabled' : ''}"
+                th:href="@{/ofertas(page=${page + 1}, size=${size})} + '#lista-ofertas'" aria-label="Página siguiente">
+                <span class="ui-pagination__nav-label">Siguiente</span>
+                <i class="fas fa-chevron-right" aria-hidden="true"></i>
             </a>
-        </div>
+        </nav>
     </main>
 
     <!-- FOOTER INSTITUCIONAL -->

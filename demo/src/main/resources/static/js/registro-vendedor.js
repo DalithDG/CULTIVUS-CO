@@ -72,23 +72,57 @@
             var panel = catMulti.querySelector('.cat-multi__panel');
             var text = catMulti.querySelector('.cat-multi__text');
             var countEl = catMulti.querySelector('.cat-multi__count');
+            var badgeEl = catMulti.querySelector('[data-cat-badge]');
+            var chipsEl = catMulti.querySelector('[data-cat-chips]');
+            var doneBtn = catMulti.querySelector('[data-cat-done]');
             var max = parseInt(catMulti.getAttribute('data-cat-max'), 10) || 4;
             checkboxes = Array.prototype.slice.call(panel.querySelectorAll('input[type="checkbox"]'));
 
             function update() {
                 var selected = checkboxes.filter(function (c) { return c.checked; }).map(function (c) { return c.value; });
                 if (selected.length === 0) {
-                    text.textContent = 'Selecciona tus categorías';
+                    text.textContent = 'Selecciona hasta ' + max + ' categorías';
+                    catMulti.classList.remove('has-selection');
                 } else if (selected.length <= 2) {
                     text.textContent = selected.join(', ');
+                    catMulti.classList.add('has-selection');
                 } else {
-                    text.textContent = selected.slice(0, 2).join(', ') + ' +' + (selected.length - 2);
+                    text.textContent = selected.slice(0, 2).join(', ') + ' (+' + (selected.length - 2) + ')';
+                    catMulti.classList.add('has-selection');
                 }
-                if (countEl) countEl.textContent = selected.length + ' de ' + max;
+                if (countEl) countEl.textContent = selected.length + ' de ' + max + ' seleccionadas';
+                if (badgeEl) badgeEl.textContent = selected.length + ' / ' + max;
+                if (chipsEl) {
+                    chipsEl.innerHTML = '';
+                    selected.forEach(function (val) {
+                        var chip = document.createElement('span');
+                        chip.className = 'cat-multi__chip';
+                        var labelSpan = document.createElement('span');
+                        labelSpan.textContent = val;
+                        var removeBtn = document.createElement('button');
+                        removeBtn.type = 'button';
+                        removeBtn.className = 'cat-multi__chip-remove';
+                        removeBtn.setAttribute('aria-label', 'Quitar ' + val);
+                        removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                        removeBtn.addEventListener('click', function (ev) {
+                            ev.stopPropagation();
+                            checkboxes.forEach(function (cb) {
+                                if (cb.value === val) cb.checked = false;
+                            });
+                            update();
+                        });
+                        chip.appendChild(labelSpan);
+                        chip.appendChild(removeBtn);
+                        chipsEl.appendChild(chip);
+                    });
+                }
                 checkboxes.forEach(function (c) {
                     var block = !c.checked && selected.length >= max;
                     c.disabled = block;
-                    if (c.parentElement) c.parentElement.classList.toggle('disabled', block);
+                    if (c.parentElement) {
+                        c.parentElement.classList.toggle('disabled', block);
+                        c.parentElement.classList.toggle('is-selected', c.checked);
+                    }
                 });
                 if (selected.length === 0) {
                     if (errCat) errCat.textContent = catTouched ? 'Elige al menos una categoría' : '';
@@ -99,6 +133,12 @@
                 }
             }
             checkboxes.forEach(function (c) { c.addEventListener('change', update); });
+            if (doneBtn) {
+                doneBtn.addEventListener('click', function () {
+                    close(true);
+                    btn.focus();
+                });
+            }
             update();
 
             // Al intentar enviar, avisa si no hay categorías (aunque otros campos

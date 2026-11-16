@@ -92,43 +92,29 @@
             container.parentNode.insertBefore(nav, container);
         }
 
-        // ── Resúmenes y botones Continuar ───────────────────────────────────
+        // ── Controles de navegación por paso (Regresar / Continuar) ─────────
         sections.forEach(function (section, i) {
-            var summary = document.createElement('div');
-            summary.className = 'vp-step-summary';
-
-            var main = document.createElement('div');
-            main.className = 'vp-step-summary__main';
-
-            var title = document.createElement('span');
-            title.className = 'vp-step-summary__title';
-            var check = document.createElement('i');
-            check.className = 'fas fa-circle-check';
-            title.appendChild(check);
-            var titleText = document.createElement('span');
-            titleText.textContent = names[i];
-            title.appendChild(titleText);
-
-            var values = document.createElement('span');
-            values.className = 'vp-step-summary__values';
-
-            main.appendChild(title);
-            main.appendChild(values);
-
-            var edit = document.createElement('button');
-            edit.type = 'button';
-            edit.className = 'ui-btn ui-btn--secondary ui-btn--sm vp-step-edit';
-            edit.textContent = 'Editar';
-            edit.setAttribute('aria-label', 'Editar ' + names[i]);
-            edit.addEventListener('click', function () { onEdit(i); });
-
-            summary.appendChild(main);
-            summary.appendChild(edit);
-            section.insertBefore(summary, section.firstChild);
+            if (i > 0) {
+                var backTop = document.createElement('button');
+                backTop.type = 'button';
+                backTop.className = 'vp-step-back-top';
+                backTop.innerHTML = '<i class="fas fa-arrow-left" aria-hidden="true"></i><span>Regresar a ' + names[i - 1] + '</span>';
+                backTop.addEventListener('click', function () { onEdit(i - 1); });
+                section.insertBefore(backTop, section.firstChild);
+            }
 
             if (i < sections.length - 1) {
                 var actions = document.createElement('div');
                 actions.className = 'vp-step-actions';
+
+                if (i > 0) {
+                    var prev = document.createElement('button');
+                    prev.type = 'button';
+                    prev.className = 'ui-btn ui-btn--secondary vp-step-prev';
+                    prev.innerHTML = '<i class="fas fa-arrow-left"></i><span>Anterior</span>';
+                    prev.addEventListener('click', function () { onEdit(i - 1); });
+                    actions.appendChild(prev);
+                }
 
                 var cont = document.createElement('button');
                 cont.type = 'button';
@@ -138,6 +124,16 @@
 
                 actions.appendChild(cont);
                 section.appendChild(actions);
+            } else if (i > 0) {
+                var submitRow = section.querySelector('.vp-submit-row');
+                if (submitRow) {
+                    var backBtn = document.createElement('button');
+                    backBtn.type = 'button';
+                    backBtn.className = 'ui-btn ui-btn--secondary ui-btn--lg vp-step-prev';
+                    backBtn.innerHTML = '<i class="fas fa-arrow-left"></i><span>Paso anterior</span>';
+                    backBtn.addEventListener('click', function () { onEdit(i - 1); });
+                    submitRow.insertBefore(backBtn, submitRow.firstChild);
+                }
             }
         });
 
@@ -193,39 +189,10 @@
         }
 
         // ── Estados ─────────────────────────────────────────────────────────
-        function updateSummary(section, index) {
-            var values = section.querySelector('.vp-step-summary__values');
-            if (!values) return;
-
-            var parts = [];
-            if (kinds[index] === 'cuenta') {
-                var nombre = section.querySelector('[name="nombre"]');
-                var email = section.querySelector('[name="email"]');
-                parts.push(nombre && nombre.value.trim() ? nombre.value.trim() : 'Sin nombre');
-                parts.push(email && email.value.trim() ? email.value.trim() : 'Sin correo');
-            } else if (kinds[index] === 'negocio') {
-                var razon = section.querySelector('[name="razonSocial"]');
-                var ciudad = section.querySelector('[name="ciudad"]');
-                parts.push(razon && razon.value.trim() ? razon.value.trim() : 'Sin razón social');
-                parts.push(ciudad && ciudad.value ? ciudad.value : 'Sin municipio');
-            } else {
-                var selected = section.querySelectorAll('input[name="tipoProductos"]:checked');
-                if (selected.length) {
-                    var cats = Array.prototype.map.call(selected, function (c) { return c.value; });
-                    parts.push(cats.join(', '));
-                } else {
-                    parts.push('Sin categorías');
-                }
-            }
-            values.textContent = parts.join(' · ');
-            values.title = values.textContent;
-        }
-
         function setSectionState(index, state) {
             var section = sections[index];
             section.setAttribute('data-state', state);
-            section.hidden = state === 'pending';
-            if (state === 'done') updateSummary(section, index);
+            section.hidden = state !== 'active';
         }
 
         function updateSteps() {
@@ -234,6 +201,10 @@
                 var item = stepButtons[i];
                 item.li.classList.toggle('is-current', i === current);
                 item.li.classList.toggle('is-done', done);
+                var numEl = item.btn.querySelector('.checkout-steps__num');
+                if (numEl) {
+                    numEl.innerHTML = done ? '<i class="fas fa-check"></i>' : String(i + 1);
+                }
                 if (i === current) item.btn.setAttribute('aria-current', 'step');
                 else item.btn.removeAttribute('aria-current');
                 item.btn.disabled = !done || i === current;
@@ -262,15 +233,11 @@
         function animateIn(section) {
             if (reduceMotion.matches) return;
 
-            var targetHeight = section.scrollHeight;
-            section.style.height = '0px';
-            section.style.overflow = 'hidden';
             section.style.opacity = '0';
-            section.style.transform = 'translateY(12px)';
+            section.style.transform = 'translateY(10px)';
             void section.offsetHeight;
 
-            section.style.transition = 'height 300ms cubic-bezier(0.4, 0, 0.2, 1), opacity 240ms ease, transform 240ms ease';
-            section.style.height = targetHeight + 'px';
+            section.style.transition = 'opacity 240ms cubic-bezier(0.22, 1, 0.36, 1), transform 240ms cubic-bezier(0.22, 1, 0.36, 1)';
             section.style.opacity = '1';
             section.style.transform = 'translateY(0)';
 
@@ -281,17 +248,15 @@
                 finished = true;
                 clearTimeout(timer);
                 section.style.transition = '';
-                section.style.height = '';
-                section.style.overflow = '';
                 section.style.opacity = '';
                 section.style.transform = '';
                 section.removeEventListener('transitionend', onEnd);
             }
             function onEnd(ev) {
-                if (ev.target === section && ev.propertyName === 'height') clean();
+                if (ev.target === section) clean();
             }
             section.addEventListener('transitionend', onEnd);
-            timer = setTimeout(clean, 380);
+            timer = setTimeout(clean, 300);
         }
 
         function scrollToStep(section) {
@@ -344,21 +309,10 @@
         }
 
         function onEdit(index) {
-            if (index === current || index > current) return;
-            if (sections[index].getAttribute('data-state') !== 'done') return;
-            if (!validateSection(sections[current])) return;
+            if (index === current || index < 0 || index >= sections.length) return;
+            if (index > current && !validateSection(sections[current])) return;
 
-            // La sección activa se pliega como completada y se reabre la elegida.
-            setSectionState(current, 'done');
-            setSectionState(index, 'active');
-            var catErr = sections[index].querySelector('#catError');
-            if (catErr) catErr.textContent = '';
-            current = index;
-            updateSteps();
-            announce();
-            animateIn(sections[index]);
-            scrollToStep(sections[index]);
-            focusFirst(sections[index]);
+            showStep(index, { animate: true, scroll: true, focus: true });
         }
 
         function onStepClick(index) {

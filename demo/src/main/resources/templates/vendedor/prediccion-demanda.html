@@ -6,7 +6,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Predicción de Demanda | Cultivus</title>
-    <meta name="description" content="Modelo predictivo de demanda semanal de cosechas y productos por ciudad y categoría en Cultivus.">
+    <meta name="description"
+        content="Modelo predictivo de demanda semanal de cosechas y productos por ciudad y categoría en Cultivus.">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" th:href="@{/header.css}">
     <link rel="stylesheet" th:href="@{/footer.css}">
@@ -26,6 +27,7 @@
             position: relative;
             overflow: hidden;
         }
+
         .pred-hero::after {
             content: "";
             position: absolute;
@@ -37,6 +39,7 @@
             border-radius: 50%;
             pointer-events: none;
         }
+
         .pred-kicker {
             display: inline-flex;
             align-items: center;
@@ -49,12 +52,14 @@
             margin-bottom: 12px;
             backdrop-filter: blur(4px);
         }
+
         .pred-hero h1 {
             font-size: 1.85rem;
             margin: 0 0 8px;
             font-weight: 800;
             color: #ffffff;
         }
+
         .pred-hero p {
             margin: 0;
             color: rgba(255, 255, 255, 0.9);
@@ -69,6 +74,7 @@
             gap: 16px;
             margin-bottom: 24px;
         }
+
         .pred-stat-card {
             background: #ffffff;
             border-radius: 16px;
@@ -79,6 +85,7 @@
             align-items: center;
             gap: 16px;
         }
+
         .pred-stat-icon {
             width: 48px;
             height: 48px;
@@ -88,10 +95,27 @@
             justify-content: center;
             font-size: 1.3rem;
         }
-        .pred-stat-icon--green { background: #e8f5e9; color: #2e7d32; }
-        .pred-stat-icon--blue { background: #e3f2fd; color: #1976d2; }
-        .pred-stat-icon--amber { background: #fff8e1; color: #f57f17; }
-        .pred-stat-icon--purple { background: #f3e5f5; color: #7b1fa2; }
+
+        .pred-stat-icon--green {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .pred-stat-icon--blue {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+
+        .pred-stat-icon--amber {
+            background: #fff8e1;
+            color: #f57f17;
+        }
+
+        .pred-stat-icon--purple {
+            background: #f3e5f5;
+            color: #7b1fa2;
+        }
+
         .pred-stat-info h4 {
             margin: 0;
             font-size: 0.8rem;
@@ -99,6 +123,7 @@
             letter-spacing: 0.5px;
             color: #64748b;
         }
+
         .pred-stat-info .pred-stat-value {
             font-size: 1.45rem;
             font-weight: 700;
@@ -119,6 +144,7 @@
             align-items: center;
             justify-content: space-between;
         }
+
         .pred-filter-group {
             display: flex;
             flex-wrap: wrap;
@@ -126,11 +152,13 @@
             align-items: center;
             flex: 1;
         }
+
         .pred-input-wrap {
             position: relative;
             min-width: 200px;
             flex: 1;
         }
+
         .pred-input-wrap i {
             position: absolute;
             left: 14px;
@@ -139,6 +167,7 @@
             color: #94a3b8;
             font-size: 0.9rem;
         }
+
         .pred-input {
             width: 100%;
             padding: 10px 14px 10px 38px;
@@ -149,12 +178,14 @@
             background: #f8fafc;
             transition: all 0.2s ease;
         }
+
         .pred-input:focus {
             outline: none;
             border-color: #2e7d32;
             background: #ffffff;
             box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
         }
+
         .pred-btn-filter {
             background: #2e7d32;
             color: #ffffff;
@@ -169,7 +200,11 @@
             gap: 8px;
             transition: background 0.2s ease;
         }
-        .pred-btn-filter:hover { background: #256628; }
+
+        .pred-btn-filter:hover {
+            background: #256628;
+        }
+
         .pred-btn-clean {
             background: #f1f5f9;
             color: #475569;
@@ -184,7 +219,11 @@
             gap: 8px;
             transition: all 0.2s ease;
         }
-        .pred-btn-clean:hover { background: #e2e8f0; color: #1e293b; }
+
+        .pred-btn-clean:hover {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
 
         .pred-layout-row {
             display: grid;
@@ -192,6 +231,7 @@
             gap: 24px;
             align-items: start;
         }
+
         @media (max-width: 992px) {
             .pred-layout-row {
                 grid-template-columns: 1fr;
@@ -203,8 +243,9 @@
             border-radius: 18px;
             padding: 24px;
             border: 1px solid #e2e8f0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
         }
+
         .pred-card-header {
             display: flex;
             align-items: center;
@@ -213,6 +254,7 @@
             padding-bottom: 12px;
             border-bottom: 1px solid #f1f5f9;
         }
+
         .pred-card-header h3 {
             margin: 0;
             font-size: 1.15rem;
@@ -222,6 +264,7 @@
             align-items: center;
             gap: 10px;
         }
+
         .pred-card-header h3 i {
             color: #2e7d32;
         }
@@ -230,12 +273,14 @@
             overflow-x: auto;
             border-radius: 12px;
         }
+
         .pred-table {
             width: 100%;
             border-collapse: collapse;
             text-align: left;
             font-size: 0.92rem;
         }
+
         .pred-table th {
             background: #f8fafc;
             color: #475569;
@@ -246,15 +291,18 @@
             font-size: 0.78rem;
             letter-spacing: 0.5px;
         }
+
         .pred-table td {
             padding: 14px 16px;
             border-bottom: 1px solid #f1f5f9;
             color: #334155;
             vertical-align: middle;
         }
+
         .pred-table tr:hover td {
             background: #fafaf9;
         }
+
         .pred-badge-cat {
             display: inline-block;
             padding: 4px 10px;
@@ -264,6 +312,7 @@
             background: #e8f5e9;
             color: #2e7d32;
         }
+
         .pred-badge-ciudad {
             display: inline-flex;
             align-items: center;
@@ -271,11 +320,13 @@
             font-weight: 500;
             color: #475569;
         }
+
         .pred-kg-val {
             font-weight: 700;
             font-size: 1rem;
             color: #0f172a;
         }
+
         .pred-progress-bar {
             height: 6px;
             background: #e2e8f0;
@@ -285,6 +336,7 @@
             width: 100%;
             min-width: 80px;
         }
+
         .pred-progress-fill {
             height: 100%;
             background: linear-gradient(90deg, #43a047, #2e7d32);
@@ -296,22 +348,26 @@
             padding: 48px 24px;
             color: #64748b;
         }
+
         .pred-state-box i {
             font-size: 2.8rem;
             margin-bottom: 14px;
             display: block;
         }
+
         .pred-state-box h4 {
             margin: 0 0 8px;
             color: #1e293b;
             font-size: 1.15rem;
         }
+
         .pred-state-box p {
             margin: 0 auto 16px;
             max-width: 480px;
             font-size: 0.92rem;
             line-height: 1.5;
         }
+
         .pred-error-box {
             background: #fff5f5;
             border: 1px solid #feb2b2;
@@ -321,6 +377,7 @@
             margin-bottom: 20px;
             display: none;
         }
+
         .pred-error-box strong {
             display: block;
             margin-bottom: 4px;
@@ -333,9 +390,10 @@
             border-radius: 18px;
             padding: 24px;
             border: 1px solid #e2e8f0;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
             margin-bottom: 24px;
         }
+
         .pred-map-header {
             display: flex;
             align-items: center;
@@ -344,6 +402,7 @@
             flex-wrap: wrap;
             gap: 12px;
         }
+
         .pred-map-container {
             height: 440px;
             border-radius: 14px;
@@ -352,6 +411,7 @@
             position: relative;
             z-index: 1;
         }
+
         .pred-map-legend {
             display: flex;
             flex-wrap: wrap;
@@ -361,20 +421,133 @@
             font-size: 0.8rem;
             color: #475569;
         }
+
         .pred-map-legend-item {
             display: inline-flex;
             align-items: center;
             gap: 6px;
             font-weight: 600;
         }
+
         .pred-map-dot {
             width: 12px;
             height: 12px;
             border-radius: 50%;
         }
-        .pred-map-dot--high { background: #15803d; }
-        .pred-map-dot--med { background: #22c55e; }
-        .pred-map-dot--low { background: #f59e0b; }
+
+        .pred-map-dot--high {
+            background: #15803d;
+        }
+
+        .pred-map-dot--med {
+            background: #22c55e;
+        }
+
+        .pred-map-dot--low {
+            background: #f59e0b;
+        }
+
+        @media (max-width: 640px) {
+            .pred-hero {
+                padding: 24px 20px;
+            }
+
+            .pred-hero h1 {
+                font-size: 1.5rem;
+                overflow-wrap: anywhere;
+            }
+
+            .pred-filter-bar,
+            .pred-card,
+            .pred-map-card {
+                min-width: 0;
+                padding: 16px;
+            }
+
+            .pred-card-header {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .pred-filter-group {
+                flex-direction: column;
+                align-items: stretch;
+                width: 100%;
+            }
+
+            .pred-filter-bar>div:last-child {
+                width: 100%;
+            }
+
+            .pred-filter-bar>div:last-child .pred-btn-clean,
+            .pred-map-header .pred-btn-clean {
+                width: 100%;
+            }
+
+            .pred-input-wrap {
+                width: 100%;
+                min-width: 0;
+            }
+
+            .pred-btn-filter,
+            .pred-btn-clean {
+                min-height: 44px;
+                justify-content: center;
+            }
+
+            .pred-map-container {
+                height: min(56svh, 340px);
+                min-height: 250px;
+            }
+
+            .pred-grid-summary {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 10px;
+            }
+
+            .pred-stat-card {
+                padding: 14px 12px;
+                gap: 10px;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .pred-stat-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 1.05rem;
+            }
+
+            .pred-stat-value {
+                font-size: clamp(1.05rem, 4.2vw, 1.3rem);
+                word-break: break-word;
+            }
+
+            .pred-table {
+                min-width: 0;
+            }
+
+            .pred-table th,
+            .pred-table td {
+                padding: 10px 8px;
+                font-size: 0.82rem;
+            }
+
+            .pred-progress-wrap {
+                min-width: 50px;
+            }
+        }
+
+        @media (max-width: 380px) {
+            .pred-grid-summary {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .vs-main>.vp-container {
+            padding: 0 !important;
+            max-width: 100% !important;
+        }
     </style>
 </head>
 
@@ -387,11 +560,14 @@
             <!-- Banner / Hero de la sección -->
             <section class="pred-hero">
                 <span class="pred-kicker">
-                    <i class="fa-solid fa-map-location-dot" aria-hidden="true"></i> Cobertura Exclusiva · Departamento de Bolívar
+                    <i class="fa-solid fa-map-location-dot" aria-hidden="true"></i> Cobertura Exclusiva · Departamento
+                    de Bolívar
                 </span>
                 <h1>Predicción de Demanda Semanal · Región Bolívar</h1>
                 <p>
-                    Proyección de cosechas y demanda calculada para los municipios y subregiones de Bolívar (Dique, Montes de María, Mojana, Depresión Momposina, Loba y Magdalena Medio). Organiza tu producción con antelación.
+                    Proyección de cosechas y demanda calculada para los municipios y subregiones de Bolívar (Dique,
+                    Montes de María, Mojana, Depresión Momposina, Loba y Magdalena Medio). Organiza tu producción con
+                    antelación.
                 </p>
             </section>
 
@@ -400,7 +576,8 @@
                 <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
                 <div>
                     <strong id="errorTitle">Microservicio de predicción no disponible (HTTP 503)</strong>
-                    <span id="errorMsg">Verifica que el servicio en Python (FastAPI) esté corriendo en http://localhost:8000.</span>
+                    <span id="errorMsg">Verifica que el servicio en Python (FastAPI) esté corriendo en
+                        http://localhost:8000.</span>
                 </div>
             </div>
 
@@ -452,11 +629,13 @@
                 <div class="pred-filter-group">
                     <div class="pred-input-wrap">
                         <i class="fa-solid fa-city" aria-hidden="true"></i>
-                        <input type="text" id="filtroCiudad" class="pred-input" placeholder="Filtrar por municipio de Bolívar (ej. Cartagena, Carmen de Bolívar, Magangué, Mompox, Turbaco)">
+                        <input type="text" id="filtroCiudad" class="pred-input"
+                            placeholder="Filtrar por municipio de Bolívar (ej. Cartagena, Carmen de Bolívar, Magangué, Mompox, Turbaco)">
                     </div>
                     <div class="pred-input-wrap">
                         <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
-                        <input type="text" id="filtroCategoria" class="pred-input" placeholder="Filtrar por categoría (ej. Frutas)">
+                        <input type="text" id="filtroCategoria" class="pred-input"
+                            placeholder="Filtrar por categoría (ej. Frutas)">
                     </div>
                     <button type="button" class="pred-btn-filter" onclick="cargarPredicciones()">
                         <i class="fa-solid fa-filter" aria-hidden="true"></i> Aplicar Filtros
@@ -466,7 +645,8 @@
                     </button>
                 </div>
                 <div>
-                    <button type="button" class="pred-btn-clean" onclick="cargarPredicciones()" title="Actualizar datos">
+                    <button type="button" class="pred-btn-clean" onclick="cargarPredicciones()"
+                        title="Actualizar datos">
                         <i class="fa-solid fa-arrows-rotate" aria-hidden="true"></i> Refrescar
                     </button>
                 </div>
@@ -476,7 +656,8 @@
             <section class="pred-map-card">
                 <div class="pred-map-header">
                     <div>
-                        <h3 style="margin: 0; font-size: 1.15rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 10px;">
+                        <h3
+                            style="margin: 0; font-size: 1.15rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 10px;">
                             <i class="fa-solid fa-map-location-dot" style="color: #2e7d32;"></i>
                             Mapa Geoespacial de Demanda · Departamento de Bolívar
                         </h3>
@@ -485,7 +666,8 @@
                         </p>
                     </div>
                     <div>
-                        <button type="button" class="pred-btn-clean" onclick="resetearVistaMapa()" title="Centrar mapa en Bolívar">
+                        <button type="button" class="pred-btn-clean" onclick="resetearVistaMapa()"
+                            title="Centrar mapa en Bolívar">
                             <i class="fa-solid fa-crosshairs"></i> Centrar Bolívar
                         </button>
                     </div>
@@ -515,8 +697,10 @@
                 <!-- Columna Izquierda: Tabla -->
                 <div class="pred-card">
                     <div class="pred-card-header">
-                        <h3><i class="fa-solid fa-table-list" aria-hidden="true"></i> Demanda por Categoría y Ciudad</h3>
-                        <span id="badgeCount" style="font-size: 0.85rem; font-weight: 600; color: #64748b;">0 registros</span>
+                        <h3><i class="fa-solid fa-table-list" aria-hidden="true"></i> Demanda por Categoría y Ciudad
+                        </h3>
+                        <span id="badgeCount" style="font-size: 0.85rem; font-weight: 600; color: #64748b;">0
+                            registros</span>
                     </div>
 
                     <div class="pred-table-wrap">
@@ -546,16 +730,22 @@
                         <h3><i class="fa-solid fa-chart-column" aria-hidden="true"></i> Demanda por Categoría (kg)</h3>
                     </div>
 
-                    <div style="position: relative; min-height: 350px;">
-                        <canvas id="graficoDemanda"></canvas>
+                        <div style="position: relative; min-height: 300px;">
+                            <canvas id="graficoDemanda"></canvas>
+                        </div>
                     </div>
                 </div>
+
+                <footer class="vs-footer">
+                    <div class="vs-footer__brand">
+                        <i class="fas fa-seedling" aria-hidden="true"></i>
+                        <span>Cultivus · Consola de Productor</span>
+                    </div>
+                    <div>© 2025 Cultivus S.A. · Todos los derechos reservados</div>
+                </footer>
+
             </div>
-
-        </div>
     </main>
-
-    <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
 
     <!-- Script de Integración con /api/predicciones y Chart.js -->
     <script>
@@ -742,7 +932,7 @@
                         const errJson = await response.json();
                         if (errJson && errJson.error) errMsg = errJson.error;
                         if (errJson && errJson.detalle) errMsg += ' (' + errJson.detalle + ')';
-                    } catch (e) {}
+                    } catch (e) { }
 
                     errorMsg.textContent = errMsg;
                     errorAlert.style.display = 'flex';
@@ -924,7 +1114,7 @@
                             padding: 12,
                             cornerRadius: 8,
                             callbacks: {
-                                label: function(context) {
+                                label: function (context) {
                                     return ` Demanda: ${context.parsed.y.toLocaleString('es-CO')} kg`;
                                 }
                             }
@@ -937,7 +1127,7 @@
                                 color: '#f1f5f9'
                             },
                             ticks: {
-                                callback: function(value) {
+                                callback: function (value) {
                                     return value + ' kg';
                                 },
                                 font: {
@@ -988,8 +1178,8 @@
                     { categoria: "Lácteos", ciudad: "Simití", demandaEsperadaKg: 120.0 },
                     { categoria: "Lácteos", ciudad: "Barranco de Loba", demandaEsperadaKg: 110.0 }
                 ].filter(p => (!ciudad || p.ciudad.toLowerCase().includes(ciudad.toLowerCase())) &&
-                              (!categoria || p.categoria.toLowerCase().includes(categoria.toLowerCase())))
-                 .sort((a, b) => b.demandaEsperadaKg - a.demandaEsperadaKg)
+                    (!categoria || p.categoria.toLowerCase().includes(categoria.toLowerCase())))
+                    .sort((a, b) => b.demandaEsperadaKg - a.demandaEsperadaKg)
             };
 
             renderizarDatos(demoData);
@@ -1017,4 +1207,5 @@
         });
     </script>
 </body>
+
 </html>

@@ -19,8 +19,8 @@
 
             <!-- ==================== SECCIÓN POWER BI ==================== -->
             <div id="powerbi-page" class="admin-page section">
-                <div class="page-card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; min-height: calc(100vh - 130px);">
-                    <div class="adm-section-head" style="padding: 20px 24px; margin-bottom: 0; border-bottom: 1px solid var(--adm-line);">
+                <div class="page-card adm-powerbi-card">
+                    <div class="adm-section-head adm-powerbi-head">
                         <div class="adm-section-head__info">
                             <h3 class="adm-section-head__title">
                                 <i class="fas fa-chart-pie" aria-hidden="true"></i>
@@ -37,10 +37,10 @@
                         </a>
                     </div>
 
-                    <div class="powerbi-frame-wrap" style="flex: 1; background: var(--adm-green-soft); display: flex; flex-direction: column; min-height: 560px; overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                    <div class="powerbi-frame-wrap" style="flex: 1; background: var(--adm-green-soft); display: flex; flex-direction: column; min-height: clamp(380px, 65vh, 560px); overflow-x: auto; -webkit-overflow-scrolling: touch;">
                         <iframe title="Cultivus Power BI"
                                 src="https://app.powerbi.com/view?r=eyJrIjoiZTQ5ZWNlNGUtMWVjMi00MmQ3LTkyNTMtN2Q4NzUyNDI4ZDIzIiwidCI6IjlkMTJiZjNmLWU0ZjYtNDdhYi05MTJmLTFhMmYwZmM0OGFhNCIsImMiOjR9"
-                                style="width: 100%; height: 100%; border: none; flex: 1; min-height: 560px; min-width: 600px;"
+                                style="width: 100%; height: 100%; border: none; flex: 1; min-height: clamp(380px, 65vh, 560px); min-width: 0;"
                                 allowFullScreen="true"></iframe>
                     </div>
                 </div>

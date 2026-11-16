@@ -21,9 +21,18 @@
         <div class="cart-page__inner">
             <div class="cart-header">
                 <ol class="checkout-steps" aria-label="Progreso de compra">
-                    <li class="checkout-steps__item is-current" aria-current="step"><span class="checkout-steps__num">1</span> Carrito</li>
-                    <li class="checkout-steps__item"><span class="checkout-steps__num">2</span> Entrega y pago</li>
-                    <li class="checkout-steps__item"><span class="checkout-steps__num">3</span> Confirmación</li>
+                    <li class="checkout-steps__item is-current" aria-current="step">
+                        <span class="checkout-steps__num">1</span>
+                        <span class="checkout-steps__label">Carrito</span>
+                    </li>
+                    <li class="checkout-steps__item">
+                        <span class="checkout-steps__num">2</span>
+                        <span class="checkout-steps__label">Entrega y pago</span>
+                    </li>
+                    <li class="checkout-steps__item">
+                        <span class="checkout-steps__num">3</span>
+                        <span class="checkout-steps__label">Confirmación</span>
+                    </li>
                 </ol>
                 <h1 class="cart-title">Tu carrito</h1>
                 <p class="cart-subtitle" th:if="${detalles != null && !detalles.isEmpty()}">
@@ -44,9 +53,9 @@
             </div>
 
             <div th:if="${detalles == null || detalles.isEmpty()}" class="cart-empty">
-                <img th:src="@{/images/ilustraciones/carrito-vacio.svg}" alt="Carrito vacío"
-                     width="400" height="300" class="ui-empty__illustration" loading="lazy" decoding="async"
-                     style="margin: 0 auto 12px; display: block;">
+                <img th:src="@{/images/ilustraciones/carrito-vacio.svg}" alt="Carrito vacío" width="400" height="300"
+                    class="ui-empty__illustration" loading="lazy" decoding="async"
+                    style="margin: 0 auto 14px; display: block; width: min(260px, 76%); max-width: 100%; height: auto;">
                 <h2 class="cart-empty__title">Tu carrito está vacío</h2>
                 <p class="cart-empty__text">Agrega productos para comenzar a comprar</p>
                 <a th:href="@{/}" class="cart-btn cart-btn--inline">
@@ -61,19 +70,23 @@
                     <section th:each="entry : ${itemsPorVendedor}" class="cart-vendor vendedor-grupo">
                         <div class="cart-vendor__head">
                             <h2 class="cart-vendor__name">
-                                <span class="cart-vendor__icon" aria-hidden="true"><i class="fa-solid fa-store"></i></span>
+                                <span class="cart-vendor__icon" aria-hidden="true"><i
+                                        class="fa-solid fa-store"></i></span>
                                 <span class="cart-vendor__title" th:text="${entry.key}">Vendedor</span>
                             </h2>
                             <div class="cart-vendor__chips">
                                 <span class="cart-chip">
                                     <span th:text="${entry.value.size()}">1</span>
-                                    <span th:text="${entry.value.size() == 1 ? 'producto' : 'productos'}">producto</span>
+                                    <span
+                                        th:text="${entry.value.size() == 1 ? 'producto' : 'productos'}">producto</span>
                                 </span>
                                 <th:block th:if="${tieneCiudad && desgloseEnvio != null}">
                                     <th:block th:each="d : ${desgloseEnvio}">
-                                        <span th:if="${d.vendedorNombre == entry.key}" class="cart-chip cart-chip--ship">
+                                        <span th:if="${d.vendedorNombre == entry.key}"
+                                            class="cart-chip cart-chip--ship">
                                             <i class="fa-solid fa-truck-fast" aria-hidden="true"></i>
-                                            Envío ~$<span th:text="${#numbers.formatDecimal(d.tarifaCentavos / 100.0, 0, 'COMMA', 0, 'POINT')}">0</span>
+                                            Envío ~$<span
+                                                th:text="${#numbers.formatDecimal(d.tarifaCentavos / 100.0, 0, 'COMMA', 0, 'POINT')}">0</span>
                                         </span>
                                     </th:block>
                                 </th:block>
@@ -81,19 +94,23 @@
                         </div>
 
                         <article th:each="detalle : ${entry.value}" class="cart-item">
-                            <img th:src="${@imagenes.tarjeta(detalle.imagenUrl)}"
-                                 th:alt="${detalle.nombre}"
-                                 class="cart-item__img" loading="lazy" width="80" height="80"
-                                 onerror="this.onerror=null;this.src='/images/placeholders/sin-foto.svg'">
+                            <img th:src="${@imagenes.tarjeta(detalle.imagenUrl)}" th:alt="${detalle.nombre}"
+                                class="cart-item__img" loading="lazy" width="80" height="80"
+                                onerror="this.onerror=null;this.src='/images/placeholders/sin-foto.svg'">
 
                             <div class="cart-item__body">
                                 <h3 class="cart-item__name" th:text="${detalle.nombre}"></h3>
 
                                 <p class="cart-item__price">
-                                    $<span th:text="${#numbers.formatInteger(detalle.precioUnitario, 1, 'POINT')}">0</span>
-                                    <span th:text="${' por ' + (detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : 'un')}"> por un</span>
+                                    $<span
+                                        th:text="${#numbers.formatInteger(detalle.precioUnitario, 1, 'POINT')}">0</span>
+                                    <span
+                                        th:text="${' por ' + (detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : 'un')}">
+                                        por un</span>
                                     <small style="color:var(--text-muted); margin-left:4px;">
-                                        (× <span th:text="${(detalle.cantidad % 1 == 0 ? #numbers.formatDecimal(detalle.cantidad, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(detalle.cantidad, 1, 'POINT', 2, 'COMMA')) + ' ' + (detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : '')}">1 un</span>)
+                                        (× <span
+                                            th:text="${(detalle.cantidad % 1 == 0 ? #numbers.formatDecimal(detalle.cantidad, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(detalle.cantidad, 1, 'POINT', 2, 'COMMA')) + ' ' + (detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : '')}">1
+                                            un</span>)
                                     </small>
                                 </p>
 
@@ -101,8 +118,10 @@
                                 <p class="cart-item__min compra-minima-nota">
                                     <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
                                     <span>Compra mínima:
-                                        <span th:text="${(detalle.compraMinima != null ? (detalle.compraMinima % 1 == 0 ? #numbers.formatDecimal(detalle.compraMinima, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(detalle.compraMinima, 1, 'POINT', 2, 'COMMA')) : '1')}">1</span>
-                                        <span th:text="${detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : ''}">unid</span>
+                                        <span
+                                            th:text="${(detalle.compraMinima != null ? (detalle.compraMinima % 1 == 0 ? #numbers.formatDecimal(detalle.compraMinima, 0, 'POINT', 0, 'COMMA') : #numbers.formatDecimal(detalle.compraMinima, 1, 'POINT', 2, 'COMMA')) : '1')}">1</span>
+                                        <span
+                                            th:text="${detalle.unidadAbreviatura != null ? detalle.unidadAbreviatura : ''}">unid</span>
                                     </span>
                                 </p>
 
@@ -121,11 +140,9 @@
                                             <input type="number" name="cantidad"
                                                 th:value="${detalle.cantidad % 1 == 0 ? #numbers.formatDecimal(detalle.cantidad, 0, 'POINT', 0, 'COMMA') : detalle.cantidad}"
                                                 th:min="${detalle.compraMinima != null ? detalle.compraMinima : (detalle.permiteDecimales ? '0.01' : '1')}"
-                                                max="9999"
-                                                th:step="${detalle.permiteDecimales ? '0.01' : '1'}"
+                                                max="9999" th:step="${detalle.permiteDecimales ? '0.01' : '1'}"
                                                 th:attr="data-paso=${detalle.permiteDecimales ? '0.1' : '1'}"
-                                                aria-label="Cantidad"
-                                                class="cart-stepper__input"
+                                                aria-label="Cantidad" class="cart-stepper__input"
                                                 onchange="this.form.submit()">
                                             <button type="button" class="cart-stepper__btn"
                                                 aria-label="Aumentar cantidad"
@@ -147,7 +164,8 @@
                             </div>
 
                             <div class="cart-item__total">
-                                $<span th:text="${#numbers.formatInteger(detalle.precioUnitario * detalle.cantidad, 1, 'POINT')}">0</span>
+                                $<span
+                                    th:text="${#numbers.formatInteger(detalle.precioUnitario * detalle.cantidad, 1, 'POINT')}">0</span>
                             </div>
                         </article>
                     </section>
@@ -180,10 +198,12 @@
                     <a th:if="${usuario != null}" th:href="@{/pago}" class="cart-btn">
                         <i class="fa-solid fa-credit-card" aria-hidden="true"></i> Proceder al pago
                     </a>
-                    <a th:if="${usuario == null}" th:href="@{/usuario/registro(tipo='comprador', redirect='/pago')}" class="cart-btn">
+                    <a th:if="${usuario == null}" th:href="@{/usuario/registro(tipo='comprador', redirect='/pago')}"
+                        class="cart-btn">
                         <i class="fa-solid fa-user-plus" aria-hidden="true"></i> Registrarme para pagar
                     </a>
-                    <a th:if="${usuario == null}" th:href="@{/usuario/login(redirect='/pago')}" class="cart-link" style="margin-top: 8px; font-size: 0.88rem; text-align: center; display: block;">
+                    <a th:if="${usuario == null}" th:href="@{/usuario/login(redirect='/pago')}" class="cart-link"
+                        style="margin-top: 8px; font-size: 0.88rem; text-align: center; display: block;">
                         ¿Ya tienes cuenta? Inicia sesión
                     </a>
                     <a th:href="@{/}" class="cart-link">
@@ -204,11 +224,11 @@
          * Bug #4 corregido: respeta min=1 y max=99 antes de incrementar.
          */
         function cambiarCantidad(btn, direccion) {
-            const form  = btn.closest('form');
+            const form = btn.closest('form');
             const input = form.querySelector('input[name="cantidad"]');
             const paso = parseFloat(btn.dataset.paso || btn.getAttribute('data-paso')) ||
-                         parseFloat(input.dataset.paso || input.getAttribute('data-paso')) ||
-                         (input.step === '0.01' ? 0.1 : (parseFloat(input.step) || 1));
+                parseFloat(input.dataset.paso || input.getAttribute('data-paso')) ||
+                (input.step === '0.01' ? 0.1 : (parseFloat(input.step) || 1));
             let delta = typeof direccion === 'number' ? direccion : parseFloat(direccion);
             if (delta === 1 || delta === -1) {
                 delta = delta * paso;
@@ -223,7 +243,7 @@
             form.submit();
         }
     </script>
-<footer th:replace="~{fragments/footer :: siteFooter}"></footer>
+    <footer th:replace="~{fragments/footer :: siteFooter}"></footer>
 </body>
 
 </html>

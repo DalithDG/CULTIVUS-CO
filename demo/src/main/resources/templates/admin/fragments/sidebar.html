@@ -1,167 +1,228 @@
 <th:block xmlns:th="http://www.thymeleaf.org" th:fragment="sidebar">
-    <aside class="admin-sidebar" id="adminSidebar">
+
+    <!-- Overlay móvil para cerrar el drawer -->
+    <div class="admin-overlay" id="adminOverlay" aria-hidden="true"></div>
+
+    <!-- Sidebar de navegación -->
+    <aside class="admin-sidebar" id="adminSidebar" aria-label="Menú de administración">
+
+        <!-- Tarjeta de perfil resumida -->
         <div class="admin-sidebar__profile">
-            <div class="admin-sidebar__avatar">
-                <i class="fas fa-user-shield" aria-hidden="true"></i>
-            </div>
+            <div class="admin-sidebar__avatar"
+                 th:text="${session.usuarioLogueado != null and session.usuarioLogueado.nombre != null and !session.usuarioLogueado.nombre.isEmpty() ? #strings.substring(session.usuarioLogueado.nombre, 0, 1).toUpperCase() : 'A'}">A</div>
             <div class="admin-sidebar__meta">
-                <strong th:text="${admin != null ? admin.nombre : 'Administrador'}">Administrador</strong>
+                <strong th:text="${session.usuarioLogueado != null ? session.usuarioLogueado.nombre : 'Admin'}">Admin</strong>
                 <span>Administrador · Cultivus</span>
             </div>
+            <button type="button"
+                    class="admin-sidebar__close"
+                    id="adminSidebarClose"
+                    aria-label="Cerrar menú lateral"
+                    title="Cerrar menú">
+                <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
         </div>
 
-        <nav class="admin-nav" aria-label="Menú de administración">
+        <!-- Navegación principal -->
+        <nav class="admin-nav">
+
+            <!-- ==================== PRINCIPAL ==================== -->
             <div class="admin-nav__label">Principal</div>
 
-            <a th:href="@{/admin/dashboard}" class="admin-nav-item"
-                th:classappend="${currentPath != null and currentPath.contains('/admin/dashboard') ? ' is-active' : ''}">
-                <span class="admin-nav-item__icon"><i class="fas fa-house" aria-hidden="true"></i></span>
+            <a th:href="@{/admin/dashboard}"
+               class="admin-nav-item"
+               th:classappend="${activePage == 'dashboard'} ? ' is-active' : ''"
+               th:attr="aria-current=${activePage == 'dashboard'} ? 'page' : null"
+               title="Dashboard">
+                <span class="admin-nav-item__icon"><i class="fas fa-chart-line" aria-hidden="true"></i></span>
                 <span>Dashboard</span>
             </a>
 
-            <a th:href="@{/admin/powerbi}" class="admin-nav-item"
-                th:classappend="${currentPath != null and currentPath.contains('/admin/powerbi') ? ' is-active' : ''}">
-                <span class="admin-nav-item__icon"><i class="fas fa-chart-pie" aria-hidden="true"></i></span>
-                <span>Power BI</span>
-            </a>
-
-            <a th:href="@{/admin/pedidos}" class="admin-nav-item"
-                th:classappend="${currentPath != null and currentPath.contains('/admin/pedidos') ? ' is-active' : ''}">
+            <a th:href="@{/admin/pedidos}"
+               class="admin-nav-item"
+               th:classappend="${activePage == 'pedidos' or activePage == 'ordenes'} ? ' is-active' : ''"
+               th:attr="aria-current=${activePage == 'pedidos' or activePage == 'ordenes'} ? 'page' : null"
+               title="Pedidos y Envíos">
                 <span class="admin-nav-item__icon"><i class="fas fa-shopping-bag" aria-hidden="true"></i></span>
-                <span>Pedidos</span>
+                <span>Pedidos y Envíos</span>
+                <span class="admin-nav-badge"
+                      th:if="${pedidosPendientesCount != null and pedidosPendientesCount > 0}"
+                      th:text="${pedidosPendientesCount}">0</span>
             </a>
 
-            <a th:href="@{/admin/retiros}" class="admin-nav-item"
-                th:classappend="${(currentPath != null and currentPath.contains('/admin/retiros')) or activePage == 'retiros' ? ' is-active' : ''}">
+            <a th:href="@{/admin/retiros}"
+               class="admin-nav-item"
+               th:classappend="${activePage == 'retiros'} ? ' is-active' : ''"
+               th:attr="aria-current=${activePage == 'retiros'} ? 'page' : null"
+               title="Retiros Bancarios">
                 <span class="admin-nav-item__icon"><i class="fas fa-money-bill-transfer" aria-hidden="true"></i></span>
-                <span>Retiros</span>
-                <span class="admin-nav-badge" th:if="${retirosPendientesCount != null and retirosPendientesCount > 0}"
-                    th:text="${retirosPendientesCount}">0</span>
+                <span>Retiros Bancarios</span>
+                <span class="admin-nav-badge"
+                      th:if="${retirosPendientesCount != null and retirosPendientesCount > 0}"
+                      th:text="${retirosPendientesCount}">0</span>
             </a>
 
+            <!-- ==================== GESTIÓN ==================== -->
             <div class="admin-nav__label">Gestión</div>
 
-            <!-- Usuarios -->
+            <!-- Grupo Usuarios -->
             <div class="admin-nav-group"
-                th:classappend="${currentPath != null and (currentPath.contains('/admin/usuarios') or currentPath.contains('/admin/resenas')) ? ' is-open' : ''}">
-                <button type="button" class="admin-nav-item admin-nav-parent"
-                    th:classappend="${currentPath != null and (currentPath.contains('/admin/usuarios') or currentPath.contains('/admin/resenas')) ? ' is-active' : ''}"
-                    th:attr="aria-expanded=${currentPath != null and (currentPath.contains('/admin/usuarios') or currentPath.contains('/admin/resenas')) ? 'true' : 'false'}">
+                 th:classappend="${activePage == 'usuarios' or activePage == 'sesiones' or activePage == 'actividad' or activePage == 'resenas'} ? ' is-open' : ''">
+                <button type="button"
+                        class="admin-nav-item admin-nav-parent"
+                        th:classappend="${activePage == 'usuarios' or activePage == 'sesiones' or activePage == 'actividad' or activePage == 'resenas'} ? ' is-active' : ''"
+                        th:attr="aria-expanded=${activePage == 'usuarios' or activePage == 'sesiones' or activePage == 'actividad' or activePage == 'resenas'} ? 'true' : 'false'">
                     <span class="admin-nav-item__icon"><i class="fas fa-users" aria-hidden="true"></i></span>
                     <span>Usuarios</span>
                     <i class="fas fa-chevron-down admin-nav-chevron" aria-hidden="true"></i>
                 </button>
                 <div class="admin-submenu">
-                    <a th:href="@{/admin/usuarios}" class="admin-submenu__link"
-                        th:classappend="${currentPath != null and currentPath.contains('/admin/usuarios') ? ' is-active' : ''}">
-                        Gestionar Usuarios
+                    <a th:href="@{/admin/usuarios}"
+                       class="admin-submenu__link"
+                       th:classappend="${activePage == 'usuarios'} ? ' is-active' : ''">
+                        <i class="fas fa-user-check" aria-hidden="true"></i>
+                        <span>Todos los Usuarios</span>
                     </a>
-                    <a th:href="@{/admin/resenas}" class="admin-submenu__link"
-                        th:classappend="${currentPath != null and currentPath.contains('/admin/resenas') ? ' is-active' : ''}">
-                        Actividad y Reseñas
+                    <a th:href="@{/admin/sesiones}"
+                       class="admin-submenu__link"
+                       th:classappend="${activePage == 'sesiones'} ? ' is-active' : ''">
+                        <i class="fas fa-user-clock" aria-hidden="true"></i>
+                        <span>Sesiones Activas</span>
+                    </a>
+                    <a th:href="@{/admin/resenas}"
+                       class="admin-submenu__link"
+                       th:classappend="${activePage == 'actividad' or activePage == 'resenas'} ? ' is-active' : ''">
+                        <i class="fas fa-star" aria-hidden="true"></i>
+                        <span>Actividad y Reseñas</span>
                     </a>
                 </div>
             </div>
 
-            <!-- Productos -->
+            <!-- Grupo Catálogo y Tiendas -->
             <div class="admin-nav-group"
-                th:classappend="${currentPath != null and (currentPath.contains('/admin/productos') or currentPath.contains('/admin/ofertas') or currentPath.contains('/admin/moderacion')) ? ' is-open' : ''}">
-                <button type="button" class="admin-nav-item admin-nav-parent"
-                    th:classappend="${currentPath != null and (currentPath.contains('/admin/productos') or currentPath.contains('/admin/ofertas') or currentPath.contains('/admin/moderacion')) ? ' is-active' : ''}"
-                    th:attr="aria-expanded=${currentPath != null and (currentPath.contains('/admin/productos') or currentPath.contains('/admin/ofertas') or currentPath.contains('/admin/moderacion')) ? 'true' : 'false'}">
-                    <span class="admin-nav-item__icon"><i class="fas fa-box" aria-hidden="true"></i></span>
-                    <span>Productos</span>
+                 th:classappend="${activePage == 'catalogo' or activePage == 'productos' or activePage == 'ofertas' or activePage == 'moderacion'} ? ' is-open' : ''">
+                <button type="button"
+                        class="admin-nav-item admin-nav-parent"
+                        th:classappend="${activePage == 'catalogo' or activePage == 'productos' or activePage == 'ofertas' or activePage == 'moderacion'} ? ' is-active' : ''"
+                        th:attr="aria-expanded=${activePage == 'catalogo' or activePage == 'productos' or activePage == 'ofertas' or activePage == 'moderacion'} ? 'true' : 'false'">
+                    <span class="admin-nav-item__icon"><i class="fas fa-box-open" aria-hidden="true"></i></span>
+                    <span>Catálogo</span>
+                    <span class="admin-nav-badge"
+                          th:if="${catalogoPendienteCount != null and catalogoPendienteCount > 0}"
+                          th:text="${catalogoPendienteCount}">0</span>
                     <i class="fas fa-chevron-down admin-nav-chevron" aria-hidden="true"></i>
                 </button>
                 <div class="admin-submenu">
-                    <a th:href="@{/admin/productos}" class="admin-submenu__link"
-                        th:classappend="${currentPath != null and currentPath.contains('/admin/productos') ? ' is-active' : ''}">
-                        Catálogo Completo
+                    <a th:href="@{/admin/productos}"
+                       class="admin-submenu__link"
+                       th:classappend="${activePage == 'catalogo' or activePage == 'productos'} ? ' is-active' : ''">
+                        <i class="fas fa-boxes-stacked" aria-hidden="true"></i>
+                        <span>Catálogo Completo</span>
                     </a>
-                    <a th:href="@{/admin/ofertas}" class="admin-submenu__link"
-                        th:classappend="${currentPath != null and currentPath.contains('/admin/ofertas') ? ' is-active' : ''}">
-                        Ofertas Globales
+                    <a th:href="@{/admin/ofertas}"
+                       class="admin-submenu__link"
+                       th:classappend="${activePage == 'ofertas'} ? ' is-active' : ''">
+                        <i class="fas fa-tags" aria-hidden="true"></i>
+                        <span>Ofertas de Vendedores</span>
                     </a>
-                    <a th:href="@{/admin/moderacion}" class="admin-submenu__link"
-                        th:classappend="${currentPath != null and currentPath.contains('/admin/moderacion') ? ' is-active' : ''}">
-                        Sugerencias de catálogo
+                    <a th:href="@{/admin/moderacion}"
+                       class="admin-submenu__link"
+                       th:classappend="${activePage == 'moderacion'} ? ' is-active' : ''">
+                        <i class="fas fa-lightbulb" aria-hidden="true"></i>
+                        <span>Sugerencias de Catálogo</span>
                         <span class="admin-nav-badge"
-                            th:if="${catalogoPendienteCount != null and catalogoPendienteCount > 0}"
-                            th:text="${catalogoPendienteCount}">0</span>
+                              th:if="${catalogoPendienteCount != null and catalogoPendienteCount > 0}"
+                              th:text="${catalogoPendienteCount}">0</span>
                     </a>
                 </div>
             </div>
 
-            <!-- Tiendas y transporte -->
-            <div class="admin-nav-group"
-                th:classappend="${currentPath != null and (currentPath.contains('/admin/verificacion-tiendas') or currentPath.contains('/admin/transportistas')) ? ' is-open' : ''}">
-                <button type="button" class="admin-nav-item admin-nav-parent"
-                    th:classappend="${currentPath != null and (currentPath.contains('/admin/verificacion-tiendas') or currentPath.contains('/admin/transportistas')) ? ' is-active' : ''}"
-                    th:attr="aria-expanded=${currentPath != null and (currentPath.contains('/admin/verificacion-tiendas') or currentPath.contains('/admin/transportistas')) ? 'true' : 'false'}">
-                    <span class="admin-nav-item__icon"><i class="fas fa-store" aria-hidden="true"></i></span>
-                    <span>Tiendas y transporte</span>
-                    <i class="fas fa-chevron-down admin-nav-chevron" aria-hidden="true"></i>
-                </button>
-                <div class="admin-submenu">
-                    <a th:href="@{/admin/verificacion-tiendas}" class="admin-submenu__link"
-                        th:classappend="${currentPath != null and currentPath.contains('/admin/verificacion-tiendas') ? ' is-active' : ''}">
-                        Verificar Tiendas
-                        <span class="admin-nav-badge"
-                            th:if="${vendedoresPendientesCount != null and vendedoresPendientesCount > 0}"
-                            th:text="${vendedoresPendientesCount}">0</span>
-                    </a>
-                    <a th:href="@{/admin/transportistas}" class="admin-submenu__link"
-                        th:classappend="${currentPath != null and currentPath.contains('/admin/transportistas') ? ' is-active' : ''}">
-                        Transportistas
-                        <span class="admin-nav-badge"
-                            th:if="${transportistasPendientesCount != null and transportistasPendientesCount > 0}"
-                            th:text="${transportistasPendientesCount}">0</span>
-                    </a>
-                </div>
-            </div>
+            <!-- Verificaciones -->
+            <a th:href="@{/admin/verificacion-tiendas}"
+               class="admin-nav-item"
+               th:classappend="${activePage == 'verificacion-tiendas'} ? ' is-active' : ''"
+               th:attr="aria-current=${activePage == 'verificacion-tiendas'} ? 'page' : null"
+               title="Verificación de Tiendas">
+                <span class="admin-nav-item__icon"><i class="fas fa-store" aria-hidden="true"></i></span>
+                <span>Verificación de Tiendas</span>
+                <span class="admin-nav-badge"
+                      th:if="${vendedoresPendientesCount != null and vendedoresPendientesCount > 0}"
+                      th:text="${vendedoresPendientesCount}">0</span>
+            </a>
 
+            <a th:href="@{/admin/transportistas}"
+               class="admin-nav-item"
+               th:classappend="${activePage == 'transportistas'} ? ' is-active' : ''"
+               th:attr="aria-current=${activePage == 'transportistas'} ? 'page' : null"
+               title="Transportistas">
+                <span class="admin-nav-item__icon"><i class="fas fa-truck" aria-hidden="true"></i></span>
+                <span>Transportistas</span>
+                <span class="admin-nav-badge"
+                      th:if="${transportistasPendientesCount != null and transportistasPendientesCount > 0}"
+                      th:text="${transportistasPendientesCount}">0</span>
+            </a>
+
+            <!-- ==================== SISTEMA ==================== -->
             <div class="admin-nav__label">Sistema</div>
 
-            <a th:href="@{/admin/sesiones}" class="admin-nav-item"
-                th:classappend="${currentPath != null and currentPath.contains('/admin/sesiones') ? ' is-active' : ''}">
-                <span class="admin-nav-item__icon"><i class="fas fa-user-clock" aria-hidden="true"></i></span>
-                <span>Sesiones</span>
+            <a th:href="@{/admin/mensajes}"
+               class="admin-nav-item"
+               th:classappend="${activePage == 'mensajes'} ? ' is-active' : ''"
+               th:attr="aria-current=${activePage == 'mensajes'} ? 'page' : null"
+               title="Centro de Mensajes">
+                <span class="admin-nav-item__icon"><i class="fas fa-envelope-open-text" aria-hidden="true"></i></span>
+                <span>Mensajes</span>
+                <span class="admin-nav-badge nav-badge--info"
+                      th:if="${mensajesRecibidosCount != null and mensajesRecibidosCount > 0}"
+                      th:text="${mensajesRecibidosCount}">0</span>
             </a>
 
-            <a th:href="@{/admin/notificaciones}" class="admin-nav-item"
-                th:classappend="${currentPath != null and currentPath.contains('/admin/notificaciones') ? ' is-active' : ''}">
+            <a th:href="@{/admin/notificaciones}"
+               class="admin-nav-item"
+               th:classappend="${activePage == 'notificaciones'} ? ' is-active' : ''"
+               th:attr="aria-current=${activePage == 'notificaciones'} ? 'page' : null"
+               title="Gestión de Notificaciones">
                 <span class="admin-nav-item__icon"><i class="fas fa-bell" aria-hidden="true"></i></span>
                 <span>Notificaciones</span>
+                <span class="admin-nav-badge nav-badge--info"
+                      th:if="${notificacionesCount != null and notificacionesCount > 0}"
+                      th:text="${notificacionesCount}">0</span>
             </a>
 
-            <a th:href="@{/admin/mensajes}" class="admin-nav-item"
-                th:classappend="${currentPath != null and currentPath.contains('/admin/mensajes') ? ' is-active' : ''}">
-                <span class="admin-nav-item__icon"><i class="fas fa-envelope" aria-hidden="true"></i></span>
-                <span>Mensajes</span>
+            <a th:href="@{/admin/powerbi}"
+               class="admin-nav-item"
+               th:classappend="${activePage == 'powerbi'} ? ' is-active' : ''"
+               th:attr="aria-current=${activePage == 'powerbi'} ? 'page' : null"
+               title="Inteligencia de Negocios">
+                <span class="admin-nav-item__icon"><i class="fas fa-chart-pie" aria-hidden="true"></i></span>
+                <span>Power BI</span>
             </a>
 
-            <a th:href="@{/admin/configuracion}" class="admin-nav-item"
-                th:classappend="${currentPath != null and currentPath.contains('/admin/configuracion') ? ' is-active' : ''}">
-                <span class="admin-nav-item__icon"><i class="fas fa-gear" aria-hidden="true"></i></span>
+            <a th:href="@{/admin/configuracion}"
+               class="admin-nav-item"
+               th:classappend="${activePage == 'configuracion'} ? ' is-active' : ''"
+               th:attr="aria-current=${activePage == 'configuracion'} ? 'page' : null"
+               title="Configuración del Sistema">
+                <span class="admin-nav-item__icon"><i class="fas fa-sliders-h" aria-hidden="true"></i></span>
                 <span>Configuración</span>
             </a>
 
-            <a th:href="@{/admin/perfil}" class="admin-nav-item"
-                th:classappend="${currentPath != null and currentPath.contains('/admin/perfil') ? ' is-active' : ''}">
-                <span class="admin-nav-item__icon"><i class="fas fa-user-shield" aria-hidden="true"></i></span>
-                <span>Mi Perfil</span>
-            </a>
-
-
         </nav>
 
+        <!-- Pie del sidebar -->
         <div class="admin-sidebar__bottom">
-            <a th:href="@{/usuario/logout}" class="admin-nav-item admin-nav-item--logout">
-                <span class="admin-nav-item__icon"><i class="fas fa-arrow-right-from-bracket"
-                        aria-hidden="true"></i></span>
-                <span>Cerrar sesión</span>
+            <a th:href="@{/}" class="admin-nav-item nav-item--subtle" title="Ir a la tienda pública">
+                <span class="admin-nav-item__icon"><i class="fas fa-store" aria-hidden="true"></i></span>
+                <span>Ir a la Tienda</span>
             </a>
+            <form th:action="@{/usuario/logout}" method="post" class="adm-logout-form">
+                <button type="submit" class="admin-nav-item admin-nav-item--logout" title="Cerrar sesión">
+                    <span class="admin-nav-item__icon"><i class="fas fa-sign-out-alt" aria-hidden="true"></i></span>
+                    <span>Cerrar sesión</span>
+                </button>
+            </form>
         </div>
+
     </aside>
-    <div class="admin-overlay" id="adminOverlay"></div>
+
 </th:block>

@@ -448,7 +448,7 @@ public class PagoConfirmacionService {
 
             // 7. Limpiar carrito
             if (carritoRepository != null && compradorId != null) {
-                carritoRepository.findByUsuarioId(compradorId).ifPresent(carritoRepository::delete);
+                carritoRepository.findFirstByUsuarioId(compradorId).ifPresent(carritoRepository::delete);
             }
 
             // 8. Actualizar entidad Compra
@@ -654,4 +654,5 @@ public class PagoConfirmacionService {
         }
     }
 }
+
 

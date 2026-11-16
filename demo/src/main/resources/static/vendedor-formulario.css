@@ -601,8 +601,28 @@
     padding: 16px 14px 90px;
   }
 
+  .vs-main > .vf-wrapper {
+    padding: 4px 0 32px;
+  }
+
   .vf-card__body {
-    padding: 20px 16px;
+    padding: 18px 15px;
+  }
+
+  .vf-suggestion-box {
+    padding: 18px 15px;
+  }
+
+  .vf-product-preview {
+    padding: 12px 14px;
+    gap: 12px;
+  }
+
+  .vf-unit-pill {
+    flex: 1 1 calc(50% - 8px);
+    justify-content: center;
+    padding: 10px 12px;
+    font-size: 0.86rem;
   }
 
   .vf-grid-2,

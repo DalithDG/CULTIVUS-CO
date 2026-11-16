@@ -40,7 +40,7 @@ public class GlobalControllerAdvice {
     public int getCarritoCount(HttpSession session) {
         Usuario usuario = (Usuario) session.getAttribute("usuarioLogueado");
         if (usuario != null && usuario.getId() != null) {
-            return carritoRepository.findByUsuarioId(usuario.getId())
+            return carritoRepository.findFirstByUsuarioId(usuario.getId())
                     .map(c -> c.getItems() != null ? c.getItems().size() : 0)
                     .orElse(0);
         }

@@ -202,7 +202,7 @@ class VendedorBloqueoComprasTest {
         item.setVendedorId(comprador.getId()); // Mismo ID del comprador
         carritoConPropio.getItems().add(item);
 
-        when(carritoRepository.findByUsuarioId(comprador.getId())).thenReturn(Optional.of(carritoConPropio));
+        when(carritoRepository.findFirstByUsuarioId(comprador.getId())).thenReturn(Optional.of(carritoConPropio));
 
         ResponseEntity<?> resp = pagoController.iniciarPagoWompi(Map.of("ciudad", "Cartagena"), sessionComprador);
 
@@ -213,3 +213,4 @@ class VendedorBloqueoComprasTest {
         assertTrue(body.get("error").toString().contains("No puedes comprar tus propios productos"));
     }
 }
+

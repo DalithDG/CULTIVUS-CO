@@ -123,43 +123,29 @@
         var live = nav ? nav.querySelector('.tp-step-live') : null;
         if (nav) nav.classList.add('tp-steps--enhanced');
 
-        // ── Resúmenes y botones Continuar ───────────────────────────────────
+        // ── Controles de navegación por paso (Regresar / Continuar) ─────────
         sections.forEach(function (section, i) {
-            var summary = document.createElement('div');
-            summary.className = 'tp-step-summary';
-
-            var main = document.createElement('div');
-            main.className = 'tp-step-summary__main';
-
-            var title = document.createElement('span');
-            title.className = 'tp-step-summary__title';
-            var check = document.createElement('i');
-            check.className = 'fas fa-circle-check';
-            title.appendChild(check);
-            var titleText = document.createElement('span');
-            titleText.textContent = names[i];
-            title.appendChild(titleText);
-
-            var values = document.createElement('span');
-            values.className = 'tp-step-summary__values';
-
-            main.appendChild(title);
-            main.appendChild(values);
-
-            var edit = document.createElement('button');
-            edit.type = 'button';
-            edit.className = 'ui-btn ui-btn--secondary ui-btn--sm tp-step-edit';
-            edit.textContent = 'Editar';
-            edit.setAttribute('aria-label', 'Editar ' + names[i]);
-            edit.addEventListener('click', function () { onEdit(i); });
-
-            summary.appendChild(main);
-            summary.appendChild(edit);
-            section.insertBefore(summary, section.firstChild);
+            if (i > 0) {
+                var backTop = document.createElement('button');
+                backTop.type = 'button';
+                backTop.className = 'tp-step-back-top';
+                backTop.innerHTML = '<i class="fas fa-arrow-left" aria-hidden="true"></i><span>Regresar a ' + names[i - 1] + '</span>';
+                backTop.addEventListener('click', function () { onEdit(i - 1); });
+                section.insertBefore(backTop, section.firstChild);
+            }
 
             if (i < sections.length - 1) {
                 var actions = document.createElement('div');
                 actions.className = 'tp-step-actions';
+
+                if (i > 0) {
+                    var prev = document.createElement('button');
+                    prev.type = 'button';
+                    prev.className = 'ui-btn ui-btn--secondary tp-step-prev';
+                    prev.innerHTML = '<i class="fas fa-arrow-left"></i><span>Anterior</span>';
+                    prev.addEventListener('click', function () { onEdit(i - 1); });
+                    actions.appendChild(prev);
+                }
 
                 var cont = document.createElement('button');
                 cont.type = 'button';
@@ -169,6 +155,16 @@
 
                 actions.appendChild(cont);
                 section.appendChild(actions);
+            } else if (i > 0) {
+                var submitRow = section.querySelector('.tp-submit-row');
+                if (submitRow) {
+                    var backBtn = document.createElement('button');
+                    backBtn.type = 'button';
+                    backBtn.className = 'ui-btn ui-btn--secondary ui-btn--lg tp-step-prev';
+                    backBtn.innerHTML = '<i class="fas fa-arrow-left"></i><span>Paso anterior</span>';
+                    backBtn.addEventListener('click', function () { onEdit(i - 1); });
+                    submitRow.insertBefore(backBtn, submitRow.firstChild);
+                }
             }
         });
 
@@ -230,66 +226,11 @@
             return -1;
         }
 
-        // ── Resúmenes ───────────────────────────────────────────────────────
-        function textOf(el) {
-            return el && el.value ? String(el.value).trim() : '';
-        }
-
-        function modalidadLabel() {
-            var checked = form.querySelector('input[name="tipo"]:checked');
-            if (!checked) return 'Sin modalidad';
-            return checked.value === 'EMPRESA' ? 'Empresa Logística' : 'Independiente';
-        }
-
-        function updateSummary(section, index) {
-            var values = section.querySelector('.tp-step-summary__values');
-            if (!values) return;
-
-            var parts = [];
-            var kind = kinds[index];
-
-            if (kind === 'cuenta') {
-                parts.push(modalidadLabel());
-                var nombre = section.querySelector('[name="nombre"]');
-                var email = section.querySelector('[name="email"]');
-                if (textOf(nombre)) parts.push(textOf(nombre));
-                if (textOf(email)) parts.push(textOf(email));
-            } else if (kind === 'vehiculo') {
-                var checkedVehicle = section.querySelector('input[name="tipoVehiculo"]:checked');
-                parts.push(checkedVehicle ? checkedVehicle.value : 'Sin vehículo');
-
-                var esEmpresa = form.querySelector('input[name="tipo"]:checked')
-                    && form.querySelector('input[name="tipo"]:checked').value === 'EMPRESA';
-                var razon = section.querySelector('[name="razonSocial"]');
-                var placa = section.querySelector('[name="placa"]');
-                if (esEmpresa && textOf(razon)) {
-                    parts.push(textOf(razon));
-                } else if (textOf(placa)) {
-                    parts.push(textOf(placa));
-                } else if (textOf(razon)) {
-                    parts.push(textOf(razon));
-                }
-
-                var capacidad = section.querySelector('[name="capacidadCargaKg"]');
-                if (textOf(capacidad)) parts.push(textOf(capacidad) + ' kg');
-            } else {
-                var total = section.querySelectorAll('input[name="zonasCoberturaIds"]:checked').length;
-                var todas = section.querySelector('#todasLasZonas');
-                if (todas && todas.checked) parts.push('Todas las zonas');
-                else if (total) parts.push(total + (total === 1 ? ' zona' : ' zonas'));
-                else parts.push('Sin zonas');
-            }
-
-            values.textContent = parts.join(' · ');
-            values.title = values.textContent;
-        }
-
         // ── Estados ─────────────────────────────────────────────────────────
         function setSectionState(index, state) {
             var section = sections[index];
             section.setAttribute('data-state', state);
-            section.hidden = state === 'pending';
-            if (state === 'done') updateSummary(section, index);
+            section.hidden = state !== 'active';
         }
 
         function updateSteps() {
@@ -299,6 +240,10 @@
                 if (!item) return;
                 item.li.classList.toggle('is-current', i === current);
                 item.li.classList.toggle('is-done', done);
+                var numEl = item.btn.querySelector('.checkout-steps__num');
+                if (numEl) {
+                    numEl.innerHTML = done ? '<i class="fas fa-check"></i>' : String(i + 1);
+                }
                 if (i === current) item.btn.setAttribute('aria-current', 'step');
                 else item.btn.removeAttribute('aria-current');
                 item.btn.disabled = !done || i === current;
@@ -328,15 +273,11 @@
         function animateIn(section) {
             if (reduceMotion.matches) return;
 
-            var targetHeight = section.scrollHeight;
-            section.style.height = '0px';
-            section.style.overflow = 'hidden';
             section.style.opacity = '0';
-            section.style.transform = 'translateY(12px)';
+            section.style.transform = 'translateY(10px)';
             void section.offsetHeight;
 
-            section.style.transition = 'height 300ms cubic-bezier(0.4, 0, 0.2, 1), opacity 240ms ease, transform 240ms ease';
-            section.style.height = targetHeight + 'px';
+            section.style.transition = 'opacity 240ms cubic-bezier(0.22, 1, 0.36, 1), transform 240ms cubic-bezier(0.22, 1, 0.36, 1)';
             section.style.opacity = '1';
             section.style.transform = 'translateY(0)';
 
@@ -347,17 +288,15 @@
                 finished = true;
                 clearTimeout(timer);
                 section.style.transition = '';
-                section.style.height = '';
-                section.style.overflow = '';
                 section.style.opacity = '';
                 section.style.transform = '';
                 section.removeEventListener('transitionend', onEnd);
             }
             function onEnd(ev) {
-                if (ev.target === section && ev.propertyName === 'height') clean();
+                if (ev.target === section) clean();
             }
             section.addEventListener('transitionend', onEnd);
-            timer = setTimeout(clean, 380);
+            timer = setTimeout(clean, 300);
         }
 
         function scrollToStep(section) {
@@ -416,19 +355,10 @@
         }
 
         function onEdit(index) {
-            if (index === current || index > current) return;
-            if (sections[index].getAttribute('data-state') !== 'done') return;
-            if (!validateSection(sections[current])) return;
+            if (index === current || index < 0 || index >= sections.length) return;
+            if (index > current && !validateSection(sections[current])) return;
 
-            // La sección activa se pliega como completada y se reabre la elegida.
-            setSectionState(current, 'done');
-            setSectionState(index, 'active');
-            current = index;
-            updateSteps();
-            announce();
-            animateIn(sections[index]);
-            scrollToStep(sections[index]);
-            focusFirst(sections[index]);
+            showStep(index, { animate: true, scroll: true, focus: true });
         }
 
         function onStepClick(index) {

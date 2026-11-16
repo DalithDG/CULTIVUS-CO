@@ -770,6 +770,30 @@
   }
 }
 
+@media (max-width: 640px) {
+  .about-page .about-sticky-nav__inner {
+    gap: 8px;
+    padding-inline: 12px;
+  }
+
+  .about-page .about-segmented {
+    flex: 1;
+    min-width: 0;
+    justify-content: flex-start;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .about-page .about-segmented::-webkit-scrollbar {
+    display: none;
+  }
+
+  .about-page .about-segmented__btn {
+    white-space: nowrap;
+    padding-inline: 12px;
+  }
+}
+
 .about-page .stat-box {
   background: var(--c-surface, #FFFFFF);
   border: 1px solid var(--c-line, #E9E2D0);

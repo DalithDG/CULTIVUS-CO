@@ -104,6 +104,7 @@ public class AdminOfertasTemplateTest {
         Context context = new Context();
         context.setVariable("ofertas", pagina);
         context.setVariable("activePage", "ofertas");
+        context.setVariable("session", sesionAdmin());
 
         String html = templateEngine.process("admin/ofertas", context);
         assertNotNull(html);
@@ -157,6 +158,7 @@ public class AdminOfertasTemplateTest {
         Context ctx0 = new Context();
         ctx0.setVariable("ofertas", pagina0);
         ctx0.setVariable("activePage", "ofertas");
+        ctx0.setVariable("session", sesionAdmin());
 
         String html0 = templateEngine.process("admin/ofertas", ctx0);
 
@@ -171,10 +173,23 @@ public class AdminOfertasTemplateTest {
         Context ctx1 = new Context();
         ctx1.setVariable("ofertas", pagina1);
         ctx1.setVariable("activePage", "ofertas");
+        ctx1.setVariable("session", sesionAdmin());
 
         String html1 = templateEngine.process("admin/ofertas", ctx1);
         assertTrue(html1.contains("Mostrando página <strong>2</strong> de <strong>6</strong>"));
         assertTrue(html1.contains("page=0"), "Enlace Anterior debe apuntar a la página 0");
         assertTrue(html1.contains("page=2"), "Enlace Siguiente debe apuntar a la página 2");
+    }
+
+    /**
+     * El sidebar del admin (versión actual) lee session.usuarioLogueado,
+     * por eso los tests de plantilla necesitan una sesión simulada.
+     */
+    private java.util.Map<String, Object> sesionAdmin() {
+        com.example.demo.Model.Usuario admin = new com.example.demo.Model.Usuario();
+        admin.setNombre("Admin Prueba");
+        java.util.Map<String, Object> sesion = new java.util.HashMap<>();
+        sesion.put("usuarioLogueado", admin);
+        return sesion;
     }
 }

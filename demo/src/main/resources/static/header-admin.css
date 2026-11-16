@@ -222,6 +222,15 @@
 @media (max-width: 600px) {
   .admin-header-premium {
     padding: 0 12px;
+    height: 58px;
+  }
+
+  .admin-header-premium .admin-logo-link img {
+    height: 34px;
+  }
+
+  .admin-header-premium .admin-badge {
+    display: none;
   }
 
   .admin-header-premium .user-info {

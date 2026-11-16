@@ -423,6 +423,13 @@ body {
    RESPONSIVE
    ======================================== */
 @media (max-width: 768px) {
+  .beneficios-section,
+  .como-funciona,
+  .testimonios-section,
+  .cta-final {
+    padding: 56px 0;
+  }
+
   .hero-vendedor h1 {
     font-size: 36px;
   }
@@ -467,7 +474,8 @@ body {
 
 @media (max-width: 480px) {
   .hero-vendedor {
-    min-height: 70vh;
+    min-height: auto;
+    padding: 48px 0;
   }
 
   .hero-vendedor h1 {
@@ -476,6 +484,18 @@ body {
 
   .hero-ctas {
     flex-direction: column;
+  }
+
+  .hero-ctas .btn-hero,
+  .btn-cta {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .beneficio-card,
+  .testimonio-card {
+    padding: 24px 20px;
   }
 
   .stats-grid {
