@@ -4,6 +4,8 @@ import com.example.demo.Model.Role;
 import com.example.demo.Model.Usuario;
 import com.example.demo.Model.Producto;
 import com.example.demo.Model.ProductoCatalogo;
+import com.example.demo.Model.OfertaVendedor;
+import com.example.demo.Model.EstadoPublicacion;
 import com.example.demo.Model.Pedido;
 import com.example.demo.Model.Resena;
 import com.example.demo.Model.Categoria;
@@ -13,8 +15,15 @@ import com.example.demo.Model.embebidos.PerfilAdmin;
 import com.example.demo.Model.embebidos.PerfilTransportista;
 import com.example.demo.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.aggregation.Aggregation;
+import org.springframework.data.mongodb.core.aggregation.AggregationResults;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.bson.Document;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -41,6 +50,9 @@ public class AdminService {
 
     @Autowired(required = false)
     private OfertaRepository ofertaRepository;
+
+    @Autowired(required = false)
+    private MongoTemplate mongoTemplate;
 
     @Autowired
     private PedidoRepository pedidoRepository;
@@ -286,39 +298,142 @@ public class AdminService {
     // ==================== GESTIÓN DE PRODUCTOS ====================
 
     /**
-     * Obtener productos paginados y con filtro de búsqueda.
-     * Soporta tanto la colección legacy 'productos' como el catálogo central 'productos_catalogo'.
+     * Obtener productos del catálogo centralizado paginados y con filtro de búsqueda.
+     * Enriquecido con métricas agregadas desde las ofertas (vendedores, precio mínimo, stock)
+     * mediante una sola consulta de agregación en MongoDB.
      */
-    public org.springframework.data.domain.Page<?> obtenerProductosPaginados(int page, int size, String search, String categoriaId) {
-        org.springframework.data.domain.Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        
-        boolean hasSearch = (search != null && !search.trim().isEmpty());
-        boolean hasCategoria = (categoriaId != null && !categoriaId.trim().isEmpty());
-        
-        if (productoRepository.count() > 0) {
-            if (hasSearch && hasCategoria) {
-                return productoRepository.findBySearchAndCategoria(search.trim(), categoriaId.trim(), pageable);
-            } else if (hasSearch) {
-                return productoRepository.findByNombreContainingIgnoreCaseOrDescripcionContainingIgnoreCase(search.trim(), search.trim(), pageable);
-            } else if (hasCategoria) {
-                return productoRepository.findByCategoriaId(categoriaId.trim(), pageable);
-            }
-            return productoRepository.findAll(pageable);
+    public Page<ProductoCatalogo> obtenerProductosPaginados(int page, int size, String search, String categoriaId) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        if (catalogoRepository == null) {
+            return Page.empty(pageable);
         }
 
-        // Catálogo centralizado
-        if (catalogoRepository != null) {
-            if (hasSearch && hasCategoria) {
-                return catalogoRepository.findBySearchAndCategoria(search.trim(), categoriaId.trim(), pageable);
-            } else if (hasSearch) {
-                return catalogoRepository.findByNombreContainingIgnoreCaseOrDescripcionContainingIgnoreCase(search.trim(), search.trim(), pageable);
-            } else if (hasCategoria) {
-                return catalogoRepository.findByCategoriaId(categoriaId.trim(), pageable);
-            }
-            return catalogoRepository.findAll(pageable);
+        boolean hasSearch = (search != null && !search.trim().isEmpty());
+        boolean hasCategoria = (categoriaId != null && !categoriaId.trim().isEmpty());
+        String busqueda = hasSearch ? escaparRegex(search.trim()) : null;
+
+        Page<ProductoCatalogo> productos;
+        if (hasSearch && hasCategoria) {
+            productos = catalogoRepository.findBySearchAndCategoria(busqueda, categoriaId.trim(), pageable);
+        } else if (hasSearch) {
+            productos = catalogoRepository.findByNombreContainingIgnoreCaseOrDescripcionContainingIgnoreCase(busqueda, busqueda, pageable);
+        } else if (hasCategoria) {
+            productos = catalogoRepository.findByCategoriaId(categoriaId.trim(), pageable);
+        } else {
+            productos = catalogoRepository.findAll(pageable);
         }
-        
-        return productoRepository.findAll(pageable);
+
+        enriquecerProductosConMetricasOfertas(productos.getContent());
+
+        return productos;
+    }
+
+    /**
+     * Agrega las métricas de vendedores, precio mínimo y stock sumado para la página de productos actual.
+     * Realiza UNA SOLA consulta de agregación en MongoDB por los IDs de la página, evitando N+1 consultas.
+     */
+    private void enriquecerProductosConMetricasOfertas(List<ProductoCatalogo> lista) {
+        if (lista == null || lista.isEmpty()) return;
+
+        List<String> ids = lista.stream()
+                .map(ProductoCatalogo::getId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        if (ids.isEmpty()) return;
+
+        Map<String, MetricasOferta> metricasMap = new HashMap<>();
+
+        if (mongoTemplate != null) {
+            try {
+                Criteria baseCriteria = Criteria.where("producto_catalogo_id").in(ids)
+                        .and("disponible").is(true)
+                        .and("precio").ne(null).gt(0);
+
+                Criteria estadoCriteria = new Criteria().orOperator(
+                        Criteria.where("estado_publicacion").is("PUBLICADO"),
+                        Criteria.where("estado_publicacion").is(null),
+                        Criteria.where("estado_publicacion").exists(false)
+                );
+
+                Aggregation agg = Aggregation.newAggregation(
+                        Aggregation.match(new Criteria().andOperator(baseCriteria, estadoCriteria)),
+                        Aggregation.group("producto_catalogo_id")
+                                .count().as("totalVendedores")
+                                .min("precio").as("precioMinimo")
+                                .sum("stock").as("stockTotal")
+                );
+
+                AggregationResults<Document> results =
+                        mongoTemplate.aggregate(agg, "ofertas", Document.class);
+
+                for (Document doc : results.getMappedResults()) {
+                    String catId = doc.getString("_id");
+                    Number totalVend = doc.get("totalVendedores", Number.class);
+                    Number precioMin = doc.get("precioMinimo", Number.class);
+                    Number stockTot = doc.get("stockTotal", Number.class);
+
+                    metricasMap.put(catId, new MetricasOferta(
+                            totalVend != null ? totalVend.intValue() : 0,
+                            precioMin != null ? precioMin.doubleValue() : null,
+                            stockTot != null ? stockTot.doubleValue() : 0.0
+                    ));
+                }
+            } catch (Exception ignored) {
+            }
+        }
+
+        // Fallback usando ofertaRepository solo si MongoTemplate no está disponible (ej: pruebas unitarias con mocks).
+        // No se usa cuando la agregación devuelve vacío, para no caer en N+1 consultas.
+        if (mongoTemplate == null && ofertaRepository != null) {
+            for (String id : ids) {
+                try {
+                    List<OfertaVendedor> ofertas = ofertaRepository.findByProductoCatalogoIdAndDisponibleTrue(id);
+                    if (ofertas != null && !ofertas.isEmpty()) {
+                        List<OfertaVendedor> validas = ofertas.stream()
+                                .filter(o -> o.isDisponible() && o.getPrecio() != null && o.getPrecio() > 0
+                                        && (o.getEstadoPublicacion() == null || o.getEstadoPublicacion() == EstadoPublicacion.PUBLICADO))
+                                .collect(Collectors.toList());
+                        if (!validas.isEmpty()) {
+                            double minPrecio = validas.stream().mapToDouble(OfertaVendedor::getPrecio).min().orElse(0.0);
+                            double sumStock = validas.stream().mapToDouble(o -> o.getStock() != null ? o.getStock() : 0.0).sum();
+                            metricasMap.put(id, new MetricasOferta(validas.size(), minPrecio, sumStock));
+                        }
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+        }
+
+        for (ProductoCatalogo p : lista) {
+            MetricasOferta m = metricasMap.get(p.getId());
+            if (m != null) {
+                p.setTotalVendedores(m.totalVendedores);
+                p.setPrecioMinimo(m.precioMinimo);
+                p.setStockTotal(m.stockTotal);
+            } else {
+                p.setTotalVendedores(0);
+                p.setPrecioMinimo(null);
+                p.setStockTotal(0.0);
+            }
+        }
+    }
+
+    /** Escapa metacaracteres de regex para que la búsqueda del admin sea literal. */
+    private static String escaparRegex(String texto) {
+        return texto.replaceAll("([\\\\^$.|?*+()\\[\\]{}])", "\\\\$1");
+    }
+
+    private static class MetricasOferta {
+        final int totalVendedores;
+        final Double precioMinimo;
+        final double stockTotal;
+
+        MetricasOferta(int totalVendedores, Double precioMinimo, double stockTotal) {
+            this.totalVendedores = totalVendedores;
+            this.precioMinimo = precioMinimo;
+            this.stockTotal = stockTotal;
+        }
     }
 
     /**
@@ -561,9 +676,9 @@ public class AdminService {
         Map<String, Object> estadisticas = new HashMap<>();
 
         estadisticas.put("totalUsuarios", usuarioRepository.count());
-        long totalProd = (catalogoRepository != null && catalogoRepository.count() > 0)
+        long totalProd = (catalogoRepository != null)
                 ? catalogoRepository.count()
-                : productoRepository.count();
+                : 0L;
         estadisticas.put("totalProductos", totalProd);
         estadisticas.put("totalPedidos", pedidoRepository.count());
         estadisticas.put("totalResenas", resenaRepository.count());
